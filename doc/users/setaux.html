@@ -1,0 +1,200 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>setaux &mdash; AMRClaw v4.6.x documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.6.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/clawicon.ico"/>
+    <link rel="top" title="AMRClaw v4.6.x documentation" href="index.html" />
+    <link rel="next" title="setuse" href="setuse.html" />
+    <link rel="prev" title="saveqc" href="saveqc.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: #FFFFE8; text-align: left; padding: 10px 10px 15px 15px">
+<table>
+<tr>
+<!--
+<td>
+&nbsp;
+<br>
+<a href="http://www.clawpack.org/"><img src="_static/clawlogo.jpg" border="0" alt="Clawpack logo"/></a>
+</td>
+-->
+<td>
+<br>
+&nbsp;
+<br>
+<a href
+<font size=20  color="#7F0000"> Clawpack: AMRClaw Documentation</font>
+<br>
+&nbsp;
+<br>
+<font size=5  color="#7F0000"> Adaptive Mesh Refinement</font>
+<br>
+&nbsp;
+<br>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="setuse.html" title="setuse"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="saveqc.html" title="saveqc"
+             accesskey="P">previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/clawlogo.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="saveqc.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">saveqc</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="setuse.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">setuse</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/setaux.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="setaux">
+<span id="id1"></span><h1><tt class="docutils literal"><span class="pre">setaux</span></tt><a class="headerlink" href="#setaux" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Signature:</dt>
+<dd><tt class="docutils literal"><span class="pre">subroutine</span> <span class="pre">setaux(maxmx,</span> <span class="pre">maxmy,</span> <span class="pre">mbc,</span> <span class="pre">mx,</span> <span class="pre">my,</span> <span class="pre">xlower,</span> <span class="pre">ylower,</span>
+<span class="pre">dx,</span> <span class="pre">dy,</span> <span class="pre">maux,</span> <span class="pre">aux)</span></tt></dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><tt class="docutils literal"><span class="pre">integer,</span> <span class="pre">intent(in):</span></tt></dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">maxmx</span></tt>: Maximum number of (interior) horizontal cells.</li>
+<li><tt class="docutils literal"><span class="pre">maxmy</span></tt>: Maximum number of (interior) vertical cells.</li>
+<li><tt class="docutils literal"><span class="pre">mbc</span></tt>:   Number of ghost cells in each direction.</li>
+<li><tt class="docutils literal"><span class="pre">mx</span></tt>:    Actual number of horizontal cells.</li>
+<li><tt class="docutils literal"><span class="pre">my</span></tt>:    Actual number of vertical cells.</li>
+<li><tt class="docutils literal"><span class="pre">maux</span></tt>:  Number of aux variables.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(in):</span></tt></dt>
+<dd><blockquote class="first">
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">xlower</span></tt>: Left bound of the input region.</li>
+<li><tt class="docutils literal"><span class="pre">ylower</span></tt>: Bottom bound of the input region.</li>
+</ul>
+</blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rjl/git/clawpack/amrclaw/doc/setaux.rst</tt>, line 24)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<ul class="last">
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">dx</span></tt>:    Horizontal grid spacing.</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">dy</span></tt>:        Vertical grid spacing.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(out):</span></tt></dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">aux(1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,</span> <span class="pre">maux)</span></tt>:   Array
+of aux values, to be set by this routine.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Description:</dt>
+<dd>User-supplied routine that initializes values of auxiliary
+variables.</dd>
+<dt><strong>Question</strong>:</dt>
+<dd>Why is this called at every time step?</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="setuse.html" title="setuse"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="saveqc.html" title="saveqc"
+             >previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Randall J. LeVeque and others.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

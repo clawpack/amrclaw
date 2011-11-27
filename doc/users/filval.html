@@ -1,0 +1,207 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>filval &mdash; AMRClaw v4.6.x documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.6.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/clawicon.ico"/>
+    <link rel="top" title="AMRClaw v4.6.x documentation" href="index.html" />
+    <link rel="next" title="fixcapaq" href="fixcapaq.html" />
+    <link rel="prev" title="filrecur" href="filrecur.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: #FFFFE8; text-align: left; padding: 10px 10px 15px 15px">
+<table>
+<tr>
+<!--
+<td>
+&nbsp;
+<br>
+<a href="http://www.clawpack.org/"><img src="_static/clawlogo.jpg" border="0" alt="Clawpack logo"/></a>
+</td>
+-->
+<td>
+<br>
+&nbsp;
+<br>
+<a href
+<font size=20  color="#7F0000"> Clawpack: AMRClaw Documentation</font>
+<br>
+&nbsp;
+<br>
+<font size=5  color="#7F0000"> Adaptive Mesh Refinement</font>
+<br>
+&nbsp;
+<br>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="fixcapaq.html" title="fixcapaq"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="filrecur.html" title="filrecur"
+             accesskey="P">previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/clawlogo.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="filrecur.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">filrecur</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="fixcapaq.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">fixcapaq</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/filval.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="filval">
+<span id="id1"></span><h1><tt class="docutils literal"><span class="pre">filval</span></tt><a class="headerlink" href="#filval" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Signature:</dt>
+<dd><tt class="docutils literal"><span class="pre">subroutine</span> <span class="pre">filval(val,</span> <span class="pre">mitot,</span> <span class="pre">mjtot,</span> <span class="pre">hx,</span> <span class="pre">hy,</span> <span class="pre">lev,</span> <span class="pre">time,</span> <span class="pre">valc,</span> <span class="pre">auxc,</span>
+<span class="pre">mic,</span> <span class="pre">mjc,</span> <span class="pre">xleft,</span> <span class="pre">xright,</span> <span class="pre">ybot,</span> <span class="pre">ytop,</span> <span class="pre">nvar,</span> <span class="pre">mptr,</span> <span class="pre">ilo,</span> <span class="pre">ihi,</span> <span class="pre">jlo,</span> <span class="pre">jhi,</span>
+<span class="pre">aux,</span> <span class="pre">naux,</span> <span class="pre">locflip)</span></tt></dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><tt class="docutils literal"><span class="pre">integer,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">mitot</span></tt>: Horizontal dimension of the fine grid, including ghost cells.</li>
+<li><tt class="docutils literal"><span class="pre">mjtot</span></tt>: Vertical dimension of the fine grid, including ghost cells.</li>
+<li><tt class="docutils literal"><span class="pre">lev</span></tt>: Level of the fine grid.</li>
+<li><tt class="docutils literal"><span class="pre">nvar</span></tt>: Number of solution variables.</li>
+<li><tt class="docutils literal"><span class="pre">mptr</span></tt>: Pointer to the fine grid being filled.</li>
+<li><tt class="docutils literal"><span class="pre">naux</span></tt>: Number of aux variables.</li>
+<li><tt class="docutils literal"><span class="pre">ilo</span></tt>: Lower horizontal index of the fine grid, including ghost cells, in global indices.</li>
+<li><tt class="docutils literal"><span class="pre">ihi</span></tt>: Upper horizontal index of the fine grid, including ghost cells, in global indices.</li>
+<li><tt class="docutils literal"><span class="pre">jlo</span></tt>: Lower vertical index of the fine grid, including ghost cells, in global indices.</li>
+<li><tt class="docutils literal"><span class="pre">jhi</span></tt>: Upper vertical index of the fine grid, including ghost cells, in global indices.</li>
+<li><tt class="docutils literal"><span class="pre">locflip</span></tt>: Location of perimeter storage for fine grid, for use in the periodic case.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">hx</span></tt>: Horizontal cell width on the fine grid.</li>
+<li><tt class="docutils literal"><span class="pre">hy</span></tt>: Vertical cell width of the fine grid.</li>
+<li><tt class="docutils literal"><span class="pre">time</span></tt>: Physical time.</li>
+<li><tt class="docutils literal"><span class="pre">xleft</span></tt>: Left coordinate of the fine grid, ghost cells excluded.</li>
+<li><tt class="docutils literal"><span class="pre">xright</span></tt>: Right coordinate of the fine grid, ghost cells excluded.</li>
+<li><tt class="docutils literal"><span class="pre">ybot</span></tt>: Bottom coordinate of the fine grid, ghost cells excluded.</li>
+<li><tt class="docutils literal"><span class="pre">ytop</span></tt>: Top coordinate of the fine grid, ghost cells excluded.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(inout)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">val(mitot,mjtot,nvar)</span></tt>: Solution values on the fine grid, with
+space for ghost cells.</li>
+<li><tt class="docutils literal"><span class="pre">aux(nrow,ncol,nvar)</span></tt>: Values of aux variables on the fine grid,
+with space for ghost cells.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(out)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">valc(mic,mjc,nvar)</span></tt>: Solution values on the coarse patch.</li>
+<li><tt class="docutils literal"><span class="pre">auxc(mic,mjc,naux)</span></tt>: Aux variable values on the coarse patch.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Description:</dt>
+<dd><p class="first">Fills in solution values on the interior of a fine grid.  This is done
+by filling a coarse patch that extends one coarse cell beyond the interior
+of the fine grid on each side.  Then solution values on the fine grid may
+be linearly interpolated.</p>
+<p class="last">Afterwards, solution values on the fine grid are replaced by values copied
+from other fine grids, wherever possible.</p>
+</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="fixcapaq.html" title="fixcapaq"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="filrecur.html" title="filrecur"
+             >previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Randall J. LeVeque and others.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

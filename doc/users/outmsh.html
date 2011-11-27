@@ -1,0 +1,174 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>outmsh &mdash; AMRClaw v4.6.x documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.6.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/clawicon.ico"/>
+    <link rel="top" title="AMRClaw v4.6.x documentation" href="index.html" />
+    <link rel="next" title="outtre" href="outtre.html" />
+    <link rel="prev" title="flglvl" href="flglvl.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: #FFFFE8; text-align: left; padding: 10px 10px 15px 15px">
+<table>
+<tr>
+<!--
+<td>
+&nbsp;
+<br>
+<a href="http://www.clawpack.org/"><img src="_static/clawlogo.jpg" border="0" alt="Clawpack logo"/></a>
+</td>
+-->
+<td>
+<br>
+&nbsp;
+<br>
+<a href
+<font size=20  color="#7F0000"> Clawpack: AMRClaw Documentation</font>
+<br>
+&nbsp;
+<br>
+<font size=5  color="#7F0000"> Adaptive Mesh Refinement</font>
+<br>
+&nbsp;
+<br>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="outtre.html" title="outtre"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="flglvl.html" title="flglvl"
+             accesskey="P">previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/clawlogo.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="flglvl.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">flglvl</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="outtre.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">outtre</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/outmsh.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="outmsh">
+<span id="id1"></span><h1><tt class="docutils literal"><span class="pre">outmsh</span></tt><a class="headerlink" href="#outmsh" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Signature:</dt>
+<dd><tt class="docutils literal"><span class="pre">subroutine</span> <span class="pre">outmsh(mptr,outgrd,nvar,naux)</span></tt></dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><tt class="docutils literal"><span class="pre">integer,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">mptr</span></tt>: Pointer to the grid descriptor being output.</li>
+<li><tt class="docutils literal"><span class="pre">nvar</span></tt>: Number of dependent variables.</li>
+<li><tt class="docutils literal"><span class="pre">naux</span></tt>: Number of aux variables.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">logical,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">outgrd</span></tt>: If <tt class="docutils literal"><span class="pre">outgrd=.true.</span></tt>, then solution values
+and aux variables on the grid are output as well.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Description:</dt>
+<dd>Outputs the grid descriptor, and optionally the values on the
+grid, for a single grid referenced by <tt class="docutils literal"><span class="pre">mptr</span></tt>.  (See
+<tt class="docutils literal"><span class="pre">outtre</span></tt> for outputting a full subtree.)</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="outtre.html" title="outtre"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="flglvl.html" title="flglvl"
+             >previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Randall J. LeVeque and others.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

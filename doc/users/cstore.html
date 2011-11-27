@@ -1,0 +1,196 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cstore &mdash; AMRClaw v4.6.x documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.6.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/clawicon.ico"/>
+    <link rel="top" title="AMRClaw v4.6.x documentation" href="index.html" />
+    <link rel="next" title="icall" href="icall.html" />
+    <link rel="prev" title="conck" href="conck.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: #FFFFE8; text-align: left; padding: 10px 10px 15px 15px">
+<table>
+<tr>
+<!--
+<td>
+&nbsp;
+<br>
+<a href="http://www.clawpack.org/"><img src="_static/clawlogo.jpg" border="0" alt="Clawpack logo"/></a>
+</td>
+-->
+<td>
+<br>
+&nbsp;
+<br>
+<a href
+<font size=20  color="#7F0000"> Clawpack: AMRClaw Documentation</font>
+<br>
+&nbsp;
+<br>
+<font size=5  color="#7F0000"> Adaptive Mesh Refinement</font>
+<br>
+&nbsp;
+<br>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="icall.html" title="icall"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="conck.html" title="conck"
+             accesskey="P">previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/clawlogo.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="conck.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">conck</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="icall.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">icall</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cstore.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cstore">
+<span id="id1"></span><h1><tt class="docutils literal"><span class="pre">cstore</span></tt><a class="headerlink" href="#cstore" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Signature:</dt>
+<dd><tt class="docutils literal"><span class="pre">subroutine</span> <span class="pre">cstore(qc,</span> <span class="pre">nrow,</span> <span class="pre">ncol,</span> <span class="pre">nvar,</span> <span class="pre">qc1d,</span> <span class="pre">lenbc,</span> <span class="pre">naux,</span> <span class="pre">auxc,</span> <span class="pre">auxc1d)</span></tt></dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><tt class="docutils literal"><span class="pre">integer,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">nrow</span></tt>: Horizontal dimension of the coarse patch.</li>
+<li><tt class="docutils literal"><span class="pre">ncol</span></tt>: Vertical dimension of the coarse patch.</li>
+<li><tt class="docutils literal"><span class="pre">nvar</span></tt>: Number of solution variables.</li>
+<li><tt class="docutils literal"><span class="pre">lenbc</span></tt>: Perimeter of the fine grid, in number of cells.</li>
+<li><tt class="docutils literal"><span class="pre">naux</span></tt>: Number of aux variables.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">qc(nrow,ncol,nvar)</span></tt>: Solution values on coarse patch.</li>
+<li><tt class="docutils literal"><span class="pre">auxc(nrow,ncol,nvar)</span></tt>: Aux variable values on coarse patch.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(out)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">qc1d(lenbc)</span></tt>: Stores coarse grid solution around perimeter
+of fine grid.</li>
+<li><tt class="docutils literal"><span class="pre">auxc1d(lenbc)</span></tt>: Stores coarse grid aux variables around perimeter
+of fine grid.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Description:</dt>
+<dd><p class="first">Takes data (<tt class="docutils literal"><span class="pre">qc</span></tt> and <tt class="docutils literal"><span class="pre">auxc</span></tt>) from a coarse patch that perfectly surrounds
+a fine grid, and extracts the coarse data around the perimeter of the fine
+grid.  These are stored in 1-dimensional arrays <tt class="docutils literal"><span class="pre">qc1d</span></tt> and <tt class="docutils literal"><span class="pre">auxc1d</span></tt>.</p>
+<p>The perimeter of the fine grid is traversed in the following order:</p>
+<div class="highlight-python"><pre>.          2
+.     __________
+.    |          |
+.  1 |          | 3
+.    |__________|
+.          4</pre>
+</div>
+<p class="last">save first interior cell of enlarged grid corresponding to
+fine grid bordering cell. note that since fine grid is smaller,
+the cell is one in. coarse (temporary) grid has no ghost cells</p>
+</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="icall.html" title="icall"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="conck.html" title="conck"
+             >previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Randall J. LeVeque and others.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

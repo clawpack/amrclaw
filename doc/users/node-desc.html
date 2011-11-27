@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Node descriptors &mdash; AMRClaw v4.6.x documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.6.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/clawicon.ico"/>
+    <link rel="top" title="AMRClaw v4.6.x documentation" href="index.html" />
+    <link rel="next" title="amr2ez" href="amr2ez.html" />
+    <link rel="prev" title="Level descriptors" href="level-desc.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: #FFFFE8; text-align: left; padding: 10px 10px 15px 15px">
+<table>
+<tr>
+<!--
+<td>
+&nbsp;
+<br>
+<a href="http://www.clawpack.org/"><img src="_static/clawlogo.jpg" border="0" alt="Clawpack logo"/></a>
+</td>
+-->
+<td>
+<br>
+&nbsp;
+<br>
+<a href
+<font size=20  color="#7F0000"> Clawpack: AMRClaw Documentation</font>
+<br>
+&nbsp;
+<br>
+<font size=5  color="#7F0000"> Adaptive Mesh Refinement</font>
+<br>
+&nbsp;
+<br>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="amr2ez.html" title="amr2ez"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="level-desc.html" title="Level descriptors"
+             accesskey="P">previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/clawlogo.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Node descriptors</a><ul>
+<li><a class="reference internal" href="#integer-node-descriptors">Integer node descriptors</a></li>
+<li><a class="reference internal" href="#real-node-descriptors">Real node descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="level-desc.html"
+                        title="previous chapter">Level descriptors</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="amr2ez.html"
+                        title="next chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">amr2ez</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/node-desc.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="node-descriptors">
+<span id="node-desc"></span><h1>Node descriptors<a class="headerlink" href="#node-descriptors" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="integer-node-descriptors">
+<span id="int-node"></span><h2>Integer node descriptors<a class="headerlink" href="#integer-node-descriptors" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">node(levelptr,mptr)</span></tt></dt>
+<dd><p class="first">Type: Pointer to grid</p>
+<p>Modified in: <em>birect</em>, <em>domain</em>, <em>grdfit</em></p>
+<p class="last">Description: Provides a pointer to the next grid on the same level, so that
+each level may be traversed as a linked list.  Value is set to null (global
+variable, currently =0) if mptr points to the last grid on the level.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(tempptr,mptr)</span></tt></dt>
+<dd><p class="first">Type: Pointer to storage</p>
+<p>Target created in: <em>spest</em> (also used in plotclaw)</p>
+<p>Target destroyed in: <em>bufnst</em></p>
+<p class="last">Description: Provides the location of a temporary storage space where an error
+estimate is stored.  The allotted size is one word per grid cell per variable,
+including ghost cells.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(errptr,mptr)</span></tt></dt>
+<dd><p class="first">Type: Pointer to storage</p>
+<p>Target created in: <em>errest</em></p>
+<p>Target destroyed in: <em>errest</em></p>
+<p>Description: Provides the location of a temporary storage space where another
+error estimate is stored, this estimate being on the grid <em>mptr</em> coarsened by
+a factor of 2.  The allotted size is one word per coarsened cell (including
+ghost cells) per variable (dependent and aux).</p>
+<p class="last">Question: Does the coarsening correspond to the use of Richardson extrapolation?
+Yes.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(nestlevel,mptr)</span></tt></dt>
+<dd><p class="first">Type: Integer</p>
+<p>Modified in: <em>domain</em>, <em>birect</em>, <em>grdfit</em></p>
+<p class="last">Description: Level containing the grid <em>mptr</em>.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(cfluxptr,mptr)</span></tt></dt>
+<dd><p class="first">Type: Pointer to storage</p>
+<p>Target created in: <em>prepc</em></p>
+<p>Target destroyed in: <em>putsp</em></p>
+<p>Description: For each grid at level <em>coarseLevel</em> above the finest level,
+this provides the storage in a layer around each grid at level
+<em>coarseLevel+1</em>.</p>
+<p>The space allotted is <em>5*maxsp</em>, where <em>maxsp</em> is the number of level
+<em>coarseLevel</em> interfaces surrounding each of the finer grids.  This provides
+space for 5 fields to describe the interaction between grid <em>mptr</em> and the
+finer grid.  For later reference, <em>listsp(currentLevel)=maxsp</em>.</p>
+<p>Note that coarse fluxes themselves are not stored here.  They contribute
+instead to the space targeted by <em>ffluxptr</em> of each finer grid.</p>
+<p class="last">To do: What are the five fields?  (See <em>setuse</em>: i, j, which side, kid,
+location in kid&#8217;s grid.)</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(ffluxptr,mptr)</span></tt></dt>
+<dd><p class="first">Type: Pointer to storage</p>
+<p>Target created in: <em>prepf</em></p>
+<p>Target destroyed in: <em>putsp</em></p>
+<p>Description: For each grid at level <em>fineLevel</em> below the coarsest level,
+this provides the storage location for fluxes in a layer around the grid,
+to be used in coarse-fine fixup.</p>
+<p class="last">The space allotted is <em>2*nvar*lenbc+naux*lenbc</em>, where <em>lenbc</em> is 2 times
+the number of boundary interfaces.  One space is for plus or minus fluxes,
+and the other is for the coarse solution for wave fixing.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(store1,mptr)</span></tt></dt>
+<dd><p class="first">Type: Pointer to storage</p>
+<p>Target created in: <em>ginit</em>, <em>gfixup</em></p>
+<p>Target destroyed in: <em>gfixup</em></p>
+<p class="last">Description: Provides location in storage for the first copy of solution
+data.  The allotted size is (# of interior grid cells)*nvar.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(store2,mptr)</span></tt></dt>
+<dd><p class="first">Type: Pointer to storage</p>
+<p>Target created in: <em>ginit</em>, <em>gfixup</em></p>
+<p>Target destroyed in: <em>gfixup</em></p>
+<p class="last">Description: Provides location in storage for the second copy of solution
+data.  The allotted size is (# of interior grid cells)*nvar.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(ndilo,mptr)</span></tt></dt>
+<dd><p class="first">Type: Integer</p>
+<p>Modified in: <em>domain</em>, <em>birect</em>, <em>grdfit</em></p>
+<p class="last">Description: Index of the leftmost interior cell in global index
+space.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(ndihi,mptr)</span></tt></dt>
+<dd><p class="first">Type: Integer</p>
+<p>Modified in: <em>domain</em>, <em>birect</em>, <em>grdfit</em></p>
+<p class="last">Description: Index of the rightmost interior cell in global index
+space.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(ndjlo,mptr)</span></tt></dt>
+<dd><p class="first">Type: Integer</p>
+<p>Modified in: <em>domain</em>, <em>birect</em>, <em>grdfit</em></p>
+<p class="last">Description: Index of the bottom-most interior cell in global index
+space.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(ndjhi,mptr)</span></tt></dt>
+<dd><p class="first">Type: Integer</p>
+<p>Modified in: <em>domain</em>, <em>birect</em>, <em>grdfit</em></p>
+<p class="last">Description: Index of the top-most interior cell in global index
+space.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(storeaux,mptr)</span></tt></dt>
+<dd><p class="first">Type: Pointer to storage</p>
+<p>Target created in: <em>ginit</em>, <em>gfixup</em></p>
+<p>Target destroyed in: <em>gfixup</em></p>
+<p class="last">Description: Provides the location in storage designated for aux
+variables.  The allotted size is (# of interior cells)*naux.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">node(nextfree,mptr)</span></tt></dt>
+<dd><p class="first">Type: Pointer to (free) node</p>
+<p class="last">Description: Points to the next node on the free list.  Only
+relevant for free nodes, and currently uses the same space as
+<tt class="docutils literal"><span class="pre">node(tempptr,mptr)</span></tt>.  See also: <a class="reference internal" href="nodget.html#nodget"><em>nodget</em></a>, <a class="reference internal" href="putnod.html#putnod"><em>putnod</em></a>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="real-node-descriptors">
+<span id="real-node"></span><h2>Real node descriptors<a class="headerlink" href="#real-node-descriptors" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">rnode(cornxlo,mptr)</span></tt></dt>
+<dd><p class="first">Type: double precision</p>
+<p>Modified in: domain, grdfit, birect</p>
+<p class="last">Description: Lower x-coordinate of the grid specified by mptr.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">rnode(cornylo,mptr)</span></tt></dt>
+<dd><p class="first">Type: double precision</p>
+<p>Modified in: domain, grdfit, birect</p>
+<p class="last">Description: Lower y-coordinate of the grid specified by mptr.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">rnode(cornxhi,mptr)</span></tt></dt>
+<dd><p class="first">Type: double precision</p>
+<p>Modified in: domain, grdfit, birect</p>
+<p class="last">Description: Upper x-coordinate of the grid specified by mptr.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">rnode(cornyhi,mptr)</span></tt></dt>
+<dd><p class="first">Type: double precision</p>
+<p>Modified in: domain, grdfit, birect</p>
+<p class="last">Description: Upper y-coordinate of the grid specified by mptr.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">rnode(timemult,mptr)</span></tt></dt>
+<dd><p class="first">Type: double precision</p>
+<p>Modified in: advanc, birect, ginit, grdfit, setgrd</p>
+<p>Description: Current time of the grid specified by mptr.</p>
+<p class="last">Question: What is &#8216;mult&#8217; in &#8216;timemult&#8217;?
+&#8220;Multiple&#8221; of delta t
+But this actually stores the physical time</p>
+</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="amr2ez.html" title="amr2ez"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="level-desc.html" title="Level descriptors"
+             >previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Randall J. LeVeque and others.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

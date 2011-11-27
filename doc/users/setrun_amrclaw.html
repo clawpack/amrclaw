@@ -1,0 +1,308 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Specifying AMRClaw parameters in setrun.py &mdash; AMRClaw v4.6.x documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.6.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/clawicon.ico"/>
+    <link rel="top" title="AMRClaw v4.6.x documentation" href="index.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: #FFFFE8; text-align: left; padding: 10px 10px 15px 15px">
+<table>
+<tr>
+<!--
+<td>
+&nbsp;
+<br>
+<a href="http://www.clawpack.org/"><img src="_static/clawlogo.jpg" border="0" alt="Clawpack logo"/></a>
+</td>
+-->
+<td>
+<br>
+&nbsp;
+<br>
+<a href
+<font size=20  color="#7F0000"> Clawpack: AMRClaw Documentation</font>
+<br>
+&nbsp;
+<br>
+<font size=5  color="#7F0000"> Adaptive Mesh Refinement</font>
+<br>
+&nbsp;
+<br>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/clawlogo.jpg" alt="Logo"/>
+            </a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/setrun_amrclaw.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="specifying-amrclaw-parameters-in-setrun-py">
+<span id="setrun-amrclaw"></span><h1>Specifying AMRClaw parameters in <cite>setrun.py</cite><a class="headerlink" href="#specifying-amrclaw-parameters-in-setrun-py" title="Permalink to this headline">¶</a></h1>
+<p>Since AMRClaw is an extension of Clawpack, all of the parameters that
+are required for Clawpack are also needed by AMRClaw.  See
+<em class="xref std std-ref">setrun</em> for a discussion of these and a
+description of <cite>setrun.py</cite> input scripts more generally.</p>
+<p>In addition, a number of other parameters should be set in the <cite>setrun.py</cite>
+file in any AMRClaw application.</p>
+<p>It is best to look at a specific example while reading this section, for
+example  <a class="reference internal" href="setrun_amrclaw_sample.html#setrun-amrclaw-sample"><em>Sample AMRClaw setrun.py module</em></a>.</p>
+<p>The function <cite>setrun</cite> in this module is essentially the same as for Clawpack,
+except that it expects to be called with <em>claw_pkg = &#8216;amrclaw&#8217;</em>.  This call
+should be performed properly by the Makefile if you have <em>CLAW_PKG =
+amrclaw</em> set properly there.</p>
+<p>The new parameter in this module start at
+<a class="reference internal" href="setrun_amrclaw_sample.html#setrun-amrclaw-sample-parameters"><em>AMR parameters section</em></a> in the sample file.</p>
+<p>A brief summary of these:</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">mxnest : integer</tt></dt>
+<dd><p><strong>mxnest</strong> is the maximum number of refinement levels to use.
+<em>mxnest=1</em> corresponds to a single grid run and should give essentially the
+same results as the classic Clawpack would give (not identical probably
+because different routines are used with minor variations in
+implementation). Checking that this works is a good first step
+in converting a code to amrclaw.</p>
+<p><em>mxnest &gt; 1</em> then more then one level is used.</p>
+<p><em>mxnest &lt; 0</em> means <em>abs(mxnest)</em> levels are used.  The negative sign
+indicates that anisotropic refinement may be used, which affects the next
+parameters.</p>
+<p>This will be cleaned up in Clawpack 5.0.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">inratx : list of integers</tt></dt>
+<dd><p><em>inratx</em> is a list of refinement ratios in the x direction.
+<em>inratx[k] = R</em> means that in refining from level k+1 to k+2 the x
+direction will be refined by a factor R.  (Here Python indexing starting
+at 0 is used, so <em>inratx[0]</em> is the ratio from Level 1 to Level 2.)</p>
+<p>If <em>mxnst &gt; 0</em> then <em>inratx</em> also determines the refinement ratio in y
+and t (and in z for 3d problems).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">inraty, inratz, inratt : lists of integers</tt></dt>
+<dd><p><em>inraty</em>, <em>inratz</em>, <em>inratt</em> are only used if <em>mxnest &lt; 0</em> and are lists
+of refinement ratios in the respective directions.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">auxtype : list of strings</tt></dt>
+<dd><p>If <em>maux &gt; 0</em> then for each component of <em>aux</em> there should be a
+corresponding element of <em>auxtype</em> from the list below:</p>
+<blockquote>
+<dl class="docutils">
+<dt>&#8216;xleft&#8217;</dt>
+<dd>a value associated with the left edge of a cell in the x-direction</dd>
+<dt>&#8216;yleft&#8217;</dt>
+<dd>a value associated with the left edge of a cell in the y-direction</dd>
+<dt>&#8216;zleft&#8217;</dt>
+<dd>a value associated with the left edge of a cell in the z-direction</dd>
+<dt>&#8216;center&#8217;</dt>
+<dd>a value associated with a cell center</dd>
+<dt>&#8216;capacity&#8217;</dt>
+<dd>a cell-centered capacity function</dd>
+</dl>
+</blockquote>
+<p>The <em>auxtype</em> array is required for adaptive refinement because
+auxiliary arrays must be handled slightly differently at refinement
+boundaries depending on how these values are used.</p>
+<p>A cell-centered auxiliary value such as the density or impedance in a
+heterogeneous acoustics problem would have type <em>center</em>.
+On the other hand, in a variable-coefficient advection problem we may
+want to store the normal velocity at each edge of the cell. In two
+dimensions we might use  one component of <em>aux</em> to store a left-edge
+velocity in the x-direction and another to store the left-edge (i.e.
+bottom) velocity in the y-direction.</p>
+<p>At most one component may have type <em>&#8216;capacity&#8217;</em>, and the value of
+<em>mcapa</em> described in <em class="xref std std-ref">setrun</em> should be set in a consistent
+manner (modulo the fact that Fortran indexing starts at 1 and Python at
+0, so if <em>mcapa = k</em> then <em>auxtype[k-1] = &#8216;capacity&#8217;</em> should be set).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">checkpt_iousr : integer</tt></dt>
+<dd><p>A  A checkpoint file is dumped every <em>checkpt_iousr</em> time
+steps on the coarse grid.  These are binary files with names of the form
+<em>fort.chkXXXX</em> where <em>XXXX</em> is the step number.</p>
+<p><strong>Note:</strong> these files are typically very large!</p>
+<p>The solution and grid structure is printed out in a form that can be used
+to later restart the calculation  from this point.   This is useful when
+doing long runs in case the computer goes down or the algorithm fails at some
+point in the calculation.  It is also useful if you want to go to some
+large time and then start doing frequent outputs in order to examine the
+time-evolution of the solution more carefully.</p>
+<p>In addition to creating a checkpoint file every <em>checkpt_iousr</em> time steps, a
+final checkpoint file is created at the end of the computation.  This can be
+used to restart the calculation from the final time if you wish to evolve it
+further.  Setting <em>checkpt_iousr</em> to a sufficiently
+large integer will cause a checkpoint
+file to be written only at the end of the computation.</p>
+<p>If <em>checkpt_iousr = 0</em> then no checkpoint files are generated, not even at
+the end.</p>
+<p>If <em>checkpt_iousr &lt; 0</em> then the attribute <em>tchk</em> should also be set, to a
+list of <em>abs(checkpt_iousr)</em> times  when checkpoint files are desired.</p>
+<p>This will be cleaned up in Clawpack 5.0.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">restart : boolean</tt></dt>
+<dd><p>If <em>restart = True</em> then a restart is performed.
+Information read in from the file <em>restart.data</em> is used to resume a
+previous calculation.  An appropriate checkpoint file <em>fort.chkXXXX</em>
+should be renamed <em>restart.data</em> in order to use this option.
+(And generally moved from the <em>_output</em> directory to the directory from
+which the code is being run.)</p>
+<p>When a restart is performed, other parameters in this <em>amr2ez.data</em> file
+should be consistent with values used in the previous calculation, with
+some exceptions:</p>
+<blockquote>
+<ul class="simple">
+<li>The final time <em>tfinal</em> can be increased,</li>
+<li>Others?</li>
+</ul>
+</blockquote>
+<p>Note that when restarting, the output files will continue to be numbered
+consecutively from the previous run.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">tol: float</tt></dt>
+<dd><p>Error tolerance used in Richardson error estimation.  Cells are
+flagged for refinement if the error estimate is greater than <em>tol</em>.
+Richardson estimation requires taking two time steps on the current grid
+and comparing the result with what&#8217;s obtained by taking one step on a
+coarsened grid.</p>
+<p>If <em>tol &lt; 0</em>, Richardson estimation is not used.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">tolsp: float</tt></dt>
+<dd><p>Error tolerance used in a simpler approach of estimating the spatial
+gradient of the solution and flagging points where this estimate is
+larger than <em>tolsp</em>.  See <a class="reference internal" href="amr_strategy.html#amr-strategy"><em>AMR refinement strategy</em></a> for more information.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">kcheck : int</tt></dt>
+<dd><p>How often to regrid: error estimation and regridding is performed every
+<em>kcheck</em> time steps on each level.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">ibuff : int</tt></dt>
+<dd><p>Size of the buffer zone around flagged cells.
+Certain cells are flagged for refinement and then clustered (see
+<a class="reference internal" href="amr_strategy.html#amr-strategy"><em>AMR refinement strategy</em></a>) into finer grids.  In addition to the cells flagged by the
+error estimation, all cells within <em>ibuff</em> cells of these are also
+flagged.  This insures that structures in the solution that require
+refinement will remain in the refined region for at least <em>ibuff</em> time
+steps, since the Courant number must be no greater than 1.  The value of
+<em>ibuff</em> should generally be consistent with the value of <em>kcheck</em>,
+with <em>ibuff &gt;= kcheck</em> if the Courant number is close to 1.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">cutoff : float</tt></dt>
+<dd><p>Parameter used in the clustering algorithm (see
+<a class="reference internal" href="amr_strategy.html#amr-strategy"><em>AMR refinement strategy</em></a>).  Typically 0.7 is a good value.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Randall J. LeVeque and others.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

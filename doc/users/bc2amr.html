@@ -1,0 +1,204 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>bc2amr &mdash; AMRClaw v4.6.x documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.6.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/clawicon.ico"/>
+    <link rel="top" title="AMRClaw v4.6.x documentation" href="index.html" />
+    <link rel="next" title="bound" href="bound.html" />
+    <link rel="prev" title="basic" href="basic.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: #FFFFE8; text-align: left; padding: 10px 10px 15px 15px">
+<table>
+<tr>
+<!--
+<td>
+&nbsp;
+<br>
+<a href="http://www.clawpack.org/"><img src="_static/clawlogo.jpg" border="0" alt="Clawpack logo"/></a>
+</td>
+-->
+<td>
+<br>
+&nbsp;
+<br>
+<a href
+<font size=20  color="#7F0000"> Clawpack: AMRClaw Documentation</font>
+<br>
+&nbsp;
+<br>
+<font size=5  color="#7F0000"> Adaptive Mesh Refinement</font>
+<br>
+&nbsp;
+<br>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="bound.html" title="bound"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="basic.html" title="basic"
+             accesskey="P">previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/clawlogo.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="basic.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">basic</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bound.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">bound</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bc2amr.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="bc2amr">
+<span id="id1"></span><h1><tt class="docutils literal"><span class="pre">bc2amr</span></tt><a class="headerlink" href="#bc2amr" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Signature:</dt>
+<dd><tt class="docutils literal"><span class="pre">subroutine</span> <span class="pre">bc2amr(val,</span> <span class="pre">aux,</span> <span class="pre">nrow,</span> <span class="pre">ncol,</span> <span class="pre">meqn,</span> <span class="pre">naux,</span> <span class="pre">hx,</span> <span class="pre">hy,</span>
+<span class="pre">level,</span> <span class="pre">time,</span> <span class="pre">xleft,</span> <span class="pre">xright,</span> <span class="pre">ybot,</span> <span class="pre">ytop,</span> <span class="pre">xlower,</span> <span class="pre">ylower,</span> <span class="pre">xupper,</span>
+<span class="pre">yupper,</span> <span class="pre">xperiodic,</span> <span class="pre">yperiodic,</span> <span class="pre">spheredom)</span></tt></dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><tt class="docutils literal"><span class="pre">integer,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">nrow</span></tt>: Horizontal dimension of the input patch.</li>
+<li><tt class="docutils literal"><span class="pre">ncol</span></tt>: Vertical dimension of the input patch.</li>
+<li><tt class="docutils literal"><span class="pre">meqn</span></tt>: Number of solution variables.</li>
+<li><tt class="docutils literal"><span class="pre">naux</span></tt>: Number of aux variables.</li>
+<li><tt class="docutils literal"><span class="pre">level</span></tt>: Level of the input patch.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">time</span></tt>:   Time at which boundary conditions are being applied.</li>
+<li><tt class="docutils literal"><span class="pre">xleft</span></tt>:  Left bound of the input patch.</li>
+<li><tt class="docutils literal"><span class="pre">xright</span></tt>: Right bound of the input patch.</li>
+<li><tt class="docutils literal"><span class="pre">ybot</span></tt>:   Bottom bound of the input patch.</li>
+<li><tt class="docutils literal"><span class="pre">ytop</span></tt>:   Top bound of the input patch.</li>
+<li><tt class="docutils literal"><span class="pre">xlower</span></tt>: Left bound of the physical domain.</li>
+<li><tt class="docutils literal"><span class="pre">xupper</span></tt>: Right bound of the physical domain.</li>
+<li><tt class="docutils literal"><span class="pre">ylower</span></tt>: Bottom bound of the physical domain.</li>
+<li><tt class="docutils literal"><span class="pre">yupper</span></tt>: Top bound of the physical domain.</li>
+<li><tt class="docutils literal"><span class="pre">aux(nrow,ncol,meqn)</span></tt>: Aux variables on the input patch.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">logical,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">xperiodic</span></tt>: Value is <tt class="docutils literal"><span class="pre">.true.</span></tt> if the physical domain
+is periodic in <em>x</em>.</li>
+<li><tt class="docutils literal"><span class="pre">yperiodic</span></tt>: Value is <tt class="docutils literal"><span class="pre">.true.</span></tt> if the physical domain
+is periodic in <em>y</em>.</li>
+<li><tt class="docutils literal"><span class="pre">spheredom</span></tt>: Value is <tt class="docutils literal"><span class="pre">.true.</span></tt> if the physical domain
+is spherically symmetric.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(inout)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">val(nrow,ncol,meqn)</span></tt>: Solution values on the input patch.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Description:</dt>
+<dd><p class="first">Takes a grid patch with mesh widths <tt class="docutils literal"><span class="pre">hx</span></tt> and <tt class="docutils literal"><span class="pre">hy</span></tt>, of
+dimensions <tt class="docutils literal"><span class="pre">nrow</span></tt> by <tt class="docutils literal"><span class="pre">ncol</span></tt>, and uses the boundary conditions
+to set the solution values on any piece of the patch which extends
+outside the physical domain.</p>
+<p class="last">User-specified boundary conditions must be included in this routine.</p>
+</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="bound.html" title="bound"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="basic.html" title="basic"
+             >previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Randall J. LeVeque and others.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

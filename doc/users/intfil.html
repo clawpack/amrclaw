@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>intfil &mdash; AMRClaw v4.6.x documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.6.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/clawicon.ico"/>
+    <link rel="top" title="AMRClaw v4.6.x documentation" href="index.html" />
+    <link rel="next" title="filrecur" href="filrecur.html" />
+    <link rel="prev" title="intcopy" href="intcopy.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: #FFFFE8; text-align: left; padding: 10px 10px 15px 15px">
+<table>
+<tr>
+<!--
+<td>
+&nbsp;
+<br>
+<a href="http://www.clawpack.org/"><img src="_static/clawlogo.jpg" border="0" alt="Clawpack logo"/></a>
+</td>
+-->
+<td>
+<br>
+&nbsp;
+<br>
+<a href
+<font size=20  color="#7F0000"> Clawpack: AMRClaw Documentation</font>
+<br>
+&nbsp;
+<br>
+<font size=5  color="#7F0000"> Adaptive Mesh Refinement</font>
+<br>
+&nbsp;
+<br>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="filrecur.html" title="filrecur"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="intcopy.html" title="intcopy"
+             accesskey="P">previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/clawlogo.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="intcopy.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">intcopy</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="filrecur.html"
+                        title="next chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">filrecur</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/intfil.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="intfil">
+<span id="id1"></span><h1><tt class="docutils literal"><span class="pre">intfil</span></tt><a class="headerlink" href="#intfil" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Signature:</dt>
+<dd><tt class="docutils literal"><span class="pre">subroutine</span> <span class="pre">intfil(val,</span> <span class="pre">mi,</span> <span class="pre">mj,</span> <span class="pre">time,</span> <span class="pre">flaguse,</span> <span class="pre">nrowst,</span>
+<span class="pre">ncolst,</span> <span class="pre">ilo,</span> <span class="pre">ihi,</span> <span class="pre">jlo,</span> <span class="pre">jhi,</span> <span class="pre">level,</span> <span class="pre">nvar,</span> <span class="pre">naux)</span></tt></dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><tt class="docutils literal"><span class="pre">integer,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">mi</span></tt>:   Horizontal dimension of the input region.</li>
+<li><tt class="docutils literal"><span class="pre">mj</span></tt>:   Vertical dimension of the input region.</li>
+<li><tt class="docutils literal"><span class="pre">nrowst</span></tt>: Starting <tt class="docutils literal"><span class="pre">i</span></tt>-index of the patch,
+in indices relative to <tt class="docutils literal"><span class="pre">val</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">ncolst</span></tt>: Starting <tt class="docutils literal"><span class="pre">j</span></tt>-index of the patch,
+in indices relative to <tt class="docutils literal"><span class="pre">val</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">ilo</span></tt>:  Lower horizontal index of the patch to fill,
+in global indices.</li>
+<li><tt class="docutils literal"><span class="pre">ihi</span></tt>:  Upper horizontal index of the patch to fill,
+in global indices.</li>
+<li><tt class="docutils literal"><span class="pre">jlo</span></tt>:  Lower vertical index of the patch to fill,
+in global indices.</li>
+<li><tt class="docutils literal"><span class="pre">jhi</span></tt>:  Upper vertical index of the patch to fill,
+in global indices.</li>
+<li><tt class="docutils literal"><span class="pre">level</span></tt>: Level of the input region.</li>
+<li><tt class="docutils literal"><span class="pre">nvar</span></tt>: Number of solution variables.</li>
+<li><tt class="docutils literal"><span class="pre">naux</span></tt>: Number of aux variables.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(inout)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">val</span></tt>:  Array of solution values on the patch being
+filled.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(out)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">flaguse(ilo:ihi,jlo:jhi)</span></tt>: Indicates where the patch
+is successfully filled.  <tt class="docutils literal"><span class="pre">flaguse</span></tt> is initialized to
+<tt class="docutils literal"><span class="pre">0.d0</span></tt>, and set to <tt class="docutils literal"><span class="pre">1.d0</span></tt> in every location of the
+patch that gets filled.  It is also set to <tt class="docutils literal"><span class="pre">1.d0</span></tt>
+in all cells outside the computational domain, as these
+will be filled in later using boundary data.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">time</span></tt>: Time on the patch being filled.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Description:</dt>
+<dd><p class="first">Attempts to fill a rectangular patch of <tt class="docutils literal"><span class="pre">val</span></tt> and <tt class="docutils literal"><span class="pre">aux</span></tt>,
+which contain solution and aux values on an input region.
+Values are needed at time <tt class="docutils literal"><span class="pre">time</span></tt>, and at level <tt class="docutils literal"><span class="pre">level</span></tt>.</p>
+<p>This routine only copies information from grids at level
+<tt class="docutils literal"><span class="pre">level</span></tt> into the patch; no spatial interpolation is done here.</p>
+<p>In  indices relative to <tt class="docutils literal"><span class="pre">val</span></tt> and <tt class="docutils literal"><span class="pre">aux</span></tt>, the lower-left
+corner of the patch is at <tt class="docutils literal"><span class="pre">(nrowst,ncolst)</span></tt>.  In global
+indices, its lower-left corner is at <tt class="docutils literal"><span class="pre">(ilo,jlo)</span></tt>, and its
+upper-right corner is at <tt class="docutils literal"><span class="pre">(ihi,jhi)</span></tt>.</p>
+<p class="last">This is a subprocess of <tt class="docutils literal"><span class="pre">filrecur</span></tt>.</p>
+</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="filrecur.html" title="filrecur"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="intcopy.html" title="intcopy"
+             >previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Randall J. LeVeque and others.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>fixcapaq &mdash; AMRClaw v4.6.x documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.6.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/clawicon.ico"/>
+    <link rel="top" title="AMRClaw v4.6.x documentation" href="index.html" />
+    <link rel="next" title="flglvl" href="flglvl.html" />
+    <link rel="prev" title="filval" href="filval.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: #FFFFE8; text-align: left; padding: 10px 10px 15px 15px">
+<table>
+<tr>
+<!--
+<td>
+&nbsp;
+<br>
+<a href="http://www.clawpack.org/"><img src="_static/clawlogo.jpg" border="0" alt="Clawpack logo"/></a>
+</td>
+-->
+<td>
+<br>
+&nbsp;
+<br>
+<a href
+<font size=20  color="#7F0000"> Clawpack: AMRClaw Documentation</font>
+<br>
+&nbsp;
+<br>
+<font size=5  color="#7F0000"> Adaptive Mesh Refinement</font>
+<br>
+&nbsp;
+<br>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="flglvl.html" title="flglvl"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="filval.html" title="filval"
+             accesskey="P">previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/clawlogo.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="filval.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">filval</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="flglvl.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">flglvl</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/fixcapaq.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="fixcapaq">
+<span id="id1"></span><h1><tt class="docutils literal"><span class="pre">fixcapaq</span></tt><a class="headerlink" href="#fixcapaq" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Signature:</dt>
+<dd><tt class="docutils literal"><span class="pre">subroutine</span> <span class="pre">fixcapaq(val,</span> <span class="pre">aux,</span> <span class="pre">mitot,</span> <span class="pre">mjtot,</span> <span class="pre">valc,</span> <span class="pre">auxc,</span> <span class="pre">mic,</span> <span class="pre">mjc,</span>
+<span class="pre">nvar,</span> <span class="pre">naux,</span> <span class="pre">levc)</span></tt></dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><tt class="docutils literal"><span class="pre">integer,</span> <span class="pre">intent(in):</span></tt></dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">mitot</span></tt>: Horizontal dimension of the fine grid.</li>
+<li><tt class="docutils literal"><span class="pre">mjtot</span></tt>: Vertical dimension of the fine grid.</li>
+<li><tt class="docutils literal"><span class="pre">mic</span></tt>: Horizontal dimension of the coarse patch.</li>
+<li><tt class="docutils literal"><span class="pre">mjc</span></tt>: Vertical dimension of the coarse patch.</li>
+<li><tt class="docutils literal"><span class="pre">nvar</span></tt>: Number of solution variables.</li>
+<li><tt class="docutils literal"><span class="pre">naux</span></tt>: Number of aux variables.</li>
+<li><tt class="docutils literal"><span class="pre">levc</span></tt>: Level of the coarse patch</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">valc(mic,mjc,nvar)</span></tt>: Solution values on the coarse patch.</li>
+<li><tt class="docutils literal"><span class="pre">auxc(mic,mjc,naux)</span></tt>: Aux variable values on the coarse patch.</li>
+<li><tt class="docutils literal"><span class="pre">aux(mitot,mjtot,naux)</span></tt>: Aux variable values on the fine grid.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">double</span> <span class="pre">precision,</span> <span class="pre">intent(inout)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">val(mitot,mjtot,nvar)</span></tt>: Solution values on the fine grid.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Description:</dt>
+<dd><p class="first">After filling a new fine grid solution via linear interpolation,
+<em>kappa*q</em> may need to be conserved rather than <em>q</em> in the presence
+of a capacity function.  This routine calculates the discrepancy in
+<em>kappa*q</em> and modifies <em>q</em> to account for it.</p>
+<p class="last">The inputs are solution and aux data (<tt class="docutils literal"><span class="pre">val</span></tt>, <tt class="docutils literal"><span class="pre">aux</span></tt>) from a fine
+grid that has just been filled via linear interpolation, as well as
+from a coarse patch (<tt class="docutils literal"><span class="pre">valc</span></tt>, <tt class="docutils literal"><span class="pre">auxc</span></tt>) that covers the fine grid.</p>
+</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="flglvl.html" title="flglvl"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="filval.html" title="filval"
+             >previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Randall J. LeVeque and others.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,203 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>setuse &mdash; AMRClaw v4.6.x documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.6.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/clawicon.ico"/>
+    <link rel="top" title="AMRClaw v4.6.x documentation" href="index.html" />
+    <link rel="next" title="stepgrid" href="stepgrid.html" />
+    <link rel="prev" title="setaux" href="setaux.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: #FFFFE8; text-align: left; padding: 10px 10px 15px 15px">
+<table>
+<tr>
+<!--
+<td>
+&nbsp;
+<br>
+<a href="http://www.clawpack.org/"><img src="_static/clawlogo.jpg" border="0" alt="Clawpack logo"/></a>
+</td>
+-->
+<td>
+<br>
+&nbsp;
+<br>
+<a href
+<font size=20  color="#7F0000"> Clawpack: AMRClaw Documentation</font>
+<br>
+&nbsp;
+<br>
+<font size=5  color="#7F0000"> Adaptive Mesh Refinement</font>
+<br>
+&nbsp;
+<br>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="stepgrid.html" title="stepgrid"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="setaux.html" title="setaux"
+             accesskey="P">previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/clawlogo.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="setaux.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">setaux</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="stepgrid.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">stepgrid</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/setuse.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="setuse">
+<span id="id1"></span><h1><tt class="docutils literal"><span class="pre">setuse</span></tt><a class="headerlink" href="#setuse" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Signature:</dt>
+<dd><tt class="docutils literal"><span class="pre">subroutine</span> <span class="pre">setuse(listbc,</span> <span class="pre">maxsp,</span> <span class="pre">ispot,</span> <span class="pre">mkid,</span> <span class="pre">ilo,</span> <span class="pre">ihi,</span>
+<span class="pre">jlo,</span> <span class="pre">jhi,</span> <span class="pre">iclo,</span> <span class="pre">ichi,</span> <span class="pre">jclo,</span> <span class="pre">jchi,</span> <span class="pre">kflag)</span></tt></dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><tt class="docutils literal"><span class="pre">integer,</span> <span class="pre">intent(in)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">maxsp</span></tt>:</li>
+<li><tt class="docutils literal"><span class="pre">mkid</span></tt>:</li>
+<li><tt class="docutils literal"><span class="pre">ilo</span></tt>:</li>
+<li><tt class="docutils literal"><span class="pre">ihi</span></tt>:</li>
+<li><tt class="docutils literal"><span class="pre">jlo</span></tt>:</li>
+<li><tt class="docutils literal"><span class="pre">jhi</span></tt>:</li>
+<li><tt class="docutils literal"><span class="pre">iclo</span></tt>:</li>
+<li><tt class="docutils literal"><span class="pre">ichi</span></tt>:</li>
+<li><tt class="docutils literal"><span class="pre">jclo</span></tt>:</li>
+<li><tt class="docutils literal"><span class="pre">jchi</span></tt>:</li>
+<li><tt class="docutils literal"><span class="pre">kflag</span></tt>:</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">integer,</span> <span class="pre">intent(inout)</span></tt>:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">listbc(5,maxsp)</span></tt>:</li>
+<li><tt class="docutils literal"><span class="pre">ispot</span></tt>:</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Description:</dt>
+<dd><p class="first">set up boundary list for coarse grid, to be used by fluxsv.
+loop around boundary of fine grids to do this.  each entry has
+i, j, side #, fine grid #, loc in fine grid list for fluxes.
+for example, side 1 of fine grid fixes side 3 of coarse grid,
+so coarse grid list will store the # 3.
+wrt coarse grid, the sides are:</p>
+<div class="highlight-python"><pre>.          2
+.       1     3       that is, right edge of a coarse cell = 3
+.          4                    top  edge of a coarse cell = 2</pre>
+</div>
+<p>lkid is the index into the fine grid&#8217;s saved fluxes.
+the fine grid will save all its fluxes all around its
+perimeter. lkid tells where the coarse grid should
+taking them from. (no ghost cells in this index, but
+it is 1-based for indexing array, not - based for
+integer index of grid location).</p>
+<p class="last">changed 11/11/08: spheredom for periodically mapped spherical
+grids. could affect top and bottom if fine grid touches
+edge of domain in y direction. if calling with spheredom
+(and not yperdom) then grid is NOT periodically mapped.
+need kflag to indicate spherically mapped now - otherwise
+cant tell the difference, dont skip appropropriate loops</p>
+</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="stepgrid.html" title="stepgrid"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="setaux.html" title="setaux"
+             >previous</a> |</li>
+        <li><a href="http://www.clawpack.org/users"><font color="#7F0000">Main Clawpack
+Documentation</font></a>|&nbsp;</li>
+        <li><a href="http://www.clawpack.org"><font color="#7F0000">Clawpack Webpage</font></a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Randall J. LeVeque and others.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>
