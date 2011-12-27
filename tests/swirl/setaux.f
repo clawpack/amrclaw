@@ -5,8 +5,8 @@ c     ============================================
 c
 c     # set auxiliary arrays 
 
-c     #   aux(i,j,1) is edge velocity at "left" boundary of grid point (i,j)
-c     #   aux(i,j,2) is edge velocity at "bottom" boundary of grid point (i,j)
+c     #   aux(1,i,j) is edge velocity at "left" boundary of grid point (i,j)
+c     #   aux(2,i,j) is edge velocity at "bottom" boundary of grid point (i,j)
 
 c
 c     
