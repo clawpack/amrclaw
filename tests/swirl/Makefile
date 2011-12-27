@@ -1,9 +1,9 @@
-CLAW=$(SRC)/clawpack
+#CLAW=$(SRC)/clawpack
 
 # Makefile for Clawpack code in this directory.
 # This version only sets the local files and frequently changed
 # options, and then includes the standard makefile pointed to by CLAWMAKE.
-CLAWMAKE = $(CLAW)/clawpack-4.x/util/Makefile.common
+CLAWMAKE = $(CLAW)/clawutil/src/Makefile-4.x
 
 # See the above file for details and a list of make options, or type
 #   make .help
@@ -132,8 +132,8 @@ CLAW_LIBSOURCES = \
   $(CLAW_LIB)/opendatafile.f \
   $(CLAW_LIB)/init_alloc.f90 \
   $(CLAW_LIB)/restrt_alloc.f90 \
-  $(CLAW_LIB)/resize_alloc_static.f90 \
-# $(CLAW_LIB)/resize_alloc.f90 \
+  $(CLAW_LIB)/resize_alloc.f90 \
+# $(CLAW_LIB)/resize_alloc_static.f90 \
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
