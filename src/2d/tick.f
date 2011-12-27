@@ -4,9 +4,10 @@ c
       subroutine tick(nvar,iout,nstart,nstop,cut,vtime,time,ichkpt,
      &                naux,nout,tout,tchk,t0,rest)
 c
-      implicit double precision (a-h,o-z)
+      use amr_module
 
-      include  "call.i"
+      implicit double precision (a-h,o-z)
+c     include  "call.i"
 
       logical    vtime, dumpout, dumpchk, rest
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
