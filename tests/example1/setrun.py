@@ -21,7 +21,7 @@ def setrun(claw_pkg='amrclaw'):
         claw_pkg expected to be "amrclaw" for this setrun.
 
     OUTPUT:
-        rundata - object of amrclaw ClawRunData 
+        rundata - object of class ClawRunData 
     
     """ 
     
@@ -35,13 +35,20 @@ def setrun(claw_pkg='amrclaw'):
     #------------------------------------------------------------------
 
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('tperiod',     4.0,  'period')
+    probdata.add_param('u',     0.5,  'ubar advection velocity')
+    probdata.add_param('v',     1.0,  'vbar advection velocity')
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
+    #   (or to amr2ez.data for AMR)
     #------------------------------------------------------------------
 
     clawdata = rundata.clawdata  # initialized when rundata instantiated
+
+
+    # Set single grid parameters first.
+    # See below for AMR parameters.
+
 
     # ---------------
     # Spatial domain:
@@ -59,9 +66,9 @@ def setrun(claw_pkg='amrclaw'):
         
 
     # Number of grid cells:
-    clawdata.mx = 40
+    clawdata.mx = 50
     
-    clawdata.my = 40
+    clawdata.my = 50
         
 
     # ---------------
@@ -72,7 +79,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.meqn = 1
 
     # Number of auxiliary variables in the aux array (initialized in setaux)
-    clawdata.maux = 3
+    clawdata.maux = 0
     
     # Index of aux array corresponding to capacity function, if there is one:
     clawdata.mcapa = 0
@@ -98,8 +105,8 @@ def setrun(claw_pkg='amrclaw'):
 
     if clawdata.outstyle==1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.nout = 25
-        clawdata.tfinal = 2.5
+        clawdata.nout = 10
+        clawdata.tfinal = 2.0
 
     elif clawdata.outstyle == 2:
         # Specify a list of output times.  
@@ -109,7 +116,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.outstyle == 3:
         # Output every iout timesteps with a total of ntot time steps:
         iout = 1
-        ntot = 10
+        ntot = 5
         clawdata.iout = [iout, ntot]
     
 
@@ -121,7 +128,7 @@ def setrun(claw_pkg='amrclaw'):
     # The current t, dt, and cfl will be printed every time step
     # at AMR levels <= verbosity.  Set verbosity = 0 for no printing.
     #   (E.g. verbosity == 2 means print only on levels 1 and 2.)
-    clawdata.verbosity = 1
+    clawdata.verbosity = 0
     
     
 
@@ -135,7 +142,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Initial time step for variable dt.  
     # If dt_variable==0 then dt=dt_initial for all steps:
-    clawdata.dt_initial = 0.02
+    clawdata.dt_initial = 0.016
     
     # Max time step to be allowed if variable dt used:
     clawdata.dt_max = 1e+99
@@ -146,7 +153,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.cfl_max = 1.0
     
     # Maximum number of time steps to allow between output times:
-    clawdata.max_steps = 1000
+    clawdata.max_steps = 500
 
     
     
@@ -188,12 +195,12 @@ def setrun(claw_pkg='amrclaw'):
     #   2 => periodic (must specify this at both boundaries)
     #   3 => solid wall for systems where q(2) is normal velocity
     
-    clawdata.mthbc_xlower = 1
-    clawdata.mthbc_xupper = 1
+    clawdata.mthbc_xlower = 2
+    clawdata.mthbc_xupper = 2
     
     clawdata.mthbc_ylower = 2
     clawdata.mthbc_yupper = 2
-
+    
 
     # ---------------
     # AMR parameters:
@@ -201,21 +208,22 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    mxnest = 3
+    mxnest = 1
 
     clawdata.mxnest = -mxnest   # negative ==> anisotropic refinement in x,y,t
 
     # List of refinement ratios at each level (length at least mxnest+1)
-    clawdata.inratx = [2,4,2]
-    clawdata.inraty = [2,4,2]
-    clawdata.inratt = [2,4,2]
+    clawdata.inratx = [2,2,2]
+    clawdata.inraty = [2,2,2]
+    clawdata.inratt = [2,2,2]
 
 
     # Specify type of each aux variable in clawdata.auxtype.
     # This must be a list of length maux, each element of which is one of:
     #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
 
-    clawdata.auxtype = ['xleft','yleft','center']
+    clawdata.auxtype = []
+
 
     clawdata.tol = -1.0     # negative ==> don't use Richardson estimator
     clawdata.tolsp = 0.05   # used in default flag2refine subroutine
@@ -223,7 +231,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.ibuff  = 3     # width of buffer zone around flagged points
 
     # More AMR parameters can be set -- see the defaults in pyclaw/data.py
-    
+
     return rundata
     # end of function setrun
     # ----------------------
