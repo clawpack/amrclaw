@@ -1,4 +1,3 @@
-#CLAW=$(SRC)/clawpack
 
 # Makefile for Clawpack code in this directory.
 # This version only sets the local files and frequently changed
@@ -32,13 +31,11 @@ FFLAGS ?=  -O2
 
     
 CLAW_SOURCES = \
-  $(CLAW)/riemann/src/rpn2_vc_advection.f \
-  $(CLAW)/riemann/src/rpt2_vc_advection.f \
-  setaux.f \
-  psi.f \
+  qinit.f \
   setprob.f \
-  b4step2.f \
-  qinit.f
+  $(CLAW)/riemann/src/rpn2_advection.f \
+  $(CLAW)/riemann/src/rpt2_advection.f \
+
 
 # Clawpack library to be used:
 CLAW_LIB = $(CLAW)/amrclaw/src/2d/
@@ -49,6 +46,8 @@ CLAW_COMMONS = $(CLAW_LIB)/call.i
 CLAW_LIBSOURCES = \
   $(CLAW_LIB)/amr2ez.f \
   $(CLAW_LIB)/bc2amr.f \
+  $(CLAW_LIB)/setaux.f \
+  $(CLAW_LIB)/b4step2.f \
   $(CLAW_LIB)/qad.f \
   $(CLAW_LIB)/src2.f \
   $(CLAW_LIB)/src1d.f \
