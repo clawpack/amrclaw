@@ -3,9 +3,9 @@ c -----------------------------------------------------------------
 c
       subroutine setgrd (nvar,cut,naux,dtinit,t0)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       integer verbosity_regrid
       logical  vtime

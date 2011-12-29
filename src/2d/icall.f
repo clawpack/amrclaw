@@ -4,6 +4,7 @@ c
        subroutine icall(val,aux,nrow,ncol,nvar,naux,
      .                  ilo,ihi,jlo,jhi,level,iputst,jputst)
 
+      use amr_module
        implicit double precision (a-h, o-z)
 
        dimension val(nvar,nrow,ncol)
@@ -11,7 +12,6 @@ c
 
        logical sticksout
 
-       include "call.i"
 
 c NEW INDEX ORDERING
        iadd   (ivar,i,j) = loc    + ivar-1 + nvar*((j-1)*mitot+i-1)

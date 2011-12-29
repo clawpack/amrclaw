@@ -33,10 +33,10 @@ c  cant tell the difference, dont skip appropropriate loops
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
+      use amr_module
       implicit double precision (a-h,o-z)
       dimension listbc(5,maxsp)
 
-      include "call.i"
 
       ibc = ispot
       ist  = iclo - 1

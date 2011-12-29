@@ -7,18 +7,11 @@
 !  Description:  Initialization of alloc storage
 ! ============================================================================
 
-module mem_storage
-    double precision, allocatable, target, dimension(:) :: storage
-end module mem_storage
 
 subroutine init_alloc()
     
-    use mem_storage
+    use amr_module
     implicit none
-    
-    double precision, pointer, dimension(:) :: alloc
-    integer :: memsize
-    common  /calloc/ alloc, memsize
     
     if (.not.allocated(storage)) then
         memsize = 1000000

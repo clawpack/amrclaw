@@ -57,10 +57,10 @@ c     can safely extrapolate there.  Don't overwrite them!
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
+      use amr_module
       implicit double precision (a-h,o-z)
       logical xperiodic, yperiodic
 
-      include  "cuser.i"
 
       dimension val(nrow,ncol,nvar), aux(nrow,ncol,naux)
 

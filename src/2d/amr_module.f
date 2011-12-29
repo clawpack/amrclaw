@@ -1,4 +1,6 @@
 
+       module amr_module
+
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c      :::::   data structure info.
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -47,32 +49,36 @@ c :::::::  for flagging points
        parameter (iinfinity = 999999)
        parameter (horizontal = 1)
        parameter (vertical = 2)
-       parameter  (maxgr = 5000)
+       parameter  (maxgr = 500)
        parameter  (maxlv = 10)
        parameter  (maxcl = 500)
+
 c      The max1d parameter should be changed if using OpenMP grid based 
 c      looping, usually set to max1d = 60
-       parameter  (max1d = 600)
+       parameter  (max1d = 500)
+
        parameter  (maxvar = 10)
        parameter  (maxaux = 20)
        parameter  (maxout = 5000)
 
        logical    printout,matlabout,ncarout
 
+       double precision hxposs(maxlv), hyposs(maxlv),possk(maxlv),
+     &         rnode(rsize, maxgr) 
 
-       common  /nodal/
-     1         hxposs(maxlv), hyposs(maxlv),possk(maxlv),
-     2         rnode(rsize, maxgr), node(nsize, maxgr),
-     3         icheck(maxlv),lstart(maxlv),newstl(maxlv),
-     4         listsp(maxlv),intratx(maxlv),intraty(maxlv),
-     5         kratio(maxlv), iregsz(maxlv),jregsz(maxlv),
-     6         iregst(maxlv),jregst(maxlv),
-     7         iregend(maxlv),jregend(maxlv),
-     8         numgrids(maxlv),numcells(maxlv),
-     9         tol, tolsp, ibuff,  mstart, ndfree, lfine,
-     1         iorder,mxnest,kcheck,nghost,printout,matlabout,ncarout
 
-       common /cmatlab/ matlabu,ngrids
+
+       double precision tol, tolsp
+       integer ibuff,  mstart, ndfree, lfine, node(nsize, maxgr),
+     &         icheck(maxlv),lstart(maxlv),newstl(maxlv),
+     &         listsp(maxlv),intratx(maxlv),intraty(maxlv),
+     &         kratio(maxlv), iregsz(maxlv),jregsz(maxlv),
+     &         iregst(maxlv),jregst(maxlv),
+     &         iregend(maxlv),jregend(maxlv),
+     &         numgrids(maxlv),numcells(maxlv),
+     &         iorder,mxnest,kcheck,nghost
+
+       integer matlabu,ngrids
 c
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c      ::::  for alloc array/memory
@@ -82,11 +88,13 @@ c       Static memory implementation
 c        parameter  (memsize = 10000000)
 c        common  /calloc/   alloc(memsize)
 
-c      Dynamic memmory
-       double precision, pointer, dimension(:) :: alloc
-       common /calloc/ alloc, memsize
+c      Dynamic memory: 
+       double precision, save, allocatable, target, dimension(:) ::
+     &        storage
+       double precision, save, pointer, dimension(:) :: alloc
+       integer memsize
        
-
+       
 c
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c      :::::   for space management of alloc array
@@ -94,8 +102,7 @@ c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
        parameter (lfdim=5000)
 
-       common /space/
-     1               lfree(lfdim,2),lenf
+       integer lfree(lfdim,2),lenf
 
 c
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -103,17 +110,15 @@ c      :::::  domain description variables
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
        logical xperdom, yperdom, spheredom
-
-       common /cdom/ xupper,yupper,xlower,ylower,
-     1                 xperdom, yperdom, spheredom
-
+       double precision xupper,yupper,xlower,ylower
 
 c
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c      :::::  collect stats
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
-       common   /stats/  rvoll(10),evol,rvol,lentot,lenmax,lendim
+       double precision rvoll(10),evol,rvol
+       integer lentot,lenmax,lendim
 
 c
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -122,10 +127,8 @@ c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
        parameter (maxwave = 10)
        character * 10 auxtype(maxaux)
-       common /cmeth/ method(7), mthlim(maxwave), mwaves
-       common /cmcapa/  mcapa
-       common /auxstuff/ auxtype
-       common /ccfl/ cfl,cflmax,cflv1,cfl_level
+       integer  method(7), mthlim(maxwave), mwaves, mcapa
+       double precision cfl,cflmax,cflv1
 c
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c      ::::  for i/o assignments
@@ -148,22 +151,16 @@ c
 c      ::::  common for debugging flags (verbose output)
 
        logical
-     .         dprint,     !  domain flags output
-     .         eprint,     !  error estimation output
-     .         edebug,     !  even more error estimation output
-     .         gprint,     !  verbose grid generation (clustering,colating...)
-     .         nprint,     !  nestck reporting
-     .         pprint,     !  projec tagged pts.
-     .         rprint,     !  regridding -  summary of new grids
-     .         sprint,     !  space (memory) output
-     .         tprint,     !  tick (time stepping) reporting
-     .         uprint      !  updating/upbnding reporting
+     &         dprint,     !  domain flags output
+     &         eprint,     !  error estimation output
+     &         edebug,     !  even more error estimation output
+     &         gprint,     !  verbose grid generation (clustering,colating...)
+     &         nprint,     !  nestck reporting
+     &         pprint,     !  projec tagged pts.
+     &         rprint,     !  regridding -  summary of new grids
+     &         sprint,     !  space (memory) output
+     &         tprint,     !  tick (time stepping) reporting
+     &         uprint      !  updating/upbnding reporting
 
 
-       common /bugflags/ dprint, eprint, edebug, gprint, nprint, pprint,
-     .                   rprint, sprint, tprint, uprint
-
-c 
-c      ::::  common for conservation check
-      common /ctstart/ tstart
-      common /comconck/ tmass0
+       end module amr_module

@@ -4,9 +4,9 @@ c
       subroutine fluxsv(mptr,xfluxm,xfluxp,yfluxm,yfluxp,listbc,
      1                  ndimx,ndimy,nvar,maxsp,dtc,hx,hy)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       dimension xfluxp(nvar,ndimx,ndimy), yfluxp(nvar,ndimx,ndimy)
       dimension xfluxm(nvar,ndimx,ndimy), yfluxm(nvar,ndimx,ndimy)

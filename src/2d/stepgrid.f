@@ -22,10 +22,10 @@ c dtnew      = return suggested new time step for this grid's soln.
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+      use amr_module
       implicit double precision (a-h,o-z)
       external rpn2,rpt2
 
-      include  "call.i"
       common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
 
       parameter (msize=max1d+4)

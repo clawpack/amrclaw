@@ -16,14 +16,11 @@
 
 subroutine resize_storage(new_size,status)
     
-    use mem_storage
+    use amr_module
     implicit none
     
     integer, intent(out) :: status
     integer, intent(in) :: new_size
-    double precision, pointer, dimension(:) :: alloc
-    integer :: memsize
-    common /calloc/ alloc,memsize
     
     double precision, allocatable, target, dimension(:) :: new_storage
     
@@ -42,6 +39,8 @@ subroutine resize_storage(new_size,status)
         memsize = new_size
     else
         print *,'new_size < memsize,'
+        print *,'new_size = ',new_size
+        print *,'memsize = ',memsize
         stop
     endif
     

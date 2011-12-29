@@ -4,11 +4,11 @@ c
        subroutine intcopy(val,mitot,mjtot,nvar,ilo,ihi,jlo,jhi,level,
      &                    iputst,jputst)
 
+      use amr_module
        implicit double precision (a-h, o-z)
 
        dimension val(nvar,mitot,mjtot)
 
-       include "call.i"
 
 c   OLD INDEXING
 c      iadd(i,j,ivar) = loc + i - 1 + mi*((ivar-1)*mj+j-1)
