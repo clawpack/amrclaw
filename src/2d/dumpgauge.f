@@ -90,10 +90,10 @@ c  ## lbase is grid level that didn't change but since fine
 c  ## grid may have disappeared, still have to look starting
 c  ## at coarsest level 1.
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
       include "gauges.i"
-      include "call.i"
 c
 c ##  set source grid for each loc fromcoarsest level to finest.
 c ##  that way finest src grid left and old ones overwritten

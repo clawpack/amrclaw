@@ -80,6 +80,7 @@ c        if this is a restart, make sure chkpt times start after restart time
          endif
 
       tlevel(1)      = time
+      print *, 'mxnest = ',mxnest
       do 5 i       = 2, mxnest
        tlevel(i) = tlevel(1)
  5     continue
