@@ -3,11 +3,11 @@ c ---------------------------------------------------------
 c
       subroutine restrt(nsteps,time,nvar)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
       logical   ee
 
-      include  "call.i"
 
       dimension intrtx(maxlv),intrty(maxlv),intrtt(maxlv)
       character*16  chkname

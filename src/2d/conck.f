@@ -3,9 +3,9 @@ c -----------------------------------------------------------
 c
       subroutine conck(level, nvar, naux, time, rest)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
       logical  rest
 
 c      iadd(i,j,ivar)  = loc + i - 1 + mitot*((ivar-1)*mjtot+j-1) OLD INDEXING

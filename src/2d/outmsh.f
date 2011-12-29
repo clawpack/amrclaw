@@ -2,10 +2,10 @@ c
 c ---------------------------------------------------------
 c
       subroutine outmsh(mptr,outgrd,nvar,naux)
+      use amr_module
       implicit double precision (a-h,o-z)
       logical  outgrd
 
-      include  "call.i"
 
 c
 c ::::::::::::::::::::: OUTMSH :::::::::::::::::::::::::::::::::::::

@@ -3,9 +3,9 @@ c ------------------------------------------------------
 c
       subroutine basic (time,lst,lend)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 c
 c :::::::::::::::::::::: BASIC :::::::::::::::::::::::::
 c  basic = outputs basic information needed by the other graphics

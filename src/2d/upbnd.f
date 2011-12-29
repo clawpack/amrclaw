@@ -5,9 +5,9 @@ c
      1                  maxsp,mptr)
 c     1                  maxsp,iused,mptr)
  
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
  
        dimension val(nvar,mitot,mjtot),listbc(5,maxsp),
      1           iused(mitot,mjtot)

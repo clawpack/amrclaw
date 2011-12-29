@@ -3,9 +3,9 @@ c --------------------------------------------------------------
 c
       subroutine errf1(rctfine,nvar,rctcrse,mptr,mi2tot,mj2tot,
      2                 mitot,mjtot,rctflg)
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
  
       dimension  rctfine(nvar,mitot,mjtot)
       dimension  rctcrse(nvar,mi2tot,mj2tot)

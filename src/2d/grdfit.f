@@ -3,9 +3,9 @@ c ---------------------------------------------------------
 c
       subroutine grdfit (lbase,lcheck,nvar,naux,cut,time,t0)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 c
       dimension  corner(nsize,maxcl)
       integer    numptc(maxcl), prvptr

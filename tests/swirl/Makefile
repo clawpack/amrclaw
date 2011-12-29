@@ -1,9 +1,8 @@
-#CLAW=$(SRC)/clawpack
 
 # Makefile for Clawpack code in this directory.
 # This version only sets the local files and frequently changed
 # options, and then includes the standard makefile pointed to by CLAWMAKE.
-CLAWMAKE = $(CLAW)/clawutil/src/Makefile-4.x
+CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
 
 # See the above file for details and a list of make options, or type
 #   make .help
@@ -30,23 +29,20 @@ FFLAGS ?=  -O2
 # List of sources for this program:
 # ---------------------------------
 
+# Clawpack library to be used:
+CLAW_LIB = $(CLAW)/amrclaw/src/2d/
     
-CLAW_SOURCES = \
+MODULES = \
+  $(CLAW_LIB)/amr_module.f \
+
+SOURCES = \
   $(CLAW)/riemann/src/rpn2_vc_advection.f \
   $(CLAW)/riemann/src/rpt2_vc_advection.f \
   setaux.f \
   psi.f \
   setprob.f \
   b4step2.f \
-  qinit.f
-
-# Clawpack library to be used:
-CLAW_LIB = $(CLAW)/amrclaw/src/2d/
-
-CLAW_COMMONS = $(CLAW_LIB)/call.i
-
-    
-CLAW_LIBSOURCES = \
+  qinit.f \
   $(CLAW_LIB)/amr2ez.f \
   $(CLAW_LIB)/bc2amr.f \
   $(CLAW_LIB)/qad.f \

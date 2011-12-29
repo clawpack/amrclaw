@@ -7,9 +7,9 @@ c
      3                       ilo,ihi,jlo,jhi)
 
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       dimension valbig(nvar,mitot,mjtot), aux(naux,mitot,mjtot)
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)

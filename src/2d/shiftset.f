@@ -4,9 +4,9 @@ c
        subroutine shiftset(intarray,intarray2,isize,jsize)
 c       subroutine old_shiftset(intarray,intarray2,idir,jdir,isize,jsize)
 
+      use amr_module
        implicit double precision (a-h, o-z)
 
-       include "call.i"
 
        integer*1 intarray (0:isize+1,0:jsize+1), 
      1           intarray2(0:isize+1,0:jsize+1)

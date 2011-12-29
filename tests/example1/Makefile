@@ -2,7 +2,7 @@
 # Makefile for Clawpack code in this directory.
 # This version only sets the local files and frequently changed
 # options, and then includes the standard makefile pointed to by CLAWMAKE.
-CLAWMAKE = $(CLAW)/clawutil/src/Makefile-4.x
+CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
 
 # See the above file for details and a list of make options, or type
 #   make .help
@@ -22,28 +22,24 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2 
+FFLAGS ?=  -g
 
 
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
 
+# Clawpack library to be used:
+CLAW_LIB = $(CLAW)/amrclaw/src/2d/
     
-CLAW_SOURCES = \
+MODULES = \
+  $(CLAW_LIB)/amr_module.f \
+
+SOURCES = \
   qinit.f \
   setprob.f \
   $(CLAW)/riemann/src/rpn2_advection.f \
   $(CLAW)/riemann/src/rpt2_advection.f \
-
-
-# Clawpack library to be used:
-CLAW_LIB = $(CLAW)/amrclaw/src/2d/
-
-CLAW_COMMONS = $(CLAW_LIB)/call.i
-
-    
-CLAW_LIBSOURCES = \
   $(CLAW_LIB)/amr2ez.f \
   $(CLAW_LIB)/bc2amr.f \
   $(CLAW_LIB)/setaux.f \
