@@ -71,6 +71,7 @@ c :::::::  for flagging points
      &         kratio(maxlv), iregsz(maxlv),jregsz(maxlv),
      &         iregst(maxlv),jregst(maxlv),
      &         iregend(maxlv),jregend(maxlv),
+     &         numgrids(maxlv),numcells(maxlv),
      &         iorder,mxnest,kcheck,nghost
 
        integer matlabu,ngrids
