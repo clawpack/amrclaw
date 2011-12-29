@@ -3,9 +3,9 @@ c ----------------------------------------------------
 c
       subroutine domup(iflags2,iflags,ibase,jbase,isize,jsize,lev)
 
+      use amr_module
       implicit double precision (a-h, o-z)
 
-      include  "call.i"
 
       integer*1  iflags2(0:isize+1,0:jsize+1)
       integer*1  iflags (0:ibase+1,0:jbase+1)

@@ -7,12 +7,12 @@ c :::::::::::::::::::::: CHECK ::::::::::::::::::::::::::::::::;
 c   check point routine - can only call at end of coarse grid cycle
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
+      use amr_module
       implicit double precision (a-h,o-z)
       integer tchkunit
       parameter (tchkunit = 12)
       character  chkname*12
       character  tchkname*12
-      include  "call.i"
 c
 c     ###  make the file name showing the time step
 c

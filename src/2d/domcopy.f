@@ -3,9 +3,9 @@ c ----------------------------------------------------
 c
       subroutine domcopy(iflags2,iflags,isize,jsize)
 
+      use amr_module
       implicit double precision (a-h, o-z)
 
-      include  "call.i"
 
       integer*1  iflags2(0:isize+1,0:jsize+1)
       integer*1  iflags (0:isize+1,0:jsize+1)

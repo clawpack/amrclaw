@@ -2,12 +2,12 @@ c=========================================================================
       subroutine setgauges
 c=========================================================================
 
+      use amr_module
       implicit double precision (a-h,o-z)
       character*25 fname
       logical foundFile
 
       include "gauges.i"
-      include "call.i"
 
 
       fname  = 'setgauges.data'

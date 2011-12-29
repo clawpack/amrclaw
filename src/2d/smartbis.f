@@ -4,9 +4,9 @@ c
       subroutine smartbis(badpts,npts,cutoff,numptc,nclust,
      1                    lbase,intcorn,iscr,jscr,idim,jdim)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include "call.i"
 
       dimension     badpts(2,npts),intcorn(nsize,maxcl)
       dimension     iscr(idim), jscr(jdim)

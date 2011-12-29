@@ -3,10 +3,10 @@ c -------------------------------------------------------------------------
 c
       subroutine dumpgauge(q,aux,xlow,ylow,nvar,mitot,mjtot,naux,mptr)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
       include "gauges.i"
-      include "call.i"
 
       integer bsearch
       dimension q(nvar,mitot,mjtot), var(maxvar)

@@ -3,6 +3,7 @@ c -----------------------------------------------------
 c
       subroutine valout (lst, lend, time, nvar, naux)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
       character*10  matname1, matname2, matname3
 
@@ -14,7 +15,6 @@ c     # Use format required by matlab script  plotclaw2.m or Python tools
 c
 c     # set outaux = .true. to also output the aux arrays to fort.a<iframe>
 
-      include  "call.i"
       logical outaux
 
 c      iadd(i,j,ivar) = loc + i - 1 + mitot*((ivar-1)*mjtot+j-1)

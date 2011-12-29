@@ -4,10 +4,10 @@ c ---------------------------------------------------------
 c
       subroutine restrt(nsteps,time,nvar,varRefTime)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
       logical   ee, varRefTime
  
-      include  "call.i"
  
       character*12 rstfile
       logical foundFile

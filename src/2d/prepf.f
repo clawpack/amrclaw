@@ -3,9 +3,9 @@ c ----------------------------------------------------------
 c
       subroutine prepf(level,nvar,naux)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 c
 c ::::::::::::::::::::::::::: PREPF :::::::::::::::::::::::::::::
 c

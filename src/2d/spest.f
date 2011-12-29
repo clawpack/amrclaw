@@ -4,10 +4,10 @@ c
       subroutine spest (nvar,naux,lcheck,lociflags,isize,jsize,t0)
 c      subroutine spest (nvar,naux,lcheck,iflags,isize,jsize,t0)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
 c      integer*1  iflags (0:isize+1,0:jsize+1)
-       include  "call.i"
 
  
 c :::::::::::::::::::::::::: SPEST :::::::::::::::::::::::::::::::::::

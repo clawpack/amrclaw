@@ -19,9 +19,9 @@ c     # fm, fp are fluxes to left and right of single cell edge
 c     # See the flux2 documentation for more information.
 c
 c
+      use amr_module
       implicit double precision (a-h,o-z)
       external rpn2, rpt2
-      include  "call.i"
 
 
       dimension qold(meqn, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
