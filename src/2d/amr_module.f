@@ -11,7 +11,7 @@ c
        integer    cornxlo,cornylo,cornxhi,cornyhi,timemult
        integer    store1,store2,storeaux
        integer    tempptr,errptr,ffluxptr,cfluxptr
-       integer    rsize
+       integer    rsize, horizontal, vertical
 
        parameter (rsize =  5)
        parameter (nsize = 13)
