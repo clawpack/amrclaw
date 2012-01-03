@@ -223,6 +223,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.ibuff  = 3     # width of buffer zone around flagged points
 
     # More AMR parameters can be set -- see the defaults in pyclaw/data.py
+    clawdata.rprint = True
+    clawdata.eprint = True
     
     return rundata
     # end of function setrun
