@@ -93,9 +93,9 @@ c        parameter  (memsize = 10000000)
 c        common  /calloc/   alloc(memsize)
 
 c      Dynamic memory: 
-       double precision, save, allocatable, target, dimension(:) ::
+       double precision, allocatable, target, dimension(:) ::
      &        storage
-       double precision, save, pointer, dimension(:) :: alloc
+       double precision, pointer, dimension(:) :: alloc
        integer memsize
        
        
