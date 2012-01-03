@@ -163,4 +163,7 @@ c      ::::  common for debugging flags (verbose output)
      &         uprint      !  updating/upbnding reporting
 
 
+c      variables for conservation checking:
+       double precision tstart,tmass0
+
        end module amr_module
