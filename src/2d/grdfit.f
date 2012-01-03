@@ -11,6 +11,7 @@ c
       integer    numptc(maxcl), prvptr
       logical    fit, nestck, cout
       data       cout/.false./
+      integer*1  i1flags(iregsz(lcheck)+2,jregsz(lcheck)+2)
 c
 c ::::::::::::::::::::: GRDFIT :::::::::::::::::::::::::::::::::;
 c  grdfit called by setgrd and regrid to actually fit the new grids
@@ -20,8 +21,6 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
       isize = iregsz(lcheck)
       jsize = jregsz(lcheck)
-      ibytesPerDP = 8
-      ldom2 = igetsp((isize+2)*(jsize+2)/ibytesPerDP+1)
 
 c ### initialize region start and end indices for new level grids
       iregst(lcheck+1) = iinfinity
@@ -34,7 +33,8 @@ c     ## npts is number of points actually colated - some
 c     ## flagged points turned off due to proper nesting requirement.
 c     ## (storage based on nptmax calculation however).
 
-      call flglvl (nvar,naux,lcheck,nptmax,index,lbase,ldom2,npts,t0)
+      call flglvl (nvar,naux,lcheck,nptmax,index,lbase,i1flags,npts,t0,
+     .             isize,jsize)
       if (npts .eq. 0) go to 99
 c
       levnew    = lcheck + 1
@@ -88,7 +88,7 @@ c     ##  and returns 2 clusters where there used to be 1.
 c
 c 2/28/02 : Added naux to argument list; needed by call to outtre in nestck
       fit = nestck(mnew,lbase,alloc(index+2*ibase),numptc(icl),numptc,
-     1             icl,nclust,alloc(ldom2),isize,jsize,nvar, naux)
+     1             icl,nclust,i1flags,isize,jsize,nvar, naux)
       if (.not. fit) go to 75
 c
 c     ##  grid accepted. put in list.
@@ -120,7 +120,6 @@ c    ## the array was still allocated, so need to test further to see if colatin
 c    ## array space needs to be reclaimed
       if (nptmax .gt. 0) call reclam(index, 2*nptmax) 
 c
-      call reclam(ldom2, (isize+2)*(jsize+2)/ibytesPerDP+1)
 
       return
       end

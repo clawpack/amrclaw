@@ -1,8 +1,7 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine bufnst (nvar,naux,numbad,lcheck,iflags,isize,jsize,
-     &                   ldom3)
+      subroutine bufnst (nvar,naux,numbad,lcheck,iflags,isize,jsize)
 c
       implicit double precision (a-h,o-z)
 
@@ -76,23 +75,7 @@ c
 c    # first get scratch work space (not that other scratch
 c    # arrays above have been reclaimed. 
 c
-c ## scratch  storage now passed in due to dynamic memory resizing
-c ## need all arrays to be indexed into alloc if memory moved it, 
-c ## but iflags is index above
-c      ibytesPerDP = 8
-c      ldom3 = igetsp((isize+2)*(jsize+2)/ibytesPerDP+1)
-c
-      call shiftset(iflags, alloc(ldom3),isize,jsize)
-
-c     do 55 inum = 1, ibuff
-
-c          call shiftset(iflags,alloc(ldom3),+1,0,isize,jsize)
-c          call shiftset(iflags,alloc(ldom3),-1,0,isize,jsize)
-c          call shiftset(iflags,alloc(ldom3),0,+1,isize,jsize)
-c          call shiftset(iflags,alloc(ldom3),0,-1,isize,jsize)
-c          call shiftset(iflags, alloc(ldom3),isize,jsize)
-
-c55   continue
+      call shiftset(iflags, isize,jsize)
 
       if (eprint) then
          write(outunit,*)" flagged points after buffering on level", 
@@ -113,7 +96,6 @@ c
        write(outunit,116) numbad, lcheck
  116   format(i5,' points flagged on level ',i4)
 
-c      call reclam(ldom3,(isize+2)*(jsize+2)/ibytesPerDP+1)
 
       return
       end

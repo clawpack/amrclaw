@@ -1,7 +1,8 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine spest (nvar,naux,lcheck,lociflags,isize,jsize,t0)
+      subroutine spest (nvar,naux,lcheck,dom1flags,isize,jsize,t0)
+c     subroutine spest (nvar,naux,lcheck,lociflags,isize,jsize,t0)
 c      subroutine spest (nvar,naux,lcheck,iflags,isize,jsize,t0)
 c
       implicit double precision (a-h,o-z)
@@ -23,7 +24,8 @@ c
 !-- 4        iflags(i,j) = 0
 c
 c  now call initialization routine so can treat iflags as integer *1
-       call init_iflags(alloc(lociflags),isize,jsize)
+c      call init_iflags(alloc(lociflags),isize,jsize)
+       call init_iflags(dom1flags,isize,jsize)
 
        mptr = lstart(lcheck)
  5     continue
@@ -83,7 +85,9 @@ c
 c
          idim3 = 1   ! 3rd dim = 1 here, elsewhere is nvar
 c         call setflags (iflags,isize,jsize,
-         call setflags (alloc(lociflags),isize,jsize,
+c        call setflags (alloc(lociflags),isize,jsize,
+c    1                  alloc(locamrflags),idim3,mitot,mjtot,mptr)
+         call setflags (dom1flags,isize,jsize,
      1                  alloc(locamrflags),idim3,mitot,mjtot,mptr)
          call reclam(locamrflags, mitot*mjtot)
       endif
