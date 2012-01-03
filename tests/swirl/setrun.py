@@ -201,7 +201,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    mxnest = 1
+    mxnest = 2
 
     clawdata.mxnest = -mxnest   # negative ==> anisotropic refinement in x,y,t
 
@@ -223,8 +223,9 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.ibuff  = 3     # width of buffer zone around flagged points
 
     # More AMR parameters can be set -- see the defaults in pyclaw/data.py
-    clawdata.rprint = True
-    clawdata.eprint = True
+    #clawdata.rprint = True
+    #clawdata.eprint = True
+    #clawdata.edebug = True
     
     return rundata
     # end of function setrun
