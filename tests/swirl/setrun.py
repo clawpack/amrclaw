@@ -121,7 +121,7 @@ def setrun(claw_pkg='amrclaw'):
     # The current t, dt, and cfl will be printed every time step
     # at AMR levels <= verbosity.  Set verbosity = 0 for no printing.
     #   (E.g. verbosity == 2 means print only on levels 1 and 2.)
-    clawdata.verbosity = 1
+    clawdata.verbosity = 3
     
     
 
@@ -201,7 +201,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    mxnest = 3
+    mxnest = 2
 
     clawdata.mxnest = -mxnest   # negative ==> anisotropic refinement in x,y,t
 
@@ -223,6 +223,9 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.ibuff  = 3     # width of buffer zone around flagged points
 
     # More AMR parameters can be set -- see the defaults in pyclaw/data.py
+    #clawdata.rprint = True
+    #clawdata.eprint = True
+    #clawdata.edebug = True
     
     return rundata
     # end of function setrun

@@ -1,6 +1,9 @@
 
        module amr_module
-
+       implicit double precision(a-h,o-z)
+       
+       save
+       
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c      :::::   data structure info.
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -8,7 +11,7 @@ c
        integer    cornxlo,cornylo,cornxhi,cornyhi,timemult
        integer    store1,store2,storeaux
        integer    tempptr,errptr,ffluxptr,cfluxptr
-       integer    rsize
+       integer    rsize, horizontal, vertical
 
        parameter (rsize =  5)
        parameter (nsize = 13)
@@ -41,6 +44,7 @@ c :::::::   for linking nodes
        parameter (nil  = 0)
 
 c :::::::  for flagging points
+       
        parameter (goodpt = 0.0)
        parameter (badpt  = 2.0)
        parameter (badpro = 3.0)
@@ -49,13 +53,13 @@ c :::::::  for flagging points
        parameter (iinfinity = 999999)
        parameter (horizontal = 1)
        parameter (vertical = 2)
-       parameter  (maxgr = 500)
+       parameter  (maxgr = 5000)
        parameter  (maxlv = 10)
        parameter  (maxcl = 500)
 
 c      The max1d parameter should be changed if using OpenMP grid based 
 c      looping, usually set to max1d = 60
-       parameter  (max1d = 500)
+       parameter  (max1d = 60)
 
        parameter  (maxvar = 10)
        parameter  (maxaux = 20)
@@ -89,9 +93,9 @@ c        parameter  (memsize = 10000000)
 c        common  /calloc/   alloc(memsize)
 
 c      Dynamic memory: 
-       double precision, save, allocatable, target, dimension(:) ::
+       double precision, allocatable, target, dimension(:) ::
      &        storage
-       double precision, save, pointer, dimension(:) :: alloc
+       double precision, pointer, dimension(:) :: alloc
        integer memsize
        
        
@@ -128,7 +132,7 @@ c
        parameter (maxwave = 10)
        character * 10 auxtype(maxaux)
        integer  method(7), mthlim(maxwave), mwaves, mcapa
-       double precision cfl,cflmax,cflv1
+       double precision cfl,cflmax,cflv1,cfl_level
 c
 c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c      ::::  for i/o assignments
@@ -162,5 +166,8 @@ c      ::::  common for debugging flags (verbose output)
      &         tprint,     !  tick (time stepping) reporting
      &         uprint      !  updating/upbnding reporting
 
+
+c      variables for conservation checking:
+       double precision tstart,tmass0
 
        end module amr_module
