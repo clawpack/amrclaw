@@ -2,7 +2,7 @@ c
 c  -------------------------------------------------------------
 c
       subroutine tick(nvar,iout,nstart,nstop,cut,vtime,time,ichkpt,
-     &                naux,nout,tout,tchk,t0,rest)
+     &                naux,nout,tout,tchk,t0,rest,nchkpt)
 c
       use amr_module
 
@@ -49,7 +49,9 @@ c     # For now use verbosity, or set to 0 to suppress printing regrid info:
       ncycle         = nstart
       call setbestsrc()     ! need at very start of run, including restart
       if ( iout .eq. 0) iout  = iinfinity
-      if (ichkpt .eq. 0) ichkpt = iinfinity
+      if (ichkpt .eq. 0) then
+          ichkpt = iinfinity
+          ichkpt = 
       nextout = 1
       if (nout .gt. 0) then
          tfinal = tout(nout)
@@ -68,9 +70,9 @@ c        if this is a restart, make sure output times start after restart time
       endif
 
       nextchk = 1
-      if (nstart .gt. 0 .and. ichkpt.lt.0) then
+      if (nstart .gt. 0 .and. (ichkpt.eq.2 .or. ichkpt.eq.4)) then
 c        if this is a restart, make sure chkpt times start after restart time
-         do ii = 1, -ichkpt
+         do ii = 1, nchkpt
            if (tchk(ii) .gt. time) then
               nextchk = ii
               go to 3
@@ -95,7 +97,7 @@ c
          outtime       = rinfinity
       endif
 
-      if (nextchk  .le. -ichkpt) then
+      if (nextchk  .le. nchkpt) then
          chktime       = tchk(nextchk)
       else
          chktime       = rinfinity
@@ -337,7 +339,7 @@ c
 c  # don't checkpoint at all if user set ichkpt=0
 
       if (ichkpt .gt. 0) then
-         if ((ncycle/ichkpt)*ichkpt .ne. ncycle) then
+         if ((ncycle/nchkpt)*nchkpt .ne. ncycle) then
            call check(ncycle,time,nvar,naux)
          endif
        endif

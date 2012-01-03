@@ -88,7 +88,11 @@ def setrun(claw_pkg='amrclaw'):
     # Initial time:
     # -------------
 
-    clawdata.t0 = 0.0
+    clawdata.t0 = 0.0                        
+    
+    # If restarting, t0 above should be from original run
+    clawdata.restart = False                 # True to restart from prior results
+    clawdata.restart_file = 'restart.data'   # File to use for restart data
     
     
     # -------------
@@ -104,7 +108,7 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         clawdata.output_ntimes = 10
-        clawdata.output_tfinal = 2.0
+        clawdata.tfinal = 2.0
 
     elif clawdata.output_style == 2:
         # Specify a list of output times.  
@@ -113,15 +117,15 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps with a total of nsteps time steps:
         clawdata.output_step_interval = 1
-        clawdata.output_nsteps = 5
+        clawdata.total_steps = 5
         
     elif clawdata.output_style == 4:
         # Specify time interval for output up to tfinal:
         clawdata.output_time_interval = 0.2
-        clawdata.output_tfinal = 2.0
+        clawdata.tfinal = 2.0
     
     clawdata.output_format == 'ascii'      # 'ascii' or 'netcdf'
-    clawdata.output_q_components = 'all'   # list of components to output
+    clawdata.output_q_components = 'all'   # list of components to output, e.g. [0,2]
     clawdata.output_aux_components = 'all'
     clawdata.output_aux_onlyonce = True    # output aux arrays only at t0
     
@@ -142,9 +146,9 @@ def setrun(claw_pkg='amrclaw'):
     # Time stepping:
     # --------------
 
-    # if dt_variable==1: variable time steps used based on cfl_desired,
-    # if dt_variable==0: fixed time steps dt = dt_initial will always be used.
-    clawdata.dt_variable = 1
+    # if dt_variable=:=True  variable time steps used based on cfl_desired,
+    # if dt_variable==False: fixed time steps dt = dt_initial will always be used.
+    clawdata.dt_variable = True
     
     # Initial time step for variable dt.  
     # If dt_variable==0 then dt=dt_initial for all steps:
@@ -159,7 +163,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.cfl_max = 1.0
     
     # Maximum number of time steps to allow between output times:
-    clawdata.steps_max = 50000
+    clawdata.steps_max = 1000000
 
     
     
@@ -171,15 +175,31 @@ def setrun(claw_pkg='amrclaw'):
     # Order of accuracy:  1 => Godunov,  2 => Lax-Wendroff plus limiters
     clawdata.order = 2
     
-    # Transverse order for 2d or 3d (not used in 1d):
+    # Use dimensional splitting? (not yet available for AMR)
+    clawdata.dimensional_split = False
+    
+    # For unsplit method, order_trans can be 
+    #  0 ==> donor cell (only normal solver used)
+    #  1 ==> corner transport of waves
+    #  2 ==> corner transport of 2nd order corrections too
     clawdata.order_trans = 2
+    
+    
     
     # Number of waves in the Riemann solution:
     clawdata.mwaves = 1
     
     # List of limiters to use for each wave family:  
     # Required:  len(limiter) == mwaves
+    # Some options:
+    #   0 = no limiter (Lax-Wendroff)
+    #   1 = minmod
+    #   2 = superbee
+    #   3 = MC limiter
+    #   4 = van Leer
     clawdata.limiter = [3]
+    
+    clawdata.fwave = False    # True to use f-wave version of algorithms
     
     # Source terms splitting:
     #   src_split == 0  => no source term (src routine never called)
@@ -193,7 +213,7 @@ def setrun(claw_pkg='amrclaw'):
     # --------------------
 
     # Number of ghost cells (usually 2)
-    clawdata.mbc = 2
+    clawdata.num_ghost = 2
     
     # Choice of BCs at xlower and xupper:
     #   0 or 'user'     => user specified (must modify bcNamr.f to use this option)
@@ -214,9 +234,9 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    amrlevel_max = 3
+    clawdata.amrlevels_max = 3
 
-    # List of refinement ratios at each level (length at least mxnest+1)
+    # List of refinement ratios at each level (length at least amrlevel_max-1)
     clawdata.refinement_ratio_x = [2,2,2]
     clawdata.refinement_ratio_y = [2,2,2]
     clawdata.refinement_ratio_t = [2,2,2]
@@ -230,14 +250,60 @@ def setrun(claw_pkg='amrclaw'):
 
 
     clawdata.flag_richardson = False  # don't use Richardson estimator
-    clawdata.flag_gradient = True     # flag based on gradient of solution
+    clawdata.flag_richardson_tol = 0.1  # only used if flag_richardson==True
+    
+    clawdata.flag_gradient = True      # flag based on (undivided) gradient of solution
     clawdata.flag_gradient_tol = 0.05  # used in default flag2refine subroutine
-    clawdata.regrid_step_interval = 2  # how often to regrid (every kcheck steps)
+                                       # User could modify flag2refine rather than using
+                                       # this default behavior.
+                                       
+    clawdata.regrid_interval = 2       # number of steps on parent grid between regrids
     clawdata.regrid_buffer_width  = 3  # width of buffer zone around flagged points
+    clawdata.clustering_cutoff = 0.7  # efficiency = (# flagged pts) / (total # grid pts)
     clawdata.verbosity_regrid = 3      # print regrid info up to this level
 
-    # More AMR parameters can be set -- see the defaults in clawutil/??/clawdata.py
 
+
+    # Specify when checkpoint files should be created that can be
+    # used to restart a computation.
+
+    clawdata.checkpt_style = 1
+
+    if clawdata.checkpt_style==0:
+        # Do not checkpoint at all
+        pass
+
+    elif clawdata.checkpt_style==1:
+        # Checkpoint only at the final time.
+        pass
+
+    elif clawdata.checkpt_style == 2:
+        # Specify a list of checkpoint times.  
+        clawdata.checkpt_times = [1., 2.]
+
+    elif clawdata.checkpt_style == 3:
+        # Checkpoint every checkpt_interval timesteps (on Level 1)
+        # (and at the final time).
+        clawdata.checkpt_interval = 100
+
+    elif clawdata.checkpt_style == 4:
+        # Checkpoint every checkpt_time_interval time units
+        clawdata.checkpt_time_interval = 1.
+
+
+    #  ----- For developers only ---- 
+    # Toggle debugging print statements:
+    clawdata.dprint = False      # print domain flags
+    clawdata.eprint = False      # print err est flags
+    clawdata.edebug = False      # even more err est flags
+    clawdata.gprint = False      # grid bisection/clustering
+    clawdata.nprint = False      # proper nesting output
+    clawdata.pprint = False      # proj. of tagged points
+    clawdata.rprint = False      # print regridding summary
+    clawdata.sprint = False      # space/memory output
+    clawdata.tprint = False      # time step reporting each level
+    clawdata.uprint = False      # update/upbnd reporting
+    
     return rundata
     # end of function setrun
     # ----------------------
