@@ -33,7 +33,7 @@ FFLAGS ?=  -O2
 CLAW_LIB = $(CLAW)/amrclaw/src/2d/
     
 MODULES = \
-  $(CLAW_LIB)/amr_module.f \
+  $(CLAW_LIB)/amr_module.f90 \
 
 SOURCES = \
   $(CLAW)/riemann/src/rpn2_vc_advection.f \
