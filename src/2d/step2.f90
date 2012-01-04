@@ -9,6 +9,9 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
 !    
 !     fm, fp are fluxes to left and right of single cell edge
 !     See the flux2 documentation for more information.
+!
+!     Converted to f90 2012-1-04 (KTM)
+!
     
     use amr_module
 
@@ -110,7 +113,8 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         endif
         
         ! Store value of j along the slice into common block
-!         jcom = j
+        ! *** WARNING *** This may not working with threading
+        jcom = j
 
         ! Compute modifications fadd and gadd to fluxes along this slice:
         call flux2(1,maxm,meqn,maux,mbc,mx,q1d,dtdx1d,aux1,aux2,aux3, &
@@ -183,6 +187,7 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         endif
         
         ! Store the value of i along this slice in the common block
+        ! *** WARNING *** This may not working with threading
         icom = i
         
         ! Compute modifications fadd and gadd to fluxes along this slice
