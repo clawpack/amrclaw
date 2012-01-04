@@ -1,258 +1,220 @@
 subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,rpn2,rpt2)
-c     ==========================================================
-c
-c     # clawpack routine ...  modified for AMRCLAW
-c
-c     # Take one time step, updating q.
-c     # On entry, qold gives
-c     #    initial data for this step
-c     #    and is unchanged in this version.
-c    
-c     # fm, fp are fluxes to left and right of single cell edge
-c     # See the flux2 documentation for more information.
-c
-c
-      use amr_module
-      implicit double precision (a-h,o-z)
-      external rpn2, rpt2
+!
+!     clawpack routine ...  modified for AMRCLAW
+!
+!     Take one time step, updating q.
+!     On entry, qold gives
+!        initial data for this step
+!        and is unchanged in this version.
+!    
+!     fm, fp are fluxes to left and right of single cell edge
+!     See the flux2 documentation for more information.
+    
+    use amr_module
 
-      dimension qold(meqn, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
-      dimension aux(maux,1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
-      dimension   fm(meqn, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
-      dimension   fp(meqn,1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
-      dimension   gm(meqn,1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
-      dimension   gp(meqn,1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
-
-      ! These are stack based here such that each thread can have their own copy
-      dimension faddm(meqn,1-mbc:maxm+mbc)
-      dimension faddp(meqn,1-mbc:maxm+mbc)
-      dimension gaddm(meqn,1-mbc:maxm+mbc,2)
-      dimension gaddp(meqn,1-mbc:maxm+mbc,2)
-      dimension  q1d(meqn,1-mbc:maxm+mbc)
-      dimension aux1(maux,1-mbc:maxm+mbc)
-      dimension aux2(maux,1-mbc:maxm+mbc)
-      dimension aux3(maux,1-mbc:maxm+mbc)
-      dimension dtdx1d(1-mbc:maxm+mbc)
-      dimension dtdy1d(1-mbc:maxm+mbc)
-      
-      dimension  wave(meqn, mwaves, 1-mbc:maxm+mbc)
-      dimension     s(mwaves, 1-mbc:maxm + mbc)
-      dimension  amdq(meqn,1-mbc:maxm + mbc)
-      dimension  apdq(meqn,1-mbc:maxm + mbc)
-      dimension  cqxx(meqn,1-mbc:maxm + mbc)
-      dimension bmadq(meqn,1-mbc:maxm + mbc)
-      dimension bpadq(meqn,1-mbc:maxm + mbc)
-      
-      common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
-c
-c     # store mesh parameters that may be needed in Riemann solver but not
-c     # passed in...
-      dxcom = dx
-      dycom = dy
-      dtcom = dt
-c
-c
-c     # partition work array into pieces needed for local storage in
-c     # flux2 routine.  Find starting index of each piece:
-c
-C       i0wave = 1
-C       i0s = i0wave + (maxm+2*mbc)*meqn*mwaves
-C       i0amdq = i0s + (maxm+2*mbc)*mwaves
-C       i0apdq = i0amdq + (maxm+2*mbc)*meqn
-C       i0cqxx = i0apdq + (maxm+2*mbc)*meqn
-C       i0bmadq = i0cqxx + (maxm+2*mbc)*meqn
-C       i0bpadq = i0bmadq + (maxm+2*mbc)*meqn
-C       iused = i0bpadq + (maxm+2*mbc)*meqn - 1
-c
-C       if (iused.gt.mwork) then
-C c        # This shouldn't happen due to checks in claw2
-C          write(outunit,*) 'not enough work space in step2'
-C          write(*      ,*) 'not enough work space in step2'
-C          stop 
-C          endif
-c
-c
-      cflgrid = 0.d0
-      dtdx = dt/dx
-      dtdy = dt/dy
-c
-      fm = 0.d0
-      fp = 0.d0
-      gm = 0.d0
-      gp = 0.d0
-c
-      if (mcapa == 0) then
-c         No capa array:
-          dtdx1d = dtdx
-          dtdy1d = dtdy
-      endif
-c
-c
-c     # perform x-sweeps
-c     ==================
-c
+    implicit none
+    
+    external rpn2, rpt2
+    
+    ! Arguments
+    integer, intent(in) :: maxm,maxmx,maxmy,meqn,maux,mbc,mx,my
+    real(kind=8), intent(in) :: dx,dy,dt
+    real(kind=8), intent(inout) :: cflgrid
+    real(kind=8), intent(inout) :: qold(meqn, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
+    real(kind=8), intent(inout) :: aux(maux,1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
+    real(kind=8), intent(inout) :: fm(meqn, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
+    real(kind=8), intent(inout) :: fp(meqn,1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
+    real(kind=8), intent(inout) :: gm(meqn,1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
+    real(kind=8), intent(inout) :: gp(meqn,1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
+    
+    ! Local storage for flux accumulation
+    real(kind=8) :: faddm(meqn,1-mbc:maxm+mbc)
+    real(kind=8) :: faddp(meqn,1-mbc:maxm+mbc)
+    real(kind=8) :: gaddm(meqn,1-mbc:maxm+mbc,2)
+    real(kind=8) :: gaddp(meqn,1-mbc:maxm+mbc,2)
+    
+    ! Scratch storage for Sweeps and Riemann problems
+    real(kind=8) ::  q1d(meqn,1-mbc:maxm+mbc)
+    real(kind=8) :: aux1(maux,1-mbc:maxm+mbc)
+    real(kind=8) :: aux2(maux,1-mbc:maxm+mbc)
+    real(kind=8) :: aux3(maux,1-mbc:maxm+mbc)
+    real(kind=8) :: dtdx1d(1-mbc:maxm+mbc)
+    real(kind=8) :: dtdy1d(1-mbc:maxm+mbc)
+    
+    real(kind=8) ::  wave(meqn, mwaves, 1-mbc:maxm+mbc)
+    real(kind=8) ::     s(mwaves, 1-mbc:maxm + mbc)
+    real(kind=8) ::  amdq(meqn,1-mbc:maxm + mbc)
+    real(kind=8) ::  apdq(meqn,1-mbc:maxm + mbc)
+    real(kind=8) ::  cqxx(meqn,1-mbc:maxm + mbc)
+    real(kind=8) :: bmadq(meqn,1-mbc:maxm + mbc)
+    real(kind=8) :: bpadq(meqn,1-mbc:maxm + mbc)
+    
+    ! Looping scalar storage
+    integer :: i,j,thread_num
+    real(kind=8) :: dtdx,dtdy,cfl1d
+    
+    ! Common block storage
+    integer :: icom,jcom
+    real(kind=8) :: dtcom,dxcom,dycom,tcom
+    common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
+    
+    ! Store mesh parameters in common block
+    dxcom = dx
+    dycom = dy
+    dtcom = dt
+    
+    cflgrid = 0.d0
+    dtdx = dt/dx
+    dtdy = dt/dy
+    
+    fm = 0.d0
+    fp = 0.d0
+    gm = 0.d0
+    gp = 0.d0
+    
+    ! ============================================================================
+    ! Perform X-Sweeps
 #ifdef SWEEP_THREADING
-!$OMP PARALLEL DO PRIVATE(j,i,m,ma,dtdx,jcom)
-!$OMP&            PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdx1d)
-!$OMP&            PRIVATE(aux1,aux2,aux3)
-!$OMP&            PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)
-!$OMP&            PRIVATE(cfl1d)
-!$OMP&            SHARED(mx,my,maxm,maux,mcapa,mbc,meqn)
-!$OMP&            SHARED(cflgrid,fm,fp,gm,gp,qold,aux)
-!$OMP&            DEFAULT(none)
+    !$OMP PARALLEL DO PRIVATE(j,jcom,thread_num)                  &
+    !$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdx1d) &
+    !$OMP             PRIVATE(aux1,aux2,aux3)                     &
+    !$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
+    !$OMP             PRIVATE(cfl1d)                              &
+    !$OMP             SHARED(mx,my,maxm,maux,mcapa,mbc,meqn,dtdx) &
+    !$OMP             SHARED(cflgrid,fm,fp,gm,gp,qold,aux)        &
+    !$OMP             DEFAULT(none)                               
 #endif
-      do j = 0,my+1
-         if (my.eq.1 .and. j.ne.1) go to 50  !# for 1d AMR
-c
-c        # copy data along a slice into 1d arrays:
-         do 20 i = 1-mbc, mx+mbc
-           do 20 m=1,meqn
-               q1d(m,i) = qold(m,i,j)
-   20          continue
-c
-         if (mcapa.gt.0)  then
-           do 21 i = 1-mbc, mx+mbc
-               dtdx1d(i) = dtdx / aux(mcapa,i,j)
-   21          continue
-           endif
-c
-         if (maux .gt. 0)  then
-            do 22 i = 1-mbc, mx+mbc
-              do 22 ma=1,maux
-                 aux1(ma,i) = aux(ma,i,j-1)
-                 aux2(ma,i) = aux(ma,i,j  )
-                 aux3(ma,i) = aux(ma,i,j+1)
-   22            continue
-           endif
-c
-c
-c        # Store the value of j along this slice in the common block
-c        # comxyt in case it is needed in the Riemann solver (for
-c        # variable coefficient problems)
-         jcom = j  
-c                  
-c        # compute modifications fadd and gadd to fluxes along this slice:
-         call flux2(1,maxm,meqn,maux,mbc,mx,
-     &              q1d,dtdx1d,aux1,aux2,aux3,
-     &              faddm,faddp,gaddm,gaddp,cfl1d,
-     &              wave,s,amdq,apdq,
-     &              cqxx,bmadq,bpadq,rpn2,rpt2)
-#ifdef SWEEP_THREADING
-!$OMP CRITICAL (cfl_row_x)
-#endif
-         cflgrid = dmax1(cflgrid,cfl1d)
-#ifdef SWEEP_THREADING
-!$OMP END CRITICAL (cfl_row_x)
-#endif
-c
-c        # update fluxes for use in AMR:
-c
-#ifdef SWEEP_THREADING
-!$OMP CRITICAL (flux_accumulation_x)
-#endif
-         do m=1,meqn
-             fm(:,i,j) = fm(:,i,j) + faddm(:,i)
-             fp(:,i,j) = fp(:,i,j) + faddp(:,i)
-             gm(:,i,j) = gm(:,i,j) + gaddm(:,i,1)
-             gp(:,i,j) = gp(:,i,j) + gaddp(:,i,1)
-             gm(:,i,j+1) = gm(:,i,j+1) + gaddm(:,i,2)
-             gp(:,i,j+1) = gp(:,i,j+1) + gaddp(:,i,2)
-         enddo
-#ifdef SWEEP_THREADING
-!$OMP END CRITICAL (flux_accumulation_x)
-#endif
-	enddo
-#ifdef SWEEP_THREADING
-!$OMP END PARALLEL DO
-#endif
-c
-c
-c
-c     # perform y sweeps
-c     ==================
-c
-c
-
-      if (my.eq.1) go to 101   !# for 1d AMR
-#ifdef SWEEP_THREADING_Y
-!$OMP PARALLEL DO PRIVATE(j,i,m,ma,dtdy,icom)
-!$OMP&            PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdy1d)
-!$OMP&            PRIVATE(aux1,aux2,aux3)
-!$OMP&            PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)
-!$OMP&            PRIVATE(cfl1d)
-!$OMP&            SHARED(mx,my,maxm,maux,mcapa,mbc,meqn)
-!$OMP&            SHARED(cflgrid,fm,fp,gm,gp,qold,aux)
-!$OMP&            DEFAULT(none)
-#endif
-      do 100 i = 0, mx+1
-c
-c        # copy data along a slice into 1d arrays:
-         do 70 j = 1-mbc, my+mbc
-           do 70 m=1,meqn
-               q1d(m,j) = qold(m,i,j)
-   70          continue
-c
-         if (mcapa.gt.0)  then
-           do 71 j = 1-mbc, my+mbc
-               dtdy1d(j) = dtdy / aux(mcapa,i,j)
-   71          continue
-           endif
-c
-         if (maux .gt. 0)  then
-            do 72 j = 1-mbc, my+mbc
-              do 72 ma=1,maux
-                 aux1(ma,j) = aux(ma,i-1,j)
-                 aux2(ma,j) = aux(ma,i,  j)
-                 aux3(ma,j) = aux(ma,i+1,j)
-   72            continue
-           endif
-c
-c
-c        # Store the value of i along this slice in the common block
-c        # comxyt in case it is needed in the Riemann solver (for
-c        # variable coefficient problems)
-         icom = i  
-c                  
-c        # compute modifications fadd and gadd to fluxes along this slice:
-         call flux2(2,maxm,meqn,maux,mbc,my,
-     &              q1d,dtdy1d,aux1,aux2,aux3,
-     &              faddm,faddp,gaddm,gaddp,cfl1d,
-     &              wave,s,amdq,apdq,
-     &              cqxx,bmadq,bpadq,rpn2,rpt2)
-c
-
-#ifdef SWEEP_THREADING_Y
-!$OMP CRITICAL (cfl_row_y)
-#endif
-           cflgrid = dmax1(cflgrid,cfl1d)
-#ifdef SWEEP_THREADING_Y
-!$OMP END CRITICAL (cfl_row_y)
+    do j = 0,my+1
+        ! For 1D AMR - cannot be used in conjunction with sweep threading        
+#ifndef SWEEP_THREADING
+        if (my == 1 .and. j /= 1) then
+            exit
+        endif
 #endif
 
-c
-c        # 
-c        # update fluxes for use in AMR:
-c
-#ifdef SWEEP_THREADING_Y
+        ! Copy old q into 1d slice
+        q1d(:,1-mbc:mx+mbc) = qold(:,1-mbc:mx+mbc,j)
+        
+        ! Set dtdx slice if a capacity array exists
+        if (mcapa > 0)  then
+            dtdx1d(1-mbc:mx+mbc) = dtdx / aux(mcapa,1-mbc:mx+mbc,j)
+        else
+            dtdx1d = dtdx
+        endif
+        
+        ! Copy aux array into slices
+        if (maux > 0) then
+            aux1(:,1-mbc:mx+mbc) = aux(:,1-mbc:mx+mbc,j-1)
+            aux2(:,1-mbc:mx+mbc) = aux(:,1-mbc:mx+mbc,j  )
+            aux3(:,1-mbc:mx+mbc) = aux(:,1-mbc:mx+mbc,j+1)
+        endif
+        
+        ! Store value of j along the slice into common block
+!         jcom = j
+
+        ! Compute modifications fadd and gadd to fluxes along this slice:
+        call flux2(1,maxm,meqn,maux,mbc,mx,q1d,dtdx1d,aux1,aux2,aux3, &
+                   faddm,faddp,gaddm,gaddp,cfl1d,wave,s, &
+                   amdq,apdq,cqxx,bmadq,bpadq,rpn2,rpt2)       
+                   
+#ifdef SWEEP_THREADING
+        !$OMP CRITICAL (cfl_row_x)
+#endif
+        cflgrid = max(cflgrid,cfl1d)
+#ifdef SWEEP_THREADING
+        !$OMP END CRITICAL (cfl_row_x)
+#endif
+
+#ifdef SWEEP_THREADING
+        !$OMP CRITICAL (flux_accumulation_x)
+#endif
+        ! Update fluxes
+        fm(:,1:mx+1,j) = fm(:,1:mx+1,j) + faddm(:,1:mx+1)
+        fp(:,1:mx+1,j) = fp(:,1:mx+1,j) + faddp(:,1:mx+1)
+        gm(:,1:mx+1,j) = gm(:,1:mx+1,j) + gaddm(:,1:mx+1,1)
+        gp(:,1:mx+1,j) = gp(:,1:mx+1,j) + gaddp(:,1:mx+1,1)
+        gm(:,1:mx+1,j+1) = gm(:,1:mx+1,j+1) + gaddm(:,1:mx+1,2)
+        gp(:,1:mx+1,j+1) = gp(:,1:mx+1,j+1) + gaddp(:,1:mx+1,2)
+#ifdef SWEEP_THREADING
+        !$OMP END CRITICAL (flux_accumulation_x)
+#endif
+    enddo
+#ifdef SWEEP_THREADING
+    !$OMP END PARALLEL DO
+#endif
+
+#ifndef SWEEP_THREADING
+    ! For 1D AMR
+    if (my == 1) then
+        return
+    endif
+#endif
+
+    ! ============================================================================
+    !  y-sweeps    
+    !
+#ifdef SWEEP_THREADING
+!$OMP PARALLEL DO PRIVATE(i,icom)                             &
+!$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdy1d) &
+!$OMP             PRIVATE(aux1,aux2,aux3)                     &
+!$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
+!$OMP             PRIVATE(cfl1d)                              &
+!$OMP             SHARED(mx,my,maxm,maux,mcapa,mbc,meqn,dtdy) &
+!$OMP             SHARED(cflgrid,fm,fp,gm,gp,qold,aux)        &
+!$OMP             DEFAULT(none)                               
+#endif
+    do i = 0,mx+1
+        
+        ! Copy data along a slice into 1d arrays:
+        q1d(:,1-mbc:my+mbc) = qold(:,i,1-mbc:my+mbc)
+
+        ! Set dt/dy ratio in slice
+        if (mcapa > 0) then
+            dtdy1d(1-mbc:my+mbc) = dtdy / aux(mcapa,i,1-mbc:my+mbc)
+        else
+            dtdy1d = dtdy
+        endif
+
+        ! Copy aux slices
+        if (maux .gt. 0)  then
+            aux1(:,1-mbc:my+mbc) = aux(:,i-1,1-mbc:my+mbc)
+            aux2(:,1-mbc:my+mbc) = aux(:,i,1-mbc:my+mbc)
+            aux3(:,1-mbc:my+mbc) = aux(:,i+1,1-mbc:my+mbc)
+        endif
+        
+        ! Store the value of i along this slice in the common block
+        icom = i
+        
+        ! Compute modifications fadd and gadd to fluxes along this slice
+        call flux2(2,maxm,meqn,maux,mbc,my,q1d,dtdy1d,aux1,aux2,aux3, &
+                   faddm,faddp,gaddm,gaddp,cfl1d,wave,s,amdq,apdq,cqxx, &
+                   bmadq,bpadq,rpn2,rpt2)
+
+#ifdef SWEEP_THREADING
+       !$OMP CRITICAL (cfl_row_y)
+#endif
+       cflgrid = max(cflgrid,cfl1d)
+#ifdef SWEEP_THREADING
+       !$OMP END CRITICAL (cfl_row_y)
+#endif
+
+
+#ifdef SWEEP_THREADING
 !$OMP CRITICAL (flux_accumulation_y)
 #endif
-         do j=1,my+1
-			gm(:,i,j) = gm(:,i,j) + faddm(:,j)
-			gp(:,i,j) = gp(:,i,j) + faddp(:,j)
-			fm(:,i,j) = fm(:,i,j) + gaddm(:,j,1)
-			fp(:,i,j) = fp(:,i,j) + gaddp(:,j,1)
-			fm(:,i+1,j) = fm(:,i+1,j) + gaddm(:,j,2)
-			fp(:,i+1,j) = fp(:,i+1,j) + gaddp(:,j,2)
-         enddo
-#ifdef SWEEP_THREADING_Y
+        ! Update fluxes
+        gm(:,i,1:my+1) = gm(:,i,1:my+1) + faddm(:,1:my+1)
+        gp(:,i,1:my+1) = gp(:,i,1:my+1) + faddp(:,1:my+1)
+        fm(:,i,1:my+1) = fm(:,i,1:my+1) + gaddm(:,1:my+1,1)
+        fp(:,i,1:my+1) = fp(:,i,1:my+1) + gaddp(:,1:my+1,1)
+        fm(:,i+1,1:my+1) = fm(:,i+1,1:my+1) + gaddm(:,1:my+1,2)
+        fp(:,i+1,1:my+1) = fp(:,i+1,1:my+1) + gaddp(:,1:my+1,2)
+#ifdef SWEEP_THREADING
 !$OMP END CRITICAL (flux_accumulation_y)
 #endif
-  100    continue
+    enddo
 #ifdef SWEEP_THREADING_Y
 !$OMP END PARALLEL DO
 #endif
-c
-  101 continue
-c
-      return
-      end
+
+end subroutine step2
