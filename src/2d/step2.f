@@ -179,8 +179,18 @@ c     # perform y sweeps
 c     ==================
 c
 c
-      if (my.eq.1) go to 101   !# for 1d AMR
 
+      if (my.eq.1) go to 101   !# for 1d AMR
+#ifdef SWEEP_THREADING
+!$OMP PARALLEL DO PRIVATE(j,i,m,ma,dtdy,icom)
+!$OMP&            PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdy1d)
+!$OMP&            PRIVATE(aux1,aux2,aux3)
+!$OMP&            PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)
+!$OMP&            PRIVATE(cfl1d)
+!$OMP&            SHARED(mx,my,maxm,maux,mcapa,mbc,meqn)
+!$OMP&            SHARED(cflgrid,fm,fp,gm,gp,qold,aux)
+!$OMP&            DEFAULT(none)
+#endif
       do 100 i = 0, mx+1
 c
 c        # copy data along a slice into 1d arrays:
@@ -217,21 +227,39 @@ c        # compute modifications fadd and gadd to fluxes along this slice:
      &              wave,s,amdq,apdq,
      &              cqxx,bmadq,bpadq,rpn2,rpt2)
 c
-         cflgrid = dmax1(cflgrid,cfl1d)
+
+#ifdef SWEEP_THREADING
+!$OMP CRITICAL (cfl_row)
+#endif
+           cflgrid = dmax1(cflgrid,cfl1d)
+#ifdef SWEEP_THREADING
+!$OMP END CRITICAL (cfl_row)
+#endif
+
 c
 c        # 
 c        # update fluxes for use in AMR:
 c
-         do 75 j=1,my+1
-            do 75 m=1,meqn
+#ifdef SWEEP_THREADING
+!$OMP CRITICAL (flux_accumulation)
+#endif
+         do j=1,my+1
+            do m=1,meqn
                gm(m,i,j) = gm(m,i,j) + faddm(m,j)
                gp(m,i,j) = gp(m,i,j) + faddp(m,j)
                fm(m,i,j) = fm(m,i,j) + gaddm(m,j,1)
                fp(m,i,j) = fp(m,i,j) + gaddp(m,j,1)
                fm(m,i+1,j) = fm(m,i+1,j) + gaddm(m,j,2)
                fp(m,i+1,j) = fp(m,i+1,j) + gaddp(m,j,2)
-   75          continue
+            enddo
+         enddo
+#ifdef SWEEP_THREADING
+!$OMP END CRITICAL (flux_accumulation)
+#endif
   100    continue
+#ifdef SWEEP_THREADING
+!$OMP END PARALLEL DO
+#endif
 c
   101 continue
 c
