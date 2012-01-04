@@ -15,9 +15,9 @@ c  is  mptr.  lenf = current length of lfree list.
 c
 c ::::::::::::::::::::::::::: IGETSP ::::::::::::::::::::::::::::
 c
-
+#ifdef GRID_THREADING
 !$OMP CRITICAL (MemMgmt)
-
+#endif
 c  find first fit from free space list
 c
  10   continue
@@ -96,8 +96,8 @@ c
       if (sprint) write(outunit,100) nwords, igetsp, lentot, lenmax
  100  format('  allocating ',i8,' words in location ',i8,
      1       ' lentot, lenmax ', 2i10)
-
+#ifdef GRID_THREADING
 !$OMP END CRITICAL (MemMgmt)
-
+#endif
       return
       end

@@ -35,10 +35,11 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       dimension fp(nvar,mitot,mjtot),gp(nvar,mitot,mjtot)
       dimension fm(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
       dimension aux(maux,mitot,mjtot)
-      dimension work(mwork)
+C 	  dimension work(mwork)
 
       logical    debug,  dump
       data       debug/.false./,  dump/.false./
+
 c
 c     # set tcom = time.  This is in the common block comxyt that could
 c     # be included in the Riemann solver, for example, if t is explicitly
@@ -72,34 +73,35 @@ c
 c
 c     # fluxes initialized in step2
 c
-      mwork0 = (maxm+2*mbc)*(12*meqn + mwaves + meqn*mwaves + 2) 
+C       mwork0 = (maxm+2*mbc)*(12*meqn + mwaves + meqn*mwaves + 2) 
 c
-      if (mwork .lt. mwork0) then
-         write(outunit,*) 'CLAW2 ERROR... mwork must be increased to ',
-     &               mwork0
-         write(*      ,*) 'CLAW2 ERROR... mwork must be increased to ',
-     &               mwork0
-         stop
-      endif
+C       if (mwork .lt. mwork0) then
+C          write(outunit,*) 'CLAW2 ERROR... mwork must be increased to ',
+C      &               mwork0
+C          write(*      ,*) 'CLAW2 ERROR... mwork must be increased to ',
+C      &               mwork0
+C          stop
+C       endif
+	  
 c
 c     # partition work array into pieces needed for local storage in 
 c     # step2 routine. Find starting index of each piece:
 c
-      i0faddm = 1
-      i0faddp = i0faddm + (maxm+2*mbc)*meqn
-      i0gaddm = i0faddp + (maxm+2*mbc)*meqn
-      i0gaddp = i0gaddm + 2*(maxm+2*mbc)*meqn
-      i0q1d   = i0gaddp + 2*(maxm+2*mbc)*meqn 
-      i0dtdx1 = i0q1d + (maxm+2*mbc)*meqn  
-      i0dtdy1 = i0dtdx1 + (maxm+2*mbc)
-      i0aux1 = i0dtdy1 + (maxm+2*mbc)
-      i0aux2 = i0aux1 + (maxm+2*mbc)*maux
-      i0aux3 = i0aux2 + (maxm+2*mbc)*maux
+C       i0faddm = 1
+C       i0faddp = i0faddm + (maxm+2*mbc)*meqn
+C       i0gaddm = i0faddp + (maxm+2*mbc)*meqn
+C       i0gaddp = i0gaddm + 2*(maxm+2*mbc)*meqn
+C       i0q1d   = i0gaddp + 2*(maxm+2*mbc)*meqn 
+C       i0dtdx1 = i0q1d + (maxm+2*mbc)*meqn  
+C       i0dtdy1 = i0dtdx1 + (maxm+2*mbc)
+C       i0aux1 = i0dtdy1 + (maxm+2*mbc)
+C       i0aux2 = i0aux1 + (maxm+2*mbc)*maux
+C       i0aux3 = i0aux2 + (maxm+2*mbc)*maux
 c
 c
-      i0next = i0aux3 + (maxm+2*mbc)*maux    !# next free space
-      mused  = i0next - 1                    !# space already used
-      mwork1 = mwork - mused              !# remaining space (passed to step2)
+C       i0next = i0aux3 + (maxm+2*mbc)*maux    !# next free space
+C       mused  = i0next - 1                    !# space already used
+C       mwork1 = mwork - mused              !# remaining space (passed to step2)
 
 c
 c
@@ -112,22 +114,21 @@ c
       call step2(mbig,mx,my,nvar,maux,
      &           mbc,mx,my,
      &              q,aux,dx,dy,dt,cflgrid,
-     &              fm,fp,gm,gp,
-     &              work(i0faddm),work(i0faddp),
-     &              work(i0gaddm),work(i0gaddp),
-     &              work(i0q1d),work(i0dtdx1),work(i0dtdy1),
-     &              work(i0aux1),work(i0aux2),work(i0aux3),
-     &              work(i0next),mwork1,rpn2,rpt2)
+     &              fm,fp,gm,gp,rpn2,rpt2)
 c
 c
         write(outunit,1001) mptr, node(nestlevel,mptr),cflgrid
  1001   format(' Courant # of grid', i4,
      &        ' on level', i3, ' is  ', e10.3)
 c
+#ifdef GRID_THREADING
 !$OMP  CRITICAL (cflm)
+#endif
         cflmax = dmax1(cflmax,cflgrid)
         cfl_level = dmax1(cfl_level,cflgrid)
+#ifdef GRID_THREADING
 !$OMP END CRITICAL (cflm)
+#endif GRID_THREADING
 c
 c       # update q
         dtdx = dt/dx

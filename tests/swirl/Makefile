@@ -23,6 +23,9 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
 FFLAGS ?=  -O2 
+FFLAGS += -cpp
+FFLAGS += -DGRID_THREADING -fopenmp
+# FFLAGS += -DSWEEP_THREADING -fopenmp
 
 
 # ---------------------------------
