@@ -41,23 +41,9 @@ c
 c
 c     local arrays -- common block comroe is passed to rpt2eu
 c     ------------
-      parameter (maxm2 = 1800)  
       dimension delta(4)
       logical efix
-	  
       common /cparam/  gamma,gamma1
-c     # assumes at most maxm2 * maxm2 grid with mbc<=7
-      common /comroe/ u2v2(-6:maxm2+7),
-     &       u(-6:maxm2+7),v(-6:maxm2+7),
-     &       enth(-6:maxm2+7),a(-6:maxm2+7),
-     &       g1a2(-6:maxm2+7),euv(-6:maxm2+7) 
-c
-      if (mbc.gt.7 .or. maxm2 .lt. maxm) then
-         write(6,*) 'need to increase maxm2 or 7 in rpn'
-         write(6,*) mbc, maxm
-         stop
-         endif
-c
       data efix /.true./    !# use entropy fix for transonic rarefactions
 c
 c
@@ -72,86 +58,70 @@ c
           mu = 3
           mv = 2
         endif
-c
-c     # note that notation for u and v reflects assumption that the 
-c     # Riemann problems are in the x-direction with u in the normal
-c     # direciton and v in the orthogonal direcion, but with the above
-c     # definitions of mu and mv the routine also works with ixy=2
-c     # and returns, for example, f0 as the Godunov flux g0 for the
-c     # Riemann problems u_t + g(u)_y = 0 in the y-direction.
-c
-c
-c     # compute the Roe-averaged variables needed in the Roe solver.
-c     # These are stored in the common block comroe since they are
-c     # later used in routine rpt2eu to do the transverse wave splitting.
-c
-      do 10 i = 2-mbc, mx+mbc
-         rhsqrtl = dsqrt(qr(1,i-1))
-         rhsqrtr = dsqrt(ql(1,i))
-         pl = gamma1*(qr(4,i-1) - 0.5d0*(qr(2,i-1)**2 +
-     &        qr(3,i-1)**2)/qr(1,i-1))
-         pr = gamma1*(ql(4,i) - 0.5d0*(ql(2,i)**2 +
-     &        ql(3,i)**2)/ql(1,i))
-         rhsq2 = rhsqrtl + rhsqrtr
-         u(i) = (qr(mu,i-1)/rhsqrtl + ql(mu,i)/rhsqrtr) / rhsq2
-         v(i) = (qr(mv,i-1)/rhsqrtl + ql(mv,i)/rhsqrtr) / rhsq2
-         enth(i) = (((qr(4,i-1)+pl)/rhsqrtl
-     &             + (ql(4,i)+pr)/rhsqrtr)) / rhsq2
-         u2v2(i) = u(i)**2 + v(i)**2
-         a2 = gamma1*(enth(i) - .5d0*u2v2(i))
-         a(i) = dsqrt(a2)
-         g1a2(i) = gamma1 / a2
-         euv(i) = enth(i) - u2v2(i) 
-   10    continue
-c
-c
-c     # now split the jump in q at each interface into waves
-c
-c     # find a1 thru a4, the coefficients of the 4 eigenvectors:
+
       do 20 i = 2-mbc, mx+mbc
+c 		  Calculate Roe variables
+          rhsqrtl = dsqrt(qr(1,i-1))
+          rhsqrtr = dsqrt(ql(1,i))
+          pl = gamma1*(qr(4,i-1) - 0.5d0*(qr(2,i-1)**2 +
+     &        qr(3,i-1)**2)/qr(1,i-1))
+          pr = gamma1*(ql(4,i) - 0.5d0*(ql(2,i)**2 +
+     &        ql(3,i)**2)/ql(1,i))
+          rhsq2 = rhsqrtl + rhsqrtr
+          u = (qr(mu,i-1)/rhsqrtl + ql(mu,i)/rhsqrtr) / rhsq2
+          v = (qr(mv,i-1)/rhsqrtl + ql(mv,i)/rhsqrtr) / rhsq2
+          enth = (((qr(4,i-1)+pl)/rhsqrtl
+     &             + (ql(4,i)+pr)/rhsqrtr)) / rhsq2
+          u2v2 = u**2 + v**2
+          a2 = gamma1*(enth - .5d0*u2v2)
+          a = dsqrt(a2)
+          g1a2 = gamma1 / a2
+          euv = enth - u2v2
+		  
+c     # find a1 thru a4, the coefficients of the 4 eigenvectors:		  
          delta(1) = ql(1,i) - qr(1,i-1)
          delta(2) = ql(mu,i) - qr(mu,i-1)
          delta(3) = ql(mv,i) - qr(mv,i-1)
          delta(4) = ql(4,i) - qr(4,i-1)
-         a3 = g1a2(i) * (euv(i)*delta(1) 
-     &      + u(i)*delta(2) + v(i)*delta(3) - delta(4))
-         a2 = delta(3) - v(i)*delta(1)
-         a4 = (delta(2) + (a(i)-u(i))*delta(1) - a(i)*a3) / (2.d0*a(i))
+         a3 = g1a2 * (euv*delta(1) 
+     &      + u*delta(2) + v*delta(3) - delta(4))
+         a2 = delta(3) - v*delta(1)
+         a4 = (delta(2) + (a-u)*delta(1) - a*a3) / (2.d0*a)
          a1 = delta(1) - a3 - a4
 c
 c        # Compute the waves.
 c
 c        # acoustic:
          wave(1,1,i) = a1
-         wave(mu,1,i) = a1*(u(i)-a(i))
-         wave(mv,1,i) = a1*v(i)
-         wave(4,1,i) = a1*(enth(i) - u(i)*a(i))
+         wave(mu,1,i) = a1*(u-a)
+         wave(mv,1,i) = a1*v
+         wave(4,1,i) = a1*(enth - u*a)
          wave(5,1,i) = 0.d0
-         s(1,i) = u(i)-a(i)
+         s(1,i) = u-a
 c
 c        # shear:
          wave(1,2,i) = 0.d0
          wave(mu,2,i) = 0.d0
          wave(mv,2,i) = a2
-         wave(4,2,i) = a2*v(i)
+         wave(4,2,i) = a2*v
          wave(5,2,i) = 0.d0
-         s(2,i) = u(i)
+         s(2,i) = u
 c
 c        # entropy:
          wave(1,3,i) = a3
-         wave(mu,3,i) = a3*u(i)
-         wave(mv,3,i) = a3*v(i)
-         wave(4,3,i) = a3*0.5d0*u2v2(i)
+         wave(mu,3,i) = a3*u
+         wave(mv,3,i) = a3*v
+         wave(4,3,i) = a3*0.5d0*u2v2
          wave(5,3,i) = 0.d0
-         s(3,i) = u(i)
+         s(3,i) = u
 c
 c        # acoustic:
          wave(1,4,i) = a4
-         wave(mu,4,i) = a4*(u(i)+a(i))
-         wave(mv,4,i) = a4*v(i)
-         wave(4,4,i) = a4*(enth(i)+u(i)*a(i))
+         wave(mu,4,i) = a4*(u+a)
+         wave(mv,4,i) = a4*v
+         wave(4,4,i) = a4*(enth+u*a)
          wave(5,4,i) = 0.d0
-         s(4,i) = u(i)+a(i)
+         s(4,i) = u+a
 c
 c        # Another wave added for tracer concentration:
 c
@@ -161,7 +131,7 @@ c        # tracer:
          wave(mv,5,i) = 0.d0
          wave(4,5,i) = 0.d0
          wave(5,5,i) = ql(5,i) - qr(5,i-1)
-         s(5,i) = u(i)
+         s(5,i) = u
 c
    20    continue
 c
