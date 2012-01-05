@@ -58,21 +58,28 @@ c     # finish by transferring from iflags to iflags2
 c
       numbad = 0
 c     always call spest to set up stuff (initialize iflags, fill locbig)
-      call spest(nvar,naux,lcheck,dom1flags,isize,jsize,t0)
+c      call spest(nvar,naux,lcheck,dom1flags,isize,jsize,t0)
+      call spest2(nvar,naux,lcheck,isize,jsize,t0)
       if (tol .gt. 0.) call errest(nvar,naux,lcheck)
 
-      call bufnst(nvar,naux,numbad,lcheck,dom1flags,isize,jsize)
+c      call bufnst(nvar,naux,numbad,lcheck,dom1flags,isize,jsize)
+      call bufnst2(nvar,naux,numbad,lcheck,isize,jsize)
 
       nxypts = nxypts + numbad
 c
 c  colate flagged pts into flagged points array
+c  new version needs to check for proper nesting at this point
+c  also needs to sort,  so can remove duplicates.
 c
-      if (nxypts .gt. 0) then
-          index = igetsp(2*nxypts)
-          call colate(alloc(index),nxypts,lcheck,
-     1                dom1flags,i1flags,isize,jsize,npts)
+      if (nxypts .gt. 0) then  
+c in new version, there are bad cells but nxypts isnt true count any longer
+c since there are duplicates, and proper nesting not yet checked
+           index = igetsp(2*nxypts)
+c          call colate(alloc(index),nxypts,lcheck,
+c     1                dom1flags,i1flags,isize,jsize,npts)
+          call colate2(alloc(index),nxypts,lcheck,nUniquePts)
       else 
-         npts = nxypts
+         nUniqePts = 0
       endif
 
       return

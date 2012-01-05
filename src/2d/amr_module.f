@@ -12,9 +12,11 @@ c
        integer    store1,store2,storeaux
        integer    tempptr,errptr,ffluxptr,cfluxptr
        integer    rsize, horizontal, vertical
+       integer    storeflags
 
        parameter (rsize =  5)
-       parameter (nsize = 13)
+c      parameter (nsize = 13)
+       parameter (nsize = 15) ! for now, until error estimation cleaned up
 
 c  :::::::   integer part of node descriptor
        parameter (levelptr  = 1)
@@ -30,6 +32,8 @@ c  :::::::   integer part of node descriptor
        parameter (ndjlo     = 11)
        parameter (ndjhi     = 12)
        parameter (storeaux  = 13)
+       parameter (storeflags  = 14) ! may well not need when error est. cleaned up
+       parameter (numflags  = 15) ! may well not need when error est. cleaned up
 
 c :::::::  real part of node descriptor
        parameter (cornxlo  = 1)

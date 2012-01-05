@@ -10,6 +10,7 @@ c
       dimension  corner(nsize,maxcl)
       integer    numptc(maxcl), prvptr
       logical    fit, nestck, cout
+      logical    fit2, nestck2
       data       cout/.false./
       integer*1  i1flags(iregsz(lcheck)+2,jregsz(lcheck)+2)
 c
@@ -89,6 +90,13 @@ c
 c 2/28/02 : Added naux to argument list; needed by call to outtre in nestck
       fit = nestck(mnew,lbase,alloc(index+2*ibase),numptc(icl),numptc,
      1             icl,nclust,i1flags,isize,jsize,nvar, naux)
+      fit2 = nestck2(mnew,lbase,alloc(index+2*ibase),numptc(icl),numptc,
+     1             icl,nclust,i1flags,isize,jsize,nvar, naux)
+      write(*,*)"FROM GRDFIT:  fit ",fit," fit2 ",fit2," grid ",mnew
+      if (fit2 .neqv. fit) then
+         write(*,*) "different answers in nestck for mnew = ",mnew
+         stop
+      endif
       if (.not. fit) go to 75
 c
 c     ##  grid accepted. put in list.

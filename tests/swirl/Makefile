@@ -22,7 +22,7 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2 
+FFLAGS ?=  -g -fbounds-check -ffpe-trap=invalid,overflow,zero 
 
 
 # ---------------------------------
@@ -59,8 +59,13 @@ SOURCES = \
   $(CLAW_LIB)/birect.f \
   $(CLAW_LIB)/cleanup.f \
   $(CLAW_LIB)/colate.f \
+  $(CLAW_LIB)/colate2.f \
   $(CLAW_LIB)/bufnst.f \
+  $(CLAW_LIB)/bufnst2.f \
+  $(CLAW_LIB)/setPhysBndry.f \
+  $(CLAW_LIB)/setNeg.f \
   $(CLAW_LIB)/spest.f \
+  $(CLAW_LIB)/spest2.f \
   $(CLAW_LIB)/flag2refine.f \
   $(CLAW_LIB)/allowflag.f \
   $(CLAW_LIB)/errest.f \
@@ -77,9 +82,12 @@ SOURCES = \
   $(CLAW_LIB)/intfil.f \
   $(CLAW_LIB)/moment.f \
   $(CLAW_LIB)/nestck.f \
+  $(CLAW_LIB)/nestck2.f \
+  $(CLAW_LIB)/baseCheck.f \
   $(CLAW_LIB)/prepf.f \
   $(CLAW_LIB)/prepc.f \
   $(CLAW_LIB)/projec.f \
+  $(CLAW_LIB)/projec2.f \
   $(CLAW_LIB)/signs.f \
   $(CLAW_LIB)/findcut.f \
   $(CLAW_LIB)/smartbis.f \
@@ -102,7 +110,9 @@ SOURCES = \
   $(CLAW_LIB)/outtre.f \
   $(CLAW_LIB)/domain.f  \
   $(CLAW_LIB)/setflags.f \
+  $(CLAW_LIB)/addflags.f \
   $(CLAW_LIB)/shiftset.f \
+  $(CLAW_LIB)/shiftset2.f \
   $(CLAW_LIB)/conck.f \
   $(CLAW_LIB)/domshrink.f \
   $(CLAW_LIB)/domprep.f \

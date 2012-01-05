@@ -193,8 +193,11 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.mthbc_xlower = 1
     clawdata.mthbc_xupper = 1
     
-    clawdata.mthbc_ylower = 2
-    clawdata.mthbc_yupper = 2
+    #clawdata.mthbc_ylower = 2
+    #clawdata.mthbc_yupper = 2
+
+    clawdata.mthbc_ylower = 1
+    clawdata.mthbc_yupper = 1
 
 
     # ---------------
@@ -203,7 +206,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    mxnest = 3
+    mxnest = 4
 
     clawdata.mxnest = -mxnest   # negative ==> anisotropic refinement in x,y,t
 
