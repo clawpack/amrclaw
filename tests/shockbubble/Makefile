@@ -26,21 +26,29 @@ FFLAGS ?=  -O2
 FFLAGS += -I$(AMRCLAW)/src/2d # Have to add this here since amr2ez.f is local
 
 # Create flags for threading and preprocessing
-THREAD_FLAGS = 
+PPFLAGS = 
 ifeq ($(findstring gfortran,$(FC)),gfortran)
-    PPFLAGS = -cpp -fopenmp
+    PPFLAGS = -cpp
+	OMP_FLAG = -fopenmp
 endif
 ifeq ($(findstring ifort,$(FC)),ifort)
-    PPFLAGS = -fpp -openmp
+    PPFLAGS = -fpp
+	OMP_FLAG = -openmp
 endif
-ifdef grid_threading
-    THREAD_FLAGS += -DGRID_THREADING
+ifeq ($(THREADING_METHOD),grid)
+    PPFLAGS += $(OMP_FLAG) -DGRID_THREADING
 endif
-ifdef sweep_threading
-    THREAD_FLAGS += -DSWEEP_THREADING
+ifeq ($(THREADING_METHOD),sweep)
+	PPFLAGS += $(OMP_FLAG) -DSWEEP_THREADING
+endif 
+ifeq ($(THREADING_METHOD),all)
+	PPFLAGS += $(OMP_FLAG) -DGRID_THREADING -DSWEEP_THREADING
+endif
+ifdef MAX1D
+	PPFLAGS += -DMAX1D=$(MAX1D)
 endif
 ifeq ($(MAKELEVEL),0)
-    FFLAGS += $(PPFLAGS) $(THREAD_FLAGS)
+    FFLAGS += $(PPFLAGS)
     LFLAGS += $(FFLAGS)
 endif
 
@@ -65,8 +73,8 @@ SOURCES = \
   setprob.f \
   src2.f \
   src1d.f \
-  $(AMRCLAW)/src/2d/init_alloc.f90 \
-  ./amr2ez.f \ # For timings
+  init_alloc.f90 \
+  amr2ez.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/advanc.f \

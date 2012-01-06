@@ -524,8 +524,8 @@ c     --------------------------------------------------------
       call system_clock(mclock_finish,mclock_rate)
 
       write(*,150) " ******* tick timing = ",
-     &  float(mclock_finish - mclock_start)/float(mclock_rate)
- 150  format (a,1f16.8)
+     &  float(mclock_finish - mclock_start)/float(mclock_rate),' s'
+ 150  format (a,1f16.8,a)
 c     # Done with computation, cleanup:
 
 

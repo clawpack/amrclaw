@@ -59,8 +59,11 @@ c :::::::  for flagging points
 
 c      The max1d parameter should be changed if using OpenMP grid based 
 c      looping, usually set to max1d = 60
+#ifdef MAX1D
+	   parameter (max1d = MAX1D)
+#else
        parameter  (max1d = 60)
-
+#endif
        parameter  (maxvar = 10)
        parameter  (maxaux = 20)
        parameter  (maxout = 5000)
