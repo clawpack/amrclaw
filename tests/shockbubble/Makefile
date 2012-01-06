@@ -45,7 +45,7 @@ endif
 # Clawpack library to be used:
     
 MODULES = \
-  $(AMRCLAW)/src/2d/amr_module.f 
+  ./amr_module.f 
 
 # Note that the Riemann solvers included here are modified from those in $RIEMANN
 # by removing the common block roe variable storage, instead these recalculate the
@@ -59,6 +59,7 @@ SOURCES = \
   setprob.f \
   src2.f \
   src1d.f \
+  $(AMRCLAW)/src/2d/init_alloc.f90 \
   $(AMRCLAW)/src/2d/amr2ez.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
@@ -143,7 +144,6 @@ SOURCES = \
   $(AMRCLAW)/src/2d/dumpgauge.f \
   $(AMRCLAW)/src/2d/quick_sort1.f \
   $(AMRCLAW)/src/2d/opendatafile.f \
-  $(AMRCLAW)/src/2d/init_alloc.f90 \
   $(AMRCLAW)/src/2d/restrt_alloc.f90 \
   $(AMRCLAW)/src/2d/resize_alloc.f90 \
 # $(AMRCLAW)/src/2d/resize_alloc_static.f90 \
