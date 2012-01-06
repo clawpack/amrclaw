@@ -24,9 +24,19 @@ FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
 FFLAGS ?=  -O2 
 FFLAGS += -cpp
-FFLAGS += -DGRID_THREADING -fopenmp
-# FFLAGS += -DSWEEP_THREADING -fopenmp
 
+# OpenMP and threading choices, controlled by -D
+ifeq ($(FC),gfortran)
+    FFLAGS += -fopenmp
+else if ($(FC),ifort)
+    FFLAGS += -openmp
+endif
+ifdef grid_threading
+    FFLAGS += -DGRID_THREADING
+endif
+ifdef sweep_threading
+    FFLAGS += -DSWEEP_THREADING
+endif
 
 # ---------------------------------
 # List of sources for this program:
