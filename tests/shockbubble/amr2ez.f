@@ -513,7 +513,7 @@ c
       close(parmunit)
 
 c     Timing
-      call system_clock(mclock_state,mclock_rate)
+	  call system_clock(mclock_start,mclock_rate)
 c
 c     --------------------------------------------------------
 c     # tick is the main routine which drives the computation:
@@ -521,10 +521,11 @@ c     --------------------------------------------------------
       call tick(nvar,iout,nstart,nstop,cut,vtime,time,ichkpt,naux,
      &          nout,tout,tchk,time,rest)
 c     --------------------------------------------------------
+	 
       call system_clock(mclock_finish,mclock_rate)
-
       write(*,150) " ******* tick timing = ",
-     &  float(mclock_finish - mclock_start)/float(mclock_rate),' s'
+     & dble(mclock_finish - mclock_start) / dble(mclock_rate), " s"
+
  150  format (a,1f16.8,a)
 c     # Done with computation, cleanup:
 

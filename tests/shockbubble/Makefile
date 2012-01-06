@@ -79,7 +79,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/advanc.f \
   $(AMRCLAW)/src/2d/bound.f \
-  $(AMRCLAW)/src/2d/stepgrid.f \
+  stepgrid.f \
   $(AMRCLAW)/src/2d/cellave.f \
   $(AMRCLAW)/src/2d/fss.f \
   $(AMRCLAW)/src/2d/zeroin.f \
