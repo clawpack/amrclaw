@@ -3,6 +3,7 @@
 TIME_FILE="timing_${2}"
 rm -f $TIME_FILE.txt
 
+for thread_method in GRID_THREADING SWEEP_THREADING; do
 for num_threads in $(seq 1 ${1}) 
 do
     echo "--------------------------------" | cat >> ${TIME_FILE}.txt
@@ -10,3 +11,4 @@ do
     export OMP_NUM_THREADS=$num_threads
     /usr/bin/time --output=${TIME_FILE}.txt --append --verbose make output > log.txt
 done 
+done

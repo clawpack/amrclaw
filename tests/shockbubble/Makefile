@@ -23,19 +23,24 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
 FFLAGS ?=  -O2 
-FFLAGS += -cpp
 
-# OpenMP and threading choices, controlled by -D
-ifeq ($(FC),gfortran)
-    FFLAGS += -fopenmp
-else if ($(FC),ifort)
-    FFLAGS += -openmp
+# Create flags for threading and preprocessing
+THREAD_FLAGS = 
+ifeq ($(findstring gfortran,$(FC)),gfortran)
+    PPFLAGS = -cpp -fopenmp
+endif
+ifeq ($(findstring ifort,$(FC)),ifort)
+    PPFLAGS = -fpp -openmp
 endif
 ifdef grid_threading
-    FFLAGS += -DGRID_THREADING
+    THREAD_FLAGS += -DGRID_THREADING
 endif
 ifdef sweep_threading
-    FFLAGS += -DSWEEP_THREADING
+    THREAD_FLAGS += -DSWEEP_THREADING
+endif
+ifeq ($(MAKELEVEL),0)
+    FFLAGS += $(PPFLAGS) $(THREAD_FLAGS)
+    LFLAGS += $(FFLAGS)
 endif
 
 # ---------------------------------
@@ -45,7 +50,7 @@ endif
 # Clawpack library to be used:
     
 MODULES = \
-  ./amr_module.f 
+  ./amr_module.f # For control of max1d
 
 # Note that the Riemann solvers included here are modified from those in $RIEMANN
 # by removing the common block roe variable storage, instead these recalculate the
@@ -60,7 +65,7 @@ SOURCES = \
   src2.f \
   src1d.f \
   $(AMRCLAW)/src/2d/init_alloc.f90 \
-  $(AMRCLAW)/src/2d/amr2ez.f \
+  ./amr2ez.f \ # For timings
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/advanc.f \
