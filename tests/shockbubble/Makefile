@@ -22,11 +22,8 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2 
-<<<<<<< HEAD
-=======
-FFLAGS += -cpp -I$(AMRCLAW)/src/2d
->>>>>>> 8b8963124de80d3e8c9f630e5eb132ce8df5f246
+FFLAGS ?=  -O2
+FFLAGS += -I$(AMRCLAW)/src/2d # Have to add this here since amr2ez.f is local
 
 # Create flags for threading and preprocessing
 THREAD_FLAGS = 
