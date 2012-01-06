@@ -23,7 +23,7 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
 FFLAGS ?=  -O2 
-FFLAGS += -cpp
+FFLAGS += -cpp -I$(AMRCLAW)/src/2d
 
 # OpenMP and threading choices, controlled by -D
 ifeq ($(FC),gfortran)
@@ -60,7 +60,7 @@ SOURCES = \
   src2.f \
   src1d.f \
   $(AMRCLAW)/src/2d/init_alloc.f90 \
-  $(AMRCLAW)/src/2d/amr2ez.f \
+  amr2ez.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/advanc.f \
