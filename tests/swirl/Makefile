@@ -24,7 +24,7 @@ FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
 FFLAGS ?=  -O2 
 FFLAGS += -cpp
-FFLAGS += -DGRID_THREADING -fopenmp
+# FFLAGS += -DGRID_THREADING -fopenmp
 # FFLAGS += -DSWEEP_THREADING -fopenmp
 
 
@@ -115,7 +115,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/preintcopy.f \
   $(AMRCLAW)/src/2d/icall.f \
   $(AMRCLAW)/src/2d/preicall.f \
-  $(AMRCLAW)/src/2d/step2.f \
+  $(AMRCLAW)/src/2d/step2.f90 \
   $(AMRCLAW)/src/2d/flux2.f \
   $(AMRCLAW)/src/2d/inlinelimiter.f \
   $(AMRCLAW)/src/2d/cstore.f \

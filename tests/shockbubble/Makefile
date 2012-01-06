@@ -23,6 +23,10 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
 FFLAGS ?=  -O2 
+<<<<<<< HEAD
+=======
+FFLAGS += -cpp -I$(AMRCLAW)/src/2d
+>>>>>>> 8b8963124de80d3e8c9f630e5eb132ce8df5f246
 
 # Create flags for threading and preprocessing
 THREAD_FLAGS = 
