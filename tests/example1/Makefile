@@ -40,7 +40,7 @@ SOURCES = \
   setprob.f \
   $(CLAW)/riemann/src/rpn2_advection.f \
   $(CLAW)/riemann/src/rpt2_advection.f \
-  $(CLAW_LIB)/amr2ez.f \
+  $(CLAW_LIB)/amr2.f \
   $(CLAW_LIB)/bc2amr.f \
   $(CLAW_LIB)/setaux.f \
   $(CLAW_LIB)/b4step2.f \

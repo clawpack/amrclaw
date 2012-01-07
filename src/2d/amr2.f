@@ -75,7 +75,8 @@ c
       character * 12     pltfile,infile,outfile,dbugfile,matfile
       character * 20     parmfile
       character * 25 fname
-      logical            vtime,rest
+      logical            vtime,rest,flag_richardson,flag_gradient
+      logical            verbosity_regrid
       dimension          tout(maxout)
       dimension          tchk(maxout)
 
@@ -92,7 +93,7 @@ c           write(*,*)      ' could not set ieee trapper '
 c           stop
 c        endif
 c
-      infile   = 'amrclaw.data'
+      infile   = 'amr2ez.data'
       outfile  = 'fort.amr'
       dbugfile = 'fort.debug'
       matfile  = 'fort.nplot'
@@ -109,37 +110,41 @@ c
       open(10,file='fort.info',status='unknown',form='formatted')
 c
 c
-c     Number of space dimensions:  ## New in 4.4
-c     read(55,*) ndim  ## not yet in amrclaw
+c     Number of space dimensions:  
+      read(55,*) ndim  
+      if (ndim .ne. 2) then
+          write(outunit,*)
+     &       'Error ***   ndim = 2 is required,  ndim = ',ndim
+          write(outunit,*) '*** Are you sure input has been converted'
+          write(outunit,*) '*** to Clawpack 5.x form?'
+          stop
+      endif
+          
 c
-c     ## The remainder is unchanged from 4.3:
-
 c
 c     domain variables
       read(inunit,*) nx
       read(inunit,*) ny
       read(inunit,*) mxnest
-      if (abs(mxnest) .gt. maxlv) then
+      if (mxnext .le. 0) then
+          write(outunit,*)
+     &       'Error ***   mxnest (amrlevels_max) <= 0 not allowed'
+         stop
+      endif
+          
+      if (mxnest .gt. maxlv) then
          write(outunit,*)
      &    'Error ***   mxnest > max. allowable levels (maxlv) in common'
          write(*,*)
      &    'Error ***   mxnest > max. allowable levels (maxlv) in common'
          stop
       endif
-      if (mxnest .lt. 0) then
-c         # mxnext<0 flags anisotropic refinement - read in refinement
-c         # ratios in x,y,t from next three lines:
-          mxnest = -mxnest
-          read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
-          read(inunit,*) (intraty(i),i=1,max(1,mxnest-1))
-          read(inunit,*) (kratio(i), i=1,max(1,mxnest-1))
-      else
-          read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
-          do i=1,max(1,mxnest-1)
-             intraty(i) = intratx(i)
-             kratio(i)  = intratx(i)
-          enddo
-      endif
+      
+      !# anisotropic refinement always allowed in 5.x:
+      read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
+      read(inunit,*) (intraty(i),i=1,max(1,mxnest-1))
+      read(inunit,*) (kratio(i), i=1,max(1,mxnest-1))
+      
           
 c      if (intrat(1) .lt. 0) then
 c          # this flags the situation where we do not want to refine in t
@@ -155,71 +160,99 @@ c              kratio(i) = intrat(i)
 c              enddo
 c        endif
 
+      read(inunit,*) t0
+      tstart = t0                 ! for common block  !! FIX? !!
 
-      read(inunit,*) nout
+      read(inunit,*) outstyle
+        if (outstyle.eq.1) then
+           read(inunit,*) nout
+           read(inunit,*) tfinal
+c          # array tout is set below
+           iout = 0
+           endif
+        if (outstyle.eq.2) then
+           read(inunit,*) nout
+           read(inunit,*) (tout(i), i=1,nout)
+           iout = 0
+           endif
+        if (outstyle.eq.3) then
+           read(inunit,*) iout
+           read(inunit,*) nout
+           endif
+        if (outstyle.eq.4) then
+           read(inunit,*) dtout
+           read(inunit,*) tfinal
+           nout = floor((tfinal - t0)/dtout)
+           if (dabs(nout*dtout - (tfinal-t0))
+     &         .gt.1.d-12*(tfinal-t0)) then
+              tfinal = t0 + nout*dtout
+              write(outunit,*) "*** dtout does not divide tfinal-t0"
+              write(outunit,*) "*** resetting tfinal to ", tfinal
+              endif
+c          # array tout is set below
+           endif
+
       if (nout .gt. maxout) then
          write(outunit,*) 'Error ***   nout > maxout in common'
          write(*,*)       'Error ***   nout > maxout in common'
          stop
       endif
-      read(inunit,*) outstyle
-        if (outstyle.eq.1) then
-           read(inunit,*) tfinal
-c          # array tout is set below after reading t0
-           iout = 0
-           endif
-        if (outstyle.eq.2) then
-           read(inunit,*) (tout(i), i=1,nout)
-           iout = 0
-           endif
-        if (outstyle.eq.3) then
-           read(inunit,*) iout,nstop
-           nout = 0
-           endif
-      read(inunit,*) possk(1)
-      read(inunit,*) dtv2
-      read(inunit,*) cflv1
-      read(inunit,*) cfl
-      read(inunit,*) nv1
+
+      if ((outstyle.eq.1) .or. (outstyle.eq.4)) then
+	   do i=1,nout
+	      tout(i) = t0 + i*(tfinal-t0)/float(nout)
+	      enddo
+       endif
+
+      read(inunit,*) possk(1)   ! dt_initial
+      read(inunit,*) dtv2       ! dt_max
+      read(inunit,*) cflv1      ! cfl_max
+      read(inunit,*) cfl        ! clf_desired
+      read(inunit,*) nv1        ! steps_max
       if (outstyle.eq.1 .or. outstyle.eq.2) then
          nstop = nv1
       endif
 
-      read(inunit,*) method(1)
-      vtime = (method(1) .eq. 1)
-      read(inunit,*) method(2)
+      read(inunit,*) vtime      ! dt_variable
+      if (vtime) then
+         method(1) = 2
+      else
+         method(1) = 1
+      endif
+
+      read(inunit,*) method(2)  ! order
       iorder = method(2)
-      read(inunit,*) method(3)
-      if (method(3) .lt. 0) then
+      read(inunit,*) method(3)  ! order_trans
+
+      read(inunit,*) dimensional_split
+      if (dimensional_split) then
          write(6,*) '*** ERROR ***  method(3) < 0'
          write(6,*) '    dimensional splitting not supported in amrclaw'
          stop
          endif
 
-      read(inunit,*) method(4)
-      read(inunit,*) method(5)
+      read(inunit,*) method(4)   ! verbosity
+      read(inunit,*) method(5)   ! src_split
       read(inunit,*) mcapa1
       read(inunit,*) naux
       if (naux .gt. maxaux) then
-         write(outunit,*) 'Error ***   naux > maxaux in common'
-         write(*,*)       'Error ***   naux > maxaux in common'
+         write(outunit,*) 'Error ***   naux > maxaux'
+         write(*,*)       'Error ***   naux > maxaux'
          stop
       endif
       do iaux = 1, naux
          read(inunit,*) auxtype(iaux)
       end do
 
-      read(inunit,*) nvar
+      read(inunit,*) nvar    ! meqn
       read(inunit,*) mwaves
       if (mwaves .gt. maxwave) then
-         write(outunit,*) 'Error ***   mwaves > maxwave in common'
-         write(*,*)       'Error ***   mwaves > maxwave in common'
+         write(outunit,*) 'Error ***   mwaves > maxwave'
+         write(*,*)       'Error ***   mwaves > maxwave'
          stop
       endif
       read(inunit,*) (mthlim(mw), mw=1,mwaves)
 
-      read(inunit,*) t0
-      tstart = t0                 ! for common block
       read(inunit,*) xlower
       read(inunit,*) xupper
       read(inunit,*) ylower
@@ -263,46 +296,49 @@ c     1 = left, 2 = right 3 = bottom 4 = top boundary
          stop
          endif
 
-      if (outstyle.eq.1) then
-	   do i=1,nout
-	      tout(i) = t0 + i*(tfinal-t0)/float(nout)
-	      enddo
-           endif
-
 
 c     restart and checkpointing
+c     -------------------------
+
       read(inunit,*) rest
-      read(inunit,*) ichkpt
-      if (ichkpt .eq. 2) then
+      read(inunit,*) checkpt_style
+      if (checkpt_style.eq.2) then
          read(inunit,*) nchkpt
          if (nchkpt .gt. maxout) then
-            write(6,*) 'Error nchkpt can be no greater than maxout'
+            write(6,*) '*** Error nchkpt can be no greater than maxout'
             stop
             endif
          read(inunit,*) (tchk(i), i=1,nchkpt)
-         endif
-      if (ichkpt .eq. 3) then
-         read(inunit,*) nchkpt
-         endif
-      if (ichkpt .eq. 4) then
-         read(inunit,*) checkpt_dt
-         nchkpt =  floor((tfinal-t0)/checkpt_dt)
-	     do i=1,nchkpt
-	        tchk(i) = t0 + i*(tfinal-t0)/float(nchkpt)
-	        enddo
-         endif
+      if (checkpt_style.eq.3) then
+         read(inunit,*) ichkpt
+
 c
 c     refinement variables
-      read(inunit,*) tol
-      read(inunit,*) tolsp
+      read(inunit,*) flag_richardson
+      read(inunit,*) tol            ! for richardson
+      read(inunit,*) flag_gradient
+      read(inunit,*) tolsp          ! for gradient
       read(inunit,*) kcheck
       read(inunit,*) ibuff
       read(inunit,*) cut
+      read(inunit,*) verbosity_regrid
 c
 c     style of output
 c
-      read(inunit,*) printout
-      read(inunit,*) matlabout
+      read(inunit,*) output_format
+      read(inunit,*) nq_components
+      if (nq_components .gt. nvar) then
+         write(6,*) '*** output_nq_components too large'
+         stop
+         endif
+      read(inunit,*) (output_q_components(i),i=1,nq_components)
+      read(inunit,*) naux_components
+      if (naux_components .gt. naux) then
+         write(6,*) '*** output_naux_components too large'
+         stop
+         endif
+      read(inunit,*) (output_aux_components(i),i=1,naux_components)
+
 
 c
 c
@@ -317,6 +353,15 @@ c     # read verbose/debugging flags
       read(inunit,*) sprint
       read(inunit,*) tprint
       read(inunit,*) uprint
+
+      read(inunit,*) nregions
+      if (nregions .gt. 0) then
+         write(6,*) '*** Regions not yet implemented'
+         stop
+         endif
+
+      call setgauges
+
       close(inunit)
 
 c     # look for capacity function via auxtypes:
@@ -521,7 +566,7 @@ c     --------------------------------------------------------
 c     # tick is the main routine which drives the computation:
 c     --------------------------------------------------------
       call tick(nvar,iout,nstart,nstop,cut,vtime,time,ichkpt,naux,
-     &          nout,tout,tchk,time,rest,nchkpt)
+     &          nout,tout,tchk,time,rest)
 c     --------------------------------------------------------
 
 c     # Done with computation, cleanup:

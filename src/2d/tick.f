@@ -49,9 +49,7 @@ c     # For now use verbosity, or set to 0 to suppress printing regrid info:
       ncycle         = nstart
       call setbestsrc()     ! need at very start of run, including restart
       if ( iout .eq. 0) iout  = iinfinity
-      if (ichkpt .eq. 0) then
-          ichkpt = iinfinity
-          ichkpt = 
+      
       nextout = 1
       if (nout .gt. 0) then
          tfinal = tout(nout)
@@ -286,9 +284,10 @@ c
           ncycle  = ncycle + 1
           call conck(1,nvar,naux,time,rest)
 
-       if ((ichkpt.gt.0 .and. mod(ncycle,ichkpt).eq.0) 
+       if ((ichkpt.eq.3 .and. mod(ncycle,checkpt_interval).eq.0)
      &      .or. dumpchk) then
                 call check(ncycle,time,nvar,naux)
+                dumpchk = .true.
        endif
 
        if ((mod(ncycle,iout).eq.0) .or. dumpout) then
@@ -334,18 +333,12 @@ c
       endif
 
 c  # checkpoint everything for possible future restart
-c  # (unless we just did it based on ichkpt or dumpchk)
+c  # (unless we just did it based on dumpchk)
 c
 c  # don't checkpoint at all if user set ichkpt=0
 
-      if (ichkpt .gt. 0) then
-         if ((ncycle/nchkpt)*nchkpt .ne. ncycle) then
-           call check(ncycle,time,nvar,naux)
-         endif
-       endif
 
-      if (ichkpt .lt. 0) then
-         if (.not. dumpchk) then
+      if ((ichkpt .gt. 0) .and. (.not. dumpchk)) then
            call check(ncycle,time,nvar,naux)
          endif
        endif
