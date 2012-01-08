@@ -1,7 +1,8 @@
 c
 c ----------------------------------------------------------
 c
-       subroutine shiftset(intarray,intarray2,isize,jsize)
+       subroutine shiftset(intarray,isize,jsize)
+c      subroutine shiftset(intarray,intarray2,isize,jsize)
 c       subroutine old_shiftset(intarray,intarray2,idir,jdir,isize,jsize)
 
       use amr_module
@@ -9,7 +10,9 @@ c       subroutine old_shiftset(intarray,intarray2,idir,jdir,isize,jsize)
 
 
        integer*1 intarray (0:isize+1,0:jsize+1), 
-     1           intarray2(0:isize+1,0:jsize+1)
+     1           intarray2_old(0:isize+1,0:jsize+1)
+     
+       integer*1  intarray2(0:isize+1,0:jsize+1)
 
 c :::::::::::::::::::::: CSHIFT :::::::::::::::::::::::::::::::
 c shift by + or - 1 in either direction (but only 1 at a time)
