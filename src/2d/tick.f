@@ -284,7 +284,7 @@ c
           ncycle  = ncycle + 1
           call conck(1,nvar,naux,time,rest)
 
-       if ((ichkpt.eq.3 .and. mod(ncycle,checkpt_interval).eq.0)
+       if ((ichkpt.eq.3 .and. mod(ncycle,iout).eq.0)
      &      .or. dumpchk) then
                 call check(ncycle,time,nvar,naux)
                 dumpchk = .true.
@@ -341,7 +341,6 @@ c  # don't checkpoint at all if user set ichkpt=0
       if ((ichkpt .gt. 0) .and. (.not. dumpchk)) then
            call check(ncycle,time,nvar,naux)
          endif
-       endif
 
       return
       end

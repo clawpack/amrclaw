@@ -76,7 +76,7 @@ c
       character * 20     parmfile
       character * 25 fname
       logical            vtime,rest,flag_richardson,flag_gradient
-      logical            verbosity_regrid
+      integer            verbosity_regrid
       dimension          tout(maxout)
       dimension          tchk(maxout)
 
@@ -104,14 +104,14 @@ c
 c
 c     ## New in 4.4:  
 c     ## Open file and skip over leading lines with # comments:
-      fname = 'amr2ez.data'
+      fname = 'amrclaw.data'
       call opendatafile(inunit,fname)
 c
       open(10,file='fort.info',status='unknown',form='formatted')
 c
 c
 c     Number of space dimensions:  
-      read(55,*) ndim  
+      read(inunit,*) ndim  
       if (ndim .ne. 2) then
           write(outunit,*)
      &       'Error ***   ndim = 2 is required,  ndim = ',ndim
@@ -204,6 +204,10 @@ c          # array tout is set below
 	      enddo
        endif
 
+      print *, '+++ iout = ',iout
+      print *, '+++ nout = ',nout
+      print *, '+++ tout = ',(tout(i),i=1,nout)
+
       read(inunit,*) possk(1)   ! dt_initial
       read(inunit,*) dtv2       ! dt_max
       read(inunit,*) cflv1      ! cfl_max
@@ -211,23 +215,24 @@ c          # array tout is set below
       read(inunit,*) nv1        ! steps_max
       if (outstyle.eq.1 .or. outstyle.eq.2) then
          nstop = nv1
-      endif
+         endif
 
       read(inunit,*) vtime      ! dt_variable
       if (vtime) then
          method(1) = 2
-      else
+       else
          method(1) = 1
-      endif
+       endif
 
       read(inunit,*) method(2)  ! order
       iorder = method(2)
       read(inunit,*) method(3)  ! order_trans
 
       read(inunit,*) dimensional_split
-      if (dimensional_split) then
-         write(6,*) '*** ERROR ***  method(3) < 0'
-         write(6,*) '    dimensional splitting not supported in amrclaw'
+      if (dimensional_split.gt.0) then
+         write(6,*) '*** ERROR ***  dimensional_split = ',
+     &               dimensional_split
+         write(6,*) ' dimensional splitting not supported in amrclaw'
          stop
          endif
 
@@ -252,6 +257,7 @@ c          # array tout is set below
          stop
       endif
       read(inunit,*) (mthlim(mw), mw=1,mwaves)
+      read(inunit,*) ifwave
 
       read(inunit,*) xlower
       read(inunit,*) xupper
@@ -309,8 +315,10 @@ c     -------------------------
             stop
             endif
          read(inunit,*) (tchk(i), i=1,nchkpt)
+         endif
       if (checkpt_style.eq.3) then
          read(inunit,*) ichkpt
+         endif
 
 c
 c     refinement variables
@@ -474,19 +482,23 @@ c        ### sequence involves the variable varRefTime.
          lenmax = 0
          lendim = 0
          rvol   = 0.0d0
-         do 8 i   = 1, mxnest
- 8         rvoll(i) = 0.0d0
+         do i   = 1, mxnest
+           rvoll(i) = 0.0d0
+           enddo
          evol   = 0.0d0
          call   stst1
 
-c	 # changed 4/24/09: store dxmin,dymin for setaux before
-c	 # grids are made, in order to average up from finest grid.
-	 dxmin = hxposs(mxnest)
-	 dymin = hyposs(mxnest)
+
+c	     # changed 4/24/09: store dxmin,dymin for setaux before
+c    	 # grids are made, in order to average up from finest grid.
+	     dxmin = hxposs(mxnest)
+	     dymin = hyposs(mxnest)
 
          call   domain (nvar,vtime,nx,ny,naux,t0)
-c        # hold off on gauges until grids are set. the fake call to advance at the very
-c        # first timestep looks at the gauge array but it is not yet built
+
+c        # Hold off on gauges until grids are set. 
+c        # The fake call to advance at the very first timestep 
+c        # looks at the gauge array but it is not yet built
          mgaugeSave = mgauges
          mgauges = 0
          call   setgrd (nvar,cut,naux,dtinit,t0)
@@ -566,7 +578,7 @@ c     --------------------------------------------------------
 c     # tick is the main routine which drives the computation:
 c     --------------------------------------------------------
       call tick(nvar,iout,nstart,nstop,cut,vtime,time,ichkpt,naux,
-     &          nout,tout,tchk,time,rest)
+     &          nout,tout,tchk,time,rest,nchkpt)
 c     --------------------------------------------------------
 
 c     # Done with computation, cleanup:
@@ -624,4 +636,4 @@ c     # Close output and debug files.
       close(dbugunit)
 c
       stop
-      end
+      end program amr2

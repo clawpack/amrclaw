@@ -176,7 +176,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.order = 2
     
     # Use dimensional splitting? (not yet available for AMR)
-    clawdata.dimensional_split = False
+    clawdata.dimensional_split = 0
     
     # For unsplit method, order_trans can be 
     #  0 ==> donor cell (only normal solver used)
@@ -234,7 +234,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    clawdata.amrlevels_max = 3
+    clawdata.amrlevels_max = 1
 
     # List of refinement ratios at each level (length at least amrlevel_max-1)
     clawdata.refinement_ratio_x = [2,2,2]
@@ -301,7 +301,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.pprint = False      # proj. of tagged points
     clawdata.rprint = False      # print regridding summary
     clawdata.sprint = False      # space/memory output
-    clawdata.tprint = False      # time step reporting each level
+    clawdata.tprint = True       # time step reporting each level
     clawdata.uprint = False      # update/upbnd reporting
     
     return rundata

@@ -19,7 +19,7 @@ CLAWMAKE = $(CLAW)/util/Makefile.common
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2 
+FFLAGS ?=  -g
 
 
 CLAW_LIB = $(shell pwd)

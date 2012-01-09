@@ -161,4 +161,11 @@
 !      variables for conservation checking:
        real(kind=8) tstart,tmass0
 
+!      variables for specifying output format
+       integer :: nq_components,naux_components,output_format
+       integer, dimension(maxvar) :: output_q_components
+       integer, dimension(maxaux) :: output_aux_components
+
+       integer :: ifwave
+
        end module amr_module

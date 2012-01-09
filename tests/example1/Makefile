@@ -33,7 +33,7 @@ FFLAGS ?=  -g
 CLAW_LIB = $(CLAW)/amrclaw/src/2d/
     
 MODULES = \
-  $(CLAW_LIB)/amr_module.f \
+  $(CLAW_LIB)/amr_module.f90 \
 
 SOURCES = \
   qinit.f \

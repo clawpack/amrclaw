@@ -25,40 +25,12 @@ c      iaddaux(i,j,ivar) = locaux + i - 1 + mitot*((ivar-1)*mjtot+j-1)
 c
       outaux = .false.
 
-c     ### NCAR graphics output
-
-      if (ncarout) then
-
-        call basic (time, lst, lend )
-c
-        write(pltunit1,100)  nvar
-100     format(10h*VALS     ,i10)
-c
-        level = lst
-10      if (level .gt. lend) go to 60
-            mptr = lstart(level)
-20          if (mptr .eq. 0) go to 50
-                nx = node(ndihi,mptr)-node(ndilo,mptr) + 1
-                ny = node(ndjhi,mptr)-node(ndjlo,mptr) + 1
-                mitot = nx + 2*nghost
-                mjtot = ny + 2*nghost
-                loc = node(store1,mptr)
-                call outvar(alloc(loc),mitot,mjtot,nvar,mptr,nghost)
-                mptr = node(levelptr,mptr)
-            go to 20
-50          continue
-            level = level + 1
-        go to 10
-c
-      endif
-60    continue
 
 
 c     ### MATLAB/Python graphics output
 c
 c
 
-      if (matlabout) then
 c        ###  make the file names and open output files
          matname1 = 'fort.qxxxx'
          matname2 = 'fort.txxxx'
@@ -223,7 +195,6 @@ c
 
       close(unit=matunit1)
       close(unit=matunit2)
-      endif
 
       return
       end
