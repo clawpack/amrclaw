@@ -117,7 +117,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps with a total of nsteps time steps:
         clawdata.output_step_interval = 1
-        clawdata.total_steps = 5
+        clawdata.total_steps = 1
         
     elif clawdata.output_style == 4:
         # Specify time interval for output up to tfinal:
@@ -234,7 +234,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    clawdata.amrlevels_max = 1
+    clawdata.amrlevels_max = 3
 
     # List of refinement ratios at each level (length at least amrlevel_max-1)
     clawdata.refinement_ratio_x = [2,2,2]
@@ -249,7 +249,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.auxtype = []
 
 
-    clawdata.flag_richardson = False  # don't use Richardson estimator
+    clawdata.flag_richardson = False    # don't use Richardson estimator
     clawdata.flag_richardson_tol = 0.1  # only used if flag_richardson==True
     
     clawdata.flag_gradient = True      # flag based on (undivided) gradient of solution
@@ -293,9 +293,9 @@ def setrun(claw_pkg='amrclaw'):
 
     #  ----- For developers only ---- 
     # Toggle debugging print statements:
-    clawdata.dprint = False      # print domain flags
-    clawdata.eprint = False      # print err est flags
-    clawdata.edebug = False      # even more err est flags
+    clawdata.dprint = True       # print domain flags
+    clawdata.eprint = True       # print err est flags
+    clawdata.edebug = True       # even more err est flags
     clawdata.gprint = False      # grid bisection/clustering
     clawdata.nprint = False      # proper nesting output
     clawdata.pprint = False      # proj. of tagged points

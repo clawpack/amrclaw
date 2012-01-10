@@ -167,5 +167,7 @@
        integer, dimension(maxaux) :: output_aux_components
 
        integer :: ifwave
+       logical :: flag_richardson,flag_gradient
+       integer :: verbosity_regrid
 
        end module amr_module

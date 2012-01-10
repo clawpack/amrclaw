@@ -65,7 +65,7 @@ c get user flags for refinement, which might be based on spatial gradient,
 c for example.  Use old values of soln at time t  before
 c integration to get accurate boundary gradients
 c
-      if (tolsp .gt. 0.) then
+      if (flag_gradient) then
          locamrflags = igetsp(mitot*mjtot)
             do 20 i = 1, mitot*mjtot
  20         alloc(locamrflags+i-1) = goodpt

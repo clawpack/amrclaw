@@ -78,7 +78,7 @@ def setplot(plotdata):
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_grid')
     plotitem.amr_grid_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
-    plotitem.amr_gridlines_show = [1,1,0]   
+    plotitem.amr_gridlines_show = [1,1,1]   
     plotitem.amr_gridedges_show = [1]     
     
     # Parameters used only when creating html and/or latex hardcopy

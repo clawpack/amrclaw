@@ -76,7 +76,9 @@ c            # versions of amrclaw -- flag this point if dq > tolsp:
                 dq  = dmax1(dq,dqi, dqj)
     5           continue
 
-             if (dq .gt. tolsp) amrflags(i,j) = DOFLAG
+             if (dq .gt. tolsp) then
+                amrflags(i,j) = DOFLAG
+                endif
              endif
 
  10          continue

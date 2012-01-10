@@ -41,10 +41,6 @@ c          each step) to keep track of when that level should
 c          have its error estimated and finer levels should be regridded.
 c ::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::
 c
-      integer verbosity_regrid     
-c     # Eventually add this to new input params?
-c     # For now use verbosity, or set to 0 to suppress printing regrid info:
-      verbosity_regrid = method(4) 
 
       ncycle         = nstart
       call setbestsrc()     ! need at very start of run, including restart

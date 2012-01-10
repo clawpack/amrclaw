@@ -75,8 +75,7 @@ c
       character * 12     pltfile,infile,outfile,dbugfile,matfile
       character * 20     parmfile
       character * 25 fname
-      logical            vtime,rest,flag_richardson,flag_gradient
-      integer            verbosity_regrid
+      logical            vtime,rest
       dimension          tout(maxout)
       dimension          tchk(maxout)
 
@@ -126,7 +125,7 @@ c     domain variables
       read(inunit,*) nx
       read(inunit,*) ny
       read(inunit,*) mxnest
-      if (mxnext .le. 0) then
+      if (mxnest .le. 0) then
           write(outunit,*)
      &       'Error ***   mxnest (amrlevels_max) <= 0 not allowed'
          stop
@@ -177,7 +176,8 @@ c          # array tout is set below
            endif
         if (outstyle.eq.3) then
            read(inunit,*) iout
-           read(inunit,*) nout
+           read(inunit,*) nstop
+           nout = 0
            endif
         if (outstyle.eq.4) then
            read(inunit,*) dtout
@@ -204,16 +204,13 @@ c          # array tout is set below
 	      enddo
        endif
 
-      print *, '+++ iout = ',iout
-      print *, '+++ nout = ',nout
-      print *, '+++ tout = ',(tout(i),i=1,nout)
 
       read(inunit,*) possk(1)   ! dt_initial
       read(inunit,*) dtv2       ! dt_max
       read(inunit,*) cflv1      ! cfl_max
       read(inunit,*) cfl        ! clf_desired
       read(inunit,*) nv1        ! steps_max
-      if (outstyle.eq.1 .or. outstyle.eq.2) then
+      if (outstyle.ne.3) then
          nstop = nv1
          endif
 
@@ -347,7 +344,6 @@ c
          endif
       read(inunit,*) (output_aux_components(i),i=1,naux_components)
 
-
 c
 c
 c     # read verbose/debugging flags
@@ -430,9 +426,6 @@ c        stop
          stop
       endif
 c
-c
-      if (ncarout)
-     .   open(pltunit1,file=pltfile,status='unknown',form='formatted')
 c
 c
 c     # write out parameters to fort.parameters if desired... (add?)
