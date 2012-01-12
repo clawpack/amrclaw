@@ -46,8 +46,8 @@ build_file_path = "./build_log.txt"
 time_file_path = "./timings.txt"
 log_file_path = "./log.txt"
 build_file = open(build_file_path,'w')
-time_file = open(time_file_path,"./timing.txt",'w')
-log_file = open(log_file_path,"./log.txt",'w')
+time_file = open(time_file_path,'w')
+log_file = open(log_file_path,'w')
 
 # Construct run command
 RUNCLAW_CMD = "python $CLAWUTIL/src/python/runclaw.py xamr ./_output/ T F"
@@ -129,14 +129,15 @@ class BaseThreadTest(object):
             
 
 tests = []
-max_threads = 2
+max_threads = os.environ['OMP_NUM_THREADS']
+
 # Single grid sweep timings
 for mx in [40,60,80,100,120]:
     tests.append(BaseThreadTest(mxnest=1,mx=mx,grid_max=mx,thread_method="sweep",max_threads=max_threads))
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        if sys.argv[1].lower() = 'all':
+        if sys.argv[1].lower() == 'all':
             tests_to_be_run = tests
         else:
             tests_to_be_run = []
