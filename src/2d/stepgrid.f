@@ -128,7 +128,7 @@ c
         cfl_level = dmax1(cfl_level,cflgrid)
 #ifdef GRID_THREADING
 !$OMP END CRITICAL (cflm)
-#endif GRID_THREADING
+#endif
 c
 c       # update q
         dtdx = dt/dx

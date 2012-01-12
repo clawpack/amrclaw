@@ -111,14 +111,14 @@ c
 c
 c     # take one step on the conservation law:
 c
-c	 call system_clock(mclock_start,mclock_rate)
+	 call system_clock(mclock_start,mclock_rate)
       call step2(mbig,mx,my,nvar,maux,
      &           mbc,mx,my,
      &              q,aux,dx,dy,dt,cflgrid,
      &              fm,fp,gm,gp,rpn2,rpt2)
-C 	 call system_clock(mclock_finish,mclock_rate)
-C 	 write(*,1000) " ******* step2 timing = ",
-C      & dble(mclock_finish - mclock_start) / dble(mclock_rate), " s"
+	 call system_clock(mclock_finish,mclock_rate)
+	 write(*,1000) " ******* step2 timing = ",
+     & dble(mclock_finish - mclock_start) / dble(mclock_rate), " s"
 
  1000 format (a,1f16.8,a)
 c
@@ -134,7 +134,7 @@ c
         cfl_level = dmax1(cfl_level,cflgrid)
 #ifdef GRID_THREADING
 !$OMP END CRITICAL (cflm)
-#endif GRID_THREADING
+#endif
 c
 c       # update q
         dtdx = dt/dx
