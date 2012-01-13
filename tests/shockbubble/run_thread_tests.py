@@ -97,14 +97,20 @@ class BaseThreadTest(object):
         date = 'Started %s/%s/%s-%s:%s.%s\n' % (year,month,day,hour,minute,second)
         out_file.write("--------------------------------\n")
         out_file.write(date)
-        out_file.write("thread_method = %s\n" % self.thread_method)
-        out_file.write("max1d = %s\n" % self.grid_max)
-        out_file.write("threads = %s" % num_threads)
-        out_file.flush()
+        out_file.write(str(self))
+        # out_file.write("thread_method = %s\n" % self.thread_method)
+        # out_file.write("max1d = %s\n" % self.grid_max)
+        # out_file.write("threads = %s" % num_threads)
+        
+    def flush_log_files(self):
+        build_file.flush()
+        log_file.flush()
+        time_file.flush()
         
     def build_test(self):
         os.environ["THREADING_METHOD"] = self.thread_method
         os.environ["MAX1D"] = str(self.grid_max)
+        self.flush_log_files()
         subprocess.Popen("make new -j %s" % self.max_threads,shell=True,stdout=build_file).wait()
         
     def run_tests(self):
@@ -120,10 +126,9 @@ class BaseThreadTest(object):
         build_file.write(date)
         build_file.write("thread_method = %s\n" % self.thread_method)
         build_file.write("max1d = %s\n" % self.grid_max)
-        build_file.flush()
-        print "Building..."
+        log_file.write("Building...")
         self.build_test()
-        print "Build completed."
+        log_file.write("Build completed.")
 
         # Write out data file
         self.amrdata.write()
@@ -134,9 +139,10 @@ class BaseThreadTest(object):
             self.write_info(time_file,num_threads + 1)
             
             # Finally, run test
-            print "Running simulation with %s threads..." % int(num_threads + 1)
+            log_file.write("Running simulation with %s threads..." % int(num_threads + 1))
+            self.flush_log_files()
             subprocess.Popen(RUNCLAW_CMD,shell=True,stdout=log_file).wait()
-            print "Simulation completed."
+            log_file.write("Simulation completed.")
             
 
 tests = []
@@ -162,5 +168,5 @@ if __name__ == "__main__":
     
     # Execute tests
     for (i,test) in enumerate(tests_to_be_run):
-        print "Running test %s, test %s of %s." % (test.name,int(i+1),int(len(tests_to_be_run)))
+        log_file.write("Running test %s, test %s of %s." % (test.name,int(i+1),int(len(tests_to_be_run))))
         test.run_tests()
