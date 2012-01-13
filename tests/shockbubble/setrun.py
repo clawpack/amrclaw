@@ -7,7 +7,7 @@ that will be read in by the Fortran code.
 """ 
 
 import os
-from pyclaw import data
+import clawdata as data
 
 
 #------------------------------
@@ -106,8 +106,7 @@ def setrun(claw_pkg='amrclaw'):
 
     elif clawdata.outstyle == 2:
         # Specify a list of output times.  
-        #clawdata.tout =  [0.075,0.15,0.225,0.3,0.375,0.45,0.525,0.6,0.675,0.75]   # used if outstyle == 2
-        clawdata.tout = [0.75] 
+        clawdata.tout =  [0.075,0.15,0.225,0.3,0.375,0.45,0.525,0.6,0.675,0.75]   # used if outstyle == 2
         clawdata.nout = len(clawdata.tout)
 
     elif clawdata.outstyle == 3:
@@ -125,7 +124,7 @@ def setrun(claw_pkg='amrclaw'):
     # The current t, dt, and cfl will be printed every time step
     # at AMR levels <= verbosity.  Set verbosity = 0 for no printing.
     #   (E.g. verbosity == 2 means print only on levels 1 and 2.)
-    clawdata.verbosity = 0
+    clawdata.verbosity = 3
     
     
 
