@@ -36,11 +36,6 @@ import time
 
 import setrun
 
-if len(sys.argv) < 2:
-    print "Must provide number of threads upper bound."
-    print sys.argv
-    sys.exit(2)
-
 # Open and initialize log files
 build_file_path = "./build_log.txt"
 time_file_path = "./timings.txt"
@@ -59,7 +54,8 @@ else:
 
 class BaseThreadTest(object):
     
-    def __init__(self,mx=40,mxnest=3,grid_max=60,thread_method="grid",max_threads=2):
+    def __init__(self,name,mx=40,mxnest=3,grid_max=60,thread_method="grid",max_threads=2):
+        self.name = name
         self.grid_max = grid_max
         self.thread_method = thread_method
         self.max_threads = max_threads
@@ -70,15 +66,25 @@ class BaseThreadTest(object):
         self.amrdata.my = mx / 4
         self.amrdata.verbosity = 0
         self.amrdata.mxnest = mxnest
-        self.amrdata.max_steps = 500000
 
-        dt = 0.005
+        dt = 0.0001
+        tfinal = 0.75
         self.amrdata.dt_initial = dt
         self.amrdata.dt_variable = 0
-
+        
         self.amrdata.outstyle = 3
-        self.amrdata.iout = int(0.75 / dt)
-        self.amrdata.nout = self.amrdata.iout
+        num_steps = int(tfinal / dt) + 1
+        self.amrdata.max_steps = num_steps + 1
+        self.amrdata.iout = [num_steps,num_steps]
+        
+    def __str__(self):
+        output = "Test name: %s" % self.name
+        output += "  mx = %s" % self.amrdata.mx
+        output += "  mxnest = %s" % self.amrdata.mxnest
+        output += "  max1d = %s" % self.grid_max
+        output += "  thread_method = %s" % self.thread_method
+        output += "  thread number = [1,%s]" % self.max_threads
+        return output
         
     def write_info(self,out_file,num_threads):
         tm = time.localtime()
@@ -115,18 +121,22 @@ class BaseThreadTest(object):
         build_file.write("thread_method = %s\n" % self.thread_method)
         build_file.write("max1d = %s\n" % self.grid_max)
         build_file.flush()
+        print "Building..."
         self.build_test()
+        print "Build completed."
+
+        # Write out data file
+        self.amrdata.write()
         
-        print "Running %s tests:" % self.max_threads
         for num_threads in range(0,self.max_threads):
             os.environ["OMP_NUM_THREADS"] = str(num_threads + 1)
-            self.amrdata.write()
             self.write_info(log_file,num_threads + 1)
             self.write_info(time_file,num_threads + 1)
-
-            # Finally, run test
-            subprocess.Popen(cmd,shell=True,stdout=log_file).wait()
             
+            # Finally, run test
+            print "Running simulation with %s threads..." % int(num_threads + 1)
+            subprocess.Popen(RUNCLAW_CMD,shell=True,stdout=log_file).wait()
+            print "Simulation completed."
             
 
 tests = []
@@ -134,7 +144,7 @@ max_threads = int(os.environ['OMP_NUM_THREADS'])
 
 # Single grid sweep timings
 for mx in [40,60,80,100,120]:
-    tests.append(BaseThreadTest(mxnest=1,mx=mx,grid_max=mx,thread_method="sweep",max_threads=max_threads))
+    tests.append(BaseThreadTest("Single Grid Sweep Threading, grid_max=%s" % mx,mxnest=1,mx=mx,grid_max=mx,thread_method="sweep",max_threads=max_threads))
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
@@ -145,11 +155,12 @@ if __name__ == "__main__":
             for test in sys.argv[1:]:
                 tests_to_be_run.append(tests[int(test)])
     else:
-        print tests
+        for test in tests:
+            print test
         sys.exit(0)
     
     
     # Execute tests
-    for (i,test) in enumerate(tests):
-        print "Running test set %s" % i
+    for (i,test) in enumerate(tests_to_be_run):
+        print "Running test %s, test %s of %s." % (test.name,int(i+1),int(len(tests_to_be_run)))
         test.run_tests()
