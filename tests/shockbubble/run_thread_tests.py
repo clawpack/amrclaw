@@ -78,7 +78,7 @@ class BaseThreadTest(object):
 
         self.amrdata.outstyle = 3
         self.amrdata.iout = int(0.75 / dt)
-        self.amrdata.nout = amrdata.iout
+        self.amrdata.nout = self.amrdata.iout
         
     def write_info(self,out_file,num_threads):
         tm = time.localtime()
@@ -99,7 +99,7 @@ class BaseThreadTest(object):
     def build_test(self):
         os.environ["THREADING_METHOD"] = self.thread_method
         os.environ["MAX1D"] = str(self.grid_max)
-        subprocess.Popen("make new",shell=True,stdout=build_file).wait()
+        subprocess.Popen("make new -j %s" % self.max_threads,shell=True,stdout=build_file).wait()
         
     def run_tests(self):
         tm = time.localtime()
@@ -117,9 +117,10 @@ class BaseThreadTest(object):
         build_file.flush()
         self.build_test()
         
+        print "Running %s tests:" % self.max_threads
         for num_threads in range(0,self.max_threads):
             os.environ["OMP_NUM_THREADS"] = str(num_threads + 1)
-            self.armdata.write()
+            self.amrdata.write()
             self.write_info(log_file,num_threads + 1)
             self.write_info(time_file,num_threads + 1)
 
@@ -129,7 +130,7 @@ class BaseThreadTest(object):
             
 
 tests = []
-max_threads = os.environ['OMP_NUM_THREADS']
+max_threads = int(os.environ['OMP_NUM_THREADS'])
 
 # Single grid sweep timings
 for mx in [40,60,80,100,120]:
