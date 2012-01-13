@@ -47,7 +47,7 @@ log_file = open(log_file_path,'w')
 # Construct run command
 RUNCLAW_CMD = "python $CLAWUTIL/src/python/runclaw.py xamr ./_output/ T F"
 if os.uname()[0] == 'Darwin':
-    time_file.write(" *** WARNING *** On Darwin timings are located in the log file (%s)." % log_file_path)
+    time_file.write(" *** WARNING *** On Darwin timings are located in the log file (%s).\n" % log_file_path)
     run_cmd = "/usr/bin/time %s" % RUNCLAW_CMD
 else:
     cmd = "/usr/bin/time --output=%s --append --verbose %s" % (time_file_path,RUNCLAW_CMD)
@@ -78,12 +78,12 @@ class BaseThreadTest(object):
         self.amrdata.iout = [num_steps,num_steps]
         
     def __str__(self):
-        output = "Test name: %s" % self.name
-        output += "  mx = %s" % self.amrdata.mx
-        output += "  mxnest = %s" % self.amrdata.mxnest
-        output += "  max1d = %s" % self.grid_max
-        output += "  thread_method = %s" % self.thread_method
-        output += "  thread number = [1,%s]" % self.max_threads
+        output = "Test name: %s\n" % self.name
+        output += "  mx = %s\n" % self.amrdata.mx
+        output += "  mxnest = %s\n" % self.amrdata.mxnest
+        output += "  max1d = %s\n" % self.grid_max
+        output += "  thread_method = %s\n" % self.thread_method
+        output += "  thread number = [1,%s]\n" % self.max_threads
         return output
         
     def write_info(self,out_file,num_threads):
@@ -126,9 +126,9 @@ class BaseThreadTest(object):
         build_file.write(date)
         build_file.write("thread_method = %s\n" % self.thread_method)
         build_file.write("max1d = %s\n" % self.grid_max)
-        log_file.write("Building...")
+        log_file.write("Building...\n")
         self.build_test()
-        log_file.write("Build completed.")
+        log_file.write("Build completed.\n")
 
         # Write out data file
         self.amrdata.write()
@@ -139,10 +139,10 @@ class BaseThreadTest(object):
             self.write_info(time_file,num_threads + 1)
             
             # Finally, run test
-            log_file.write("Running simulation with %s threads..." % int(num_threads + 1))
+            log_file.write("Running simulation with %s threads...\n" % int(num_threads + 1))
             self.flush_log_files()
             subprocess.Popen(RUNCLAW_CMD,shell=True,stdout=log_file).wait()
-            log_file.write("Simulation completed.")
+            log_file.write("Simulation completed.\n")
             
 
 tests = []
@@ -168,5 +168,5 @@ if __name__ == "__main__":
     
     # Execute tests
     for (i,test) in enumerate(tests_to_be_run):
-        log_file.write("Running test %s, test %s of %s." % (test.name,int(i+1),int(len(tests_to_be_run))))
+        log_file.write("Running test %s, test %s of %s.\n" % (test.name,int(i+1),int(len(tests_to_be_run))))
         test.run_tests()
