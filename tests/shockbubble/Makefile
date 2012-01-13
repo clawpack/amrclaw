@@ -47,6 +47,7 @@ endif
 ifdef MAX1D
 	PPFLAGS += -DMAX1D=$(MAX1D)
 endif
+MAKELEVEL ?= 0
 ifeq ($(MAKELEVEL),0)
     FFLAGS += $(PPFLAGS)
     LFLAGS += $(FFLAGS)
