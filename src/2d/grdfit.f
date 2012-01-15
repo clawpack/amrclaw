@@ -47,11 +47,12 @@ c        till each cluster ok. needs scratch space.
 c
        idim = iregsz(lcheck)
        jdim = jregsz(lcheck)
-       lociscr = igetsp(idim+jdim)
-       locjscr = lociscr + idim
+c       lociscr = igetsp(idim+jdim)
+c       locjscr = lociscr + idim
        call smartbis(alloc(index),npts,cut,numptc,nclust,lbase,
-     2               corner,alloc(lociscr),alloc(locjscr),idim,jdim)
-       call reclam(lociscr,idim+jdim)
+     2               corner,idim,jdim)
+c     2               corner,alloc(lociscr),alloc(locjscr),idim,jdim)
+c       call reclam(lociscr,idim+jdim)
 
        if (gprint) then
           write(outunit,103) nclust
@@ -83,21 +84,26 @@ c
       rnode(cornyhi,mnew)  = (node(ndjhi,mnew)+1)*hyfine + ylower
       node(nestlevel,mnew)     = levnew
       rnode(timemult,mnew)   = time
+
+      if (gprint) write(outunit,101) (node(i,mnew),i=1,nsize),
+     &                              (rnode(i,mnew),i=1,rsize)
+ 101  format(15i5,/,5e15.7)
 c
 c     ##  if new grid doesn't fit in base grid, nestck bisect it
 c     ##  and returns 2 clusters where there used to be 1.
 c
 c 2/28/02 : Added naux to argument list; needed by call to outtre in nestck
+
       fit = nestck(mnew,lbase,alloc(index+2*ibase),numptc(icl),numptc,
      1             icl,nclust,i1flags,isize,jsize,nvar, naux)
       fit2 = nestck2(mnew,lbase,alloc(index+2*ibase),numptc(icl),numptc,
-     1             icl,nclust,i1flags,isize,jsize,nvar, naux)
+     1             icl,nclust,nvar, naux)
       write(*,*)"FROM GRDFIT:  fit ",fit," fit2 ",fit2," grid ",mnew
       if (fit2 .neqv. fit) then
          write(*,*) "different answers in nestck for mnew = ",mnew
          stop
       endif
-      if (.not. fit) go to 75
+      if (.not. fit2) go to 75
 c
 c     ##  grid accepted. put in list.
       if (newstl(levnew) .eq. null) then

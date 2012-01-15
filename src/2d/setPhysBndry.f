@@ -10,15 +10,23 @@ c
 
 c ****************************************************************
 c  setPhysBndry = if grid borders the physical domain then
-c                 any flagged points sticking out are okay
+c                 turn off any flagged points in buffer zone = those points
+c                 are not properly nested (and doesnt matter).
+c                 But last row/col internal to grid if flagged is ok
+c              
+c                 if periodic, then have to look elsewhere to see if
+c                 last internal row/col that is flagged is ok.
+c                 (done in rest of colate2)
 c ****************************************************************
 
        if (ilo .eq. 0 .and. .not. xperdom) then
 c       set left flagged points to be ok
           do j = jlo-mbuff, jhi+mbuff
             do i = ilo-mbuff, ilo-1
-             rectflags(i,j) = abs(rectflags(i,j))
+             rectflags(i,j) = goodpt
             end do
+c           1st interior cell ok if on bndry. set back to pos if flagged
+            rectflags(0,j) = abs(rectflags(0,j))
           end do
        endif
 
@@ -26,8 +34,9 @@ c       set left flagged points to be ok
 c       set right flagged points to be ok
           do j = jlo-mbuff, jhi+mbuff
             do i = ihi+1, ihi+mbuff
-             rectflags(i,j) = abs(rectflags(i,j))
+             rectflags(i,j) = goodpt
             end do
+            rectflags(ihi,j) = abs(rectflags(ihi,j))
           end do
        endif
 
@@ -36,8 +45,9 @@ c       set right flagged points to be ok
 c       set bottom flagged points to be ok
           do i = ilo-mbuff, ihi+mbuff
             do j = jlo-mbuff, jlo-1    
-             rectflags(i,j) = abs(rectflags(i,j))
+             rectflags(i,j) = goodpt
             end do
+            rectflags(i,jlo) = abs(rectflags(i,jlo))
           end do
        endif
 
@@ -45,8 +55,9 @@ c       set bottom flagged points to be ok
 c       set top flagged points to be ok
           do i = ilo-mbuff, ihi+mbuff
             do j = jhi+1, jhi+mbuff
-             rectflags(i,j) = abs(rectflags(i,j))
+             rectflags(i,j) = goodpt
             end do
+            rectflags(i,jhi) = abs(rectflags(i,jhi))
           end do
        endif
 

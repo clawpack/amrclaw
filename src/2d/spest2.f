@@ -1,7 +1,7 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine spest2 (nvar,naux,lcheck,isize,jsize,t0)
+      subroutine spest2 (nvar,naux,lcheck,t0)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -53,10 +53,12 @@ c for example.  Use old values of soln at time t  before
 c integration to get accurate boundary gradients
 c
       if (tolsp .gt. 0.) then
-         mbuff = max(nghost,ibuff)
+! need at least as big as nghost to fit ghost cells. if ibuff is bigger make
+! the flagged array bigger so can buffer in place
+         mbuff = max(nghost,ibuff)  
          mibuff = nx + 2*mbuff  !NOTE THIS NEW DIMENSIONING 
 c                               !TO ALLOW ROOM FOR BUFFERING IN PLACE
-         mjbuff = nx + 2*mbuff
+         mjbuff = ny + 2*mbuff
          locamrflags = igetsp(mibuff*mjbuff)
          node(storeflags,mptr) = locamrflags
 c           do 20 i = 1, mitot*mjtot
@@ -68,9 +70,9 @@ c        # refinement is desired based on user's criterion.
 c        # Default version compares spatial gradient to tolsp.
 
 c         call flag2refine(nx,ny,nghost,nvar,naux,xleft,ybot,dx,dy,
-         call flag2refine(nx,ny,mbuff,nvar,naux,xleft,ybot,dx,dy,
-     &              time,lcheck,tolsp,alloc(locbig),alloc(locaux),
-     &              alloc(locamrflags), goodpt, badpt )
+          call flag2refine2(nx,ny,nghost,mbuff,nvar,naux,xleft,ybot,
+     &                    dx,dy,time,lcheck,tolsp,alloc(locbig),
+     &                    alloc(locaux),alloc(locamrflags),goodpt,badpt)
 
 c
 c dont reclam here - save for colating and buffering in situ

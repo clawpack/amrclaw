@@ -31,30 +31,34 @@ c
 c
       mkid = newstl(levpro)
  10   if (mkid .eq. 0) go to 90
-       ilo = node(ndilo,mkid) 
-       jlo = node(ndjlo,mkid)
-       ihi = node(ndihi,mkid)
-       jhi = node(ndjhi,mkid)
+       ikidlo = node(ndilo,mkid) 
+       jkidlo = node(ndjlo,mkid)
+       ikidhi = node(ndihi,mkid)
+       jkidhi = node(ndjhi,mkid)
 c
 c  project entire region of fine grids onto rectflag array if intersects
 c  possibly take care of buffering.
 c  adjust since grid descriptor (integer indices)  is 0 based, 
 c  iflags indexing is 1 based. 
+c  do not projec the buffer region, only interior needs it
+c  since buffering will take care of rest (unless ibuff=0-see below)
 c
-      ist  = ilo/lrat2x 
-      jst  = jlo/lrat2y
-      iend = ihi/lrat2x
-      jend = jhi/lrat2y
+      ist  = ikidlo/lrat2x 
+      jst  = jkidlo/lrat2y
+      iend = ikidhi/lrat2x
+      jend = jkidhi/lrat2y
       if (ibuff .eq. 0) then
-c     ## ensure proper nesting here, since buffering step won't follow
-        if (ist*lrat2x .eq. ilo) ist = ist-1
-        if (jst*lrat2y .eq. jlo) jst = jst-1
-        if ((iend+1)*lrat2x .eq. ihi+1) iend = iend+1
-        if ((jend+1)*lrat2y .eq. jhi+1) jend = jend+1
+c     ## ensure proper nesting here, since buffering step won't follow when ibuff 0
+        if (ist*lrat2x .eq. ikidlo) ist = ist-1
+        if (jst*lrat2y .eq. jkidlo) jst = jst-1
+        if ((iend+1)*lrat2x .eq. ikidhi+1) iend = iend+1
+        if ((jend+1)*lrat2y .eq. jkidhi+1) jend = jend+1
       endif
 c
-       do 60 j = jst+1, jend+1
-       do 60 i = ist+1, iend+1
+c       do 60 j = jst+1, jend+1   !old code, shift indices by 1
+c       do 60 i = ist+1, iend+1   ! since iflags used 1-based indexing
+       do 60 j = jst, jend        ! new code into rectflags is 0 based
+       do 60 i = ist, iend       
            if (rectflags(i,j) .eq. goodpt) then
                rectflags(i,j) = badpro
                numpro      = numpro + 1
@@ -66,12 +70,13 @@ c
 c repeat above procedure for wrapped area if nec. if ibuff > 0
 c this will be caught in shiftset flagging
        if (spheredom .and. ibuff .eq. 0) then 
-          jst  = jlo/lrat2y
-          jend = jhi/lrat2y
+          jst  = jkidlo/lrat2y
+          jend = jkidhi/lrat2y
           if (jst .eq. 0) then
              iwrap1 = iregsz(level) - iend - 1
              iwrap2 = iregsz(level) - ist - 1
-             do 61 i = iwrap1+1, iwrap2+1
+c             do 61 i = iwrap1+1, iwrap2+1
+             do 61 i = iwrap1, iwrap2  !changing this WITHOUT CHECKING, AS ABOVE. STILL NEED TO CHECK***
                 if (rectflags(i,1) .eq. goodpt) then
                   rectflags(i,1) = badpro  ! only need to flag 1 wrapped buffer cell
                   numpro      = numpro + 1
@@ -83,7 +88,8 @@ c this will be caught in shiftset flagging
           if (jend .eq. jsize-1) then
              iwrap1 = iregsz(level) - iend - 1
              iwrap2 = iregsz(level) - ist - 1
-             do 62 i = iwrap1+1, iwrap2+1
+c             do 62 i = iwrap1+1, iwrap2+1
+             do 62 i = iwrap1, iwrap2 !CHANGING W/O CHECKING 
                 if (rectflags(i,jsize-1) .eq. goodpt) then
                   rectflags(i,jsize-1) = badpro  ! only need to flag 1 wrapped buffer cell
                   numpro            = numpro + 1
@@ -98,17 +104,17 @@ c
  80     mkid = node(levelptr, mkid)
         go to 10
 c
- 90   if (numpro .eq. 0) go to 95
-      write(outunit,102) numpro,level
- 102  format(i7,' more pts. projected to level ',i5)
-c
- 95   if (pprint) then
+ 90   if (pprint) then
+         write(outunit,102) numpro,level
+ 102     format(i7,' more pts. projected to level ',i5)
+
          write(outunit,103) level
- 103     format(/,'  from projec: flagged pts. at level ',i4,':')
-         do 110 jj = 1, mjbuff
-            j        = mjbuff + 1 - jj
-            write(outunit,104) (rectflags(i,j),i=ilo-mbuff,iihi+mbuff)
-104         format(80i1)
+ 103     format(/,'  from projec: flagged pts. (incl. buffer zone)',
+     &           ' at level ',i4,':')
+
+         do 110 j = jhi+mbuff, jlo-mbuff, -1
+           write(outunit,104)(int(rectflags(i,j)),i=ilo-mbuff,ihi+mbuff)
+104        format(80i1)
  110     continue
       endif
 c

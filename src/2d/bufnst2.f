@@ -1,7 +1,7 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine bufnst2 (nvar,naux,numbad,lcheck,isize,jsize)
+      subroutine bufnst2 (nvar,naux,numbad,lcheck)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -10,7 +10,9 @@ c
       logical    vtime
       data       vtime/.false./
 
-      iadd(i,j) = locamrflags + i - ilo-mbuff + mibuff*(j-jlo-mbuff)
+c     this indexing is for amrflags array, in flag2refine from 1-mbuff:mx+mbuff
+c     but here is from 1:mibuff
+      iadd(i,j) = locamrflags + i-1+ mibuff*(j-1)
 c
  
 c :::::::::::::::::::::::::: BUFNST :::::::::::::::::::::::::::::::::::
@@ -37,14 +39,14 @@ c
       ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
       mitot  = nx + 2*nghost
       mjtot  = ny + 2*nghost
+      mibuff = nx + 2*mbuff
+      mjbuff = ny + 2*mbuff
       locamrflags = node(storeflags,mptr)
 c     negative tol means richardson not done      
       if (tol .gt. 0) then    
             loctmp = node(store2, mptr)
 c            call setflags(iflags,isize,jsize,
 c     .           alloc(loctmp),nvar,mitot,mjtot,mptr)  
-            mibuff = nx + 2*mbuff
-            mjbuff = ny + 2*mbuff
             call addflags(alloc(locamrflags),mibuff,mjbuff,
      .                    alloc(loctmp),nvar,mitot,mjtot,mptr)
       endif 
@@ -55,6 +57,7 @@ c     which was saved for possible errest reuse
 c
 c for this version project to each grid separately, no giant iflags
       if (lcheck+2 .le. mxnest) then
+         numpro2 = 0
          call projec2(lcheck,numpro2,alloc(locamrflags),
      .                ilo,ihi,jlo,jhi,mbuff)
          numpro = numpro + numpro2
@@ -62,9 +65,10 @@ c for this version project to each grid separately, no giant iflags
 
        if (eprint) then
          write(outunit,*)" flagged points before buffering on level", 
-     .                   lcheck," grid ",mptr, "(no buff cells)"
-         do 47 j = jhi, jlo, -1
-           write(outunit,100)(alloc(iadd(i,j)),i=ilo,ihi)
+     .                   lcheck," grid ",mptr, " (no buff cells)"
+         do 47 j = mjbuff-mbuff, mbuff+1, -1
+           write(outunit,100)(int(alloc(iadd(i,j))),
+     &                        i=mbuff+1,mibuff-mbuff)
  100       format(80i1)
  47      continue
       endif
@@ -79,8 +83,10 @@ c      endif
          write(outunit,*)" flagged points after projecting to level", 
      .                    lcheck, " grid ",mptr
          write(outunit,*) " with ",numpro," additional points projected"
-         do 49 j = jhi+mbuff, jlo-mbuff, -1
-           write(outunit,100)(alloc(iadd(i,j)),i=ilo-mbuff,ihi+mbuff)
+c        buffer zone (wider ghost cell region) now set after buffering
+c        so loop over larger span of indices
+         do 49 j = mjbuff, 1, -1
+           write(outunit,100)(int(alloc(iadd(i,j))),i=1,mibuff)
  49      continue
       endif
 
@@ -97,17 +103,19 @@ c
       if (eprint) then
          write(outunit,*)" flagged points after buffering on level", 
      .                    lcheck," grid ",mptr
-         do 48 j = jhi+mbuff, jlo-mbuff, -1
-           write(outunit,100)(alloc(iadd(i,j)),i=ilo-mbuff, ihi+mbuff)
+         do 48 j = mjbuff, 1, -1
+           write(outunit,100)(int(alloc(iadd(i,j))),i=1, mibuff)
  48      continue
       endif
 c   
 c   count up
 c
           numflagged = 0
-          do 82 j = jlo-mbuff, jhi+mbuff
-          do 82 i = ilo-mbuff, ihi+mbuff
-           if (alloc(iadd(i,j)) .ne. goodpt) numflagged=numflagged + 1
+          do 82 j = 1, mjbuff
+          do 82 i = 1, mibuff
+           if (alloc(iadd(i,j)) .ne. goodpt) then 
+             numflagged=numflagged + 1
+           endif
  82       continue
           write(outunit,116) numflagged, mptr
  116      format(i5,' points flagged on level ',i4,' grid ',i4)
@@ -119,7 +127,8 @@ c
 
       write(outunit,*)" total points flagged on level ",lcheck,
      .                " is ",numbad
-      write(outunit,*)"this may include double counting of buffer cells"
+      write(outunit,*)"this may include double counting buffer cells",
+     &                " on  multiple grids"
 
       return
       end

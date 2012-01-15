@@ -14,16 +14,16 @@ c
 c :::::::::::::::::::::: ADDFLAGS ::::::::::::::::::::::::::::::::::
 c transfer flagged arrays from errest into the one from spatial
 c differencing 
-c NOTE: not dimensioned the same. rectflags is larger to accomodate
-c inplace buffering
+c NOTE: not dimensioned the same. rectflags is possibly larger to accomodate
+c inplace buffering.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 
-      mbuff = max(nghost, ibuff) - nghost
       do 10 j = nghost+1, mjtot-nghost
       do 10 i = nghost+1, mitot-nghost
-        ioff = mbuff
-        rectflags(i+ioff,j+joff) = rectflags(i,j) + rctold(1,i,j)
+         if (rctold(1,i,j) .ne. goodpt) then
+           rectflags(i,j) = badpt
+         endif
  10   continue
 c
  99   return

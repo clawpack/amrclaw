@@ -2,13 +2,11 @@ c
 c ---------------------------------------------------------
 c
       logical function nestck2(mnew,lbase,badpts,npts,numptc,icl,
-     1                        nclust,domflags,isize,jsize,
-     2                        nvar,naux)
+     1                        nclust, nvar,naux)
 c
       use amr_module
       implicit double precision (a-h,o-z)
       dimension  badpts(2,npts)
-      integer*1  domflags(0:isize+1,0:jsize+1)
       logical baseCheck, isNested
 
       integer   numptc(maxcl)

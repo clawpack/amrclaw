@@ -549,6 +549,7 @@ c
  60     write(outunit,905) level, rvoll(level)
 
       write(outunit,906) evol
+
       if (evol+rvol .gt. 0.) then
          ratmet = rvol / (evol+rvol) * 100.0d0
       else

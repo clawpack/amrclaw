@@ -19,13 +19,13 @@ c ****************************************************************
 c remember to handle diagonals
  
        do j = jlo-mbuff, jhi+mbuff
-          do  i = ilo-mbuff, ilo-1
+          do  i = ilo-mbuff, ilo
              if (rectflags(i,j) .gt. 0.) then
                rectflags(i,j) = -rectflags(i,j)    ! if not flagged stays 0
                ico = ico + 1
              endif
           end do
-          do  i = ihi+1, ihi+mbuff
+          do  i = ihi, ihi+mbuff
              if (rectflags(i,j) .gt. 0.) then
                 rectflags(i,j) = -rectflags(i,j)    ! if not flagged stays 0
                 ico = ico + 1
@@ -36,13 +36,13 @@ c remember to handle diagonals
 c
 c   next to top and bottom; corners already handled
        do i = ilo, ihi
-          do j = jlo-mbuff, jlo-1
+          do j = jlo-mbuff, jlo
              if (rectflags(i,j) .gt. 0.) then
                 rectflags(i,j) = -rectflags(i,j)
                 ico = ico + 1
              endif
           end do
-          do j = jhi+1, jhi+mbuff
+          do j = jhi, jhi+mbuff
              if (rectflags(i,j) .gt. 0.) then
                 rectflags(i,j) = -rectflags(i,j)
                 ico = ico + 1

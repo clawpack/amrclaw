@@ -98,10 +98,10 @@ def setrun(claw_pkg='amrclaw'):
 
     if clawdata.outstyle==1:
         # Output nout frames at equally spaced times up to tfinal:
-        #clawdata.nout = 25
-        #clawdata.tfinal = 2.5
-        clawdata.nout = 15
-        clawdata.tfinal = 1.5
+        clawdata.nout = 25
+        clawdata.tfinal = 2.5
+        #clawdata.nout = 15
+        #clawdata.tfinal = 1.5
 
     elif clawdata.outstyle == 2:
         # Specify a list of output times.  
@@ -193,11 +193,11 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.mthbc_xlower = 1
     clawdata.mthbc_xupper = 1
     
-    #clawdata.mthbc_ylower = 2
-    #clawdata.mthbc_yupper = 2
+    clawdata.mthbc_ylower = 2
+    clawdata.mthbc_yupper = 2
 
-    clawdata.mthbc_ylower = 1
-    clawdata.mthbc_yupper = 1
+    #clawdata.mthbc_ylower = 1
+    #clawdata.mthbc_yupper = 1
 
 
     # ---------------
@@ -206,7 +206,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    mxnest = 4
+    mxnest = 3
 
     clawdata.mxnest = -mxnest   # negative ==> anisotropic refinement in x,y,t
 
@@ -229,8 +229,8 @@ def setrun(claw_pkg='amrclaw'):
 
     # More AMR parameters can be set -- see the defaults in pyclaw/data.py
     clawdata.rprint = True
-    clawdata.eprint = True
-    clawdata.dprint = True
+    clawdata.eprint = False
+    clawdata.dprint = False
     clawdata.nprint = True
     clawdata.gprint = True
     

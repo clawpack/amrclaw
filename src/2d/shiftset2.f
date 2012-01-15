@@ -32,17 +32,18 @@ c  note: not looking at ghost cells, only real cells should be flagged
 c  but can buffer the flags into the ghost zone
        do j = jlo, jhi
        do i = ilo, ihi
-          intflag = rectflags(i,j)
-          if (intflag .gt. 0)  then
-c            cell is flagged, buffer in all dirs by one cell
+          rflag = rectflags(i,j)
+          if (rflag .gt. 0)  then
+c            cell is flagged, buffer in all dirs by ibuff
+c            (note this is not nec same as mbuff)
 c            use second array to avoid propagation
-             mlo = i - mbuff
-             mhi = i + mbuff
-             klo = j - mbuff
-             khi = j + mbuff
+             mlo = i - ibuff
+             mhi = i + ibuff
+             klo = j - ibuff
+             khi = j + ibuff
              do k = klo, khi 
              do m = mlo, mhi
-                copyflags(m,k) = intflag  ! copy the flag (may not be = 1?)
+                copyflags(m,k) = rflag  ! copy the flag (doesnt distinguish buffer flag from orig flag)
              end do
              end do
           endif
@@ -51,7 +52,7 @@ c            use second array to avoid propagation
        end do
 
 
-c   copy back. need flags in original array
+c   copy back. need flags in original array, not temp scratch array
 
        do 60 j = jlo-mbuff, jhi+mbuff
        do 60 i = ilo-mbuff, ihi+mbuff
