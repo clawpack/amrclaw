@@ -37,12 +37,9 @@ import time
 import setrun
 
 # Open and initialize log files
-build_file_path = "./build_log.txt"
-time_file_path = "./timings.txt"
-log_file_path = "./log.txt"
-build_file = open(build_file_path,'w')
-time_file = open(time_file_path,'w')
-log_file = open(log_file_path,'w')
+BUILD_PATH_BASE = "./logs"
+TIME_PATH_BASE = "./logs"
+LOG_PATH_BASE = "./logs"
 
 # Construct run command
 RUNCLAW_CMD = "python $CLAWUTIL/src/python/runclaw.py xamr ./_output/ T F"
@@ -50,16 +47,29 @@ if os.uname()[0] == 'Darwin':
     time_file.write(" *** WARNING *** On Darwin timings are located in the log file (%s).\n" % log_file_path)
     run_cmd = "/usr/bin/time %s" % RUNCLAW_CMD
 else:
-    cmd = "/usr/bin/time --output=%s --append --verbose %s" % (time_file_path,RUNCLAW_CMD)
+    run_cmd = "/usr/bin/time --output=%s --append --verbose %s" % (time_file_path,RUNCLAW_CMD)
 
 class BaseThreadTest(object):
     
     def __init__(self,name,mx=40,mxnest=3,grid_max=60,thread_method="grid",max_threads=2):
+        # Basic test information
         self.name = name
         self.grid_max = grid_max
         self.thread_method = thread_method
         self.max_threads = max_threads
         
+        # Open log files and write headers
+        file_label = "_%s_%s_%s" % (self.name,self.grid_max,self.thread_method)
+        self._build_file_path = os.path.join(BUILD_PATH_BASE,"build%s.txt" % file_label)
+        self._time_file_path = os.path.join(TIME_PATH_BASE,"time%s.txt" % file_label)
+        self._log_file_path = os.path.join(LOG_PATH_BASE,"log%s.txt" % file_label)
+        self.build_file = open(self._build_file_path,'w')
+	self.time_file = open(self._time_file_path,'w')
+        self.log_file = open(self._log_file_path,'w')
+        self.write_info(self.build_file,self.max_threads)
+        self.write_info(self.time_file,self.max_threads)
+        self.write_info(self.log_file,self.max_threads)
+
         # Generate base data
         self.amrdata = setrun.setrun().clawdata
         self.amrdata.mx = mx
@@ -140,10 +150,12 @@ class BaseThreadTest(object):
             
             # Finally, run test
             log_file.write("Running simulation with %s threads...\n" % int(num_threads + 1))
+            log_file.write(run_cmd + "\n")
             self.flush_log_files()
-            subprocess.Popen(RUNCLAW_CMD,shell=True,stdout=log_file).wait()
+            time_file.close()
+            subprocess.Popen(run_cmd,shell=True,stdout=log_file).wait()
             log_file.write("Simulation completed.\n")
-            
+            time_file = open(time_file_path,'aw')
 
 tests = []
 max_threads = int(os.environ['OMP_NUM_THREADS'])
@@ -170,3 +182,6 @@ if __name__ == "__main__":
     for (i,test) in enumerate(tests_to_be_run):
         log_file.write("Running test %s, test %s of %s.\n" % (test.name,int(i+1),int(len(tests_to_be_run))))
         test.run_tests()
+        log_file.close()
+        time_file.close()
+        build_file.close()
