@@ -45,7 +45,7 @@ def make_path(path):
 
 
 # Open and initialize log files
-if os.environ.haskey('FC'):
+if os.environ.has_key('FC'):
     BUILD_PATH_BASE = './logs_%s' % os.environ['FC']
     TIME_PATH_BASE = "./logs_%s" % os.environ['FC']
     LOG_PATH_BASE = "./logs_%s" % os.environ['FC']
