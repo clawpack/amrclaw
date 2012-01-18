@@ -10,8 +10,8 @@ import math
     
 import matplotlib.pyplot as plt
 
-log_regex = re.compile(r"\*{7}\stick\stiming\s=\s+.*\ss{1}|\*{3}\sOMP_NUM_THREADS\s=\s.*")
-time_regex = re.compile(r".*")
+log_regex = re.compile(r"\*{3}\sOMP_NUM_THREADS\s=\s.*|\*{7}\stick\stiming\s=\s+.*\ss{1}")
+time_regex = re.compile(r"\*{3}\sOMP_NUM_THREADS\s=\s.*|\s+User\sTime\s\(seconds\)\:\s.*")
 
 def parse_log_file(path,verbose=True):
     # Open contents of log file
@@ -22,16 +22,12 @@ def parse_log_file(path,verbose=True):
     times = []
     for match in log_regex.finditer(log_contents):
         if "OMP_NUM_THREADS" in match.group():
-            # timings.append({"threads":int(match.group().strip("*** OMP_NUM_THREADS =")),"time":0.0})
             threads.append(int(match.group().strip("*** OMP_NUM_THREADS =")))
             if verbose:
                 print "Threads = %s" % threads[-1]
-                print "Threads = %s" % timings[-1]["threads"]
         elif "tick timing" in match.group():
-            # timings[-1]["time"] = float(match.group().strip("******* tick timing =")[:-1])
             times.append(float(match.group().strip("******* tick timing =")[:-1]))
             if verbose:
-                # print "Time = %s" % timings[-1]["time"]
                 print "Time = %s" % times[-1]
     
     if not len(threads) == len(times):
@@ -53,7 +49,14 @@ def parse_time_file(path,verbose=True):
     
     # Loop through regular expression finds
     for match in time_regex.finditer(log_contents):
-        print match.group()
+        if "OMP_NUM_THREADS" in match.group():
+            threads.append(int(match.group().strip("*** OMP_NUM_THREADS =")))
+            if verbose:
+                print "Threads = %s" % threads[-1]
+        elif "User time" in match.group():
+            times.append(float(match.group().strip().strip("User time (seconds): ")))
+            if verbose:
+                pritn "Time = %s" % times[-1]
     
     if not len(threads) == len(times):
         print "Parsing may not have been successful, len(threads) != len(times)."
