@@ -174,14 +174,15 @@ class BaseThreadTest(object):
             self.log_file.write("Simulation completed.\n")
             self.time_file = open(self._time_file_path,'aw')
 
-tests = []
-max_threads = int(os.environ['OMP_NUM_THREADS'])
-
-# Single grid sweep timings
-for mx in [40,60,80,100,120]:
-    tests.append(BaseThreadTest("single_grid",mxnest=1,mx=mx,grid_max=mx,thread_method="sweep",max_threads=max_threads))
-
 if __name__ == "__main__":
+    # Create tests
+    tests = []
+    max_threads = int(os.environ['OMP_NUM_THREADS'])
+
+    # Single grid sweep timings
+    for mx in [40,60,80,100,120]:
+        tests.append(BaseThreadTest("single_grid",mxnest=1,mx=mx,grid_max=mx,thread_method="sweep",max_threads=max_threads))
+    
     if len(sys.argv) > 1:
         if sys.argv[1].lower() == 'all':
             tests_to_be_run = tests
