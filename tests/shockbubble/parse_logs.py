@@ -7,26 +7,19 @@ import os
 import re
 import glob
 import math
+    
+import matplotlib.pyplot as plt
 
 log_regex = re.compile(r"\*{7}\stick\stiming\s=\s+.*\ss{1}|\*{3}\sOMP_NUM_THREADS\s=\s.*")
-# path = "logs_gfortran/log_single_grid_m40_gm40_sweep.txt"
-# log_contents = open(path,'r').read()
-# 
-# for match in log_regex.finditer(log_contents):
-#     if "OMP_NUM_THREADS" in match.group():
-#         print "Threads = ", int(match.group().strip("*** OMP_NUM_THREADS ="))
-#     elif "tick timing" in match.group():
-#         print "Time = ", float(match.group().strip("******* tick timing =")[:-1])
+time_regex = re.compile(r".*")
 
 def parse_log_file(path,verbose=True):
-    
-    threads = []
-    times = []
-    
     # Open contents of log file
     log_contents = open(path,'r').read()
     
     # Loop through regular expression finds
+    threads = []
+    times = []
     for match in log_regex.finditer(log_contents):
         if "OMP_NUM_THREADS" in match.group():
             # timings.append({"threads":int(match.group().strip("*** OMP_NUM_THREADS =")),"time":0.0})
@@ -43,6 +36,7 @@ def parse_log_file(path,verbose=True):
     
     if not len(threads) == len(times):
         print "Parsing may not have been successful, len(threads) != len(times)."
+        print "  path = %s" % path
         print "  threads = %s" % threads
         print "  times = %s" % times
         sys.exit(2)
@@ -50,7 +44,63 @@ def parse_log_file(path,verbose=True):
     return threads,times
 
 def parse_time_file(path,verbose=True):
-    pass
+    
+    threads = []
+    times = []
+    
+    # Open contents of log file
+    log_contents = open(path,'r').read()
+    
+    # Loop through regular expression finds
+    for match in time_regex.finditer(log_contents):
+        print match.group()
+    
+    if not len(threads) == len(times):
+        print "Parsing may not have been successful, len(threads) != len(times)."
+        print "  path = %s" % path
+        print "  threads = %s" % threads
+        print "  times = %s" % times
+        sys.exit(2)
+    
+    return threads,times
+
+def create_timing_plots(log_paths,plot_file=None,verbose=False):
+    # Setup plots
+    rows = int(math.ceil(len(log_paths) / 2.0))
+    fig = plt.figure(figsize=(10,12))
+    
+    for (i,path) in enumerate(log_paths):
+        # Parse the log file
+        if verbose:
+            print os.path.basename(path)[:-4]
+        if os.path.basename(path)[0:3] == "log":
+            threads,times = parse_log_file(path,verbose=verbose)
+        elif os.path.basename(path)[0:4] == "time":
+            threads,times = parse_time_file(path,verbose=verbose)
+        if verbose:
+            print threads,times
+
+        # Plot this run
+        axes = fig.add_subplot(rows,2,i+1)
+        axes.plot(threads,times,'or-')
+        
+        # Labeling
+        axes.set_xbound(threads[0]-0.5,threads[-1]+0.5)
+        if os.path.basename(path)[0:3] == "log":
+            axes.set_title(os.path.basename(path).strip('log_')[:-4])
+        elif os.path.basename(path)[0:4] == "time":
+            axes.set_title(os.path.basename(path).strip('time_')[:-4])
+        axes.set_xlabel('Number of Threads')
+        axes.set_xticks(threads)
+        axes.set_xticklabels(threads)
+        axes.set_ylabel('Time (s)')
+
+    plt.tight_layout()    
+    if plot_file is not None:
+        plt.savefig(plot_file)
+    else:
+        plt.show()
+    
 
 if __name__ == "__main__":
     import run_thread_tests
@@ -58,35 +108,12 @@ if __name__ == "__main__":
     verbose = False
         
     log_paths = glob.glob(os.path.join(run_thread_tests.LOG_PATH_BASE,"log*.txt"))
-    timing_paths = glob.glob(os.path.join(run_thread_tests.TIME_PATH_BASE,"time*.txt"))
+    time_paths = glob.glob(os.path.join(run_thread_tests.TIME_PATH_BASE,"time*.txt"))
     
-    # Setup plots
-    import matplotlib.pyplot as plt
-    rows = int(math.ceil(len(log_paths) / 2.0))
-    fig = plt.figure(figsize=(10,12))
+    create_timing_plots(log_paths,plot_file='./tick_plots.pdf',verbose=verbose)
     
-    for (i,path) in enumerate(log_paths):
-        print os.path.basename(path).strip('log_')[:-4]
-        threads,times = parse_log_file(path,verbose=verbose)
-        print threads,times
-
-        # Plot this run
-        axes = fig.add_subplot(rows,2,i+1)
-        axes.plot(threads,times,'or-')
-        axes.set_xbound(threads[0]-0.5,threads[-1]+0.5)
-        
-        # Labeling
-        axes.set_title(os.path.basename(path).strip('log_')[:-4])
-        axes.set_xlabel('Number of Threads')
-        axes.set_xticks(threads)
-        axes.set_xticklabels(threads)
-        axes.set_ylabel('Time (s)')
-
-    plt.tight_layout()    
-    plt.savefig('./log_file_timings.pdf')
-        
+    # Only use the timing files if we are not on Darwin (time does not work as awesome there)
     if not os.uname()[0] == 'Darwin':
-        for path in time_paths:
-            print os.path.basename(path).strip('time_')
-            print parse_time_file(path,verbose=verbose)
+        create_timing_plots(time_paths,plot_file='./time_plots.pdf',verbose=verbose)
+
         
