@@ -43,8 +43,8 @@ def make_path(path):
         os.remove(path)
         os.makedirs(path)
 
-
-# Open and initialize log files
+# =============================================================================
+# Parameters for script
 if os.environ.has_key('FC'):
     BUILD_PATH_BASE = './logs_%s' % os.environ['FC']
     TIME_PATH_BASE = "./logs_%s" % os.environ['FC']
@@ -54,9 +54,11 @@ else:
     TIME_PATH_BASE = "./logs"
     LOG_PATH_BASE = "./logs"
 
+# Create log file directory
 for path in [BUILD_PATH_BASE,TIME_PATH_BASE,LOG_PATH_BASE]:
     make_path(path)
 
+# =============================================================================
 # Construct run command based on log
 def construct_run_cmd(time_file_path):
     RUNCLAW_CMD = "python $CLAWUTIL/src/python/runclaw.py xamr ./_output/ T F"
@@ -67,6 +69,8 @@ def construct_run_cmd(time_file_path):
         run_cmd = "/usr/bin/time --output=%s --append --verbose %s" % (time_file_path,RUNCLAW_CMD)
     return run_cmd
 
+# =============================================================================
+#  Base test class
 class BaseThreadTest(object):
     
     def __init__(self,name,mx=40,mxnest=3,grid_max=60,thread_method="grid",max_threads=2):
@@ -93,18 +97,6 @@ class BaseThreadTest(object):
         self.amrdata.max_steps = num_steps + 1
         self.amrdata.iout = [num_steps,num_steps]
         
-        # Open log files and write headers
-        file_label = "_%s_m%s_gm%s_%s" % (self.name,mx,self.grid_max,self.thread_method)
-        self._build_file_path = os.path.join(BUILD_PATH_BASE,"build%s.txt" % file_label)
-        self._time_file_path = os.path.join(TIME_PATH_BASE,"time%s.txt" % file_label)
-        self._log_file_path = os.path.join(LOG_PATH_BASE,"log%s.txt" % file_label)
-        self.build_file = open(self._build_file_path,'w')
-        self.time_file = open(self._time_file_path,'w')
-        self.log_file = open(self._log_file_path,'w')
-        self.write_info(self.build_file,self.max_threads)
-        self.write_info(self.time_file,self.max_threads)
-        self.write_info(self.log_file,self.max_threads)
-        
     def __str__(self):
         output = "Test name: %s\n" % self.name
         output += "  mx = %s\n" % self.amrdata.mx
@@ -114,7 +106,7 @@ class BaseThreadTest(object):
         output += "  thread number = [1,%s]\n" % self.max_threads
         return output
         
-    def write_info(self,out_file,num_threads):
+    def write_info(self,out_file):
         tm = time.localtime()
         year = str(tm[0]).zfill(4)
         month = str(tm[1]).zfill(2)
@@ -126,41 +118,37 @@ class BaseThreadTest(object):
         out_file.write("--------------------------------\n")
         out_file.write(date)
         out_file.write(str(self))
-        # out_file.write("thread_method = %s\n" % self.thread_method)
-        # out_file.write("max1d = %s\n" % self.grid_max)
-        # out_file.write("threads = %s" % num_threads)
         
     def flush_log_files(self):
         self.build_file.flush()
         self.log_file.flush()
         self.time_file.flush()
         
-    def build_test(self):
+    def run_tests(self):
+        # Open log files and write headers
+        file_label = "_%s_m%s_gm%s_%s" % (self.name,mx,self.grid_max,self.thread_method)
+        self._build_file_path = os.path.join(BUILD_PATH_BASE,"build%s.txt" % file_label)
+        self._time_file_path = os.path.join(TIME_PATH_BASE,"time%s.txt" % file_label)
+        self._log_file_path = os.path.join(LOG_PATH_BASE,"log%s.txt" % file_label)
+        self.build_file = open(self._build_file_path,'w')
+        self.time_file = open(self._time_file_path,'w')
+        self.log_file = open(self._log_file_path,'w')
+        self.write_info(self.build_file)
+        self.write_info(self.time_file)
+        self.write_info(self.log_file)
+        
+        # Build binary
+        self.log_file.write("Building...\n")
         os.environ["THREADING_METHOD"] = self.thread_method
         os.environ["MAX1D"] = str(self.grid_max)
         self.flush_log_files()
         subprocess.Popen("make new -j %s" % self.max_threads,shell=True,stdout=self.build_file,stderr=self.build_file).wait()
-        
-    def run_tests(self):
-        # tm = time.localtime()
-        # year = str(tm[0]).zfill(4)
-        # month = str(tm[1]).zfill(2)
-        # day = str(tm[2]).zfill(2)
-        # hour = str(tm[3]).zfill(2)
-        # minute = str(tm[4]).zfill(2)
-        # second = str(tm[5]).zfill(2)
-        # date = 'Started %s/%s/%s-%s:%s.%s\n' % (year,month,day,hour,minute,second)
-        # build_file.write("--------------------------------\n")
-        # build_file.write(date)
-        # build_file.write("thread_method = %s\n" % self.thread_method)
-        # build_file.write("max1d = %s\n" % self.grid_max)
-        self.log_file.write("Building...\n")
-        self.build_test()
         self.log_file.write("Build completed.\n")
 
         # Write out data file
         self.amrdata.write()
         
+        # Run tests
         for num_threads in range(0,self.max_threads):
             os.environ["OMP_NUM_THREADS"] = str(num_threads + 1)
             self.time_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads+1))
@@ -174,14 +162,27 @@ class BaseThreadTest(object):
             self.log_file.write("Simulation completed.\n")
             self.time_file = open(self._time_file_path,'aw')
 
-if __name__ == "__main__":
-    # Create tests
-    tests = []
-    max_threads = int(os.environ['OMP_NUM_THREADS'])
+        # Close log files
+        self.build_file.close()
+        self.time_file.close()
+        self.log_file.close()
+        
+# =============================================================================
 
-    # Single grid sweep timings
-    for mx in [40,60,80,100,120]:
-        tests.append(BaseThreadTest("single_grid",mxnest=1,mx=mx,grid_max=mx,thread_method="sweep",max_threads=max_threads))
+# =============================================================================
+# Create tests
+# =============================================================================
+tests = []
+max_threads = int(os.environ['OMP_NUM_THREADS'])
+
+# Single grid sweep timings
+for mx in [40,60,80,100,120]:
+    tests.append(BaseThreadTest("single_grid",mxnest=1,mx=mx,grid_max=mx,thread_method="sweep",max_threads=max_threads))
+
+
+# =============================================================================
+#  Command line support
+if __name__ == "__main__":
     
     if len(sys.argv) > 1:
         if sys.argv[1].lower() == 'all':
