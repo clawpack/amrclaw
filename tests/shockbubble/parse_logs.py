@@ -27,7 +27,7 @@ Command line options:
 """
 
 log_regex = re.compile(r"\*{3}\sOMP_NUM_THREADS\s=\s.*|\*{7}\stick\stiming\s=\s+.*\ss{1}")
-time_regex = re.compile(r"\*{3}\sOMP_NUM_THREADS\s=\s.*|\s+User\sTime\s\(seconds\)\:\s.*")
+time_regex = re.compile(r"\*{3}\sOMP_NUM_THREADS\s=\s.*|\s+User\stime\s\(seconds\)\:\s.*")
 
 def parse_log_file(path,verbose=True):
     # Open contents of log file 
@@ -114,7 +114,12 @@ def create_timing_plots(log_paths,plot_file=None,verbose=False):
         axes.set_xticklabels(threads)
         axes.set_ylabel('Time (s)')
 
-    plt.tight_layout()    
+    # Matplotlib version > 1.0 only support tight_layout
+    try:
+        plt.tight_layout()
+    except:
+        pass
+
     if plot_file is not None:
         plt.savefig(plot_file)
     else:
