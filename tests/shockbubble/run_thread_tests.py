@@ -192,6 +192,12 @@ grid_max = 60
 for mx in single_grid_mx:
     tests.append(BaseThreadTest("single_grid",mxnest=1,mx=mx,grid_max=grid_max,thread_method='grid',max_threads=max_threads))
 
+# Adaptive Grid Tests
+# ===================
+#   Tests for both sweep and grid threading and for all p
+tests.append(BaseThreadTest("adapt_grid",mxnest=3,mx=40,grid_max=60,thread_method='sweep',max_threads=max_threads))
+tests.append(BaseThreadTest("adapt_grid",mxnest=3,mx=40,grid_max=60,thread_method='grid',max_threads=max_threads))
+
 # =============================================================================
 #  Command line support
 if __name__ == "__main__":
