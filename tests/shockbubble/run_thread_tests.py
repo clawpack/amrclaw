@@ -167,10 +167,30 @@ class BaseThreadTest(object):
 tests = []
 max_threads = int(os.environ['OMP_NUM_THREADS'])
 
-# Single grid sweep timings
-for mx in [40,60,80,100,120]:
+# Single Grid Tests
+# =================
+#   Single grid tests of each approach
+#   
+#   Sweep Threading
+#   ---------------
+#     Vary (mx,my) and threads, mx = 40, 60, 80, 100, 120
+single_grid_mx = [40,60,80,100,120,140,160,180,20]
+for mx in single_grid_mx:
     tests.append(BaseThreadTest("single_grid",mxnest=1,mx=mx,grid_max=mx,thread_method="sweep",max_threads=max_threads))
-
+    
+# Grid Threading
+# --------------
+#   Cut single grid up into even multiples forcing a specific number of grids
+#               mx
+#   |-----|-----|-----|-----|
+#   |     |     |     |     |  my
+#   |-----|-----|-----|-----|
+#   
+#   EWT = mx*my / p + 2 * my
+#   ECT = mx*my + 2*(p-1) * my
+grid_max = 60
+for mx in single_grid_mx:
+    tests.append(BaseThreadTest("single_grid",mxnest=1,mx=mx,grid_max=grid_max,thread_method='grid',max_threads=max_threads))
 
 # =============================================================================
 #  Command line support
