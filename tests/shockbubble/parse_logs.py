@@ -111,9 +111,9 @@ def create_timing_plots(log_paths,plot_file=None,verbose=False):
         # Labeling
         axes.set_xbound(threads[0]-0.5,threads[-1]+0.5)
         if os.path.basename(path)[0:3] == "log":
-            axes.set_title(os.path.basename(path).strip('log_')[:-4])
+            axes.set_title(os.path.basename(path).strip('log_')[:-3])
         elif os.path.basename(path)[0:4] == "time":
-            axes.set_title(os.path.basename(path).strip('time_')[:-4])
+            axes.set_title(os.path.basename(path).strip('time_')[:-3])
         axes.set_xlabel('Number of Threads')
         axes.set_xticks(threads)
         axes.set_xticklabels(threads)
