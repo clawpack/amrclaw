@@ -27,7 +27,7 @@ Command line options:
 """
 
 log_regex = re.compile(r"\*{3}\sOMP_NUM_THREADS\s=\s.*|\*{7}\stick\stiming\s=\s+.*\ss{1}")
-time_regex = re.compile(r"\*{3}\sOMP_NUM_THREADS\s=\s.*|\s+User\stime\s\(seconds\)\:\s.*")
+time_regex = re.compile(r"\*{3}\sOMP_NUM_THREADS\s=\s.*|\s+Elapsed\s\(wall\sclock\).*") # \s+User\stime\s\(seconds\)\:\s.*
 
 def parse_log_file(path,verbose=True):
     # Open contents of log file 
@@ -56,23 +56,28 @@ def parse_log_file(path,verbose=True):
     return threads,times
 
 def parse_time_file(path,verbose=True):
-    
-    threads = []
-    times = []
-    
     # Open contents of log file
     log_contents = open(path,'r').read()
     
     # Loop through regular expression finds
+    threads = []
+    times = []
     for match in time_regex.finditer(log_contents):
         if "OMP_NUM_THREADS" in match.group():
             threads.append(int(match.group().strip("*** OMP_NUM_THREADS =")))
             if verbose:
                 print "Threads = %s" % threads[-1]
-        elif "User time" in match.group():
-            times.append(float(match.group().strip().strip("User time (seconds): ")))
+        # This parsing assumes that we never roll over to hours
+        elif "Elapsed (wall clock) time" in match.group():
+            raw_time = match.group().strip().strip("Elapsed (wall clock) time (h:mm:ss or m:ss): ")
+            [minutes,seconds] = raw_time.split(':')
+            times.append(float(minutes)*60+float(seconds))
             if verbose:
                 print "Time = %s" % times[-1]
+        # elif "User time" in match.group():
+        #     times.append(float(match.group().strip().strip("User time (seconds): ")))
+        #     if verbose:
+        #         print "Time = %s" % times[-1]
     
     if not len(threads) == len(times):
         print "Parsing may not have been successful, len(threads) != len(times)."
