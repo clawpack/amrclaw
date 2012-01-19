@@ -150,6 +150,7 @@ class BaseThreadTest(object):
             self.log_file.write(run_cmd + "\n")
             self.flush_log_files()
             self.time_file.close()
+            subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file).wait()
             subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,stderr=self.log_file).wait()
             self.log_file.write("Simulation completed.\n")
             self.time_file = open(self._time_file_path,'aw')
@@ -210,7 +211,8 @@ if __name__ == "__main__":
             for test in sys.argv[1:]:
                 tests_to_be_run.append(tests[int(test)])
     else:
-        for test in tests:
+        for (i,test) in enumerate(tests):
+            print "==== %s ==================" % i
             print test
         sys.exit(0)
     
