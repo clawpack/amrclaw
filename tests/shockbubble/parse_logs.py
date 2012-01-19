@@ -20,6 +20,8 @@ Command line options:
     -v, --verbose - Verbose output (default == False)
     -p, --path=(string) - Path to directory containing log files 
                           (default == LOG_FILE_BASE in run_thread_tests.py)
+    -f, --format=(string) - Format of plot output, can be anything that
+                            matplotlib can understand (default == 'pdf')
     -h, --help - Display help message
 """
 
@@ -125,13 +127,14 @@ if __name__ == "__main__":
     # Parse command line arguments
     try:
         try:
-            opts,args = getopt.getopt(sys.argv[1:],"hvp:",['help','verbose','path='])
+            opts,args = getopt.getopt(sys.argv[1:],"hvp:f:",['help','verbose','path=','format='])
         except getopt.error, msg:
             raise Usage(msg)
         
         # Default values
         verbose = False
         log_dir = run_thread_tests.LOG_PATH_BASE
+        format = 'pdf'
     
         # Option parsing
         for option,value in opts:
@@ -139,6 +142,8 @@ if __name__ == "__main__":
                 verbose = True
             if option in ("-p",'--path'):
                 log_dir = value
+            if option in ('-f','--format'):
+                format = value
             if option in ("-h","--help"):
                 raise Usage(help_message)
     except Usage, err:
@@ -154,7 +159,7 @@ if __name__ == "__main__":
         sys.exit(2)
         
     # Find and parse all log files found in log_dir
-    create_timing_plots(log_files,plot_file='./tick_plots.pdf',verbose=verbose)
+    create_timing_plots(log_files,plot_file='./tick_plots.%s' % format,verbose=verbose)
     
     # Only use the timing files if we are not on Darwin (time does not work as awesome there)
     if not os.uname()[0] == 'Darwin':
@@ -163,6 +168,6 @@ if __name__ == "__main__":
             print >> sys.stderr, "Did not find any time files at:"
             print >> sys.stderr, "\t%s" % log_dir
             sys.exit(2)
-        create_timing_plots(time_files,plot_file='./time_plots.pdf',verbose=verbose)
+        create_timing_plots(time_files,plot_file='./time_plots.%s' % format,verbose=verbose)
 
         
