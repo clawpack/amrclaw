@@ -36,27 +36,12 @@ import time
 
 import setrun
 
-def make_path(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
-    elif not os.path.isdir(path):
-        os.remove(path)
-        os.makedirs(path)
-
 # =============================================================================
 # Parameters for script
 if os.environ.has_key('FC'):
-    BUILD_PATH_BASE = './logs_%s' % os.environ['FC']
-    TIME_PATH_BASE = "./logs_%s" % os.environ['FC']
     LOG_PATH_BASE = "./logs_%s" % os.environ['FC']
 else:
-    BUILD_PATH_BASE = "./logs"
-    TIME_PATH_BASE = "./logs"
     LOG_PATH_BASE = "./logs"
-
-# Create log file directory
-for path in [BUILD_PATH_BASE,TIME_PATH_BASE,LOG_PATH_BASE]:
-    make_path(path)
 
 # =============================================================================
 # Construct run command based on log
@@ -125,10 +110,17 @@ class BaseThreadTest(object):
         self.time_file.flush()
         
     def run_tests(self):
+        # Create log file directory if not there already
+        if not os.path.exists(LOG_PATH_BASE):
+            os.makedirs(LOG_PATH_BASE)
+        elif not os.path.isdir(LOG_PATH_BASE):
+            os.remove(LOG_PATH_BASE)
+            os.makedirs(LOG_PATH_BASE)
+        
         # Open log files and write headers
-        file_label = "_%s_m%s_gm%s_%s" % (self.name,mx,self.grid_max,self.thread_method)
-        self._build_file_path = os.path.join(BUILD_PATH_BASE,"build%s.txt" % file_label)
-        self._time_file_path = os.path.join(TIME_PATH_BASE,"time%s.txt" % file_label)
+        file_label = "_%s_m%s_gm%s_%s" % (self.name,self.amrdata.mx,self.grid_max,self.thread_method)
+        self._build_file_path = os.path.join(LOG_PATH_BASE,"build%s.txt" % file_label)
+        self._time_file_path = os.path.join(LOG_PATH_BASE,"time%s.txt" % file_label)
         self._log_file_path = os.path.join(LOG_PATH_BASE,"log%s.txt" % file_label)
         self.build_file = open(self._build_file_path,'w')
         self.time_file = open(self._time_file_path,'w')
