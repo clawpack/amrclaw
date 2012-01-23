@@ -76,6 +76,7 @@ class BaseThreadingTest(object):
         
     def __str__(self):
         output = "Test name: %s - %s\n" % (str(test.__class__).strip("<class '__main__.").strip("'>"),self.name)
+        output += "  file_label = %s\n" % self.file_label
         return output
         
     def write_info(self,out_file):
@@ -180,9 +181,9 @@ class SweepThreadingTest(BaseThreadingTest):
 
     def __str__(self):
         output = super(SweepThreadingTest,self).__str__()
-        output += "  mx       = %s\n" % self.amrdata.mx
-        output += "  mxnest   = %s\n" % self.amrdata.mxnest
-        output += "  grid_max = %s\n" % self.grid_max
+        output += "  mx         = %s\n" % self.amrdata.mx
+        output += "  mxnest     = %s\n" % self.amrdata.mxnest
+        output += "  grid_max   = %s\n" % self.grid_max
             
         return output
         
@@ -234,9 +235,9 @@ class GridThreadingTest(BaseThreadingTest):
 
     def __str__(self):
         output = super(GridThreadingTest,self).__str__()
-        output += "  mx       = %s\n" % self.amrdata.mx
-        output += "  mxnest   = %s\n" % self.amrdata.mxnest
-        output += "  grid_max = %s\n" % self.grid_max
+        output += "  mx         = %s\n" % self.amrdata.mx
+        output += "  mxnest     = %s\n" % self.amrdata.mxnest
+        output += "  grid_max   = %s\n" % self.grid_max
             
         return output
         
@@ -263,7 +264,8 @@ class StaticGridThreadingTest(GridThreadingTest):
 
     def __str__(self):
         output = "Test name: %s - %s\n" % (str(test.__class__).strip("<class '__main__.").strip("'>"),self.name)
-        output += "  grid_max = %s\n" % self.grid_max
+        output += "  file_label = %s\n" % self.file_label
+        output += "  grid_max   = %s\n" % self.grid_max
             
         return output
         
@@ -325,8 +327,8 @@ grid_max_tests = [40,50,60,70,80,90,100,120,140]
 #   Sweep Threading
 #   ---------------
 #     Vary (mx,my) and threads
-# for mx in single_grid_mx:
-#     tests.append(SingleGridSweepThreadingTest("single_sweep",max_threads,mx=mx))
+for mx in single_grid_mx:
+    tests.append(SingleGridSweepThreadingTest("single_sweep",max_threads,mx=mx))
     
 # Grid Threading
 # --------------
@@ -338,14 +340,14 @@ grid_max_tests = [40,50,60,70,80,90,100,120,140]
 #   
 #   EWT = mx*my / p + 2 * my
 #   ECT = mx*my + 2*(p-1) * my
-# for grid_max in grid_max_tests:
-#     tests.append(StaticGridThreadingTest("static_grid",max_threads,grid_max=grid_max))
+for grid_max in grid_max_tests:
+    tests.append(StaticGridThreadingTest("static_grid",max_threads,grid_max=grid_max))
 
 # Adaptive Grid Tests
 # ===================
 #   Tests for both sweep and grid threading and for all p
 for grid_max in grid_max_tests:
-    # tests.append(SweepThreadingTest("amr_sweep",max_threads,mx=40,mxnest=3,grid_max=grid_max))
+    tests.append(SweepThreadingTest("amr_sweep",max_threads,mx=40,mxnest=3,grid_max=grid_max))
     tests.append(GridThreadingTest("amr_grid",max_threads,mx=40,mxnest=3,grid_max=grid_max))
 
 # =============================================================================
