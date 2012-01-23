@@ -41,6 +41,9 @@ if os.environ.has_key('FC'):
     LOG_PATH_BASE = "./logs_%s" % os.environ['FC']
 else:
     LOG_PATH_BASE = "./logs"
+    
+# End time for all simulations
+TFINAL = 0.75
 
 # =============================================================================
 # Construct run command based on log
@@ -164,6 +167,14 @@ class SweepThreadingTest(BaseThreadingTest):
         self.amrdata.mx = mx
         self.amrdata.my = mx / 4
         
+        # Output style
+        dt = 0.001
+        self.amrdata.dt_initial = dt
+        self.amrdata.dt_variable = 1
+        self.amrdata.outstyle = 2
+        self.amrdata.nout = 1
+        self.amrdata.tout = [TFINAL]
+        
         # File log label
         self.file_label = "_%s_m%s_g%s_n%s" % (self.name,self.amrdata.mx,self.grid_max,self.amrdata.mxnest)
 
@@ -183,14 +194,13 @@ class SingleGridSweepThreadingTest(SweepThreadingTest):
         # Set base values
         super(SingleGridSweepThreadingTest,self).__init__(name,max_threads,mx=mx,mxnest=1,grid_max=mx)
 
-        # Setup non variable time stepping
+        # Setup non variable time stepping and output
         dt = 0.0001
-        tfinal = 0.75
         self.amrdata.dt_initial = dt
         self.amrdata.dt_variable = 0
         
         self.amrdata.outstyle = 3
-        num_steps = int(tfinal / dt) + 1
+        num_steps = int(TFINAL / dt) + 1
         self.amrdata.max_steps = num_steps + 1
         self.amrdata.iout = [num_steps,num_steps]
 
@@ -209,6 +219,14 @@ class GridThreadingTest(BaseThreadingTest):
         self.amrdata.mxnest = mxnest
         self.amrdata.mx = mx
         self.amrdata.my = mx / 4
+        
+        # Variable time stepping and output
+        dt = 0.001
+        self.amrdata.dt_initial = dt
+        self.amrdata.dt_variable = 1
+        self.amrdata.outstyle = 2
+        self.amrdata.nout = 1
+        self.amrdata.tout = [TFINAL]
         
         # File log label
         self.file_label = "_%s_m%s_g%s_n%s" % (self.name,self.amrdata.mx,self.grid_max,self.amrdata.mxnest)
@@ -231,6 +249,16 @@ class StaticGridThreadingTest(GridThreadingTest):
         
         # File log label
         self.file_label = "_%s_%s" % (self.name,self.grid_max)
+
+        # Setup non variable time stepping and output
+        dt = 0.0001
+        self.amrdata.dt_initial = dt
+        self.amrdata.dt_variable = 0
+        
+        self.amrdata.outstyle = 3
+        num_steps = int(TFINAL / dt) + 1
+        self.amrdata.max_steps = num_steps + 1
+        self.amrdata.iout = [num_steps,num_steps]
         
 
     def __str__(self):
@@ -324,6 +352,7 @@ for grid_max in grid_max_tests:
 #  Command line support
 if __name__ == "__main__":
     
+    # Construct list of tests to be run
     if len(sys.argv) > 1:
         if sys.argv[1].lower() == 'all':
             tests_to_be_run = tests
@@ -331,12 +360,17 @@ if __name__ == "__main__":
             tests_to_be_run = []
             for test in sys.argv[1:]:
                 tests_to_be_run.append(tests[int(test)])
+    # or just print all the tests available
     else:
         for (i,test) in enumerate(tests):
             print "==== %s ==================" % i
             print test
         sys.exit(0)
     
+    # Output tests to be performed
+    for (i,test) in enumerate(tests_to_be_run):
+        print "==== %s ==================" % i
+        print test
     
     # Execute tests
     for (i,test) in enumerate(tests_to_be_run):
