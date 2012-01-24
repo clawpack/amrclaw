@@ -88,47 +88,57 @@ def parse_time_file(path,verbose=True):
     
     return threads,times
 
-def create_timing_plots(log_paths,plot_file=None,verbose=False):
-    # Setup plots
-    rows = int(math.ceil(len(log_paths) / 2.0))
-    fig = plt.figure(figsize=(10,12))
+def create_timing_plots(log_paths,plot_path='./plots',out_format='png',out_file_base='plot',figsize=(8,6),verbose=False):
     
+    # Create the directory for the plots if it does not already exist
+    if not os.path.exists(plot_path):
+        os.makedirs(plot_path)
+    if not os.path.isdir(plot_path):
+        print >> sys.stderr, "File already exists with the same name as the "
+        print >> sys.stderr, "requested plot directory %s." % plot_path
+        sys.exit(42)
+    
+    # Go through each log file and parse it
     for (i,path) in enumerate(log_paths):
         # Parse the log file
         if verbose:
             print os.path.basename(path)[:-4]
         if os.path.basename(path)[0:3] == "log":
+            log_name = os.path.basename(path).strip('log_')[:-4]
             threads,times = parse_log_file(path,verbose=verbose)
         elif os.path.basename(path)[0:4] == "time":
+            log_name = os.path.basename(path).strip('time_')[:-3]
             threads,times = parse_time_file(path,verbose=verbose)
         if verbose:
             print threads,times
 
         # Plot this run
-        axes = fig.add_subplot(rows,2,i+1)
+        fig = plt.figure(figsize=figsize)
+        axes = fig.add_subplot(111)
         axes.plot(threads,times,'or-')
         
         # Labeling
         axes.set_xbound(threads[0]-0.5,threads[-1]+0.5)
-        if os.path.basename(path)[0:3] == "log":
-            axes.set_title(os.path.basename(path).strip('log_')[:-3])
-        elif os.path.basename(path)[0:4] == "time":
-            axes.set_title(os.path.basename(path).strip('time_')[:-3])
+        axes.set_title(log_name)
         axes.set_xlabel('Number of Threads')
         axes.set_xticks(threads)
         axes.set_xticklabels(threads)
         axes.set_ylabel('Time (s)')
 
-    # Matplotlib version > 1.0 only support tight_layout
-    try:
-        plt.tight_layout()
-    except:
-        pass
+        # Matplotlib version > 1.0 only support tight_layout
+        try:
+            plt.tight_layout()
+        except:
+            pass
 
-    if plot_file is not None:
-        plt.savefig(plot_file)
-    else:
-        plt.show()
+        if out_format is not None:
+            file_name = '%s_%s.%s' % (log_name,out_file_base,out_format)
+            if verbose:
+                print file_name
+                print "Saving plot to %s" % os.path.join(plot_path,file_name)
+            plt.savefig(os.path.join(plot_path,file_name))
+        else:
+            plt.show()
 
 class Usage(Exception):
     def __init__(self,msg):
@@ -168,21 +178,27 @@ if __name__ == "__main__":
         
     # Find log files
     log_files = glob.glob(os.path.join(log_dir,"log*.txt"))
+    if verbose:
+        print "Found these log files:"
+        print '\t\n'.join(log_files)
     if len(log_files) == 0:
         print >> sys.stderr, "Did not find any log files at:"
         print >> sys.stderr, "\t%s" % log_dir
         sys.exit(2)
         
     # Find and parse all log files found in log_dir
-    create_timing_plots(log_files,plot_file='./tick_plots.%s' % format,verbose=verbose)
+    create_timing_plots(log_files,plot_path='./plots',out_format=format,out_file_base='tick_plot',verbose=verbose)
     
     # Only use the timing files if we are not on Darwin (time does not work as awesome there)
     if not os.uname()[0] == 'Darwin' or force:
         time_files = glob.glob(os.path.join(log_dir,"time*.txt"))
+        if verbose:
+            print "Found these time files:"
+            print '\t\n'.join(log_files)
         if len(log_files) == 0:
             print >> sys.stderr, "Did not find any time files at:"
             print >> sys.stderr, "\t%s" % log_dir
             sys.exit(2)
-        create_timing_plots(time_files,plot_file='./time_plots.%s' % format,verbose=verbose)
+        create_timing_plots(time_files,plot_path='./plots',out_format=format,out_file_base='time_plot',verbose=verbose)
 
         

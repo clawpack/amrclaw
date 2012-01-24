@@ -60,10 +60,10 @@ def construct_run_cmd(time_file_path):
 #  Base test class
 class BaseThreadingTest(object):
     
-    def __init__(self,name,max_threads,thread_method,grid_max):
+    def __init__(self,name,threads,thread_method,grid_max):
         # Basic test information
         self.name = name
-        self.max_threads = max_threads
+        self.threads = threads
         self.thread_method = thread_method
         self.grid_max = grid_max
 
@@ -77,6 +77,7 @@ class BaseThreadingTest(object):
     def __str__(self):
         output = "Test name: %s - %s\n" % (str(test.__class__).strip("<class '__main__.").strip("'>"),self.name)
         output += "  file_label = %s\n" % self.file_label
+        output += "  threads    = %s\n" % self.threads
         return output
         
     def write_info(self,out_file):
@@ -130,7 +131,7 @@ class BaseThreadingTest(object):
         os.environ["THREADING_METHOD"] = self.thread_method
         os.environ["MAX1D"] = str(self.grid_max)
         self.flush_log_files()
-        subprocess.Popen("make new -j %s" % self.max_threads,shell=True,
+        subprocess.Popen("make new -j %s" % self.threads,shell=True,
                                 stdout=self.build_file,stderr=self.build_file).wait()
         self.log_file.write("Build completed.\n")
 
@@ -138,10 +139,10 @@ class BaseThreadingTest(object):
         self.amrdata.write()
         
         # Run tests
-        for num_threads in range(0,self.max_threads):
-            os.environ["OMP_NUM_THREADS"] = str(num_threads + 1)
-            self.time_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads+1))
-            self.log_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads+1))
+        for num_threads in self.threads:
+            os.environ["OMP_NUM_THREADS"] = str(num_threads)
+            self.time_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
+            self.log_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
 
             run_cmd = construct_run_cmd(self._time_file_path)
             self.log_file.write(run_cmd + "\n")
@@ -158,10 +159,10 @@ class BaseThreadingTest(object):
     
 class SweepThreadingTest(BaseThreadingTest):
     
-    def __init__(self,name,max_threads,mx=40,mxnest=3,grid_max=60):
+    def __init__(self,name,threads,mx=40,mxnest=3,grid_max=60):
         
         # Call super class to set name
-        super(SweepThreadingTest,self).__init__(name,max_threads,"sweep",grid_max=grid_max)
+        super(SweepThreadingTest,self).__init__(name,threads,"sweep",grid_max=grid_max)
         
         # Construct this test case's data
         self.amrdata.mxnest = mxnest
@@ -190,10 +191,10 @@ class SweepThreadingTest(BaseThreadingTest):
         
 class SingleGridSweepThreadingTest(SweepThreadingTest):
         
-    def __init__(self,name,max_threads,mx=40):
+    def __init__(self,name,threads,mx=40):
         
         # Set base values
-        super(SingleGridSweepThreadingTest,self).__init__(name,max_threads,mx=mx,mxnest=1,grid_max=mx)
+        super(SingleGridSweepThreadingTest,self).__init__(name,threads,mx=mx,mxnest=1,grid_max=mx)
 
         # Setup non variable time stepping and output
         dt = 0.0001
@@ -211,10 +212,10 @@ class SingleGridSweepThreadingTest(SweepThreadingTest):
         
 class GridThreadingTest(BaseThreadingTest):
     
-    def __init__(self,name,max_threads,mx=40,mxnest=3,grid_max=60):
+    def __init__(self,name,threads,mx=40,mxnest=3,grid_max=60):
         
         # Call super class to set name
-        super(GridThreadingTest,self).__init__(name,max_threads,"grid",grid_max=grid_max)
+        super(GridThreadingTest,self).__init__(name,threads,"grid",grid_max=grid_max)
         
         # Construct this test case's data
         self.amrdata.mxnest = mxnest
@@ -243,10 +244,10 @@ class GridThreadingTest(BaseThreadingTest):
         
 class StaticGridThreadingTest(GridThreadingTest):
     
-    def __init__(self,name,max_threads,grid_max=40):
+    def __init__(self,name,threads,grid_max=40):
         
         # Call super class to set base parameters and load data
-        super(StaticGridThreadingTest,self).__init__(name,max_threads,grid_max=grid_max,mxnest=1)
+        super(StaticGridThreadingTest,self).__init__(name,threads,grid_max=grid_max,mxnest=1)
         
         # File log label
         self.file_label = "_%s_%s" % (self.name,self.grid_max)
@@ -265,6 +266,7 @@ class StaticGridThreadingTest(GridThreadingTest):
     def __str__(self):
         output = "Test name: %s - %s\n" % (str(test.__class__).strip("<class '__main__.").strip("'>"),self.name)
         output += "  file_label = %s\n" % self.file_label
+        output += "  threads    = %s\n" % self.threads
         output += "  grid_max   = %s\n" % self.grid_max
             
         return output
@@ -278,12 +280,12 @@ class StaticGridThreadingTest(GridThreadingTest):
         os.environ["MAX1D"] = str(self.grid_max)
         self.log_file.write("Building...\n")
         self.flush_log_files()
-        subprocess.Popen("make new -j %s" % self.max_threads,shell=True,
+        subprocess.Popen("make new -j %s" % self.threads,shell=True,
                                 stdout=self.build_file,stderr=self.build_file).wait()
         self.log_file.write("Build completed.\n")
         
         # Run tests
-        for num_threads in range(0,self.max_threads):
+        for num_threads in self.threads:
             # Determine mx
             self.amrdata.mx = self.grid_max * num_threads
             self.amrdata.my = self.amrdata.mx / 4
@@ -292,9 +294,9 @@ class StaticGridThreadingTest(GridThreadingTest):
             self.amrdata.write()
 
             # Set environment variables
-            os.environ["OMP_NUM_THREADS"] = str(num_threads + 1)
-            self.time_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads+1))
-            self.log_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads+1))
+            os.environ["OMP_NUM_THREADS"] = str(num_threads)
+            self.time_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
+            self.log_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
 
             run_cmd = construct_run_cmd(self._time_file_path)
             self.log_file.write(run_cmd + "\n")
@@ -317,8 +319,14 @@ tests = []
 max_threads = int(os.environ['OMP_NUM_THREADS'])
 
 # Test ranges
+threads = [1,2,4,8,12,16]
+for (i,count) in enumerate(threads):
+    if count > max_threads:
+        threads = threads[:i]
+        break
+        
 single_grid_mx = [40,60,80,100,120,140,160,180]
-grid_max_tests = [40,50,60,70,80,90,100,120,140]
+grid_max_tests = [40,60,80,100,120,140,160,180]
 
 # Single Grid Tests
 # =================
@@ -328,7 +336,7 @@ grid_max_tests = [40,50,60,70,80,90,100,120,140]
 #   ---------------
 #     Vary (mx,my) and threads
 for mx in single_grid_mx:
-    tests.append(SingleGridSweepThreadingTest("single_sweep",max_threads,mx=mx))
+    tests.append(SingleGridSweepThreadingTest("single_sweep",threads,mx=mx))
     
 # Grid Threading
 # --------------
@@ -341,14 +349,14 @@ for mx in single_grid_mx:
 #   EWT = mx*my / p + 2 * my
 #   ECT = mx*my + 2*(p-1) * my
 for grid_max in grid_max_tests:
-    tests.append(StaticGridThreadingTest("static_grid",max_threads,grid_max=grid_max))
+    tests.append(StaticGridThreadingTest("static_grid",threads,grid_max=grid_max))
 
 # Adaptive Grid Tests
 # ===================
 #   Tests for both sweep and grid threading and for all p
 for grid_max in grid_max_tests:
-    tests.append(SweepThreadingTest("amr_sweep",max_threads,mx=40,mxnest=3,grid_max=grid_max))
-    tests.append(GridThreadingTest("amr_grid",max_threads,mx=40,mxnest=3,grid_max=grid_max))
+    tests.append(SweepThreadingTest("amr_sweep",threads,mx=40,mxnest=3,grid_max=grid_max))
+    tests.append(GridThreadingTest("amr_grid",threads,mx=40,mxnest=3,grid_max=grid_max))
 
 # =============================================================================
 #  Command line support
