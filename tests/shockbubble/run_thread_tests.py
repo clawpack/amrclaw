@@ -250,7 +250,7 @@ class StaticGridThreadingTest(GridThreadingTest):
         super(StaticGridThreadingTest,self).__init__(name,threads,grid_max=grid_max,mxnest=1)
         
         # File log label
-        self.file_label = "_%s_%s" % (self.name,self.grid_max)
+        self.file_label = "_%s_gm%s" % (self.name,self.grid_max)
 
         # Setup non variable time stepping and output
         dt = 0.0001
