@@ -178,7 +178,10 @@ class SweepThreadingTest(BaseThreadingTest):
         self.amrdata.tout = [TFINAL]
         
         # File log label
-        self.file_label = "_%s_m%s_g%s_n%s" % (self.name,self.amrdata.mx,self.grid_max,self.amrdata.mxnest)
+        self.file_label = "_%s_m%s_g%s_n%s" % (self.name,
+                                               str(self.amrdata.mx).zfill(3),
+                                               str(self.grid_max).zfill(3),
+                                               str(self.amrdata.mxnest).zfill(2))
 
     def __str__(self):
         output = super(SweepThreadingTest,self).__str__()
@@ -207,7 +210,7 @@ class SingleGridSweepThreadingTest(SweepThreadingTest):
         self.amrdata.iout = [num_steps,num_steps]
 
         # File log label
-        self.file_label = "_%s_m%s" % (self.name,self.amrdata.mx)
+        self.file_label = "_%s_m%s" % (self.name,str(self.amrdata.mx).zfill(3))
         
         
 class GridThreadingTest(BaseThreadingTest):
@@ -231,7 +234,10 @@ class GridThreadingTest(BaseThreadingTest):
         self.amrdata.tout = [TFINAL]
         
         # File log label
-        self.file_label = "_%s_m%s_g%s_n%s" % (self.name,self.amrdata.mx,self.grid_max,self.amrdata.mxnest)
+        self.file_label = "_%s_m%s_g%s_n%s" % (self.name,
+                                               str(self.amrdata.mx).zfill(3),
+                                               str(self.grid_max).zfill(3),
+                                               str(self.amrdata.mxnest).zfill(2))
 
 
     def __str__(self):
@@ -250,7 +256,7 @@ class StaticGridThreadingTest(GridThreadingTest):
         super(StaticGridThreadingTest,self).__init__(name,threads,grid_max=grid_max,mxnest=1)
         
         # File log label
-        self.file_label = "_%s_gm%s" % (self.name,self.grid_max)
+        self.file_label = "_%s_gm%s" % (self.name,str(self.grid_max).zfill(3))
 
         # Setup non variable time stepping and output
         dt = 0.0001
