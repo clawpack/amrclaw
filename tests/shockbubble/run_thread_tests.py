@@ -256,7 +256,7 @@ class StaticGridThreadingTest(GridThreadingTest):
         super(StaticGridThreadingTest,self).__init__(name,threads,grid_max=grid_max,mxnest=1)
         
         # File log label
-        self.file_label = "_%s_gm%s" % (self.name,str(self.grid_max).zfill(3))
+        self.file_label = "_%s_g%s" % (self.name,str(self.grid_max).zfill(3))
 
         # Setup non variable time stepping and output
         dt = 0.0001
@@ -285,9 +285,11 @@ class StaticGridThreadingTest(GridThreadingTest):
         os.environ["THREADING_METHOD"] = self.thread_method
         os.environ["MAX1D"] = str(self.grid_max)
         self.log_file.write("Building...\n")
+        self.log_file.write("  max1d = %s" % self.grid_max)
         self.flush_log_files()
         subprocess.Popen("make new -j %s" % self.threads,shell=True,
-                                stdout=self.build_file,stderr=self.build_file).wait()
+                                stdout=self.build_file,stderr=self.build_file,
+                                env=os.environ).wait()
         self.log_file.write("Build completed.\n")
         
         # Run tests
