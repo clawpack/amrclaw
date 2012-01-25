@@ -132,7 +132,8 @@ class BaseThreadingTest(object):
         os.environ["MAX1D"] = str(self.grid_max)
         self.flush_log_files()
         subprocess.Popen("make new -j %s" % self.threads,shell=True,
-                                stdout=self.build_file,stderr=self.build_file).wait()
+                                stdout=self.build_file,stderr=self.build_file,
+                                env=os.environ).wait()
         self.log_file.write("Build completed.\n")
 
         # Write out data file
@@ -148,8 +149,10 @@ class BaseThreadingTest(object):
             self.log_file.write(run_cmd + "\n")
             self.flush_log_files()
             self.time_file.close()
-            subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file).wait()
-            subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,stderr=self.log_file).wait()
+            subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file,
+                                env=os.environ).wait()
+            subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,stderr=self.log_file,
+                                env=os.environ).wait()
             self.log_file.write("Simulation completed.\n")
             self.time_file = open(self._time_file_path,'aw')
 
@@ -281,7 +284,8 @@ class StaticGridThreadingTest(GridThreadingTest):
         self.log_file.write("Building...\n")
         self.flush_log_files()
         subprocess.Popen("make new -j %s" % self.threads,shell=True,
-                                stdout=self.build_file,stderr=self.build_file).wait()
+                                stdout=self.build_file,stderr=self.build_file,
+                                env=os.environ).wait()
         self.log_file.write("Build completed.\n")
         
         # Run tests
@@ -302,8 +306,10 @@ class StaticGridThreadingTest(GridThreadingTest):
             self.log_file.write(run_cmd + "\n")
             self.flush_log_files()
             self.time_file.close()
-            subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file).wait()
-            subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,stderr=self.log_file).wait()
+            subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file,
+                                env=os.environ).wait()
+            subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,stderr=self.log_file,
+                                env=os.environ).wait()
             self.log_file.write("Simulation completed.\n")
             self.time_file = open(self._time_file_path,'aw')
 
@@ -335,8 +341,8 @@ grid_max_tests = [40,60,80,100,120,140,160,180]
 #   Sweep Threading
 #   ---------------
 #     Vary (mx,my) and threads
-for mx in single_grid_mx:
-    tests.append(SingleGridSweepThreadingTest("single_sweep",threads,mx=mx))
+# for mx in single_grid_mx:
+#     tests.append(SingleGridSweepThreadingTest("single_sweep",threads,mx=mx))
     
 # Grid Threading
 # --------------
@@ -354,9 +360,9 @@ for grid_max in grid_max_tests:
 # Adaptive Grid Tests
 # ===================
 #   Tests for both sweep and grid threading and for all p
-for grid_max in grid_max_tests:
-    tests.append(SweepThreadingTest("amr_sweep",threads,mx=40,mxnest=3,grid_max=grid_max))
-    tests.append(GridThreadingTest("amr_grid",threads,mx=40,mxnest=3,grid_max=grid_max))
+# for grid_max in grid_max_tests:
+#     tests.append(SweepThreadingTest("amr_sweep",threads,mx=40,mxnest=3,grid_max=grid_max))
+#     tests.append(GridThreadingTest("amr_grid",threads,mx=40,mxnest=3,grid_max=grid_max))
 
 # =============================================================================
 #  Command line support
