@@ -348,8 +348,8 @@ grid_max_tests = [40,60,80,100,120,140,160,180]
 #   Sweep Threading
 #   ---------------
 #     Vary (mx,my) and threads
-# for mx in single_grid_mx:
-#     tests.append(SingleGridSweepThreadingTest("single_sweep",threads,mx=mx))
+for mx in single_grid_mx:
+    tests.append(SingleGridSweepThreadingTest("single_sweep",threads,mx=mx))
     
 # Grid Threading
 # --------------
@@ -367,9 +367,9 @@ for grid_max in grid_max_tests:
 # Adaptive Grid Tests
 # ===================
 #   Tests for both sweep and grid threading and for all p
-# for grid_max in grid_max_tests:
-#     tests.append(SweepThreadingTest("amr_sweep",threads,mx=40,mxnest=3,grid_max=grid_max))
-#     tests.append(GridThreadingTest("amr_grid",threads,mx=40,mxnest=3,grid_max=grid_max))
+ for grid_max in grid_max_tests:
+     tests.append(SweepThreadingTest("amr_sweep",threads,mx=40,mxnest=3,grid_max=grid_max))
+     tests.append(GridThreadingTest("amr_grid",threads,mx=40,mxnest=3,grid_max=grid_max))
 
 # =============================================================================
 #  Command line support
