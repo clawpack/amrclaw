@@ -149,8 +149,8 @@ class BaseThreadingTest(object):
             self.log_file.write(run_cmd + "\n")
             self.flush_log_files()
             self.time_file.close()
-            subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file,
-                                env=os.environ).wait()
+            # subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file,
+            #                     env=os.environ).wait()
             subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,stderr=self.log_file,
                                 env=os.environ).wait()
             self.log_file.write("Simulation completed.\n")
@@ -215,7 +215,57 @@ class SingleGridSweepThreadingTest(SweepThreadingTest):
         # File log label
         self.file_label = "_%s_m%s" % (self.name,str(self.amrdata.mx).zfill(3))
         
+class SingleGridWeakSweepThreadingTest(SingleGridSweepThreadingTest):
+    
+    def __init__(self,name,threads,mx=40):
+        # Set base values
+        super(SingleGridWeakSweepThreadingTest,self).__init__(name,threads,mx=mx)
+
+        self.amrdata.cutoff = 1.0
+
+        # File log label
+        self.file_label = "_%s_m%s" % (self.name,str(self.amrdata.mx).zfill(3))
         
+
+        
+    def run_tests(self):
+        self.open_log_files()
+        
+        # Build binary
+        self.log_file.write("Building...\n")
+        os.environ["THREADING_METHOD"] = self.thread_method
+        os.environ["MAX1D"] = str(self.grid_max)
+        self.flush_log_files()
+        subprocess.Popen("make new -j %s" % self.threads,shell=True,
+                                stdout=self.build_file,stderr=self.build_file,
+                                env=os.environ).wait()
+        self.log_file.write("Build completed.\n")
+        
+        # Run tests
+        for num_threads in self.threads:
+            os.environ["OMP_NUM_THREADS"] = str(num_threads)
+            self.time_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
+            self.log_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
+
+            # Set mx and my based on the number of threads
+            self.amrdata.mx = self.grid_max * num_threads
+            self.amrdata.my = self.amrdata.mx / 4
+            self.amrdata.write()
+            
+            run_cmd = construct_run_cmd(self._time_file_path)
+            self.log_file.write(run_cmd + "\n")
+            self.flush_log_files()
+            self.time_file.close()
+            # subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file,
+            #                     env=os.environ).wait()
+            subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,stderr=self.log_file,
+                                env=os.environ).wait()
+            self.log_file.write("Simulation completed.\n")
+            self.time_file = open(self._time_file_path,'aw')
+
+        self.close_log_files()
+        
+                
 class GridThreadingTest(BaseThreadingTest):
     
     def __init__(self,name,threads,mx=40,mxnest=3,grid_max=60):
@@ -288,7 +338,6 @@ class StaticGridThreadingTest(GridThreadingTest):
         os.environ["THREADING_METHOD"] = self.thread_method
         os.environ["MAX1D"] = str(self.grid_max)
         self.log_file.write("Building...\n")
-        self.log_file.write("  max1d = %s" % self.grid_max)
         self.flush_log_files()
         subprocess.Popen("make new -j %s" % self.threads,shell=True,
                                 stdout=self.build_file,stderr=self.build_file,
@@ -300,6 +349,8 @@ class StaticGridThreadingTest(GridThreadingTest):
             # Determine mx
             self.amrdata.mx = self.grid_max * num_threads
             self.amrdata.my = self.amrdata.mx / 4
+            # self.amrdata.mx = 4*self.grid_max
+            # self.amrdata.my = self.grid_max
             
             # Write out data file
             self.amrdata.write()
@@ -313,8 +364,8 @@ class StaticGridThreadingTest(GridThreadingTest):
             self.log_file.write(run_cmd + "\n")
             self.flush_log_files()
             self.time_file.close()
-            subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file,
-                                env=os.environ).wait()
+            # subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file,
+            #                     env=os.environ).wait()
             subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,stderr=self.log_file,
                                 env=os.environ).wait()
             self.log_file.write("Simulation completed.\n")
@@ -350,6 +401,9 @@ grid_max_tests = [40,60,80,100,120,140,160,180]
 #     Vary (mx,my) and threads
 for mx in single_grid_mx:
     tests.append(SingleGridSweepThreadingTest("single_sweep",threads,mx=mx))
+# Weak scaling test
+for mx in single_grid_mx:
+    tests.append(SingleGridWeakSweepThreadingTest("weak_sweep",threads,mx=mx))
     
 # Grid Threading
 # --------------
@@ -367,9 +421,9 @@ for grid_max in grid_max_tests:
 # Adaptive Grid Tests
 # ===================
 #   Tests for both sweep and grid threading and for all p
- for grid_max in grid_max_tests:
-     tests.append(SweepThreadingTest("amr_sweep",threads,mx=40,mxnest=3,grid_max=grid_max))
-     tests.append(GridThreadingTest("amr_grid",threads,mx=40,mxnest=3,grid_max=grid_max))
+for grid_max in grid_max_tests:
+    tests.append(SweepThreadingTest("amr_sweep",threads,mx=40,mxnest=3,grid_max=grid_max))
+    tests.append(GridThreadingTest("amr_grid",threads,mx=40,mxnest=3,grid_max=grid_max))
 
 # =============================================================================
 #  Command line support
