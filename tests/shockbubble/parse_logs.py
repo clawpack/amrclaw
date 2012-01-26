@@ -239,7 +239,7 @@ if __name__ == "__main__":
         # Default values
         verbose = False
         log_dir = run_thread_tests.LOG_PATH_BASE
-        format = 'pdf'
+        format = 'png'
         force = False
         timing_plots = True
         amr_plots = False

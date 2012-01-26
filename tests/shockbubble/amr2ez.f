@@ -123,6 +123,20 @@ c
 c     domain variables
       read(inunit,*) nx
       read(inunit,*) ny
+      if (.not.(nx == ny * 4)) then
+        print *," **** ERROR: For these tests nx / 4 == ny" 
+        print *,"  nx = ",nx
+        print *,"  ny = ",ny
+C         stop
+      endif
+      max_threads = omp_get_max_threads()
+      if (nx /= max_threads * max1d) then
+          print *," **** ERROR: nx was set incorrectly"
+          print *,"  nx = ",nx
+          print *,"  max_threads = ",max_threads
+          print *,"  max1d = ",max1d
+C           stop
+      endif
       read(inunit,*) mxnest
       if (abs(mxnest) .gt. maxlv) then
          write(outunit,*)
