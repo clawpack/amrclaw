@@ -32,6 +32,7 @@ import sys
 import os
 import subprocess
 import time
+import math
 
 import setrun
 
@@ -236,7 +237,7 @@ class SingleGridWeakSweepThreadingTest(SingleGridSweepThreadingTest):
         os.environ["THREADING_METHOD"] = self.thread_method
         os.environ["MAX1D"] = str(self.grid_max)
         self.flush_log_files()
-        subprocess.Popen("make new -j %s" % self.threads,shell=True,
+        subprocess.Popen("make new" % self.threads,shell=True,
                                 stdout=self.build_file,stderr=self.build_file,
                                 env=os.environ).wait()
         self.log_file.write("Build completed.\n")
@@ -248,7 +249,7 @@ class SingleGridWeakSweepThreadingTest(SingleGridSweepThreadingTest):
             self.log_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
 
             # Set mx and my based on the number of threads
-            self.amrdata.mx = self.grid_max * num_threads
+            self.amrdata.my = self.grid_max * math.sqrt(num_threads)
             self.amrdata.my = self.amrdata.mx / 4
             self.amrdata.write()
             
@@ -399,8 +400,8 @@ grid_max_tests = [40,60,80,100,120,140,160,180]
 #   Sweep Threading
 #   ---------------
 #     Vary (mx,my) and threads
-for mx in single_grid_mx:
-    tests.append(SingleGridSweepThreadingTest("single_sweep",threads,mx=mx))
+# for mx in single_grid_mx:
+#     tests.append(SingleGridSweepThreadingTest("single_sweep",threads,mx=mx))
 # Weak scaling test
 for mx in single_grid_mx:
     tests.append(SingleGridWeakSweepThreadingTest("weak_sweep",threads,mx=mx))
@@ -415,15 +416,15 @@ for mx in single_grid_mx:
 #   
 #   EWT = mx*my / p + 2 * my
 #   ECT = mx*my + 2*(p-1) * my
-for grid_max in grid_max_tests:
-    tests.append(StaticGridThreadingTest("static_grid",threads,grid_max=grid_max))
+# for grid_max in grid_max_tests:
+#     tests.append(StaticGridThreadingTest("static_grid",threads,grid_max=grid_max))
 
 # Adaptive Grid Tests
 # ===================
 #   Tests for both sweep and grid threading and for all p
-for grid_max in grid_max_tests:
-    tests.append(SweepThreadingTest("amr_sweep",threads,mx=40,mxnest=3,grid_max=grid_max))
-    tests.append(GridThreadingTest("amr_grid",threads,mx=40,mxnest=3,grid_max=grid_max))
+# for grid_max in grid_max_tests:
+#     tests.append(SweepThreadingTest("amr_sweep",threads,mx=40,mxnest=3,grid_max=grid_max))
+#     tests.append(GridThreadingTest("amr_grid",threads,mx=40,mxnest=3,grid_max=grid_max))
 
 # =============================================================================
 #  Command line support
