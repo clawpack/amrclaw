@@ -385,9 +385,14 @@ max_threads = int(os.environ['OMP_NUM_THREADS'])
 
 # Test ranges
 threads = [1,2,4,8,12,16]
+sqrt_threads = [1,4,9,16]
 for (i,count) in enumerate(threads):
     if count > max_threads:
         threads = threads[:i]
+        break
+for (i,count) in enumerate(sqrt_threads):
+    if count > max_threads:
+        sqrt_threads = sqrt_threads[:i]
         break
         
 single_grid_mx = [40,60,80,100,120,140,160,180]
@@ -404,7 +409,8 @@ grid_max_tests = [40,60,80,100,120,140,160,180]
 #     tests.append(SingleGridSweepThreadingTest("single_sweep",threads,mx=mx))
 # Weak scaling test
 for mx in single_grid_mx:
-    tests.append(SingleGridWeakSweepThreadingTest("weak_sweep",threads,mx=mx))
+    threads
+    tests.append(SingleGridWeakSweepThreadingTest("weak_sweep",sqrt_threads,mx=mx))
     
 # Grid Threading
 # --------------
