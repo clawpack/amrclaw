@@ -146,6 +146,72 @@ def create_timing_plots(log_paths,plot_path='./plots',out_format='png',
         else:
             plt.show()
                 
+def create_efficiency_plots(log_paths,plot_path='./plots',
+                                  out_format='png',
+                                  out_file_base='plot',figsize=(8,6),
+                                  colors=['blue','green','red','purple','gray','turquoise','magenta','yellow'],
+                                  verbose=False):
+    r"""Create compound plots with multiple efficiencies compared in one plot"""
+    
+    # Create the directory for the plots if it does not already exist
+    if not os.path.exists(plot_path):
+        os.makedirs(plot_path)
+    if not os.path.isdir(plot_path):
+        print >> sys.stderr, "File already exists with the same name as the "
+        print >> sys.stderr, "requested plot directory %s." % plot_path
+        sys.exit(42)
+    
+    efficiencies = []
+    
+    # Go through each log file and parse it
+    for (i,path) in enumerate(log_paths):
+        # Parse the log file
+        if verbose:
+            print os.path.basename(path)[:-4]
+        if os.path.basename(path)[0:3] == "log":
+            log_name = os.path.basename(path).strip('log_')[:-4]
+            threads,times = parse_log_file(path,verbose=verbose)
+        elif os.path.basename(path)[0:4] == "time":
+            log_name = os.path.basename(path).strip('time_')[:-3]
+            threads,times = parse_time_file(path,verbose=verbose)
+        if verbose:
+            print threads,times
+
+        # Calculate efficiency, p=1 is basis
+        efficiencies.append([times[0] * threads[0] / (time * threads[i]) for (i,time) in enumerate(times)])
+
+    # Plot this run
+    fig = plt.figure(figsize=figsize)
+    axes = fig.add_subplot(111)
+    for i in xrange(len(efficiencies)):
+        axes.plot(threads,efficiencies[i],'o-',color=colors[i])    
+    axes.plot(threads,[1 for thread in threads],'k--')
+        
+    # Labeling
+    axes.set_xbound(threads[0]-0.5,threads[-1]+0.5)
+    axes.set_ybound(0.0,1.1)
+    # axes.set_title(log_name)
+    axes.set_xlabel('Number of Threads')
+    axes.set_xticks(threads)
+    axes.set_xticklabels(threads)
+    axes.set_ylabel('Efficiency')
+
+    # Matplotlib version > 1.0 only support tight_layout
+    try:
+        plt.tight_layout()
+    except:
+        pass
+
+    if out_format is not None:
+        file_name = '%s_%s.%s' % (log_name,out_file_base,out_format)
+        if verbose:
+            print file_name
+            print "Saving plot to %s" % os.path.join(plot_path,file_name)
+        plt.savefig(os.path.join(plot_path,file_name))
+    else:
+        plt.show()
+    
+ 
 def create_amr_plots(log_paths,threading_type,plot_path='./plots',
                                   out_format='png',
                                   out_file_base='plot',figsize=(8,6),
@@ -229,9 +295,9 @@ if __name__ == "__main__":
     try:
         try:
             opts,args = getopt.getopt(sys.argv[1:],
-                            "hvp:f:Fa",
-                            ['help','verbose','path=','timing','notiming',
-                                'format=','force','amr'])
+                            "hvp:f:a",
+                            ['help','verbose','path=','tick','notick',
+                             'notime','time','format=','effec','amr'])
                                 
         except getopt.error, msg:
             raise Usage(msg)
@@ -241,7 +307,9 @@ if __name__ == "__main__":
         log_dir = run_thread_tests.LOG_PATH_BASE
         format = 'pdf'
         force = False
-        timing_plots = True
+        tick_plots = True
+        time_plots = False
+        efficiency_plots = False
         amr_plots = False
     
         # Option parsing
@@ -253,11 +321,15 @@ if __name__ == "__main__":
             if option in ('-f','--format'):
                 format = value
             if option in ('--notiming'):
-                timing_plots = False
+                time_plots = False
             if option in ('--timing'):
-                timing_plots = True
-            if option in ('-F','--force'):
-                force = True
+                time_plots = True
+            if option in ('--notick'):
+                tick_plots = False
+            if option in ('--tick'):
+                tick_plots = True
+            if option in ('--effec'):
+                efficiency_plots = True
             if option in ('-a','--amr'):
                 amr_plots = True
             if option in ("-h","--help"):
@@ -267,7 +339,7 @@ if __name__ == "__main__":
         # print >> sys.stderr, "\t for help use --help"
         sys.exit(2)
 
-    if timing_plots:
+    if tick_plots:
         # Find log files
         log_files = glob.glob(expand_path(os.path.join(log_dir,"log*.txt")))
         if verbose:
@@ -279,11 +351,26 @@ if __name__ == "__main__":
             sys.exit(2)
         
         # Find and parse all log files found in log_dir
-        create_timing_plots(log_files,plot_path='./plots',out_format=format,out_file_base='tick_plot',verbose=verbose)
-    
+        create_timing_plots(log_files,plot_path='./plots/tick',out_format=format,out_file_base='tick_plot',verbose=verbose)
+
+    if time_plots and not os.uname()[0] == 'Darwin':
         # Only use the timing files if we are not on Darwin (time does not work as awesome there)
-        if not os.uname()[0] == 'Darwin' or force:
-            time_files = glob.glob(expand_path(os.path.join(log_dir,"time*.txt")))
+        time_files = glob.glob(expand_path(os.path.join(log_dir,"time*.txt")))
+        if verbose:
+            print "Found these time files:"
+            print '\t\n'.join(log_files)
+        if len(log_files) == 0:
+            print >> sys.stderr, "Did not find any time files at:"
+            print >> sys.stderr, "\t%s" % log_dir
+            sys.exit(2)
+        create_timing_plots(time_files,plot_path='./plots/time',
+                            out_format=format,out_file_base='time_plot',
+                            verbose=verbose)
+                            
+    # Efficiency plots
+    if efficiency_plots:
+        for test_type in ['amr_grid','amr_sweep','single_sweep','static_grid','weak_sweep']:
+            log_files = glob.glob(expand_path(os.path.join(log_dir,"log_%s*.txt" % test_type)))
             if verbose:
                 print "Found these time files:"
                 print '\t\n'.join(log_files)
@@ -291,10 +378,10 @@ if __name__ == "__main__":
                 print >> sys.stderr, "Did not find any time files at:"
                 print >> sys.stderr, "\t%s" % log_dir
                 sys.exit(2)
-            create_timing_plots(time_files,plot_path='./plots',
-                                out_format=format,out_file_base='time_plot',
-                                verbose=verbose)
-    
+            create_efficiency_plots(log_files,plot_path="./plots/effec",
+                                    out_format=format,out_file_base='%s_effec_plot' % test_type,
+                                    verbose=verbose)
+        
     # Make compound amr plots
     if amr_plots:
         log_files = glob.glob(expand_path(os.path.join(log_dir,"log_amr_sweep*.txt")))
@@ -306,7 +393,7 @@ if __name__ == "__main__":
             print >> sys.stderr, "\t%s" % log_dir
             sys.exit(2)
         
-        create_amr_plots(log_files,'sweep',plot_path='./plots',
+        create_amr_plots(log_files,'sweep',plot_path='./plots/amr',
                          out_format=format,out_file_base="amr_plot",
                          verbose=verbose)
         
@@ -319,7 +406,7 @@ if __name__ == "__main__":
             print >> sys.stderr, "\t%s" % log_dir
             sys.exit(2)
         
-        create_amr_plots(log_files,'grid',plot_path='./plots',
+        create_amr_plots(log_files,'grid',plot_path='./plots/amr',
                   out_format=format,out_file_base="amr_plot",
                   verbose=verbose)    
                          
