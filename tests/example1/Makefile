@@ -15,9 +15,9 @@ CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
 CLAW_PKG = amrclaw                  # Clawpack package to use
 CLAW_EXE = xamr                     # Executable to create
 CLAW_setrun_file = setrun.py        # File containing function to make data
-CLAW_OUTDIR = _output               # Directory for output
+OUT_DIR = _output_new               # Directory for output
 CLAW_setplot_file = setplot.py      # File containing function to set plots
-CLAW_PLOTDIR = _plots               # Directory for plots
+PLOT_DIR = _plots_new               # Directory for plots
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
