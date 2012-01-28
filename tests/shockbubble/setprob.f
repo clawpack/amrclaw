@@ -2,8 +2,21 @@ c     ==================
       subroutine setprob()
 c     ==================
 
-      implicit double precision (a-h,o-z)
-      common /comic/ qin(5),qout(5)
+      use amr_module, only: max1d
+
+      implicit none
+      
+      ! Locals
+      real(kind=8) :: rhoin,rhoout,pinf,pout,pin
+      
+      ! Common block variables
+      real(kind=8), dimension(5) :: qin,qout
+      real(kind=8) :: gamma,gamma1
+      real(kind=8) :: x0,y0,alf,beta,r0
+      integer :: idisc
+      real(kind=8) :: rinf,vinf,einf
+      
+      common /comic/ qin,qout
       common /cparam/  gamma,gamma1
       common/cdisc/ x0,y0,alf,beta,r0,idisc
       common /cominf/ rinf,vinf,einf
@@ -51,6 +64,6 @@ c     # ------------------------------------------------------------------
 
       write(6,601) pinf,rinf,vinf,einf
   601 format('pinf,rinf,vinf,einf:',/, 4e14.6)
-
+C       write(6,*) " ******** max1d = ",max1d
       return
       end

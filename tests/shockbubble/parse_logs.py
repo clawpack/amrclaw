@@ -305,7 +305,7 @@ if __name__ == "__main__":
         # Default values
         verbose = False
         log_dir = run_thread_tests.LOG_PATH_BASE
-        format = 'pdf'
+        format = 'png'
         force = False
         tick_plots = True
         time_plots = False

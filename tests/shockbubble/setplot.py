@@ -40,11 +40,12 @@ def setplot(plotdata):
 
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_schlieren')
-    #plotitem.pcolor_cmin = 0.5
-    #plotitem.pcolor_cmax=3.5
+    plotitem.pcolor_cmin = 0.5
+    plotitem.pcolor_cmax=3.5
     plotitem.plot_var = 0
     plotitem.add_colorbar = False
     plotitem.show = True       # show on plot?
+    plotitem.amr_gridedges_show = [1,1,1]
     
 
     plotfigure = plotdata.new_plotfigure(name='Tracer', figno=1)
@@ -65,6 +66,7 @@ def setplot(plotdata):
     plotitem.pcolor_cmap = colormaps.yellow_red_blue
     plotitem.add_colorbar = False
     plotitem.show = True       # show on plot?
+    plotitem.amr_gridedges_show = [1,1,1]
     
 
     plotfigure = plotdata.new_plotfigure(name='Energy', figno=2)
@@ -85,6 +87,7 @@ def setplot(plotdata):
     plotitem.pcolor_cmap = colormaps.yellow_red_blue
     plotitem.add_colorbar = False
     plotitem.show = True       # show on plot?
+    plotitem.amr_gridedges_show = [1,1,1]
     
 
 
