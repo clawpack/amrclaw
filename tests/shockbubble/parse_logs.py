@@ -372,12 +372,12 @@ if __name__ == "__main__":
         for test_type in ['amr_grid','amr_sweep','single_sweep','static_grid','weak_sweep']:
             log_files = glob.glob(expand_path(os.path.join(log_dir,"log_%s*.txt" % test_type)))
             if verbose:
-                print "Found these time files:"
+                print "Found these log files:"
                 print '\t\n'.join(log_files)
             if len(log_files) == 0:
-                print >> sys.stderr, "Did not find any time files at:"
+                print >> sys.stderr, "Did not find any log files at:"
                 print >> sys.stderr, "\t%s" % log_dir
-                sys.exit(2)
+                exit
             create_efficiency_plots(log_files,plot_path="./plots/effec",
                                     out_format=format,out_file_base='%s_effec_plot' % test_type,
                                     verbose=verbose)
@@ -391,7 +391,7 @@ if __name__ == "__main__":
         if len(log_files) == 0:
             print >> sys.stderr, "Did not find any amr log files at:"
             print >> sys.stderr, "\t%s" % log_dir
-            sys.exit(2)
+            # sys.exit(2)
         
         create_amr_plots(log_files,'sweep',plot_path='./plots/amr',
                          out_format=format,out_file_base="amr_plot",
@@ -404,7 +404,7 @@ if __name__ == "__main__":
         if len(log_files) == 0:
             print >> sys.stderr, "Did not find any amr log files at:"
             print >> sys.stderr, "\t%s" % log_dir
-            sys.exit(2)
+            # sys.exit(2)
         
         create_amr_plots(log_files,'grid',plot_path='./plots/amr',
                   out_format=format,out_file_base="amr_plot",
