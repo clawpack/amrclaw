@@ -7,7 +7,6 @@ that will be read in by the Fortran code.
 """ 
 
 import os
-from clawutil import clawdata 
 
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
@@ -24,7 +23,7 @@ def setrun(claw_pkg='amrclaw'):
     
     """ 
     
-    from clawutil.src.python import clawdata 
+    from clawutil import clawdata 
     
     assert claw_pkg.lower() == 'amrclaw',  "Expected claw_pkg = 'amrclaw'"
 
