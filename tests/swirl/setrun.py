@@ -7,7 +7,7 @@ that will be read in by the Fortran code.
 """ 
 
 import os
-from pyclaw import data 
+from clawutil import data 
 
 
 #------------------------------
@@ -98,8 +98,8 @@ def setrun(claw_pkg='amrclaw'):
 
     if clawdata.outstyle==1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.nout = 25
-        clawdata.tfinal = 2.5
+        clawdata.nout = 2
+        clawdata.tfinal = 0.5
 
     elif clawdata.outstyle == 2:
         # Specify a list of output times.  

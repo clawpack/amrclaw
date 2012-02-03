@@ -7,7 +7,7 @@ that will be read in by the Fortran code.
 """ 
 
 import os
-from pyclaw import data 
+from clawutil import data 
 
 
 #------------------------------
@@ -230,7 +230,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.kcheck = 2     # how often to regrid (every kcheck steps)
     clawdata.ibuff  = 3     # width of buffer zone around flagged points
 
-    # More AMR parameters can be set -- see the defaults in pyclaw/data.py
+    # More AMR parameters can be set -- see the defaults in clawutil/data.py
 
     return rundata
     # end of function setrun
