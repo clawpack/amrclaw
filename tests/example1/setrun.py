@@ -6,6 +6,9 @@ that will be read in by the Fortran code.
     
 """ 
 
+import os
+from clawutil import clawdata 
+
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
 #------------------------------

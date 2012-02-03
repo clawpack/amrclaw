@@ -14,7 +14,7 @@ def setplot(plotdata):
     
     """ 
     Specify what is to be plotted at each frame.
-    Input:  plotdata, an instance of visclaw.plotters.data.ClawPlotData.
+    Input:  plotdata, an instance of ClawPlotData.
     Output: a modified version of plotdata.
     
     """ 
