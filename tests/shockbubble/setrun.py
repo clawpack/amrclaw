@@ -7,7 +7,7 @@ that will be read in by the Fortran code.
 """ 
 
 import os
-import clawdata as data
+import oldclawdata as data
 
 
 #------------------------------
