@@ -129,7 +129,8 @@ c       print *,"  nx = ",nx
 c       print *,"  ny = ",ny
 C         stop
 c     endif
-      max_threads = omp_get_max_threads()
+      max_threads = 1
+!$    max_threads = omp_get_max_threads()
       print *," **** nx=",nx
       print *," **** ny=",ny
       print *," **** threads=",max_threads
