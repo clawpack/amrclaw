@@ -65,6 +65,7 @@ MODULES = \
 # Note that the Riemann solvers included here are modified from those in $RIEMANN
 # by removing the common block roe variable storage, instead these recalculate the
 # Roe averages
+# Note that the local versions of tick and arm2ez have output disabled
 SOURCES = \
   rpn2_euler_5wave.f \
   rpt2_euler_5wave.f \
@@ -76,6 +77,7 @@ SOURCES = \
   src1d.f \
   init_alloc.f90 \
   amr2ez.f \
+  tick.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/advanc.f \
@@ -123,7 +125,6 @@ SOURCES = \
   $(AMRCLAW)/src/2d/setgrd.f \
   $(AMRCLAW)/src/2d/setuse.f \
   $(AMRCLAW)/src/2d/stst1.f \
-  $(AMRCLAW)/src/2d/tick.f \
   $(AMRCLAW)/src/2d/trimbd.f \
   $(AMRCLAW)/src/2d/update.f \
   $(AMRCLAW)/src/2d/nodget.f \

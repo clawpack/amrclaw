@@ -527,7 +527,7 @@ c
       call outtre (mstart,printout,nvar,naux)
       write(outunit,*) "  original total mass ..."
       call conck(1,nvar,naux,time,rest)
-      call valout(1,lfine,time,nvar,naux)
+c     call valout(1,lfine,time,nvar,naux)
       close(parmunit)
 
 c     Timing
