@@ -133,7 +133,7 @@ c     endif
       print *," **** nx=",nx
       print *," **** ny=",ny
       print *," **** threads=",max_threads
-      print *," **** max1d=",max_1d
+      print *," **** max1d=",max1d
 c     if (nx /= max_threads * max1d) then
 c         print *," **** ERROR: nx was set incorrectly"
 c         print *,"  nx = ",nx
@@ -296,6 +296,7 @@ c     1 = left, 2 = right 3 = bottom 4 = top boundary
 c     restart and checkpointing
       read(inunit,*) rest
       read(inunit,*) ichkpt
+      print *,"ichkpt = ",ichkpt
       if (ichkpt .lt. 0) then
          if (-ichkpt .gt. maxout) then
             write(6,*) 'Error -ichkpt can be no greater than maxout'

@@ -230,6 +230,8 @@ def setrun(claw_pkg='amrclaw'):
     #clawdata.eprint = True
     #clawdata.edebug = True
     
+    clawdata.checkpt_iousr = 0
+    
     return rundata
     # end of function setrun
     # ----------------------

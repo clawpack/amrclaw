@@ -49,7 +49,7 @@ c     # For now use verbosity, or set to 0 to suppress printing regrid info:
       ncycle         = nstart
       call setbestsrc()     ! need at very start of run, including restart
       if ( iout .eq. 0) iout  = iinfinity
-      if (ichkpt .eq. 0) ichkpt = iinfinity
+C       if (ichkpt .eq. 0) ichkpt = iinfinity
       nextout = 1
       if (nout .gt. 0) then
          tfinal = tout(nout)
