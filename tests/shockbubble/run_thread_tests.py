@@ -61,7 +61,7 @@ def construct_run_cmd(time_file_path):
 #  Base test class
 class BaseThreadingTest(object):
     
-    def __init__(self,name,threads,thread_method,grid_max):
+    def __init__(self,name,threads,thread_method,mx,mxnest,grid_max):
         # Basic test information
         self.name = name
         self.threads = threads
@@ -73,15 +73,35 @@ class BaseThreadingTest(object):
         self.amrdata = self.setrun.clawdata
         self.probdata = self.setrun.probdata
         self.amrdata.verbosity = 0
+
+        # Construct this test case's data
+        self.amrdata.mxnest = mxnest
+        self.amrdata.mx = mx
+        self.amrdata.my = mx / 4
         
-        # Set file base name
-        self.file_label = "_%s" % (name)
+        # Output style
+        dt = 0.001
+        self.amrdata.dt_initial = dt
+        self.amrdata.dt_variable = 1
+        self.amrdata.outstyle = 2
+        self.amrdata.nout = 1
+        self.amrdata.tout = [TFINAL]
+        
+        # File log label
+        self.file_label = "_%s_m%s_g%s_n%s" % (self.name,
+                                               str(self.amrdata.mx).zfill(3),
+                                               str(self.grid_max).zfill(3),
+                                               str(self.amrdata.mxnest).zfill(2))
         
     def __str__(self):
         output = "Test name: %s - %s\n" % (str(test.__class__).strip("<class '__main__.").strip("'>"),self.name)
         output += "  file_label = %s\n" % self.file_label
         output += "  threads    = %s\n" % self.threads
+        output += "  mx         = %s\n" % self.amrdata.mx
+        output += "  mxnest     = %s\n" % self.amrdata.mxnest
+        output += "  grid_max   = %s\n" % self.grid_max
         return output
+        
         
     def write_info(self,out_file):
         tm = time.localtime()
@@ -105,7 +125,7 @@ class BaseThreadingTest(object):
         # Create log file directory if not there already
         if not os.path.exists(LOG_PATH_BASE):
             os.makedirs(LOG_PATH_BASE)
-        elif not os.path.isdir(LOG_PATH_BASE):
+        else:
             os.remove(LOG_PATH_BASE)
             os.makedirs(LOG_PATH_BASE)
         
@@ -125,113 +145,12 @@ class BaseThreadingTest(object):
         self.build_file.close()
         self.time_file.close()
         self.log_file.close()
-        
-    def run_tests(self):
-        self.open_log_files()
-        
-        # Build binary
-        self.log_file.write("Building...\n")
-        os.environ["THREADING_METHOD"] = self.thread_method
-        os.environ["MAX1D"] = str(self.grid_max)
-        self.flush_log_files()
-        subprocess.Popen("make new -j %s" % self.threads,shell=True,
-                                stdout=self.build_file,stderr=self.build_file,
-                                env=os.environ).wait()
-        self.log_file.write("Build completed.\n")
-
+    
+    def write_data(self):
         # Write out data file
         self.amrdata.write()
         self.probdata.write()
         
-        # Run tests
-        for num_threads in self.threads:
-            os.environ["OMP_NUM_THREADS"] = str(num_threads)
-            self.time_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
-            self.log_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
-
-            run_cmd = construct_run_cmd(self._time_file_path)
-            self.log_file.write(run_cmd + "\n")
-            self.flush_log_files()
-            self.time_file.close()
-            # subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file,
-            #                     env=os.environ).wait()
-            subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,stderr=self.log_file,
-                                env=os.environ).wait()
-            self.log_file.write("Simulation completed.\n")
-            self.time_file = open(self._time_file_path,'aw')
-
-        self.close_log_files()
-        
-    
-    
-class SweepThreadingTest(BaseThreadingTest):
-    
-    def __init__(self,name,threads,mx=40,mxnest=3,grid_max=60):
-        
-        # Call super class to set name
-        super(SweepThreadingTest,self).__init__(name,threads,"sweep",grid_max=grid_max)
-        
-        # Construct this test case's data
-        self.amrdata.mxnest = mxnest
-        self.amrdata.mx = mx
-        self.amrdata.my = mx / 4
-        
-        # Output style
-        dt = 0.001
-        self.amrdata.dt_initial = dt
-        self.amrdata.dt_variable = 1
-        self.amrdata.outstyle = 2
-        self.amrdata.nout = 1
-        self.amrdata.tout = [TFINAL]
-        
-        # File log label
-        self.file_label = "_%s_m%s_g%s_n%s" % (self.name,
-                                               str(self.amrdata.mx).zfill(3),
-                                               str(self.grid_max).zfill(3),
-                                               str(self.amrdata.mxnest).zfill(2))
-
-    def __str__(self):
-        output = super(SweepThreadingTest,self).__str__()
-        output += "  mx         = %s\n" % self.amrdata.mx
-        output += "  mxnest     = %s\n" % self.amrdata.mxnest
-        output += "  grid_max   = %s\n" % self.grid_max
-            
-        return output
-        
-        
-class SingleGridSweepThreadingTest(SweepThreadingTest):
-        
-    def __init__(self,name,threads,mx=40):
-        
-        # Set base values
-        super(SingleGridSweepThreadingTest,self).__init__(name,threads,mx=mx,mxnest=1,grid_max=mx)
-
-        # Setup non variable time stepping and output
-        dt = 0.0001
-        self.amrdata.dt_initial = dt
-        self.amrdata.dt_variable = 0
-        
-        self.amrdata.outstyle = 3
-        num_steps = int(TFINAL / dt) + 1
-        self.amrdata.max_steps = num_steps + 1
-        self.amrdata.iout = [num_steps,num_steps]
-
-        # File log label
-        self.file_label = "_%s_m%s" % (self.name,str(self.amrdata.mx).zfill(3))
-        
-class SingleGridWeakSweepThreadingTest(SingleGridSweepThreadingTest):
-    
-    def __init__(self,name,threads,mx=64):
-        # Set base values
-        super(SingleGridWeakSweepThreadingTest,self).__init__(name,threads,mx=mx)
-
-        self.amrdata.cutoff = 1.0
-
-        # File log label
-        self.file_label = "_%s_m%s" % (self.name,str(self.amrdata.mx).zfill(3))
-        
-
-        
     def run_tests(self):
         self.open_log_files()
         
@@ -239,110 +158,6 @@ class SingleGridWeakSweepThreadingTest(SingleGridSweepThreadingTest):
         self.log_file.write("Building...\n")
         os.environ["THREADING_METHOD"] = self.thread_method
         os.environ["MAX1D"] = str(self.grid_max)
-        self.flush_log_files()
-        subprocess.Popen("make new" % self.threads,shell=True,
-                                stdout=self.build_file,stderr=self.build_file,
-                                env=os.environ).wait()
-        self.log_file.write("Build completed.\n")
-        
-        # Run tests
-        for num_threads in self.threads:
-            os.environ["OMP_NUM_THREADS"] = str(num_threads)
-            self.time_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
-            self.log_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
-
-            # Set mx and my based on the number of threads
-            self.amrdata.my = self.grid_max * math.sqrt(num_threads)
-            self.amrdata.my = self.amrdata.mx / 4
-            self.amrdata.write()
-            self.probdata.write()
-            
-            run_cmd = construct_run_cmd(self._time_file_path)
-            self.log_file.write(run_cmd + "\n")
-            self.flush_log_files()
-            self.time_file.close()
-            # subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file,
-            #                     env=os.environ).wait()
-            subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,stderr=self.log_file,
-                                env=os.environ).wait()
-            self.log_file.write("Simulation completed.\n")
-            self.time_file = open(self._time_file_path,'aw')
-
-        self.close_log_files()
-        
-                
-class GridThreadingTest(BaseThreadingTest):
-    
-    def __init__(self,name,threads,mx=40,mxnest=3,grid_max=60):
-        
-        # Call super class to set name
-        super(GridThreadingTest,self).__init__(name,threads,"grid",grid_max=grid_max)
-        
-        # Construct this test case's data
-        self.amrdata.mxnest = mxnest
-        self.amrdata.mx = mx
-        self.amrdata.my = mx / 4
-        
-        # Variable time stepping and output
-        dt = 0.001
-        self.amrdata.dt_initial = dt
-        self.amrdata.dt_variable = 1
-        self.amrdata.outstyle = 2
-        self.amrdata.nout = 1
-        self.amrdata.tout = [TFINAL]
-        
-        # File log label
-        self.file_label = "_%s_m%s_g%s_n%s" % (self.name,
-                                               str(self.amrdata.mx).zfill(3),
-                                               str(self.grid_max).zfill(3),
-                                               str(self.amrdata.mxnest).zfill(2))
-
-
-    def __str__(self):
-        output = super(GridThreadingTest,self).__str__()
-        output += "  mx         = %s\n" % self.amrdata.mx
-        output += "  mxnest     = %s\n" % self.amrdata.mxnest
-        output += "  grid_max   = %s\n" % self.grid_max
-            
-        return output
-        
-class StaticGridThreadingTest(GridThreadingTest):
-    
-    def __init__(self,name,threads,grid_max=64):
-        
-        # Call super class to set base parameters and load data
-        super(StaticGridThreadingTest,self).__init__(name,threads,grid_max=grid_max,mxnest=1)
-        
-        # File log label
-        self.file_label = "_%s_g%s" % (self.name,str(self.grid_max).zfill(3))
-
-        # Setup non variable time stepping and output
-        dt = 0.0001
-        self.amrdata.dt_initial = dt
-        self.amrdata.dt_variable = 0
-        
-        self.amrdata.outstyle = 3
-        num_steps = int(TFINAL / dt) + 1
-        self.amrdata.max_steps = num_steps + 1
-        self.amrdata.iout = [num_steps,num_steps]
-        
-
-    def __str__(self):
-        output = "Test name: %s - %s\n" % (str(test.__class__).strip("<class '__main__.").strip("'>"),self.name)
-        output += "  file_label = %s\n" % self.file_label
-        output += "  threads    = %s\n" % self.threads
-        output += "  grid_max   = %s\n" % self.grid_max
-            
-        return output
-        
-        
-    def run_tests(self):
-        self.open_log_files()
-
-        # Build binary
-        os.environ["THREADING_METHOD"] = self.thread_method
-        os.environ["MAX1D"] = str(self.grid_max)
-        self.log_file.write("Building...\n")
         self.flush_log_files()
         subprocess.Popen("make new -j %s" % self.threads,shell=True,
                                 stdout=self.build_file,stderr=self.build_file,
@@ -351,20 +166,11 @@ class StaticGridThreadingTest(GridThreadingTest):
         
         # Run tests
         for num_threads in self.threads:
-            # Determine mx
-            self.amrdata.mx = self.grid_max * num_threads
-            self.amrdata.my = self.amrdata.mx / 4
-            # self.amrdata.mx = 4*self.grid_max
-            # self.amrdata.my = self.grid_max
-            
-            # Write out data file
-            self.amrdata.write()
-            self.probdata.write()
-
-            # Set environment variables
             os.environ["OMP_NUM_THREADS"] = str(num_threads)
             self.time_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
             self.log_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
+
+            self.write_data()
 
             run_cmd = construct_run_cmd(self._time_file_path)
             self.log_file.write(run_cmd + "\n")
@@ -378,6 +184,50 @@ class StaticGridThreadingTest(GridThreadingTest):
             self.time_file = open(self._time_file_path,'aw')
 
         self.close_log_files()
+        
+        
+class SingleGridThreadingTest(BaseThreadingTest):
+        
+    def __init__(self,name,threads,thread_method,mx):
+        
+        # Set base values
+        super(SingleGridThreadingTest,self).__init__(name,threads,thread_method,mx,1,mx)
+
+        # Setup non variable time stepping and output
+        dt = 0.0001
+        self.amrdata.dt_initial = dt
+        self.amrdata.dt_variable = 0
+        
+        self.amrdata.outstyle = 3
+        num_steps = int(TFINAL / dt) + 1
+        self.amrdata.max_steps = num_steps + 1
+        self.amrdata.iout = [num_steps,num_steps]
+
+        
+class WeakThreadingTest(BaseThreadingTest):
+
+    def __init__(self,name,threads,thread_method,mx,grid_max):
+        # Set base values
+        super(WeakThreadingTest,self).__init__(name,threads,thread_method,mx,1,grid_max)
+
+        # Setup non variable time stepping and output
+        dt = 0.0001
+        self.amrdata.dt_initial = dt
+        self.amrdata.dt_variable = 0
+        
+        self.amrdata.outstyle = 3
+        num_steps = int(TFINAL / dt) + 1
+        self.amrdata.max_steps = num_steps + 1
+        self.amrdata.iout = [num_steps,num_steps]
+        
+    def write_data(self):
+        from math import sqrt
+
+        # Set mx and my based on the number of threads
+        self.amrdata.mx = self.grid_max * sqrt(num_threads)
+        self.amrdata.my = self.amrdata.mx / 4
+        self.amrdata.write()
+        self.probdata.write()
     
         
 # =============================================================================
@@ -400,7 +250,7 @@ for (i,count) in enumerate(sqrt_threads):
         sqrt_threads = sqrt_threads[:i]
         break
         
-single_grid_mx = [64,128,256,512]
+single_grid_mx = [N - 4 for N in [64,128,256,512]]
 grid_max_tests = [64,128,256,512]
 
 # Single Grid Tests
@@ -411,11 +261,10 @@ grid_max_tests = [64,128,256,512]
 #   ---------------
 #     Vary (mx,my) and threads
 for mx in single_grid_mx:
-    tests.append(SingleGridSweepThreadingTest("single_sweep",threads,mx=mx))
+    tests.append(SingleGridThreadingTest("single_sweep",threads,'sweep',mx))
 # Weak scaling test
 for mx in single_grid_mx:
-    threads
-    tests.append(SingleGridWeakSweepThreadingTest("weak_sweep",sqrt_threads,mx=mx))
+    tests.append(WeakThreadingTest("weak_sweep",sqrt_threads,'sweep',mx,mx))
     
 # Grid Threading
 # --------------
@@ -428,14 +277,16 @@ for mx in single_grid_mx:
 #   EWT = mx*my / p + 2 * my
 #   ECT = mx*my + 2*(p-1) * my
 for grid_max in grid_max_tests:
-    tests.append(StaticGridThreadingTest("static_grid",sqrt_threads,grid_max=grid_max))
+    tests.append(WeakThreadingTest('weak_grid',sqrt_threads,'grid',64,grid_max))
 
 # Adaptive Grid Tests
 # ===================
 #   Tests for both sweep and grid threading and for all p
 for grid_max in grid_max_tests:
-    tests.append(SweepThreadingTest("amr_sweep",threads,mx=64,mxnest=3,grid_max=grid_max))
-    tests.append(GridThreadingTest("amr_grid",threads,mx=64,mxnest=3,grid_max=grid_max))
+    tests.append(BaseThreadingTest('amr_sweep',threads,'sweep',64,3,grid_max))
+for grid_max in grid_max_tests:
+    tests.append(BaseThreadingTest('amr_grid',threads,'grid',64,3,grid_max))
+    
 
 # =============================================================================
 #  Command line support
