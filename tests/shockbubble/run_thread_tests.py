@@ -127,6 +127,7 @@ class BaseThreadingTest(object):
         if os.path.exists(LOG_PATH_BASE):
             for log_file in glob.glob(os.path.join(LOG_PATH_BASE,'*.txt')):
                 os.remove(log_file)
+            os.rmdir(LOG_PATH_BASE)
         os.makedirs(LOG_PATH_BASE)
         
         # Open log files and write headers
