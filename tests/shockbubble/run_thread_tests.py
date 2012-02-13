@@ -240,7 +240,7 @@ if hose_name == 'irene':
 elif host_name == 'tiberius':
     threads = [1,2,3,4]
     sqrt_threads = [1,4,9,16]
-elif hose_name = 'juniper':
+elif hose_name == 'juniper':
     threads = [1,2,4,8,12,16]
     sqrt_threads = [1,4,9,16]
 else:
