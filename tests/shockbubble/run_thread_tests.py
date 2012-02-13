@@ -10,7 +10,7 @@ Single Grid Tests
 
   Sweep Threading
   ---------------
-    Vary (mx,my) and threads, mx = 40, 60, 80, 100, 120
+    Vary (mx,my) and threads, mx = ]
 
   Grid Threading
   --------------
@@ -140,7 +140,7 @@ class BaseThreadingTest(object):
         self.time_file.close()
         self.log_file.close()
     
-    def write_data(self):
+    def write_data(self,num_threads):
         # Write out data file
         self.amrdata.write()
         self.probdata.write()
@@ -164,7 +164,7 @@ class BaseThreadingTest(object):
             self.time_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
             self.log_file.write("\n *** OMP_NUM_THREADS = %s\n\n" % int(num_threads))
 
-            self.write_data()
+            self.write_data(num_threads)
 
             run_cmd = construct_run_cmd(self._time_file_path)
             self.log_file.write(run_cmd + "\n")
@@ -214,7 +214,7 @@ class WeakThreadingTest(BaseThreadingTest):
         self.amrdata.max_steps = num_steps + 1
         self.amrdata.iout = [num_steps,num_steps]
         
-    def write_data(self):
+    def write_data(self,num_threads):
         from math import sqrt
 
         # Set mx and my based on the number of threads
