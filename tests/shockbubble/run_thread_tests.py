@@ -233,8 +233,19 @@ tests = []
 max_threads = int(os.environ['OMP_NUM_THREADS'])
 
 # Test ranges
-threads = [1,2,4,8,12,16]
-sqrt_threads = [1,4,9,16]
+host_name = os.uname()[1]
+if hose_name == 'irene':
+    threads = [1,2,3,4]
+    sqrt_threads = [1,4,9,16]
+elif host_name == 'tiberius':
+    threads = [1,2,3,4]
+    sqrt_threads = [1,4,9,16]
+elif hose_name = 'juniper':
+    threads = [1,2,4,8,12,16]
+    sqrt_threads = [1,4,9,16]
+else:
+    threads = [1,2,4,8,12,16]
+    sqrt_threads = [1,4,9,16,25]
 for (i,count) in enumerate(threads):
     if count > max_threads:
         threads = threads[:i]
