@@ -255,8 +255,8 @@ for (i,count) in enumerate(sqrt_threads):
         sqrt_threads = sqrt_threads[:i]
         break
         
-single_grid_mx = [N - 4 for N in [64,128,256,512]]
-grid_max_tests = [64,128,256,512]
+single_grid_mx = [N - 4 for N in [128,256,512,1024]]
+grid_max_tests = [32,64,128,256,512,1024]
 
 # Single Grid Tests
 # =================
