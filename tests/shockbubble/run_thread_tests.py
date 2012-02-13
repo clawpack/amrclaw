@@ -33,6 +33,7 @@ import os
 import subprocess
 import time
 import math
+import glob
 
 import setrun
 
@@ -123,11 +124,10 @@ class BaseThreadingTest(object):
         
     def open_log_files(self):
         # Create log file directory if not there already
-        if not os.path.exists(LOG_PATH_BASE):
-            os.makedirs(LOG_PATH_BASE)
-        else:
-            os.rmdir(LOG_PATH_BASE)
-            os.makedirs(LOG_PATH_BASE)
+        if os.path.exists(LOG_PATH_BASE):
+            for log_file in glob.glob(os.path.join(LOG_PATH_BASE,'*.txt')):
+                os.remove(log_file)
+        os.makedirs(LOG_PATH_BASE)
         
         # Open log files and write headers
         self._build_file_path = os.path.join(LOG_PATH_BASE,"build%s.txt" % self.file_label)
