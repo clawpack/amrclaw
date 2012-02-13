@@ -30,19 +30,13 @@ Adaptive Grid Tests
 
 import sys
 import os
+import getopt
 import subprocess
 import time
 import math
 import glob
 
 import setrun
-
-# =============================================================================
-# Parameters for script
-if os.environ.has_key('FC'):
-    LOG_PATH_BASE = "./logs_%s" % os.environ['FC']
-else:
-    LOG_PATH_BASE = "./logs"
     
 # End time for all simulations
 TFINAL = 0.75
@@ -95,7 +89,7 @@ class BaseThreadingTest(object):
                                                str(self.amrdata.mxnest).zfill(2))
         
     def __str__(self):
-        output = "Test name: %s - %s\n" % (str(test.__class__).strip("<class '__main__.").strip("'>"),self.name)
+        output = "Test name: %s - %s\n" % (str(self.__class__).strip("<class '__main__.").strip("'>"),self.name)
         output += "  file_label = %s\n" % self.file_label
         output += "  threads    = %s\n" % self.threads
         output += "  mx         = %s\n" % self.amrdata.mx
@@ -122,11 +116,11 @@ class BaseThreadingTest(object):
         self.log_file.flush()
         self.time_file.flush()
         
-    def open_log_files(self):
+    def open_log_files(self,log_base):
         # Open log files and write headers
-        self._build_file_path = os.path.join(LOG_PATH_BASE,"build%s.txt" % self.file_label)
-        self._time_file_path = os.path.join(LOG_PATH_BASE,"time%s.txt" % self.file_label)
-        self._log_file_path = os.path.join(LOG_PATH_BASE,"log%s.txt" % self.file_label)
+        self._build_file_path = os.path.join(log_base,"build%s.txt" % self.file_label)
+        self._time_file_path = os.path.join(log_base,"time%s.txt" % self.file_label)
+        self._log_file_path = os.path.join(log_base,"log%s.txt" % self.file_label)
         self.build_file = open(self._build_file_path,'w')
         self.time_file = open(self._time_file_path,'w')
         self.log_file = open(self._log_file_path,'w')
@@ -145,15 +139,16 @@ class BaseThreadingTest(object):
         self.amrdata.write()
         self.probdata.write()
         
-    def run_tests(self):
-        self.open_log_files()
+    def run_tests(self,log_path='./logs',compiler='gcc'):
+        self.open_log_files(log_path)
         
         # Build binary
         self.log_file.write("Building...\n")
         os.environ["THREADING_METHOD"] = self.thread_method
         os.environ["MAX1D"] = str(self.grid_max)
         self.flush_log_files()
-        subprocess.Popen("make new -j %s" % self.threads,shell=True,
+        subprocess.Popen("set_devel %s opt; make new -j %s" % (compiler,
+                                self.threads),shell=True,
                                 stdout=self.build_file,stderr=self.build_file,
                                 env=os.environ).wait()
         self.log_file.write("Build completed.\n")
@@ -170,9 +165,9 @@ class BaseThreadingTest(object):
             self.log_file.write(run_cmd + "\n")
             self.flush_log_files()
             self.time_file.close()
-            # subprocess.Popen("make .data",shell=True,stdout=self.log_file,stderr=self.log_file,
-            #                     env=os.environ).wait()
-            subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,stderr=self.log_file,
+            subprocess.Popen(('set_devel %s opt' % compiler, run_cmd),
+                                shell=True,stdout=self.log_file,
+                                stderr=self.log_file,
                                 env=os.environ).wait()
             self.log_file.write("Simulation completed.\n")
             self.time_file = open(self._time_file_path,'aw')
@@ -229,7 +224,7 @@ class WeakThreadingTest(BaseThreadingTest):
 # =============================================================================
 # Create tests
 # =============================================================================
-tests = []
+tests = {}
 max_threads = int(os.environ['OMP_NUM_THREADS'])
 
 # Test ranges
@@ -265,11 +260,13 @@ grid_max_tests = [32,64,128,256,512,1024]
 #   Sweep Threading
 #   ---------------
 #     Vary (mx,my) and threads
+tests['single_sweep'] = []
 for mx in single_grid_mx:
-    tests.append(SingleGridThreadingTest("single_sweep",threads,'sweep',mx))
+    tests['single_sweep'].append(SingleGridThreadingTest("single_sweep",threads,'sweep',mx))
 # Weak scaling test
+tests['weak_sweep'] = []
 for mx in single_grid_mx:
-    tests.append(WeakThreadingTest("weak_sweep",sqrt_threads,'sweep',mx,mx))
+    tests['weak_sweep'].append(WeakThreadingTest("weak_sweep",sqrt_threads,'sweep',mx,mx))
     
 # Grid Threading
 # --------------
@@ -281,49 +278,139 @@ for mx in single_grid_mx:
 #   
 #   EWT = mx*my / p + 2 * my
 #   ECT = mx*my + 2*(p-1) * my
+tests['weak_grid'] = []
 for grid_max in grid_max_tests:
-    tests.append(WeakThreadingTest('weak_grid',sqrt_threads,'grid',64,grid_max))
+    tests['weak_grid'].append(WeakThreadingTest('weak_grid',sqrt_threads,'grid',64,grid_max))
 
 # Adaptive Grid Tests
 # ===================
 #   Tests for both sweep and grid threading and for all p
+tests['amr_sweep'] = []
 for grid_max in grid_max_tests:
-    tests.append(BaseThreadingTest('amr_sweep',threads,'sweep',64,3,grid_max))
+    tests['amr_sweep'].append(BaseThreadingTest('amr_sweep',threads,'sweep',64,3,grid_max))
+tests['amr_grid'] = []
 for grid_max in grid_max_tests:
-    tests.append(BaseThreadingTest('amr_grid',threads,'grid',64,3,grid_max))
+    tests['amr_grid'].append(BaseThreadingTest('amr_grid',threads,'grid',64,3,grid_max))
     
 
 # =============================================================================
 #  Command line support
+available_test_groups = '\t' + ', '.join(tests.keys())
+help_message = r"""Run threading tests
+
+Usage:  run_thread_tests.py [options] test_group [test_rank], ...
+
+test_group = Test group to run of which multiple can be given.  To run all 
+             available tests use 'all'.  Valid test groups include:
+             
+%s
+
+test_rank = Tests to run from within the test groups specified
+
+Command line options:
+    -v, --verbose - Verbose output (default = False)
+    -c, --compiler - Which compiler suite to use (either gcc, intel, or all),
+                     (default = gcc)
+    -l, --logs - Location to put logs (default = ./logs_[compiler_suite])
+    -h, --help - Display this help message
+""" % available_test_groups
+
+class Usage(Exception):
+    def __init__(self,msg):
+        self.msg = msg   
+
 if __name__ == "__main__":
-    
-    # Construct list of tests to be run
-    if len(sys.argv) > 1:
-        if sys.argv[1].lower() == 'all':
-            tests_to_be_run = tests
-        else:
-            tests_to_be_run = []
-            for test in sys.argv[1:]:
-                tests_to_be_run.append(tests[int(test)])
-    # or just print all the tests available
-    else:
-        for (i,test) in enumerate(tests):
-            print "==== %s ==================" % i
-            print test
+    # Parse command line arguments
+    try:
+        try:
+            opts,args = getopt.getopt(sys.argv[1:],
+                            "hvc:l:",
+                            ['help','verbose','compiler','logs'])
+                                
+        except getopt.error, msg:
+            raise Usage(msg)
+            
+        # Default arguments
+        verbose = False
+        compiler = 'gcc'
+        log_base = './logs'
+        
+        # Option parsing
+        for option,value in opts:
+            if option in ('-v','--verbose'):
+                verbose = True
+            if option in ('-c','--compiler'):
+                if value in ('gcc','intel','all'):
+                    compiler = value
+                else:
+                    raise Exception("Invalid compiler choice, must be 'intel' or 'gcc'.")
+            if option in ('-l','--logs'):
+                log_base = os.path.expandvars(os.path.expanduser(value))
+            if option in ('-h','--help'):
+                raise Usage(help_message)
+    except Usage, err:
+        print >> sys.stderr, sys.argv[0].split('/')[-1] + ": " + str(err.msg)
+        sys.exit(1)
+        
+    # Construct test set
+    if len(args) == 0:
+        # Print out available test groups and ranks
+        for (group,group_tests) in tests.iteritems():
+            print "===== %s ========================" % group
+            for (i,test) in enumerate(group_tests):
+                print "Test (%s)" % i
+                print test
         sys.exit(0)
+    elif len(args) > 0:
+        # Parse argument list
+        tests_to_run = {}
+        for arg in args:
+            try:
+                test_index = int(arg)
+                for group in current_groups:
+                    tests_to_run[group].append(test_index)
+            except ValueError, err:
+                current_groups = []
+                if arg == 'all':
+                    current_groups = tests.keys()
+                    for group in current_groups:
+                        tests_to_run[group] = []
+                else:
+                    for group_name in tests.keys():
+                        if arg in group_name:
+                            current_groups.append(group_name)
+                            if not tests_to_run.has_key(group_name):
+                                tests_to_run[group_name] = []
     
-    # Output tests to be performed
-    for (i,test) in enumerate(tests_to_be_run):
-        print "==== %s ==================" % i
-        print test
+    # Print out request tests, also add all test in a group at this point if 
+    # none were specifically requested
+    test_count = 0
+    for group in tests_to_run.keys():
+        if len(tests_to_run[group]) == 0:
+            tests_to_run[group] = range(len(tests[group]))
+        print "===== %s ========================" % group
+        for test_index in tests_to_run[group]:
+            print "Test (%s)" % test_index
+            print tests[group][test_index]
+            test_count += 1
+    print "Total tests = %s" % test_count
     
-    # Create log output directory
-    if os.path.exists(LOG_PATH_BASE):
-        for log_file in glob.glob(os.path.join(LOG_PATH_BASE,'*.txt')):
-            os.remove(log_file)
-        os.rmdir(LOG_PATH_BASE)
-    os.makedirs(LOG_PATH_BASE)
-    
-    # Execute tests
-    for (i,test) in enumerate(tests_to_be_run):
-        test.run_tests()
+    # Run requested tests
+    if compiler == 'all':
+        compilers = ['gcc','intel']
+    else:
+        compilers = [compiler]
+    for FC in compilers:
+        # Remove old log files if they exist in this location
+        log_path = '_'.join((log_base,FC))
+        if os.path.exists(log_path):
+            if os.path.isdir(log_path):
+                for log_file in glob.glob(os.path.join(log_path,'*.txt')):
+                    os.remove(log_file)
+                os.rmdir(log_path)
+        os.makedirs(log_path)
+        
+        # Finally, run the tests
+        for group in tests_to_run.iterkeys():
+            for test_index in tests_to_run[group]:
+                tests[group][test_index].run_tests(log_path,FC)
