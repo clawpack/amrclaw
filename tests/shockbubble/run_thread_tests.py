@@ -123,13 +123,6 @@ class BaseThreadingTest(object):
         self.time_file.flush()
         
     def open_log_files(self):
-        # Create log file directory if not there already
-        if os.path.exists(LOG_PATH_BASE):
-            for log_file in glob.glob(os.path.join(LOG_PATH_BASE,'*.txt')):
-                os.remove(log_file)
-            os.rmdir(LOG_PATH_BASE)
-        os.makedirs(LOG_PATH_BASE)
-        
         # Open log files and write headers
         self._build_file_path = os.path.join(LOG_PATH_BASE,"build%s.txt" % self.file_label)
         self._time_file_path = os.path.join(LOG_PATH_BASE,"time%s.txt" % self.file_label)
@@ -312,6 +305,13 @@ if __name__ == "__main__":
     for (i,test) in enumerate(tests_to_be_run):
         print "==== %s ==================" % i
         print test
+    
+    # Create log output directory
+    if os.path.exists(LOG_PATH_BASE):
+        for log_file in glob.glob(os.path.join(LOG_PATH_BASE,'*.txt')):
+            os.remove(log_file)
+        os.rmdir(LOG_PATH_BASE)
+    os.makedirs(LOG_PATH_BASE)
     
     # Execute tests
     for (i,test) in enumerate(tests_to_be_run):
