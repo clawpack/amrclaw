@@ -126,7 +126,7 @@ class BaseThreadingTest(object):
         if not os.path.exists(LOG_PATH_BASE):
             os.makedirs(LOG_PATH_BASE)
         else:
-            os.remove(LOG_PATH_BASE)
+            os.rmdir(LOG_PATH_BASE)
             os.makedirs(LOG_PATH_BASE)
         
         # Open log files and write headers
