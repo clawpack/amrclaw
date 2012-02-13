@@ -233,8 +233,19 @@ tests = []
 max_threads = int(os.environ['OMP_NUM_THREADS'])
 
 # Test ranges
-threads = [1,2,4,8,12,16]
-sqrt_threads = [1,4,9,16]
+host_name = os.uname()[1]
+if host_name == 'irene':
+    threads = [1,2,3,4]
+    sqrt_threads = [1,4,9,16]
+elif host_name == 'tiberius':
+    threads = [1,2,3,4]
+    sqrt_threads = [1,4,9,16]
+elif host_name == 'juniper':
+    threads = [1,2,4,8,12,16]
+    sqrt_threads = [1,4,9,16]
+else:
+    threads = [1,2,4,8,12,16]
+    sqrt_threads = [1,4,9,16,25]
 for (i,count) in enumerate(threads):
     if count > max_threads:
         threads = threads[:i]
@@ -244,8 +255,8 @@ for (i,count) in enumerate(sqrt_threads):
         sqrt_threads = sqrt_threads[:i]
         break
         
-single_grid_mx = [N - 4 for N in [64,128,256,512]]
-grid_max_tests = [64,128,256,512]
+single_grid_mx = [N - 4 for N in [128,256,512,1024]]
+grid_max_tests = [32,64,128,256,512,1024]
 
 # Single Grid Tests
 # =================
