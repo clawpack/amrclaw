@@ -147,8 +147,10 @@ class BaseThreadingTest(object):
         os.environ["THREADING_METHOD"] = self.thread_method
         os.environ["MAX1D"] = str(self.grid_max)
         self.flush_log_files()
-        subprocess.Popen("set_devel %s opt; make new -j %s" % (compiler,
-                                self.threads),shell=True,
+        build_cmd = "source ~/.bash_functions"
+        build_cmd = "; ".join((build_cmd,"set_devel %s opt" % compiler))
+        build_cmd = "; ".join((build_cmd,"make new -j %s" % self.threads))
+        subprocess.Popen(build_cmd,shell=True,
                                 stdout=self.build_file,stderr=self.build_file,
                                 env=os.environ).wait()
         self.log_file.write("Build completed.\n")
@@ -161,14 +163,14 @@ class BaseThreadingTest(object):
 
             self.write_data(num_threads)
 
-            run_cmd = construct_run_cmd(self._time_file_path)
+            run_cmd = "source ~/.bash_functions"
+            run_cmd = "; ".join((run_cmd,"set_devel %s opt" % compiler))
+            run_cmd = "; ".join((run_cmd,construct_run_cmd(self._time_file_path)))
             self.log_file.write(run_cmd + "\n")
             self.flush_log_files()
             self.time_file.close()
-            subprocess.Popen(('set_devel %s opt' % compiler, run_cmd),
-                                shell=True,stdout=self.log_file,
-                                stderr=self.log_file,
-                                env=os.environ).wait()
+            subprocess.Popen(run_cmd,shell=True,stdout=self.log_file,
+                                stderr=self.log_file,env=os.environ).wait()
             self.log_file.write("Simulation completed.\n")
             self.time_file = open(self._time_file_path,'aw')
 

@@ -330,7 +330,7 @@ if __name__ == "__main__":
         
         # Default values
         verbose = False
-        log_dir = run_thread_tests.LOG_PATH_BASE
+        log_dir = './logs_%s' % os.environ["FC"]
         format = 'png'
         force = False
         tick_plots = True
