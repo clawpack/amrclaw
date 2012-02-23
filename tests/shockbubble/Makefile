@@ -22,11 +22,36 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2 
-FFLAGS += -cpp
-# FFLAGS += -DGRID_THREADING -fopenmp
-# FFLAGS += -DSWEEP_THREADING -fopenmp
+FFLAGS ?=  -O2
+FFLAGS += -I$(AMRCLAW)/src/2d # Have to add this here since amr2ez.f is local
 
+# Create flags for threading and preprocessing
+PPFLAGS = 
+ifeq ($(findstring gfortran,$(FC)),gfortran)
+    PPFLAGS = -cpp
+	OMP_FLAG = -fopenmp
+endif
+ifeq ($(findstring ifort,$(FC)),ifort)
+    PPFLAGS = -fpp
+	OMP_FLAG = -openmp
+endif
+ifeq ($(THREADING_METHOD),grid)
+    PPFLAGS += $(OMP_FLAG) -DGRID_THREADING
+endif
+ifeq ($(THREADING_METHOD),sweep)
+	PPFLAGS += $(OMP_FLAG) -DSWEEP_THREADING
+endif 
+ifeq ($(THREADING_METHOD),all)
+	PPFLAGS += $(OMP_FLAG) -DGRID_THREADING -DSWEEP_THREADING
+endif
+ifdef MAX1D
+	PPFLAGS += -DMAX1D=$(MAX1D)
+endif
+MAKELEVEL ?= 0
+ifeq ($(MAKELEVEL),0)
+    FFLAGS += $(PPFLAGS)
+    LFLAGS += $(FFLAGS)
+endif
 
 # ---------------------------------
 # List of sources for this program:
@@ -35,24 +60,31 @@ FFLAGS += -cpp
 # Clawpack library to be used:
     
 MODULES = \
-  $(AMRCLAW)/src/2d/amr_module.f \
+  ./amr_module.f # For control of max1d
 
+# Note that the Riemann solvers included here are modified from those in $RIEMANN
+# by removing the common block roe variable storage, instead these recalculate the
+# Roe averages
 SOURCES = \
-  $(RIEMANN)/src/rpn2_vc_advection.f \
-  $(RIEMANN)/src/rpt2_vc_advection.f \
-  setaux.f \
-  psi.f \
-  setprob.f \
-  b4step2.f \
+  rpn2_euler_5wave.f \
+  rpt2_euler_5wave.f \
+  fdisc.f \
   qinit.f \
-  $(AMRCLAW)/src/2d/amr2ez.f \
+  setaux.f \
+  setprob.f \
+  src2.f \
+  src1d.f \
+  init_alloc.f90 \
+  amr2ez.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
-  $(AMRCLAW)/src/2d/src2.f \
-  $(AMRCLAW)/src/2d/src1d.f \
   $(AMRCLAW)/src/2d/advanc.f \
   $(AMRCLAW)/src/2d/bound.f \
-  $(AMRCLAW)/src/2d/stepgrid.f \
+  stepgrid.f \
+  $(AMRCLAW)/src/2d/cellave.f \
+  $(AMRCLAW)/src/2d/fss.f \
+  $(AMRCLAW)/src/2d/zeroin.f \
+  $(AMRCLAW)/src/2d/b4step2.f \
   $(AMRCLAW)/src/2d/auxcoarsen.f \
   $(AMRCLAW)/src/2d/fixcapaq.f \
   $(AMRCLAW)/src/2d/estdt.f \
@@ -115,7 +147,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/preintcopy.f \
   $(AMRCLAW)/src/2d/icall.f \
   $(AMRCLAW)/src/2d/preicall.f \
-  $(AMRCLAW)/src/2d/step2.f90 \
+  $(AMRCLAW)/src/2d/step2.f \
   $(AMRCLAW)/src/2d/flux2.f \
   $(AMRCLAW)/src/2d/inlinelimiter.f \
   $(AMRCLAW)/src/2d/cstore.f \
@@ -127,7 +159,6 @@ SOURCES = \
   $(AMRCLAW)/src/2d/dumpgauge.f \
   $(AMRCLAW)/src/2d/quick_sort1.f \
   $(AMRCLAW)/src/2d/opendatafile.f \
-  $(AMRCLAW)/src/2d/init_alloc.f90 \
   $(AMRCLAW)/src/2d/restrt_alloc.f90 \
   $(AMRCLAW)/src/2d/resize_alloc.f90 \
 # $(AMRCLAW)/src/2d/resize_alloc_static.f90 \
@@ -135,7 +166,6 @@ SOURCES = \
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
 include $(CLAWMAKE)
-
 
 ### DO NOT remove this line - make depends on it ###
     
