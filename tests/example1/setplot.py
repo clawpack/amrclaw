@@ -13,13 +13,13 @@ def setplot(plotdata):
     
     """ 
     Specify what is to be plotted at each frame.
-    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.
+    Input:  plotdata, an instance of visclaw.plotters.data.ClawPlotData.
     Output: a modified version of plotdata.
     
     """ 
 
 
-    from pyclaw.plotters import colormaps
+    from visclaw.plotters import colormaps
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
 
@@ -78,11 +78,11 @@ def setplot(plotdata):
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_grid')
     plotitem.amr_grid_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
-    plotitem.amr_gridlines_show = [1,1,0]   
+    plotitem.amr_gridlines_show = [1,1,1]   
     plotitem.amr_gridedges_show = [1]     
     
     # Parameters used only when creating html and/or latex hardcopy
-    # e.g., via pyclaw.plotters.frametools.printframes:
+    # e.g., via visclaw.plotters.frametools.printframes:
 
     plotdata.printfigs = True                # print figures
     plotdata.print_format = 'png'            # file format
