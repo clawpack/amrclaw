@@ -77,7 +77,7 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
     
     ! ============================================================================
     ! Perform X-Sweeps
-#ifdef SWEEP_THREADING
+#ifdef LOOP_THREADING
     !$OMP PARALLEL DO PRIVATE(j,jcom,thread_num)                  &
     !$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdx1d) &
     !$OMP             PRIVATE(aux1,aux2,aux3)                     &
@@ -89,7 +89,7 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
 #endif
     do j = 0,my+1
         ! For 1D AMR - cannot be used in conjunction with sweep threading        
-#ifndef SWEEP_THREADING
+#ifndef LOOP_THREADING
         if (my == 1 .and. j /= 1) then
             exit
         endif
@@ -121,15 +121,15 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
                    faddm,faddp,gaddm,gaddp,cfl1d,wave,s, &
                    amdq,apdq,cqxx,bmadq,bpadq,rpn2,rpt2)       
                    
-#ifdef SWEEP_THREADING
+#ifdef LOOP_THREADING
         !$OMP CRITICAL (cfl_row_x)
 #endif
         cflgrid = max(cflgrid,cfl1d)
-#ifdef SWEEP_THREADING
+#ifdef LOOP_THREADING
         !$OMP END CRITICAL (cfl_row_x)
 #endif
 
-#ifdef SWEEP_THREADING
+#ifdef LOOP_THREADING
         !$OMP CRITICAL (flux_accumulation_x)
 #endif
         ! Update fluxes
@@ -139,15 +139,15 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         gp(:,1:mx+1,j) = gp(:,1:mx+1,j) + gaddp(:,1:mx+1,1)
         gm(:,1:mx+1,j+1) = gm(:,1:mx+1,j+1) + gaddm(:,1:mx+1,2)
         gp(:,1:mx+1,j+1) = gp(:,1:mx+1,j+1) + gaddp(:,1:mx+1,2)
-#ifdef SWEEP_THREADING
+#ifdef LOOP_THREADING
         !$OMP END CRITICAL (flux_accumulation_x)
 #endif
     enddo
-#ifdef SWEEP_THREADING
+#ifdef LOOP_THREADING
     !$OMP END PARALLEL DO
 #endif
 
-#ifndef SWEEP_THREADING
+#ifndef LOOP_THREADING
     ! For 1D AMR
     if (my == 1) then
         return
@@ -157,7 +157,7 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
     ! ============================================================================
     !  y-sweeps    
     !
-#ifdef SWEEP_THREADING
+#ifdef LOOP_THREADING
 !$OMP PARALLEL DO PRIVATE(i,icom)                             &
 !$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdy1d) &
 !$OMP             PRIVATE(aux1,aux2,aux3)                     &
@@ -195,16 +195,16 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
                    faddm,faddp,gaddm,gaddp,cfl1d,wave,s,amdq,apdq,cqxx, &
                    bmadq,bpadq,rpn2,rpt2)
 
-#ifdef SWEEP_THREADING
+#ifdef LOOP_THREADING
        !$OMP CRITICAL (cfl_row_y)
 #endif
        cflgrid = max(cflgrid,cfl1d)
-#ifdef SWEEP_THREADING
+#ifdef LOOP_THREADING
        !$OMP END CRITICAL (cfl_row_y)
 #endif
 
 
-#ifdef SWEEP_THREADING
+#ifdef LOOP_THREADING
 !$OMP CRITICAL (flux_accumulation_y)
 #endif
         ! Update fluxes
@@ -214,11 +214,11 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         fp(:,i,1:my+1) = fp(:,i,1:my+1) + gaddp(:,1:my+1,1)
         fm(:,i+1,1:my+1) = fm(:,i+1,1:my+1) + gaddm(:,1:my+1,2)
         fp(:,i+1,1:my+1) = fp(:,i+1,1:my+1) + gaddp(:,1:my+1,2)
-#ifdef SWEEP_THREADING
+#ifdef LOOP_THREADING
 !$OMP END CRITICAL (flux_accumulation_y)
 #endif
     enddo
-#ifdef SWEEP_THREADING_Y
+#ifdef LOOP_THREADING
 !$OMP END PARALLEL DO
 #endif
 
