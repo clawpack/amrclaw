@@ -20,7 +20,7 @@ def setplot(plotdata):
     """ 
 
 
-    from visclaw.plotters import colormaps
+    from visclaw import colormaps
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
     
@@ -42,8 +42,8 @@ def setplot(plotdata):
     plotitem.pcolor_cmin = 0.0
     plotitem.pcolor_cmax = 1.0
     plotitem.add_colorbar = True
-    plotitem.amr_gridlines_show = [True, True, False]
-    plotitem.amr_gridedges_show = [True, True]
+    plotitem.amr_celledges_show = [True, True, False]
+    plotitem.amr_patchedges_show = [True, True]
     plotitem.show = True       # show on plot?
     
     # Figure for contour plot
