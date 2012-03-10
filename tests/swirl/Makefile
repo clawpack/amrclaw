@@ -23,16 +23,17 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
 FFLAGS ?=  -O2
-# FFLAGS += -DGRID_THREADING -fopenmp
-# FFLAGS += -DSWEEP_THREADING -fopenmp
 
+# These flags are for adding the newer openmp threading, note that in order to
+# use openmp with ifort you must replace -fopenmp with -openmp
+# Grid threading refers to threads over the each grid
+# Loop threading refers to threading in the sweep calling the Riemann solvers
+# FFLAGS += -DGRID_THREADING -fopenmp
+# FFLAGS += -DLOOP_THREADING -fopenmp
 
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
-
-# Clawpack library to be used:
-    
 MODULES = \
   $(AMRCLAW)/src/2d/amr_module.f \
 

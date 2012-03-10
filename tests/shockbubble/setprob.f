@@ -2,8 +2,6 @@ c     ==================
       subroutine setprob()
 c     ==================
 
-      use amr_module, only: max1d
-
       implicit none
       
       ! Locals
@@ -64,6 +62,5 @@ c     # ------------------------------------------------------------------
 
       write(6,601) pinf,rinf,vinf,einf
   601 format('pinf,rinf,vinf,einf:',/, 4e14.6)
-C       write(6,*) " ******** max1d = ",max1d
       return
       end

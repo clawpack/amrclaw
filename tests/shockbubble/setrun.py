@@ -7,7 +7,7 @@ that will be read in by the Fortran code.
 """ 
 
 import os
-import clawdata as data
+import oldclawdata as data
 
 
 #------------------------------
@@ -229,6 +229,8 @@ def setrun(claw_pkg='amrclaw'):
     #clawdata.rprint = True
     #clawdata.eprint = True
     #clawdata.edebug = True
+    
+    clawdata.checkpt_iousr = 0
     
     return rundata
     # end of function setrun
