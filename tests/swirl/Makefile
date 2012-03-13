@@ -35,7 +35,7 @@ FFLAGS ?=  -O2
 # List of sources for this program:
 # ---------------------------------
 MODULES = \
-  $(AMRCLAW)/src/2d/amr_module.f \
+  $(AMRCLAW)/src/2d/amr_module.f90 \
 
 SOURCES = \
   $(RIEMANN)/src/rpn2_vc_advection.f \

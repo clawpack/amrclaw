@@ -23,7 +23,6 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
 FFLAGS ?=  -O2
-FFLAGS += -I$(AMRCLAW)/src/2d # Have to add this here since amr2ez.f is local
 
 # These are here to support the OpenMP parallel tests
 # Create flags for threading and preprocessing
@@ -60,7 +59,7 @@ endif
 # Clawpack library to be used:
     
 MODULES = \
-  $(AMRCLAW)/src/2d/amr_module.f
+  $(AMRCLAW)/src/2d/amr_module.f90
 
 # Note that the Riemann solvers included here are modified from those in 
 # $RIEMANN by removing the common block roe variable storage, instead these 
