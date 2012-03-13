@@ -111,7 +111,7 @@ SOURCES = \
   $(CLAW_LIB)/preintcopy.f \
   $(CLAW_LIB)/icall.f \
   $(CLAW_LIB)/preicall.f \
-  $(CLAW_LIB)/step2.f \
+  $(CLAW_LIB)/step2.f90 \
   $(CLAW_LIB)/flux2.f \
   $(CLAW_LIB)/inlinelimiter.f \
   $(CLAW_LIB)/cstore.f \
