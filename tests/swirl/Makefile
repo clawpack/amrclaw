@@ -28,8 +28,10 @@ FFLAGS ?=  -O2
 # use openmp with ifort you must replace -fopenmp with -openmp
 # Grid threading refers to threads over the each grid
 # Loop threading refers to threading in the sweep calling the Riemann solvers
-# FFLAGS += -DGRID_THREADING -fopenmp
-# FFLAGS += -DLOOP_THREADING -fopenmp
+# FFLAGS += -D GRID_THREADING -fopenmp
+# FFLAGS += -D LOOP_THREADING -fopenmp
+# This line changes the maximum size of the patches, default is 60
+# FFLAGS += -D MAX1D=200
 
 # ---------------------------------
 # List of sources for this program:
