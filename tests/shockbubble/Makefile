@@ -25,24 +25,24 @@ FC ?= gfortran   # default if not set as environment variable
 FFLAGS ?=  -O2
 FFLAGS += -I$(AMRCLAW)/src/2d # Have to add this here since amr2ez.f is local
 
+# These are here to support the OpenMP parallel tests
 # Create flags for threading and preprocessing
 PPFLAGS = 
+THREADING_METHOD ?= grid
 ifeq ($(findstring gfortran,$(FC)),gfortran)
-    PPFLAGS = -cpp
 	OMP_FLAG = -fopenmp
 endif
 ifeq ($(findstring ifort,$(FC)),ifort)
-    PPFLAGS = -fpp
 	OMP_FLAG = -openmp
 endif
 ifeq ($(THREADING_METHOD),grid)
     PPFLAGS += $(OMP_FLAG) -DGRID_THREADING
 endif
 ifeq ($(THREADING_METHOD),sweep)
-	PPFLAGS += $(OMP_FLAG) -DSWEEP_THREADING
+	PPFLAGS += $(OMP_FLAG) -DLOOP_THREADING
 endif 
 ifeq ($(THREADING_METHOD),all)
-	PPFLAGS += $(OMP_FLAG) -DGRID_THREADING -DSWEEP_THREADING
+	PPFLAGS += $(OMP_FLAG) -DGRID_THREADING -DLOOP_THREADING
 endif
 ifdef MAX1D
 	PPFLAGS += -DMAX1D=$(MAX1D)
@@ -60,29 +60,34 @@ endif
 # Clawpack library to be used:
     
 MODULES = \
-  ./amr_module.f # For control of max1d
+  $(AMRCLAW)/src/2d/amr_module.f
 
-# Note that the Riemann solvers included here are modified from those in $RIEMANN
-# by removing the common block roe variable storage, instead these recalculate the
-# Roe averages
-# Note that the local versions of tick and arm2ez have output disabled
+# Note that the Riemann solvers included here are modified from those in 
+# $RIEMANN by removing the common block roe variable storage, instead these 
+# recalculate the Roe averages done to support thread safe Riemann solvers
+
+# Local source for thread tests
+# stepgrid.f <=== Timing output
+# init_alloc.f90 <=== Larger initial memory allocation
+# amr2ez.f <=== Timing output, disable output
+# tick.f <=== Disable output
 SOURCES = \
-  rpn2_euler_5wave.f \
-  rpt2_euler_5wave.f \
-  fdisc.f \
-  qinit.f \
-  setaux.f \
-  setprob.f \
-  src2.f \
-  src1d.f \
-  init_alloc.f90 \
-  amr2ez.f \
-  tick.f \
+  ./rpn2_euler_5wave.f \
+  ./rpt2_euler_5wave.f \
+  ./fdisc.f \
+  ./qinit.f \
+  ./setaux.f \
+  ./setprob.f \
+  ./src2.f \
+  ./src1d.f \
+  $(AMRCLAW)/src/2d/init_alloc.f90 \
+  $(AMRCLAW)/src/2d/amr2ez.f \
+  $(AMRCLAW)/src/2d/tick.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/advanc.f \
   $(AMRCLAW)/src/2d/bound.f \
-  stepgrid.f \
+  $(AMRCLAW)/src/2d/stepgrid.f \
   $(AMRCLAW)/src/2d/cellave.f \
   $(AMRCLAW)/src/2d/fss.f \
   $(AMRCLAW)/src/2d/zeroin.f \
