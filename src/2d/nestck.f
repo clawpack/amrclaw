@@ -8,7 +8,7 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
       dimension  badpts(2,npts)
-      integer*1  domflags(0:isize+1,0:jsize+1)
+      integer(kind=1)  domflags(0:isize+1,0:jsize+1)
 
 
       integer   numptc(maxcl)
