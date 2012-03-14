@@ -7,8 +7,8 @@ c
       implicit double precision (a-h, o-z)
 
 
-      integer*1  iflags2(0:isize+1,0:jsize+1)
-      integer*1  iflags (0:ibase+1,0:jbase+1)
+      integer(kind=1)  iflags2(0:isize+1,0:jsize+1)
+      integer(kind=1)  iflags (0:ibase+1,0:jbase+1)
 
 c
 c ::::::::::::::::::::::::::: DOMUP :::::::::::::::::::::

@@ -7,7 +7,7 @@ that will be read in by the Fortran code.
 """ 
 
 import os
-import clawutil.oldclawdata as data 
+import clawutil.oldclawdata as data
 
 
 #------------------------------
@@ -21,7 +21,7 @@ def setrun(claw_pkg='amrclaw'):
         claw_pkg expected to be "amrclaw" for this setrun.
 
     OUTPUT:
-        rundata - object of class ClawRunData 
+        rundata - object of amrclaw ClawRunData 
     
     """ 
     
@@ -33,22 +33,18 @@ def setrun(claw_pkg='amrclaw'):
     #------------------------------------------------------------------
     # Problem-specific parameters to be written to setprob.data:
     #------------------------------------------------------------------
-
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('u',     0.5,  'ubar advection velocity')
-    probdata.add_param('v',     1.0,  'vbar advection velocity')
+    probdata.add_param('gamma',     1.4,  'gamma')
+    probdata.add_param('x0,y0,r0',       [0.5,0.0,0.2],  'x0,y0,r0:  center and radius of bubble')
+    probdata.add_param('rhoin',     0.1,  'rhoin: density in bubble')
+    probdata.add_param('pinf',      5.0,  'pinf:  pressure behind shock')
+
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
-    #   (or to amr2ez.data for AMR)
     #------------------------------------------------------------------
 
     clawdata = rundata.clawdata  # initialized when rundata instantiated
-
-
-    # Set single grid parameters first.
-    # See below for AMR parameters.
-
 
     # ---------------
     # Spatial domain:
@@ -59,16 +55,16 @@ def setrun(claw_pkg='amrclaw'):
     
     # Lower and upper edge of computational domain:
     clawdata.xlower = 0.0
-    clawdata.xupper = 1.0
+    clawdata.xupper = 2.0
     
     clawdata.ylower = 0.0
-    clawdata.yupper = 1.0
+    clawdata.yupper = 0.5
         
 
     # Number of grid cells:
-    clawdata.mx = 50
+    clawdata.mx = 40
     
-    clawdata.my = 50
+    clawdata.my = 10
         
 
     # ---------------
@@ -76,10 +72,10 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
 
     # Number of equations in the system:
-    clawdata.meqn = 1
+    clawdata.meqn = 5
 
     # Number of auxiliary variables in the aux array (initialized in setaux)
-    clawdata.maux = 0
+    clawdata.maux = 1
     
     # Index of aux array corresponding to capacity function, if there is one:
     clawdata.mcapa = 0
@@ -101,22 +97,22 @@ def setrun(claw_pkg='amrclaw'):
     # Note that the time integration stops after the final output time.
     # The solution at initial time t0 is always written in addition.
 
-    clawdata.outstyle = 1
+    clawdata.outstyle = 2
 
     if clawdata.outstyle==1:
         # Output nout frames at equally spaced times up to tfinal:
         clawdata.nout = 10
-        clawdata.tfinal = 2.0
+        clawdata.tfinal = 0.75
 
     elif clawdata.outstyle == 2:
         # Specify a list of output times.  
-        clawdata.tout =  [0.5, 1.0]   # used if outstyle == 2
+        clawdata.tout =  [0.075,0.15,0.225,0.3,0.375,0.45,0.525,0.6,0.675,0.75]   # used if outstyle == 2
         clawdata.nout = len(clawdata.tout)
 
     elif clawdata.outstyle == 3:
         # Output every iout timesteps with a total of ntot time steps:
         iout = 1
-        ntot = 5
+        ntot = 10
         clawdata.iout = [iout, ntot]
     
 
@@ -128,7 +124,7 @@ def setrun(claw_pkg='amrclaw'):
     # The current t, dt, and cfl will be printed every time step
     # at AMR levels <= verbosity.  Set verbosity = 0 for no printing.
     #   (E.g. verbosity == 2 means print only on levels 1 and 2.)
-    clawdata.verbosity = 0
+    clawdata.verbosity = 3
     
     
 
@@ -142,7 +138,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Initial time step for variable dt.  
     # If dt_variable==0 then dt=dt_initial for all steps:
-    clawdata.dt_initial = 0.016
+    clawdata.dt_initial = 0.005
     
     # Max time step to be allowed if variable dt used:
     clawdata.dt_max = 1e+99
@@ -169,17 +165,17 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.order_trans = 2
     
     # Number of waves in the Riemann solution:
-    clawdata.mwaves = 1
+    clawdata.mwaves = 5
     
     # List of limiters to use for each wave family:  
     # Required:  len(mthlim) == mwaves
-    clawdata.mthlim = [3]
+    clawdata.mthlim = [4,4,4,4,2]
     
     # Source terms splitting:
     #   src_split == 0  => no source term (src routine never called)
     #   src_split == 1  => Godunov (1st order) splitting used, 
     #   src_split == 2  => Strang (2nd order) splitting used,  not recommended.
-    clawdata.src_split = 0
+    clawdata.src_split = 1
     
     
     # --------------------
@@ -195,12 +191,12 @@ def setrun(claw_pkg='amrclaw'):
     #   2 => periodic (must specify this at both boundaries)
     #   3 => solid wall for systems where q(2) is normal velocity
     
-    clawdata.mthbc_xlower = 2
-    clawdata.mthbc_xupper = 2
+    clawdata.mthbc_xlower = 1
+    clawdata.mthbc_xupper = 1
     
-    clawdata.mthbc_ylower = 2
-    clawdata.mthbc_yupper = 2
-    
+    clawdata.mthbc_ylower = 3
+    clawdata.mthbc_yupper = 1
+
 
     # ---------------
     # AMR parameters:
@@ -213,17 +209,16 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.mxnest = -mxnest   # negative ==> anisotropic refinement in x,y,t
 
     # List of refinement ratios at each level (length at least mxnest+1)
-    clawdata.inratx = [2,2,2]
-    clawdata.inraty = [2,2,2]
-    clawdata.inratt = [2,2,2]
+    clawdata.inratx = [4,4,2,2]
+    clawdata.inraty = [4,4,2,2]
+    clawdata.inratt = [4,4,2,2]
 
 
     # Specify type of each aux variable in clawdata.auxtype.
     # This must be a list of length maux, each element of which is one of:
     #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
 
-    clawdata.auxtype = []
-
+    clawdata.auxtype = ['center']
 
     clawdata.tol = -1.0     # negative ==> don't use Richardson estimator
     clawdata.tolsp = 0.05   # used in default flag2refine subroutine
@@ -231,11 +226,15 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.ibuff  = 3     # width of buffer zone around flagged points
 
     # More AMR parameters can be set -- see the defaults in pyclaw/data.py
-
+    #clawdata.rprint = True
+    #clawdata.eprint = True
+    #clawdata.edebug = True
+    
+    clawdata.checkpt_iousr = 0
+    
     return rundata
     # end of function setrun
     # ----------------------
-
 
 if __name__ == '__main__':
     # Set up run-time parameters and write all data files.

@@ -7,7 +7,7 @@ c
       implicit double precision (a-h, o-z)
 
 
-      integer*1  domflags(0:ibase+1,0:jbase+1)
+      integer(kind=1)  domflags(0:ibase+1,0:jbase+1)
 
 c
 c ::::::::::::::::::::::::::: PREPDOM :::::::::::::::::::::

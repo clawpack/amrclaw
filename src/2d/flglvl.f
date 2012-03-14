@@ -6,8 +6,8 @@ c
 c
       use amr_module
       implicit double precision (a-h,o-z)
-      integer*1 i1flags(isize+2,jsize+2)
-      integer*1 dom1flags(isize+2,jsize+2)
+      integer(kind=1) i1flags(isize+2,jsize+2)
+      integer(kind=1) dom1flags(isize+2,jsize+2)
 
 
 c

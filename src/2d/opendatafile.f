@@ -8,8 +8,14 @@ c     #
 c     # All comment lines must start with # in the first column.
 
       integer iunit, line, commentlines
-      character*25 fname
-      character*12 fname12
+
+
+c     This allows for a variable name length and obsolves (I think) the
+c     length problem that appeared for some compilers (notably ifort)
+      character(len=*) :: fname
+c     character*25 fname
+c     character*12 fname12
+
       character*1 firstchar
       logical foundFile
       
@@ -20,15 +26,15 @@ c     write(6,*) '+++ fname = XXX',fname,'XXX'
       if (.not. foundFile) then
 c         # for backward compatability: maybe fname is declared character*12
 c         # in calling routine...
-          fname12 = fname(1:12)
+c         fname12 = fname(1:12)
 c         #write(6,*) 'truncated fname12 = XXX',fname12,'XXX'
-          inquire(file=fname12,exist=foundFile)
+c         inquire(file=fname12,exist=foundFile)
           if (.not. foundFile) then
             write(*,*) '*** in opendatafile, file not found:', fname 
             stop
           endif
-          open(unit=iunit,file=fname12,status='old',form='formatted')
-          write(6,*) 'Reading data file: ', fname12
+c         open(unit=iunit,file=fname12,status='old',form='formatted')
+c         write(6,*) 'Reading data file: ', fname12
       else
           open(unit=iunit,file=fname,status='old',form='formatted')
           write(6,*) 'Reading data file: ', fname
