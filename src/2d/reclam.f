@@ -15,9 +15,9 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-
+#ifdef GRID_THREADING
 !$OMP CRITICAL (MemMgmt)
-
+#endif
 c
       do 20 i = 1, lenf
       iplace  = i
@@ -78,8 +78,8 @@ c
  99   lentot = lentot - nwords
       if (sprint) write(outunit,100) nwords, index, lentot
  100  format('     reclaiming ',i8,' words at loc. ',i8,' lentot ',i10)
-
+#ifdef GRID_THREADING
 !$OMP END CRITICAL (MemMgmt)
-
+#endif
       return
       end
