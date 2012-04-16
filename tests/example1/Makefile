@@ -59,6 +59,7 @@ SOURCES = \
   $(CLAW_LIB)/colate.f \
   $(CLAW_LIB)/bufnst.f \
   $(CLAW_LIB)/spest.f \
+  $(CLAW_LIB)/init_iflags.f \
   $(CLAW_LIB)/flag2refine.f \
   $(CLAW_LIB)/allowflag.f \
   $(CLAW_LIB)/errest.f \
