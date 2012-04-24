@@ -111,10 +111,16 @@ c
 c
 c     # take one step on the conservation law:
 c
+c	 call system_clock(mclock_start,mclock_rate)
       call step2(mbig,mx,my,nvar,maux,
      &           mbc,mx,my,
      &              q,aux,dx,dy,dt,cflgrid,
      &              fm,fp,gm,gp,rpn2,rpt2)
+c	 call system_clock(mclock_finish,mclock_rate)
+c	 write(*,1000) " ******* step2 timing = ",
+c     & dble(mclock_finish - mclock_start) / dble(mclock_rate), " s"
+
+ 1000 format (a,1f16.8,a)
 c
 c
         write(outunit,1001) mptr, node(nestlevel,mptr),cflgrid

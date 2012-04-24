@@ -11,7 +11,7 @@ c
       integer    numptc(maxcl), prvptr
       logical    fit, nestck, cout
       data       cout/.false./
-      integer*1  i1flags(iregsz(lcheck)+2,jregsz(lcheck)+2)
+      integer(kind=1)  i1flags(iregsz(lcheck)+2,jregsz(lcheck)+2)
 c
 c ::::::::::::::::::::: GRDFIT :::::::::::::::::::::::::::::::::;
 c  grdfit called by setgrd and regrid to actually fit the new grids
