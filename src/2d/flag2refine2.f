@@ -78,18 +78,13 @@ c            # versions of amrclaw -- flag this point if dq > tolsp:
                 dq  = dmax1(dq,dqi, dqj)
     5           continue
 
-             if (dq .gt. tolsp) amrflags(i,j) = DOFLAG
+             if (dq .gt. tolsp) then
+                 amrflags(i,j) = DOFLAG
+             endif
              endif
 
  10          continue
  20       continue
-
-        write(66,*)" next grid flag2refine"
-        do j = my,1,-1
-           write(66,929)(amrflags(i,j),i=1,mx)
- 929       format(80f6.1)
-        end do
-
 
       return
       end

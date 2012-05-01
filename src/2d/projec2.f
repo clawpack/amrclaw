@@ -43,10 +43,13 @@ c  iflags indexing is 1 based.
 c  do not projec the buffer region, only interior needs it
 c  since buffering will take care of rest (unless ibuff=0-see below)
 c
-      ist  = ikidlo/lrat2x 
-      jst  = jkidlo/lrat2y
-      iend = ikidhi/lrat2x
-      jend = jkidhi/lrat2y
+      ist  = floor(ikidlo/real(lrat2x))
+      jst  = floor(jkidlo/real(lrat2y))
+!--      iend = ikidhi/lrat2x
+!--      jend = jkidhi/lrat2y
+      iend = ceiling((ikidhi+1.d0)/lrat2x) -1
+      jend = ceiling((jkidhi+1.d0)/lrat2y) -1
+
       if (ibuff .eq. 0) then
 c     ## ensure proper nesting here, since buffering step won't follow when ibuff 0
         if (ist*lrat2x .eq. ikidlo) ist = ist-1
@@ -54,11 +57,19 @@ c     ## ensure proper nesting here, since buffering step won't follow when ibuf
         if ((iend+1)*lrat2x .eq. ikidhi+1) iend = iend+1
         if ((jend+1)*lrat2y .eq. jkidhi+1) jend = jend+1
       endif
+
+      ixlo = max(ist, ilo-mbuff)
+      ixhi = min(iend,ihi+mbuff)
+      jxlo = max(jst, jlo-mbuff)
+      jxhi = min(jend,jhi+mbuff)
+      if (.not.((ixlo .le. ixhi) .and. (jxlo .le. jxhi))) go to 80 ! grid mkid doesnt intersect with rectflags
 c
 c       do 60 j = jst+1, jend+1   !old code, shift indices by 1
 c       do 60 i = ist+1, iend+1   ! since iflags used 1-based indexing
-       do 60 j = jst, jend        ! new code into rectflags is 0 based
-       do 60 i = ist, iend       
+c       do 60 j = jst, jend        ! new code into rectflags is 0 based
+c       do 60 i = ist, iend       
+        do 60 j = jxlo, jxhi
+        do 60 i = ixlo, ixhi
            if (rectflags(i,j) .eq. goodpt) then
                rectflags(i,j) = badpro
                numpro      = numpro + 1
@@ -66,6 +77,8 @@ c       do 60 i = ist+1, iend+1   ! since iflags used 1-based indexing
 101            format(' pt.',2i5,' of grid ',i5,' projected' )
            endif
  60    continue
+c
+c IS THERE SOMETHING TO DO ABOUT PERIODICITY
 c
 c repeat above procedure for wrapped area if nec. if ibuff > 0
 c this will be caught in shiftset flagging

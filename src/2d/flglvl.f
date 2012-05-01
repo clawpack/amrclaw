@@ -9,8 +9,7 @@ c
       implicit double precision (a-h,o-z)
       integer*1 i1flags(isize+2,jsize+2)
       integer*1 dom1flags(isize+2,jsize+2)
-
-
+      
 c
 c :::::::::::::::::::: FLGLVL :::::::::::::::::::::::::::::::::
 c
@@ -73,6 +72,10 @@ c  new version needs to check for proper nesting at this point
 c  also needs to sort,  so can remove duplicates.
 c
       if (nxypts .gt. 0) then  
+c        build domain flags for each grid at level lcheck, instead of
+c        previous approach using domain flags over entire  domain
+         call domgrid(lbase,lcheck)   ! will need since there are flagged pts
+c
 c in new version, there are bad cells but nxypts isnt true count any longer
 c since there are duplicates, and proper nesting not yet checked
            index = igetsp(2*nxypts)

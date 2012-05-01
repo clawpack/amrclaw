@@ -55,7 +55,7 @@ c
       if (tolsp .gt. 0.) then
 ! need at least as big as nghost to fit ghost cells. if ibuff is bigger make
 ! the flagged array bigger so can buffer in place
-         mbuff = max(nghost,ibuff)  
+         mbuff = max(nghost,ibuff+1)  
          mibuff = nx + 2*mbuff  !NOTE THIS NEW DIMENSIONING 
 c                               !TO ALLOW ROOM FOR BUFFERING IN PLACE
          mjbuff = ny + 2*mbuff
@@ -71,8 +71,8 @@ c        # Default version compares spatial gradient to tolsp.
 
 c         call flag2refine(nx,ny,nghost,nvar,naux,xleft,ybot,dx,dy,
           call flag2refine2(nx,ny,nghost,mbuff,nvar,naux,xleft,ybot,
-     &                    dx,dy,time,lcheck,tolsp,alloc(locbig),
-     &                    alloc(locaux),alloc(locamrflags),goodpt,badpt)
+     &        dx,dy,time,lcheck,tolsp,alloc(locbig),
+     &        alloc(locaux),alloc(locamrflags),goodpt,badpt,mptr)
 
 c
 c dont reclam here - save for colating and buffering in situ

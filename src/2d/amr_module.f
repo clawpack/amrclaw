@@ -12,11 +12,11 @@ c
        integer    store1,store2,storeaux
        integer    tempptr,errptr,ffluxptr,cfluxptr
        integer    rsize, horizontal, vertical
-       integer    storeflags
+       integer    storeflags, domflags_base, domflags_upsized
 
        parameter (rsize =  5)
 c      parameter (nsize = 13)
-       parameter (nsize = 15) ! for now, until error estimation cleaned up
+       parameter (nsize = 17) ! for now, until error estimation cleaned up, with new grid dom flags
 
 c  :::::::   integer part of node descriptor
        parameter (levelptr  = 1)
@@ -34,6 +34,8 @@ c  :::::::   integer part of node descriptor
        parameter (storeaux  = 13)
        parameter (storeflags  = 14) ! may well not need when error est. cleaned up
        parameter (numflags  = 15) ! may well not need when error est. cleaned up
+       parameter (domflags_base  = 16) 
+       parameter (domflags_upsized  = 17) 
 
 c :::::::  real part of node descriptor
        parameter (cornxlo  = 1)

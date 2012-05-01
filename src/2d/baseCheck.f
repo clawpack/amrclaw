@@ -4,6 +4,7 @@
        use amr_module
        implicit double precision (a-h, o-z)
 
+       logical debug/.false./
        dimension ist(3),iend(3),jst(3),jend(3),ishift(3),jshift(3)
        ixproj(kk,ll) = (kk + ll*iabs(kk))/ll - iabs(kk)
 
@@ -24,8 +25,10 @@ c   at least one away from boundary of a parent grid, unless
 c   on a domain boundary
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-c       write(*,*)"NESTCK2 testing grid ",mnew,
-c     .           " from ",ilo,ihi," to ",jlo,jhi
+
+
+       if (debug) write(*,100) mnew,ilo,ihi,jlo,jhi
+ 100   format("NESTCK2 testing grid ",i5," from ",2i5," to ",2i5)
 
        levnew = node(nestlevel,mnew)
 c
@@ -77,7 +80,8 @@ c widen by 1 cell (proper nesting), then project to lbase
        ichi = ixproj(ihi+1,levratx)
        jclo = ixproj(jlo-1,levraty)
        jchi = ixproj(jhi+1,levraty)
-c       write(*,*)" coarsened grid from ",iclo,ichi," to ",jclo,jchi
+       if (debug) write(*,101) iclo,ichi,jclo,jchi
+ 101   format("coarsened (enlarged by 1)  grid from ",2i5," to ",2i5)
 
        leni = ichi - iclo + 1
        lenj = jchi - jclo + 1
@@ -89,10 +93,11 @@ c      initialize on projected size of new grid. used to mark nesting
        end do
 c
 c      corners dont count for nesting so mark as ok
-        alloc(iadd(iclo,jclo)) = 1.
-        alloc(iadd(iclo,jchi)) = 1.
-        alloc(iadd(ichi,jclo)) = 1.
-        alloc(iadd(ichi,jchi)) = 1.
+c  leave 0 for now so match older nestck
+!--        alloc(iadd(iclo,jclo)) = 1.
+!--        alloc(iadd(iclo,jchi)) = 1.
+!--        alloc(iadd(ichi,jclo)) = 1.
+!--        alloc(iadd(ichi,jchi)) = 1.
 c
 c  if mnew on domain boundary fix flags so ok. 
 c  fix extra border, and first/last real edge
@@ -128,9 +133,11 @@ c  fix extra border, and first/last real edge
           jblo = node(ndjlo, mptr)
           jbhi = node(ndjhi, mptr)
 
-c          write(*,*)
-c          write(*,*)"TESTING AGAINST GRID ",mptr,
-c     .              " from ",iblo,ibhi," to ",jblo,jbhi
+          if (debug) then
+              write(*,*)
+             write(*,102) mptr,iblo,ibhi,jblo,jbhi
+ 102         format("TESTING AGAINST GRID ",i5," from ",2i5," to ",2i5)
+           endif
 
 c          compare all regions of patch with one lbase grid at a time
            do 25 i = 1, 3
@@ -139,29 +146,38 @@ c          compare all regions of patch with one lbase grid at a time
            do 25 j = 1, 3
               j1 = max(jlo-1, jst(j))
               j2 = min(jhi+1, jend(j))
-c              write(*,*)"region ",i,j," from ",i1,i2," to ",j1,j2
-           
+
               if (.not. ((i1 .le. i2) .and. (j1 .le. j2))) go to 25
+
+              if (debug) write(*,103)i,j,i1,i2,j1,j2
+ 103          format("region ",2i5," from ",2i5," to ",2i5)
 c
 c             patch not empty. project coords to level lbase
               iplo = ixproj(i1+ishift(i),levratx)
               iphi = ixproj(i2+ishift(i),levratx)
               jplo = ixproj(j1+jshift(j),levraty)
               jphi = ixproj(j2+jshift(j),levraty)
-c              write(*,*)"projected coords of region ",i,j,
-c     .                  " is ",iplo,iphi," by ",jplo,jphi
+              if (debug) write(*,104) i,j,iplo,iphi,jplo,jphi
+ 104          format("projected coords of region ",2i5," is ",2i5,
+     .               " by ",2i5)
 
               ixlo = max(iplo,iblo)
               ixhi = min(iphi,ibhi)
               jxlo = max(jplo,jblo)
               jxhi = min(jphi,jbhi)
 
-c              write(*,*)"intersected reg ",ixlo,ixhi," by ",jxlo,jxhi
+              if (.not.((ixlo.le.ixhi) .and. (jxlo.le.jxhi))) go to 25
+
+              if (debug) write(*,105) ixlo,ixhi,jxlo,jxhi
+ 105          format("intersected reg ",2i5," by ",2i5)
 c FOR NOW DO NOT HANDLE PERIODIC NEST CHECKING
           
-              if (.not.((ixlo.le.ixhi) .and. (jxlo.le.jxhi))) go to 25
-c              write(*,*) "SETTING from ",ixlo,ixhi,jxlo,jxhi
-c              write(*,*) "shifts are ", ishift(i),jshift(j)
+              if (debug) then
+                 write(*,106) ixlo,ixhi,jxlo,jxhi
+                 write(*,107) ishift(i),jshift(j)
+ 106             format("SETTING FROM ",4i5)
+ 107             format("shift are ",2i5)
+              endif
 c     mark intersected regions with 1
               do jx = jxlo, jxhi
               do ix = ixlo, ixhi
@@ -176,11 +192,13 @@ c              need to mark nesting of orig coords, not shifted
           if (mptr .ne. 0) go to 20
 
 c     output for debugging
-c       do 34 jj = jclo, jchi
-c           j = jchi + jclo - jj
-c           write(*,344)(int(alloc(iadd(i,j))), i=iclo,ichi) 
-c 344       format(110i1)
-c 34    continue
+      if (debug) then
+          do 34 jj = jclo, jchi
+              j = jchi + jclo - jj
+              write(*,344)(int(alloc(iadd(i,j))), i=iclo,ichi) 
+ 344          format(110i1)
+ 34       continue
+       endif
 
 c
 c  if any zeroes left mnew not nested

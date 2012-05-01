@@ -40,20 +40,14 @@ c      # for CONVEX coarsest grid at level 1, nothing to check
        isNested = baseCheck(mnew,lbase,node(ndilo,mnew),
      .                      node(ndihi,mnew),node(ndjlo,mnew),
      .                      node(ndjhi,mnew))
-        nestck2 = isNested
-        go to 99
+       if (isNested) then
+           nestck2 = isNested
+           go to 99
+       endif
 c
 c  ### use grid indices coarsened by 1 level in checking
 c  ### remember to offset by 1 since 1st grid cell is 0,0
-c
-c      do 10 i = node(ndilo,mnew)/lratiox+1, node(ndihi,mnew)/lratiox+1
-c      do 10 j = node(ndjlo,mnew)/lratioy+1, node(ndjhi,mnew)/lratioy+1
-c         if (domflags(i,j) .eq. 0) go to 50
-c10    continue
-c
-c      if made it here, then mnew is properly nested
-       go to 99
-c
+
 c  ### grid not properly nested. bisect in long direction, and return
 c  ### two clusters instead of 1.
 c

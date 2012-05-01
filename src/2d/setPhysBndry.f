@@ -11,11 +11,11 @@ c
 c ****************************************************************
 c  setPhysBndry = if grid borders the physical domain then
 c                 turn off any flagged points in buffer zone = those points
-c                 are not properly nested (and doesnt matter).
-c                 But last row/col internal to grid if flagged is ok
+c                 are not properly nested (and it doesnt matter).
+c                 But last row/col interior to grid if flagged is ok
 c              
 c                 if periodic, then have to look elsewhere to see if
-c                 last internal row/col that is flagged is ok.
+c                 last interior row/col that is flagged is ok.
 c                 (done in rest of colate2)
 c ****************************************************************
 
@@ -47,7 +47,7 @@ c       set bottom flagged points to be ok
             do j = jlo-mbuff, jlo-1    
              rectflags(i,j) = goodpt
             end do
-            rectflags(i,jlo) = abs(rectflags(i,jlo))
+            rectflags(i,0) = abs(rectflags(i,0))
           end do
        endif
 

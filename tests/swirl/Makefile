@@ -65,9 +65,12 @@ SOURCES = \
   $(CLAW_LIB)/cleanup.f \
   $(CLAW_LIB)/colate.f \
   $(CLAW_LIB)/colate2.f \
+  $(CLAW_LIB)/drivesort.f \
+  $(CLAW_LIB)/flagcheck.f \
   $(CLAW_LIB)/bufnst.f \
   $(CLAW_LIB)/bufnst2.f \
   $(CLAW_LIB)/setPhysBndry.f \
+  $(CLAW_LIB)/setPhysBndryFlags.f \
   $(CLAW_LIB)/setNeg.f \
   $(CLAW_LIB)/spest.f \
   $(CLAW_LIB)/spest2.f \
@@ -125,6 +128,12 @@ SOURCES = \
   $(CLAW_LIB)/domprep.f \
   $(CLAW_LIB)/domup.f \
   $(CLAW_LIB)/domcopy.f \
+  $(CLAW_LIB)/domgrid.f \
+  $(CLAW_LIB)/coarseGridFlagSet.f \
+  $(CLAW_LIB)/setdomflags.f \
+  $(CLAW_LIB)/griddomcopy.f \
+  $(CLAW_LIB)/griddomshrink.f \
+  $(CLAW_LIB)/griddomup.f \
   $(CLAW_LIB)/coarsen.f \
   $(CLAW_LIB)/intcopy.f \
   $(CLAW_LIB)/preintcopy.f \

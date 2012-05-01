@@ -27,9 +27,11 @@ c richardson error estimation took place
 c
       numpro = 0 
       numbad = 0 
-      mbuff = max(nghost,ibuff)
+      mbuff = max(nghost,ibuff+1)
 
       mptr = lstart(lcheck)
+      time = rnode(timemult,mptr)
+
  41   continue
       ilo    = node(ndilo,mptr)
       ihi    = node(ndihi,mptr)
@@ -58,6 +60,8 @@ c
 c for this version project to each grid separately, no giant iflags
       if (lcheck+2 .le. mxnest) then
          numpro2 = 0
+         write(outunit,*)" calling projec at time ",time
+         write(*,*)" calling projec at time ",time
          call projec2(lcheck,numpro2,alloc(locamrflags),
      .                ilo,ihi,jlo,jhi,mbuff)
          numpro = numpro + numpro2
@@ -82,7 +86,8 @@ c      endif
       if (eprint) then
          write(outunit,*)" flagged points after projecting to level", 
      .                    lcheck, " grid ",mptr
-         write(outunit,*) " with ",numpro," additional points projected"
+         write(outunit,*) " with ",numpro," additional points projected",
+     .                    "(with buff cells)"
 c        buffer zone (wider ghost cell region) now set after buffering
 c        so loop over larger span of indices
          do 49 j = mjbuff, 1, -1
@@ -102,7 +107,7 @@ c
 
       if (eprint) then
          write(outunit,*)" flagged points after buffering on level", 
-     .                    lcheck," grid ",mptr
+     .                    lcheck," grid ",mptr," (with buff cells))"
          do 48 j = mjbuff, 1, -1
            write(outunit,100)(int(alloc(iadd(i,j))),i=1, mibuff)
  48      continue

@@ -9,8 +9,9 @@ c
        dimension rectflags(ilo-mbuff:ihi+mbuff, jlo-mbuff:jhi+mbuff)
 
 c ****************************************************************
-c  setNeg = set any flagged point in buffer region (exterior to grid proper)
-c           to negative value. If it turns out to be properly neste
+c  setNeg = set any flagged point in buffer region (exterior to grid proper,
+c            this includes border of cells just inside grid)
+c           to negative value. If it turns out to be properly nested
 c           it will be reset to positive
 c ****************************************************************
 
@@ -34,7 +35,7 @@ c remember to handle diagonals
        end do
 
 c
-c   next to top and bottom; corners already handled
+c   next do top and bottom; corners already handled
        do i = ilo, ihi
           do j = jlo-mbuff, jlo
              if (rectflags(i,j) .gt. 0.) then

@@ -87,7 +87,7 @@ c
 
       if (gprint) write(outunit,101) (node(i,mnew),i=1,nsize),
      &                              (rnode(i,mnew),i=1,rsize)
- 101  format(15i5,/,5e15.7)
+ 101  format(17i5,/,5e15.7)
 c
 c     ##  if new grid doesn't fit in base grid, nestck bisect it
 c     ##  and returns 2 clusters where there used to be 1.

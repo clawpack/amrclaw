@@ -76,7 +76,7 @@ c        # Default version compares spatial gradient to tolsp.
 
          call flag2refine(nx,ny,nghost,nvar,naux,xleft,ybot,dx,dy,
      &              time,lcheck,tolsp,alloc(locbig),alloc(locaux),
-     &              alloc(locamrflags), goodpt, badpt )
+     &              alloc(locamrflags), goodpt, badpt)
 
 c        Put flags in iflags array now, so can reclaim space.
 c        Note change of dimension of amrflags array:

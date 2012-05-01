@@ -47,6 +47,7 @@ c     # needed there.
       tcom = time
 
       if (dump) then
+         write(outunit,*) "dumping grid ",mptr," at time ",time
          do i = 1, mitot
          do j = 1, mjtot
 c        do i = 1, mitot
