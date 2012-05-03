@@ -1,0 +1,44 @@
+c
+c -----------------------------------------------------------------------
+c
+       subroutine setIndices(ist,iend,jst,jend,ilo,ihi,jlo,jhi,lev)
+
+       use amr_module
+       implicit double precision (a-h,o-z)
+
+       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
+
+c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+c  setIndices:  for periodicity a region that sticks out is wrapped into
+c               another region.
+c
+c  this is just annoying code this is needed in several places so it became a routine
+c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+       ist(1) = ilo - mbuff
+       ist(2) = 0
+       ist(3) = iregsz(lcheck)
+
+       iend(1) = -1
+       iend(2) = iregsz(lcheck)-1
+       iend(3) = ihi + mbuff
+
+       jst(1) = jlo - mbuff
+       jst(2) = 0
+       jst(3) = jregsz(lcheck)
+
+       jend(1) = -1
+       jend(2) = jregsz(lcheck)-1
+       jend(3) = jhi + mbuff
+
+       ishift(1) = iregsz(lcheck)
+       ishift(2) = 0
+       ishift(3) = -iregsz(lcheck)
+
+       jshift(1) = jregsz(lcheck)
+       jshift(2) = 0
+       jshift(3) = -jregsz(lcheck)
+
+
+       return
+       end

@@ -7,6 +7,7 @@ c
       implicit  double precision (a-h,o-z)
       dimension badpts(2,len)
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
+      logical db/.false./
 
 c
 c    index for flag array now based on integer index space, not 1:mibuff,1:mjbuff
@@ -58,31 +59,71 @@ c        set tags to negative val. reset to positive if they have a home
          locamrflags = node(storeflags,mptr)
          if (node(numflags,mptr) .eq. 0) go to 70    !simple bypass if no tags
 
-c do we still need setPhysBndry????
-         call setPhysBndry(alloc(locamrflags),ilo,ihi,jlo,jhi,
-     .                     mbuff,lcheck)
-c
-         call flagcheck(alloc(locamrflags),ilo,ihi,jlo,jhi,mbuff,
-     .                  alloc(node(domflags_upsized,mptr)),mptr)
 
 c
-           do 60 j   = jlo-mbuff, jhi+mbuff
-           do 60 i   = ilo-mbuff, ihi+mbuff
-             if (alloc(iadd(i,j)) .gt. goodpt) then  ! neg means no home was found. throw out
-               index = index + 1
+c  more conservative alg. uses entire buffer in flagging
+c           jmin =  jlo-mbuff
+c           jmax =  jhi+mbuff
+c           imin =  ilo-mbuff
+c           imax =  ihi+mbuff
+c
+c  but to match old alg. use only this one. (not exactly the same? since
+c  old alg. used one level?)
+
+             jmin = max(jlo-mbuff,0)
+             jmax = min(jhi+mbuff,iregsz(lcheck)-1)
+             imin = max(ilo-mbuff,0)
+             imax = min(ihi+mbuff,iregsz(lcheck)-1)
+
+c do we still need setPhysBndry????
+c         call setPhysBndry(alloc(locamrflags),ilo,ihi,jlo,jhi,
+c     .                     mbuff,lcheck)
+c     pass loop bounds to keep consistent
+c     need this next subr. to do integer indexing for iflags
+c
+         call flagcheck(alloc(locamrflags),ilo,ihi,jlo,jhi,mbuff,
+     .                  alloc(node(domflags_upsized,mptr)),
+     .                  imin,imax,jmin,jmax,mptr)
+
+
+             do 60 j = jmin, jmax
+             do 60 i = imin, imax
+
+c             neg means no home was found. throw out
+             if (alloc(iadd(i,j)) .lt. 0) then
+                  write(outunit,939) i,j
+ 939              format("NOT NESTED: ignoring point ",2i5)
+                  write(*,*)" still have neg points"
+                  go to 60
+             endif
+             if (alloc(iadd(i,j)) .eq. goodpt) go to 60  
+c
+c    got a legit flagged point, bag it.
+c
+             index = index + 1
 c  WARNING: to match orig program note we ADD .5, not subtract. old program used 1 based indexing
 c  for grid flagging array. we are using 0 based, so need to add to match previous
 c  grid fitting (dont want to change all routines downstream)
 c
-c PERIODICITY? How tell if wrapped ?
-               badpts(1,index) = dble(i)+.5   ! in case periodic, put flagged buffer pt
-               badpts(2,index) = dble(j)+.5   ! in badpts in wrapped coords
-c              write(outunit,101) badpts(1,index),badpts(2,index)
-             else if (alloc(iadd(i,j)) .lt. goodpt) then
-               write(outunit,939) i,j
- 939         format("NOT NESTED: ignoring point ",2i5)
- 101         format(2f6.1)
-             endif
+c  for periodic domains, if flagged pt in buffer zone outside domain
+c   wrap it periodically back in before putting on list
+              iwrap = i
+              if (xperdom) then
+                 if (i .lt. 0) iwrap = i + iregsz(lcheck)
+                 if (i .ge. iregsz(lcheck)) iwrap = i - iregsz(lcheck)
+              endif
+              jwrap = j
+              if (yperdom) then
+                 if (j .lt. 0) jwrap = j + jregsz(lcheck)
+                 if (j .ge. jregsz(lcheck)) jwrap = j - jregsz(lcheck)
+              endif
+c             adding .5 to make it cell centered integer coords
+c             note that previous code subtracted .5 since it used 1 based indexing
+              badpts(1,index) = dble(iwrap)+.5   ! in case periodic, put flagged buffer pt
+              badpts(2,index) = dble(jwrap)+.5   ! in badpts in wrapped coords
+             if (db) write(outunit,101) badpts(1,index), badpts(2,index)
+ 101          format(2f6.1)
+
  60        continue
 
  65         continue

@@ -10,6 +10,7 @@ c
 c icopy is dimensioned large enough, but will be used at several sizes
 c and accessed using loi-mbuff:hi_i+mbuff, etc.      
       integer*1 icopy(mibuff,mjbuff) 
+      dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
 c
 c set domain flags for this grid only, enlarged by buffer zone. check if any other base grids
 c are in exterior or first interior border cell and mark ok.
@@ -22,6 +23,7 @@ c  1. initialize this grids domain flags to 0, at lcheck
            igridflags(i,j) = 0
         end do
         end do
+ 
 c
 c    ... and figure ratios from coarser levels
       ratiox = 1.d0   ! needs to be real for proper ceiling/floor behavior below
@@ -37,7 +39,13 @@ c        so that dont have entire base grid upscaled
       ihi_coarse = ceiling((ihi+1)/ratiox) - 1
       jlo_coarse = floor(jlo/ratioy)
       jhi_coarse = ceiling((jhi+1)/ratioy) - 1
-      
+
+      if (xperdom .or. yperdom) then   ! set here once and for all, use coarsened "base" coords to set
+         call setIndices(ist,iend,jst,jend,
+     .              ilo_coarse-mbuff,ihi_coarse+mbuff,
+     .              jlo_coarse-mbuff,jhi_coarse+mbuff,
+     .              ishift,jshift,lbase)
+       endif 
 
 c  3.  loop over all other intersecting grids at base level staying fixed
 c      set the buffer zone in igridflags to 1 if nested 
@@ -48,15 +56,71 @@ c      this is so when shrink by one you dont lose too much area.
            ibhi = node(ndihi,mbase)   ! if same grid will just mark interior cells as 1
            jblo = node(ndjlo,mbase)
            jbhi = node(ndjhi,mbase)
+c
+c  3.5 if periodic bcs, then if grids buffer sticks out, will have to wrap the
+c      coordinates and flag any intersecting base grids for wrapped  buffer.
+c      do here instead of above since cant coarsen mbuff same way you can for regular grid
+c      also grid itself (without enlarged mbuff zone) doesnt stick out
+       if (xperdom .or. yperdom) then
+           do 25 i = 1, 3
+c              i1 = max(ist(i)  + ishift(i)
+c              i2 = iend(i) + ishift(i)
+               i1 = max(ilo_coarse-mbuff,ist(i))
+               i2 = min(ihi_coarse+mbuff,iend(i))
+           do 24 j = 1, 3
+c              j1 = jst(j)  + jshift(j)
+c              j2 = jend(j) + jshift(j)
+               j1 = max(jlo_coarse-mbuff,jst(j))
+               j2 = min(jhi_coarse+mbuff, jend(j))
+
+               if (.not. ((i1 .le. i2) .and. (j1 .le. j2))) go to 24 ! part of patch in this region
+c
+c              part of patch is in this region [i,j]
+c              periodically wrap and fill if it intersects with grid mbase
+c              note: this is done in two steps in hopes of greater clarity
+               
+
+c usual check would be ->  if ((i1 .gt. i2) .or. (j1 .gt. j2)) go to 24  ! no patch
+c cant do that since have not yet included buffer zone - which is the part that would get wrapped
+
+c             patch exist. does it intersect with mbase grid?
+c             use wrapped coords of this grid to test if intersects with base grid
+              ixlo = max(iblo,i1+ishift(i)) 
+              ixhi = min(ibhi,i2+ishift(i))
+              jxlo = max(jblo,j1+jshift(j))
+              jxhi = min(jbhi,j2+jshift(j))
+c
+              if ((ixlo .gt. ixhi) .or. (jxlo .gt. jxhi)) go to 24  !this grid doesnt intersect
+c
+c             if wrapped region does intersect, be careful to set the INTERSECTED part of
+c             the UNWRAPPED region  of original enlarged grid
+              ixlo_unwrapped = ixlo - ishift(i)   
+              ixhi_unwrapped = ixhi - ishift(i)
+              jxlo_unwrapped = jxlo - jshift(j)
+              jxhi_unwrapped = jxhi - jshift(j)
+              call coarseGridFlagSet(igridflags,
+     .                               ixlo_unwrapped,ixhi_unwrapped,
+     .                               jxlo_unwrapped,jxhi_unwrapped,
+     .                               ilo_coarse,ihi_coarse,
+     .                               jlo_coarse,jhi_coarse,mbuff)
+
+ 24        continue
+ 25        continue
+
+       else       
            ixlo = max(iblo,ilo_coarse-mbuff)
            ixhi = min(ibhi,ihi_coarse+mbuff)
            jxlo = max(jblo,jlo_coarse-mbuff)
            jxhi = min(jbhi,jhi_coarse+mbuff)
+c
+c         does this patch intersect mbase grid?
            if (.not.((ixlo .le. ixhi) .and. (jxlo .le. jxhi))) go to 30  !this grid doesnt intersect
 c
            call coarseGridFlagSet(igridflags,ixlo,ixhi,jxlo,jxhi,
      .                           ilo_coarse,ihi_coarse,
      .                           jlo_coarse,jhi_coarse,mbuff)
+       endif
+
  30     mbase = node(levelptr,mbase)
         if (mbase .ne. 0) go to 20
 c
@@ -84,7 +148,7 @@ c          if all grids not exactly anchored at base grid corner.  instead
 c          need to recalculate from the given (fine)  grid coords at each level
            rx = 1.d0
            ry = 1.d0
-              do lc = lcheck,lev+1,-1  !NB: ,ay be a 0 trip do loop, not old fortran
+              do lc = lcheck,lev+1,-1  !NB: may be a 0 trip do loop, not old fortran
                 rx = rx * intratx(lc-1)
                 ry = ry * intraty(lc-1)
               end do

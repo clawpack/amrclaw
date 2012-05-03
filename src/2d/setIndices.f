@@ -14,7 +14,9 @@ c  setIndices:  for periodicity a region that sticks out is wrapped into
 c               another region.
 c
 c  this is just annoying code this is needed in several places so it became a routine
+c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 
        ist(1) = ilo
        ist(2) = 0

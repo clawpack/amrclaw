@@ -111,6 +111,13 @@ c
          do 48 j = mjbuff, 1, -1
            write(outunit,100)(int(alloc(iadd(i,j))),i=1, mibuff)
  48      continue
+
+         write(outunit,*)" flagged points after buffering on level", 
+     .                    lcheck," grid ",mptr," (WITHOUT buff cells))"
+         do 51 j = mjbuff-mbuff, mbuff+1, -1
+           write(outunit,100)(int(alloc(iadd(i,j))),
+     .                           i=mbuff+1, mibuff-mbuff)
+ 51      continue
       endif
 c   
 c   count up
@@ -130,7 +137,7 @@ c
       mptr = node(levelptr,mptr)
       if (mptr .ne. 0) go to 41
 
-      write(outunit,*)" total points flagged on level ",lcheck,
+      write(outunit,*)" total flagged points counted on level ",lcheck,
      .                " is ",numbad
       write(outunit,*)"this may include double counting buffer cells",
      &                " on  multiple grids"

@@ -1,4 +1,6 @@
-
+c
+c ----------------------------------------------------------------
+c
        logical function baseCheck(mnew,lbase,ilo,ihi,jlo,jhi)
 
        use amr_module
@@ -36,35 +38,39 @@ c initialize for potential periodicity
 c each patch divided into 9 regions (some may be empty)
 c e.g. i from (ilo,-1), (0,iregsz(level)-1),(iregsz(level),ihi)
 c except using enlarged grid (ilo-1 to ihi+1)
-       ist(1) = ilo-1
-       ist(2) = 0
-       ist(3) = iregsz(levnew)
-       iend(1) = -1
-       iend(2) = iregsz(levnew)-1
-       iend(3) = ihi+1
-       jst(1) = jlo-1
-       jst(2) = 0
-       jst(3) = jregsz(levnew)
-       jend(1) = -1
-       jend(2) = jregsz(levnew)-1
-       jend(3) = jhi+1
-
-       if (xperdom) then
-          iishift = iregsz(levnew) 
-       else 
-          iishift = 0 
-       endif
-       if (yperdom) then
-          jjshift = jregsz(levnew)
-       else
-          jjshift = 0
-       endif
-       ishift(1) = iishift
-       ishift(2) = 0
-       ishift(3) = -iishift
-       jshift(1) = jjshift
-       jshift(2) = 0
-       jshift(3) = -jjshift
+c
+       call setIndices(ist,iend,jst,jend,ilo-1,ihi+1,jlo-1,jhi+1,
+     .                 ishift,jshift,levnew)
+c
+!--       ist(1) = ilo-1
+!--       ist(2) = 0
+!--       ist(3) = iregsz(levnew)
+!--       iend(1) = -1
+!--       iend(2) = iregsz(levnew)-1
+!--       iend(3) = ihi+1
+!--       jst(1) = jlo-1
+!--       jst(2) = 0
+!--       jst(3) = jregsz(levnew)
+!--       jend(1) = -1
+!--       jend(2) = jregsz(levnew)-1
+!--       jend(3) = jhi+1
+!--
+!--       if (xperdom) then
+!--          iishift = iregsz(levnew) 
+!--       else 
+!--          iishift = 0 
+!--       endif
+!--       if (yperdom) then
+!--          jjshift = jregsz(levnew)
+!--       else
+!--          jjshift = 0
+!--       endif
+!--       ishift(1) = iishift
+!--       ishift(2) = 0
+!--       ishift(3) = -iishift
+!--       jshift(1) = jjshift
+!--       jshift(2) = 0
+!--       jshift(3) = -jjshift
 
 c
 c    on to initializing for the given grid and its nest checking

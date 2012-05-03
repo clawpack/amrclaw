@@ -1,8 +1,7 @@
 c
 c ----------------------------------------------------
 c
-      subroutine griddomshrink(iflags2,ilo,ihi,jlo,jhi,mbuff,iflags,
-     .                         level)
+      subroutine griddomshrink(iflags2,ilo,ihi,jlo,jhi,mbuff,iflags)
 
       use amr_module
       implicit double precision (a-h, o-z)
@@ -50,16 +49,31 @@ c     nesting.  not always nec., or always done
          iflags(i,jhi+mbuff) = 0
       end do
 
-c  dont need to handle periodicity here.  Setting of initial grid included enough room to shrink 1
-c  for proper nesting.  If expand up then will need to add periodic domain flagging
-
+      if (xperdom .or. yperdom) then
+         write(*,*) "NOT YET DOING PERIODIC CASE"
+         go to 99
+      endif
 c
 c if border of domain touches a physical boundary then set domain in
 c ghost cell as well
 c
-      call setPhysBndryFlags(iflags,ilo,ihi,jlo,jhi,mbuff,level)
+C WHY DIDNT THE ORIG CODE HAVE TO HAVE PERIODIC CLAUSE(AND spheredom)
+       go to 99   !!! NOT YET HANDLING ANY KIND OF GRID BNDR OR DOMAIN edge
+       if (.not. xperdom) then
+         do 55 j = 1, jdim
+           if (iflags(1,j) .eq. 1) iflags(0,j) = 1
+           if (iflags(idim,j) .eq. 1) iflags(idim+1,j) = 1
+ 55      continue
+       endif
+       if (.not. yperdom) then
+         do 65 i = 1, idim
+           if (iflags(i,1) .eq. 1) iflags(i,0) = 1
+           if (iflags(i,jdim) .eq. 1) iflags(i,jdim+1) = 1
+ 65      continue
+       endif
 
- 99   if (dprint) then
+ 99   continue
+      if (dprint) then
         write(outunit,*)" from griddomshrink: on exit, iflags"
         do 70 j = jhi+mbuff-1, jlo-mbuff+1, -1
         write(outunit,101)(iflags(i,j),i=ilo-mbuff+1,ihi+mbuff-1)

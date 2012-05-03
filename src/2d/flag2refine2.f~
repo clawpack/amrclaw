@@ -57,7 +57,6 @@ c      dimension   q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
       dimension   amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
       logical     allowflag
       external    allowflag
-      logical db/.false./
    
 c     # loop over interior points on this grid:
       do 20 j = 1,my
@@ -79,20 +78,18 @@ c            # versions of amrclaw -- flag this point if dq > tolsp:
                 dq  = dmax1(dq,dqi, dqj)
     5           continue
 
-             if (dq .gt. tolsp) then
-                 amrflags(i,j) = DOFLAG
-             endif
+             if (dq .gt. tolsp) amrflags(i,j) = DOFLAG
              endif
 
  10          continue
  20       continue
 
-      if (db) then
-         do j = my,1,-1
-            write(66,100) (amrflags(i,j),i=1,mx)
- 100        format(100f2.0)
-         end do   
-      endif
+c       write(66,*)" next grid flag2refine"
+c       do j = my,1,-1
+c          write(66,929)(amrflags(i,j),i=1,mx)
+929       format(80f6.1)
+c       end do
+
 
       return
       end

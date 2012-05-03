@@ -101,7 +101,7 @@ c 2/28/02 : Added naux to argument list; needed by call to outtre in nestck
       write(*,*)"FROM GRDFIT:  fit ",fit," fit2 ",fit2," grid ",mnew
       if (fit2 .neqv. fit) then
          write(*,*) "different answers in nestck for mnew = ",mnew
-         stop
+c         stop
       endif
       if (.not. fit2) go to 75
 c
