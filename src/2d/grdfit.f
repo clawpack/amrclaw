@@ -12,7 +12,6 @@ c
       logical    fit, nestck, cout
       logical    fit2, nestck2
       data       cout/.false./
-      integer*1  i1flags(iregsz(lcheck)+2,jregsz(lcheck)+2)
 c
 c ::::::::::::::::::::: GRDFIT :::::::::::::::::::::::::::::::::;
 c  grdfit called by setgrd and regrid to actually fit the new grids
@@ -20,8 +19,6 @@ c         on each level. lcheck is the level being error estimated
 c         so that lcheck+1 will be the level of the new grids.
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
-      isize = iregsz(lcheck)
-      jsize = jregsz(lcheck)
 
 c ### initialize region start and end indices for new level grids
       iregst(lcheck+1) = iinfinity
@@ -34,8 +31,8 @@ c     ## npts is number of points actually colated - some
 c     ## flagged points turned off due to proper nesting requirement.
 c     ## (storage based on nptmax calculation however).
 
-      call flglvl (nvar,naux,lcheck,nptmax,index,lbase,i1flags,npts,t0,
-     .             isize,jsize)
+      call flglvl (nvar,naux,lcheck,nptmax,index,lbase,npts,t0)
+
       if (npts .eq. 0) go to 99
 c
       levnew    = lcheck + 1
@@ -94,15 +91,8 @@ c     ##  and returns 2 clusters where there used to be 1.
 c
 c 2/28/02 : Added naux to argument list; needed by call to outtre in nestck
 
-      fit = nestck(mnew,lbase,alloc(index+2*ibase),numptc(icl),numptc,
-     1             icl,nclust,i1flags,isize,jsize,nvar, naux)
       fit2 = nestck2(mnew,lbase,alloc(index+2*ibase),numptc(icl),numptc,
      1             icl,nclust,nvar, naux)
-      write(*,*)"FROM GRDFIT:  fit ",fit," fit2 ",fit2," grid ",mnew
-      if (fit2 .neqv. fit) then
-         write(*,*) "different answers in nestck for mnew = ",mnew
-c         stop
-      endif
       if (.not. fit2) go to 75
 c
 c     ##  grid accepted. put in list.

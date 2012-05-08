@@ -51,13 +51,12 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
       implicit double precision (a-h, o-z)
 
-c      dimension   q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
-      dimension   q(1,1-mbc:mx+mbc,1-mbc:my+mbc)
+      dimension   q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
       dimension   aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
       dimension   amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
       logical     allowflag
       external    allowflag
-      logical db/.false./
+      logical     db/.false./
    
 c     # loop over interior points on this grid:
       do 20 j = 1,my

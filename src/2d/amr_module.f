@@ -12,7 +12,7 @@ c
        integer    store1,store2,storeaux
        integer    tempptr,errptr,ffluxptr,cfluxptr
        integer    rsize, horizontal, vertical
-       integer    storeflags, domflags_base, domflags_upsized
+       integer    storeflags, domflags_base, domflags2
 
        parameter (rsize =  5)
 c      parameter (nsize = 13)
@@ -35,7 +35,7 @@ c  :::::::   integer part of node descriptor
        parameter (storeflags  = 14) ! may well not need when error est. cleaned up
        parameter (numflags  = 15) ! may well not need when error est. cleaned up
        parameter (domflags_base  = 16) 
-       parameter (domflags_upsized  = 17) 
+       parameter (domflags2  = 17) 
 
 c :::::::  real part of node descriptor
        parameter (cornxlo  = 1)

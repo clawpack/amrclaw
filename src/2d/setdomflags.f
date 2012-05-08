@@ -11,6 +11,9 @@ c icopy is dimensioned large enough, but will be used at several sizes
 c and accessed using loi-mbuff:hi_i+mbuff, etc.      
       integer*1 icopy(mibuff,mjbuff) 
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
+      dimension igridst(lcheck),jgridst(lcheck)
+      dimension igridend(lcheck),jgridend(lcheck)
+
 c
 c set domain flags for this grid only, enlarged by buffer zone. check if any other base grids
 c are in exterior or first interior border cell and mark ok.
@@ -25,20 +28,31 @@ c  1. initialize this grids domain flags to 0, at lcheck
         end do
  
 c
-c    ... and figure ratios from coarser levels
-      ratiox = 1.d0   ! needs to be real for proper ceiling/floor behavior below
-      ratioy = 1.d0   ! so that coarser grid completely enclosed projected fine grid
-      do lev = lbase+1,lcheck   ! difficulty is that if grid more than 1 level away
-         ratiox = ratiox * intratx(lev-1)   ! may not hook up nicely at corners
-         ratioy = ratioy * intraty(lev-1)
-      end do
 c
 c    ... if lbase coarse than lcheck, set initial indices, before upscaling, for base transfer
 c        so that dont have entire base grid upscaled
-      ilo_coarse = floor(ilo/ratiox )
-      ihi_coarse = ceiling((ihi+1)/ratiox) - 1
-      jlo_coarse = floor(jlo/ratioy)
-      jhi_coarse = ceiling((jhi+1)/ratioy) - 1
+         igridst(lcheck)  = ilo
+         igridend(lcheck) = ihi
+         jgridst(lcheck)  = jlo
+         jgridend(lcheck) = jhi
+         do lc = lcheck-1,lbase,-1  !NB: may be a 0 trip do loop, not old fortran
+            ilo_coarse = floor(dfloat(igridst(lc+1))/intratx(lc))
+            jlo_coarse = floor(dfloat(jgridst(lc+1))/intraty(lc))
+            ihi_coarse = ceiling(dfloat(igridend(lc+1))/intratx(lc)) - 1
+            jhi_coarse = ceiling(dfloat(jgridend(lc+1))/intraty(lc)) - 1
+            if (ihi_coarse*intratx(lc) .lt. igridend(lc+1)) 
+     .           ihi_coarse = ihi_coarse+1
+            if (jhi_coarse*intraty(lc) .lt. jgridend(lc+1)) 
+     .           jhi_coarse = jhi_coarse+1
+            igridend(lc) = ihi_coarse
+            jgridend(lc) = jhi_coarse
+            igridst(lc) = ilo_coarse
+            jgridst(lc) = jlo_coarse
+         end do
+         ilo_coarse = igridst(lbase)
+         ihi_coarse = igridend(lbase)
+         jlo_coarse = jgridst(lbase)
+         jhi_coarse = jgridend(lbase)
 
       if (xperdom .or. yperdom) then   ! set here once and for all, use coarsened "base" coords to set
          call setIndices(ist,iend,jst,jend,
@@ -137,34 +151,29 @@ c  after loop above, dom flags in igridflags, copy to icopy
       call griddomcopy(icopy,igridflags,ilo_coarse,ihi_coarse,
      .                 jlo_coarse,jhi_coarse,mbuff)
 c
-c     shrink from icopy to upsized flag array
+c     shrink from icopy to dom2 flag array
       call griddomshrink(icopy,ilo_coarse,ihi_coarse,jlo_coarse,
      .                     jhi_coarse,mbuff,
-     .                     alloc(node(domflags_upsized,mptr)),lbase)
+     .                     alloc(node(domflags2,mptr)),lbase)
 
       do 40 lev = lbase+1, lcheck
-c          cant scale up in a simple way, since might  end up with too large grid
-c          if all grids not exactly anchored at base grid corner.  instead
-c          need to recalculate from the given (fine)  grid coords at each level
-           rx = 1.d0
-           ry = 1.d0
-              do lc = lcheck,lev+1,-1  !NB: may be a 0 trip do loop, not old fortran
-                rx = rx * intratx(lc-1)
-                ry = ry * intraty(lc-1)
-              end do
-           ilofine = floor(ilo/rx)
-           jlofine = floor(jlo/ry)
-           ihifine = ceiling((ihi+1)/rx) - 1
-           jhifine = ceiling((jhi+1)/ry) - 1
-
-c       flags in upsized, upsize to icopy array with finer dimensions
-        call griddomup(alloc(node(domflags_upsized,mptr)),icopy,
+c         ### for each level that upsize, calculate new coords starting from
+c         ### actual fine grid and recoarsening down to needed level
+c         ### cant take previous coarse coords and refine, since may be
+c         ### too large. grid prob. not anchored at base grid corner.
+         ilofine = igridst(lev)
+         ihifine = igridend(lev)
+         jlofine = jgridst(lev)
+         jhifine = jgridend(lev)
+c
+c       flags in dom2, upsize to icopy array with finer dimensions
+        call griddomup(alloc(node(domflags2,mptr)),icopy,
      .                 ilo_coarse,ihi_coarse,jlo_coarse,jhi_coarse,
      .                 mbuff,lev-1,
      .                 ilofine,ihifine,jlofine,jhifine)
-c       flags in icopy, shrink one  back to upsized
+c       flags in icopy, shrink one  back to dom2
         call griddomshrink(icopy,ilofine,ihifine,jlofine,jhifine,
-     .                     mbuff,alloc(node(domflags_upsized,mptr)),lev)
+     .                     mbuff,alloc(node(domflags2,mptr)),lev)
         ilo_coarse = ilofine
         ihi_coarse = ihifine
         jlo_coarse = jlofine

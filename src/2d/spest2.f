@@ -72,7 +72,7 @@ c        # Default version compares spatial gradient to tolsp.
 c         call flag2refine(nx,ny,nghost,nvar,naux,xleft,ybot,dx,dy,
           call flag2refine2(nx,ny,nghost,mbuff,nvar,naux,xleft,ybot,
      &        dx,dy,time,lcheck,tolsp,alloc(locbig),
-     &        alloc(locaux),alloc(locamrflags),goodpt,badpt,mptr)
+     &        alloc(locaux),alloc(locamrflags),goodpt,badpt)
 
 c
 c dont reclam here - save for colating and buffering in situ

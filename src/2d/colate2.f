@@ -71,7 +71,7 @@ c  but to match old alg. use only this one. (not exactly the same? since
 c  old alg. used one level?)
 
              jmin = max(jlo-mbuff,0)
-             jmax = min(jhi+mbuff,iregsz(lcheck)-1)
+             jmax = min(jhi+mbuff,jregsz(lcheck)-1)
              imin = max(ilo-mbuff,0)
              imax = min(ihi+mbuff,iregsz(lcheck)-1)
 
@@ -82,7 +82,7 @@ c     pass loop bounds to keep consistent
 c     need this next subr. to do integer indexing for iflags
 c
          call flagcheck(alloc(locamrflags),ilo,ihi,jlo,jhi,mbuff,
-     .                  alloc(node(domflags_upsized,mptr)),
+     .                  alloc(node(domflags2,mptr)),
      .                  imin,imax,jmin,jmax,mptr)
 
 
@@ -138,7 +138,7 @@ c  done colating - safe to reclam
         ibytesPerDP = 8
         iflagsize =  (mibuff*mjbuff)/ibytesPerDP+1
         call reclam(node(domflags_base,mptr),iflagsize)
-        call reclam(node(domflags_upsized,mptr),iflagsize)
+        call reclam(node(domflags2,mptr),iflagsize)
 
 c
         mptr = node(levelptr, mptr)

@@ -29,11 +29,11 @@ c     cell on each side to be set from base grids
 
 c   bad names, for historical reasons. they are both smae size now
       locdomflags = igetsp( (mibuff*mjbuff)/ibytesPerDP+1)
-      loc_upsized = igetsp( (mibuff*mjbuff)/ibytesPerDP+1)
+      locdom2 = igetsp( (mibuff*mjbuff)/ibytesPerDP+1)
 
 
       node(domflags_base,mptr) = locdomflags
-      node(domflags_upsized,mptr) = loc_upsized
+      node(domflags2,mptr) = locdom2
       call setdomflags(mptr,alloc(locdomflags),ilo,ihi,jlo,jhi,
      .                 mbuff,lbase,lcheck,mibuff,mjbuff)
 
