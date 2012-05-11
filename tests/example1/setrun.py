@@ -8,7 +8,6 @@ that will be read in by the Fortran code.
 
 import os
 from numpy import linspace, arange  # often used to set input arrays
-from clawutil import clawdata 
 
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
@@ -24,6 +23,8 @@ def setrun(claw_pkg='amrclaw'):
         rundata - object of class ClawRunData 
     
     """ 
+    
+    from clawutil import clawdata 
     
     
     assert claw_pkg.lower() == 'amrclaw',  "Expected claw_pkg = 'amrclaw'"
@@ -59,8 +60,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_dim = num_dim
     
     # Lower and upper edge of computational domain:
-    clawdata.lower = [0., 1.]   # [xlower, ylower]
-    clawdata.upper = [0., 1.]   # [xupper, yupper]
+    clawdata.lower = [0., 0.]   # [xlower, ylower]
+    clawdata.upper = [1., 1.]   # [xupper, yupper]
 
     ## Or is it clearer to write: ??
     #clawdata.lower[0] = 0.  # xlower
@@ -151,9 +152,12 @@ def setrun(claw_pkg='amrclaw'):
                      # etc.
 
     # Notes: 
+    #
     # All previous output styles can be specified by one of the examples above.
     # If output_times == [] and output_steps == [] then no steps will be taken.
+    #
     # Output at t=t0 was always done previously.  Should it be?
+    #
     # Normally either output_times == [] or output_steps == [] and the other
     # determines when output is done, but no need to require this.
     
@@ -211,10 +215,10 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.dimensional_split = 0
     
     # For unsplit method, transverse_waves can be 
-    #  0 ==> donor cell (only normal solver used)
-    #  1 ==> corner transport of waves
-    #  2 ==> corner transport of 2nd order corrections too
-    clawdata.transverse_waves = 2
+    #  0 or 'none'      ==> donor cell (only normal solver used)
+    #  1 or 'increment' ==> corner transport of waves
+    #  2 or 'all'       ==> corner transport of 2nd order corrections too
+    clawdata.transverse_waves = 'all'
     
     
     # Number of waves in the Riemann solution:
@@ -223,20 +227,20 @@ def setrun(claw_pkg='amrclaw'):
     # List of limiters to use for each wave family:  
     # Required:  len(limiter) == num_waves
     # Some options:
-    #   0 = no limiter (Lax-Wendroff)
-    #   1 = minmod
-    #   2 = superbee
-    #   3 = MC limiter
-    #   4 = van Leer
-    clawdata.limiter = [3]
+    #   0 or 'none'     ==> no limiter (Lax-Wendroff)
+    #   1 or 'minmod'   ==> minmod
+    #   2 or 'superbee' ==> superbee
+    #   3 or 'mc'       ==> MC limiter
+    #   4 or 'vanleer'  ==> van Leer
+    clawdata.limiter = ['mc']
     
     clawdata.fwave = False    # True ==> use f-wave version of algorithms
     
     # Source terms splitting:
-    #   src_split == 0  => no source term (src routine never called)
-    #   src_split == 1  => Godunov (1st order) splitting used, 
-    #   src_split == 2  => Strang (2nd order) splitting used,  not recommended.
-    clawdata.source_split = 0
+    #   src_split == 0 or 'none'    ==> no source term (src routine never called)
+    #   src_split == 1 or 'godunov' ==> Godunov (1st order) splitting used, 
+    #   src_split == 2 or 'strang'  ==> Strang (2nd order) splitting used,  not recommended.
+    clawdata.source_split = 'none'
     
     
     # --------------------
@@ -271,7 +275,6 @@ def setrun(claw_pkg='amrclaw'):
     # List of refinement ratios at each level (length at least amr_level_max-1)
     clawdata.refinement_ratio_x = [2,2]
     clawdata.refinement_ratio_y = [2,2]
-    clawdata.refinement_ratio_t = [2,2]
     clawdata.refinement_ratio_t = [2,2]
 
     # Instead of setting refinement ratios in t, these can be chosen
