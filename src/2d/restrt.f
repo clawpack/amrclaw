@@ -9,7 +9,6 @@ c
       logical   ee, varRefTime
  
  
-      character*12 rstfile
       logical foundFile
       dimension intrtx(maxlv),intrty(maxlv),intrtt(maxlv)
 c
@@ -20,14 +19,16 @@ c some input variables might have changed, and also the
 c alloc array could have been written with a smaller size at checkpoint
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
-      rstfile  = 'restart.data'
-      inquire(file=rstfile,exist=foundFile)
+c     !! Now allow user-specified file name !!
+c     rstfile  = 'restart.data'
+
+      inquire(file=trim(rstfile),exist=foundFile)
       if (.not. foundFile) then
         write(*,*)" Did you forget to link file 'restart.data'"
         write(*,*)"  to a checkpoint file?"
         stop
       endif
-      open(rstunit,file=rstfile,status='old',form='unformatted')
+      open(rstunit,file=trim(rstfile),status='old',form='unformatted')
       rewind rstunit
 
       read(rstunit) lenmax,lendim,isize

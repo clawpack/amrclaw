@@ -122,9 +122,9 @@ c     Number of space dimensions:
 c
 c
 c     domain variables
-      read(inunit,*) nx, ny
       read(inunit,*) xlower, xupper
       read(inunit,*) ylower, yupper
+      read(inunit,*) nx, ny
       read(inunit,*) nvar    ! meqn
       read(inunit,*) mwaves
       if (mwaves .gt. maxwave) then
@@ -178,6 +178,7 @@ c
       read(inunit,*) (output_q_components(i),i=1,nvar)
       if (naux .gt. 0) then
           read(inunit,*) (output_aux_components(i),i=1,naux)
+          read(inunit,*) output_aux_onlyonce
           endif
 
       read(inunit,*) possk(1)   ! dt_initial
@@ -220,15 +221,13 @@ c
          read(inunit,*) auxtype(iaux)
       end do
 
-      read(inunit,*) ifwave
+      read(inunit,*) fwave
       read(inunit,*) (mthlim(mw), mw=1,mwaves)
 
 
       read(inunit,*) nghost
-      read(inunit,*) mthbc(1)
-      read(inunit,*) mthbc(2)
-      read(inunit,*) mthbc(3)
-      read(inunit,*) mthbc(4)
+      read(inunit,*) mthbc(1),mthbc(3)
+      read(inunit,*) mthbc(2),mthbc(4)
 
 c     1 = left, 2 = right 3 = bottom 4 = top boundary
       xperdom = (mthbc(1).eq.2 .and. mthbc(2).eq.2)
@@ -267,6 +266,8 @@ c     restart and checkpointing
 c     -------------------------
 
       read(inunit,*) rest
+      read(inunit,*) rstfile
+
       read(inunit,*) checkpt_style
       if (checkpt_style.eq.0) then
 c        # never checkpoint:
@@ -345,11 +346,11 @@ c     # read verbose/debugging flags
       read(inunit,*) tprint
       read(inunit,*) uprint
 
-      read(inunit,*) nregions
-      if (nregions .gt. 0) then
-         write(6,*) '*** Regions not yet implemented'
-         stop
-         endif
+      !read(inunit,*) nregions
+      !if (nregions .gt. 0) then
+      !   write(6,*) '*** Regions not yet implemented'
+      !   stop
+      !   endif
 
       call setgauges
 

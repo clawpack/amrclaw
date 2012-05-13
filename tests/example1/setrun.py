@@ -7,7 +7,7 @@ that will be read in by the Fortran code.
 """ 
 
 import os
-from numpy import linspace, arange  # often used to set input arrays
+import numpy as np
 
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
@@ -24,7 +24,7 @@ def setrun(claw_pkg='amrclaw'):
     
     """ 
     
-    from clawutil import clawdata 
+    from clawpack.clawutil import clawdata 
     
     
     assert claw_pkg.lower() == 'amrclaw',  "Expected claw_pkg = 'amrclaw'"
@@ -83,10 +83,10 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_eqn = 1
 
     # Number of auxiliary variables in the aux array (initialized in setaux)
-    clawdata.num_aux = 0
+    clawdata.num_aux = 3
     
     # Index of aux array corresponding to capacity function, if there is one:
-    clawdata.capa_index = 0
+    clawdata.capa_index = 1
     
     
     # -------------
@@ -106,66 +106,34 @@ def setrun(claw_pkg='amrclaw'):
 
     # Specify at what times the results should be written to fort.q files.
     # Note that the time integration stops after the final output time.
-    # The solution at initial time t0 is always written in addition.
 
-#===============================================
-# Get rid of this old style !!!  See below.
-#
-#   clawdata.output_style = 1
-#
-#   if clawdata.output_style==1:
-#       # Output ntimes frames at equally spaced times up to tfinal:
-#       clawdata.num_output_times = 4
-#       clawdata.tfinal = 2.0
-#
-#   elif clawdata.output_style == 2:
-#       # Specify a list of output times.  
-#       clawdata.output_times =  [0.5, 1.0, 1.5, 2.0]   
-#
-#   elif clawdata.output_style == 3:
-#       # Output every step_interval timesteps over total_steps timesteps:
-#       clawdata.output_step_interval = 2
-#       clawdata.total_steps = 6
-#       
-#   elif clawdata.output_style == 4:
-#       # Specify time interval for output up to tfinal:
-#       clawdata.output_time_interval = 0.5
-#       clawdata.tfinal = 2.0
-#===============================================
 
-    #===============================================
-    # Instead always allow both a list of output times and
-    # a list of output steps...  
-    # Output will be produced after each specified step on the 
-    # coarse grid (if any specified) 
-    # AND at each specified time (by shortening time steps as needed).
+ 
+    clawdata.output_style = 1
+ 
+    if clawdata.output_style==1:
+        # Output ntimes frames at equally spaced times up to tfinal:
+        # Can specify num_output_times = 0 for no output
+        clawdata.num_output_times = 4
+        clawdata.tfinal = 2.0
+        clawdata.output_t0 = True  # output at initial time?
+        
+    elif clawdata.output_style == 2:
+        # Specify a list or numpy array of output times (can use np.linspace):
+        clawdata.output_times =  [0., 0.5, 1.0, 1.5, 2.0]   
+ 
+    elif clawdata.output_style == 3:
+        # Output every step_interval timesteps over total_steps timesteps:
+        clawdata.output_step_interval = 2
+        clawdata.total_steps = 6
+        clawdata.output_t0 = True  # output at initial time?
+        
 
-    clawdata.output_times = linspace(0., 2., 5)
-                     # or = [0, .5, 1., 1.5, 2.]
-                     # or = arange(0,2.1,0.5)
-                     # or = []  # to not specify output times
-                     # etc.
-
-    clawdata.output_steps = range(0,7,2)
-                     # or = [0, 2, 4, 6]
-                     # or = []  # to not specify output steps
-                     # etc.
-
-    # Notes: 
-    #
-    # All previous output styles can be specified by one of the examples above.
-    # If output_times == [] and output_steps == [] then no steps will be taken.
-    #
-    # Output at t=t0 was always done previously.  Should it be?
-    #
-    # Normally either output_times == [] or output_steps == [] and the other
-    # determines when output is done, but no need to require this.
-    
 
     clawdata.output_format == 'ascii'      # 'ascii' or 'netcdf' or 'binary'
 
     clawdata.output_q_components = 'all'   # could be list such as [0,2]
-    clawdata.output_aux_components = []
+    clawdata.output_aux_components = 'none'
     clawdata.output_aux_onlyonce = True    # output aux arrays only at t0
     
 
@@ -287,7 +255,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify type of each aux variable in clawdata.auxtype.
     # This must be a list of length num_aux, each element of which is one of:
     #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
-    clawdata.aux_type = []
+    clawdata.aux_type = ['capacity','xleft','yleft']
 
 
     # Flag for refinement based on Richardson error estimater:
@@ -326,7 +294,7 @@ def setrun(claw_pkg='amrclaw'):
         pass
 
     elif clawdata.checkpt_style == 1:
-        # Checkpoint only at the final time.
+        # Checkpoint only at tfinal.
         pass
 
     elif clawdata.checkpt_style == 2:

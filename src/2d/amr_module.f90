@@ -132,7 +132,7 @@
        real(kind=8) cfl,cflmax,cflv1,cfl_level
 
 
-       integer :: ifwave
+       logical :: fwave
        logical :: flag_richardson,flag_gradient
        integer :: verbosity_regrid
 
@@ -151,6 +151,7 @@
        integer :: nq_components,naux_components,output_format
        integer, dimension(maxvar) :: output_q_components
        integer, dimension(maxaux) :: output_aux_components
+       logical :: output_aux_onlyonce
        
        integer :: matlabu
 
@@ -177,5 +178,8 @@
                tprint,     & !  tick (time stepping) reporting
                uprint        !  updating/upbnding reporting
 
+
+!     Restart file name:
+      character*12 :: rstfile
 
        end module amr_module
