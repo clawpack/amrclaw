@@ -75,7 +75,7 @@ c
       character * 12     pltfile,infile,outfile,dbugfile,matfile
       character * 20     parmfile
       character * 25 fname
-      logical            vtime,rest
+      logical            vtime,rest,output_t0
       dimension          tout(maxout)
       dimension          tchk(maxout)
 
@@ -122,43 +122,17 @@ c     Number of space dimensions:
 c
 c
 c     domain variables
-      read(inunit,*) nx
-      read(inunit,*) ny
-      read(inunit,*) mxnest
-      if (mxnest .le. 0) then
-          write(outunit,*)
-     &       'Error ***   mxnest (amrlevels_max) <= 0 not allowed'
+      read(inunit,*) nx, ny
+      read(inunit,*) xlower, xupper
+      read(inunit,*) ylower, yupper
+      read(inunit,*) nvar    ! meqn
+      read(inunit,*) mwaves
+      if (mwaves .gt. maxwave) then
+         write(outunit,*) 'Error ***   mwaves > maxwave'
+         write(*,*)       'Error ***   mwaves > maxwave'
          stop
       endif
-          
-      if (mxnest .gt. maxlv) then
-         write(outunit,*)
-     &    'Error ***   mxnest > max. allowable levels (maxlv) in common'
-         write(*,*)
-     &    'Error ***   mxnest > max. allowable levels (maxlv) in common'
-         stop
-      endif
-      
-      !# anisotropic refinement always allowed in 5.x:
-      read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
-      read(inunit,*) (intraty(i),i=1,max(1,mxnest-1))
-      read(inunit,*) (kratio(i), i=1,max(1,mxnest-1))
-      
-          
-c      if (intrat(1) .lt. 0) then
-c          # this flags the situation where we do not want to refine in t
-c           write(6,*) '*** No refinement in time!'
-c           intrat(1) = -intrat(1)
-c           do i=1,max(1,mxnest-1)
-c              kratio(i) = 1
-c              enddo
-c        else
-c          # the normal situation is to refine dt by same factors as dx,dy
-c           do i=1,max(1,mxnest-1)
-c              kratio(i) = intrat(i)
-c              enddo
-c        endif
-
+      read(inunit,*) naux
       read(inunit,*) t0
       tstart = t0                 ! for common block  !! FIX? !!
 
@@ -166,30 +140,23 @@ c        endif
         if (outstyle.eq.1) then
            read(inunit,*) nout
            read(inunit,*) tfinal
+           read(inunit,*) output_t0
 c          # array tout is set below
            iout = 0
            endif
         if (outstyle.eq.2) then
            read(inunit,*) nout
            read(inunit,*) (tout(i), i=1,nout)
+           output_t0 = (tout(1) .eq. t0)
            iout = 0
+           tfinal = tout(nout)
            endif
         if (outstyle.eq.3) then
            read(inunit,*) iout
            read(inunit,*) nstop
+           read(inunit,*) output_t0
            nout = 0
-           endif
-        if (outstyle.eq.4) then
-           read(inunit,*) dtout
-           read(inunit,*) tfinal
-           nout = floor((tfinal - t0)/dtout)
-           if (dabs(nout*dtout - (tfinal-t0))
-     &         .gt.1.d-12*(tfinal-t0)) then
-              tfinal = t0 + nout*dtout
-              write(outunit,*) "*** dtout does not divide tfinal-t0"
-              write(outunit,*) "*** resetting tfinal to ", tfinal
-              endif
-c          # array tout is set below
+           tfinal = rinfinity
            endif
 
       if (nout .gt. maxout) then
@@ -198,12 +165,20 @@ c          # array tout is set below
          stop
       endif
 
-      if ((outstyle.eq.1) .or. (outstyle.eq.4)) then
+      if ((outstyle.eq.1) .and. (nout.gt.0)) then
 	   do i=1,nout
 	      tout(i) = t0 + i*(tfinal-t0)/float(nout)
 	      enddo
        endif
 
+c
+c     style of output
+c
+      read(inunit,*) output_format
+      read(inunit,*) (output_q_components(i),i=1,nvar)
+      if (naux .gt. 0) then
+          read(inunit,*) (output_aux_components(i),i=1,naux)
+          endif
 
       read(inunit,*) possk(1)   ! dt_initial
       read(inunit,*) dtv2       ! dt_max
@@ -236,7 +211,6 @@ c          # array tout is set below
       read(inunit,*) method(4)   ! verbosity
       read(inunit,*) method(5)   ! src_split
       read(inunit,*) mcapa1
-      read(inunit,*) naux
       if (naux .gt. maxaux) then
          write(outunit,*) 'Error ***   naux > maxaux'
          write(*,*)       'Error ***   naux > maxaux'
@@ -246,20 +220,9 @@ c          # array tout is set below
          read(inunit,*) auxtype(iaux)
       end do
 
-      read(inunit,*) nvar    ! meqn
-      read(inunit,*) mwaves
-      if (mwaves .gt. maxwave) then
-         write(outunit,*) 'Error ***   mwaves > maxwave'
-         write(*,*)       'Error ***   mwaves > maxwave'
-         stop
-      endif
-      read(inunit,*) (mthlim(mw), mw=1,mwaves)
       read(inunit,*) ifwave
+      read(inunit,*) (mthlim(mw), mw=1,mwaves)
 
-      read(inunit,*) xlower
-      read(inunit,*) xupper
-      read(inunit,*) ylower
-      read(inunit,*) yupper
 
       read(inunit,*) nghost
       read(inunit,*) mthbc(1)
@@ -305,17 +268,57 @@ c     -------------------------
 
       read(inunit,*) rest
       read(inunit,*) checkpt_style
-      if (checkpt_style.eq.2) then
+      if (checkpt_style.eq.0) then
+c        # never checkpoint:
+         ichkpt = iinfinity
+      else if (checkpt_style.eq.2) then
          read(inunit,*) nchkpt
          if (nchkpt .gt. maxout) then
             write(6,*) '*** Error nchkpt can be no greater than maxout'
             stop
             endif
          read(inunit,*) (tchk(i), i=1,nchkpt)
-         endif
-      if (checkpt_style.eq.3) then
+      else if (checkpt_style.eq.3) then
+c        # checkpoint every ichkpt steps on coarse grid
          read(inunit,*) ichkpt
          endif
+
+      read(inunit,*) mxnest
+      if (mxnest .le. 0) then
+          write(outunit,*)
+     &       'Error ***   mxnest (amrlevels_max) <= 0 not allowed'
+         stop
+      endif
+          
+      if (mxnest .gt. maxlv) then
+         write(outunit,*)
+     &    'Error ***   mxnest > max. allowable levels (maxlv) in common'
+         write(*,*)
+     &    'Error ***   mxnest > max. allowable levels (maxlv) in common'
+         stop
+      endif
+      
+      !# anisotropic refinement always allowed in 5.x:
+      read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
+      read(inunit,*) (intraty(i),i=1,max(1,mxnest-1))
+      read(inunit,*) (kratio(i), i=1,max(1,mxnest-1))
+      
+          
+c      if (intrat(1) .lt. 0) then
+c          # this flags the situation where we do not want to refine in t
+c           write(6,*) '*** No refinement in time!'
+c           intrat(1) = -intrat(1)
+c           do i=1,max(1,mxnest-1)
+c              kratio(i) = 1
+c              enddo
+c        else
+c          # the normal situation is to refine dt by same factors as dx,dy
+c           do i=1,max(1,mxnest-1)
+c              kratio(i) = intrat(i)
+c              enddo
+c        endif
+
+
 
 c
 c     refinement variables
@@ -327,22 +330,6 @@ c     refinement variables
       read(inunit,*) ibuff
       read(inunit,*) cut
       read(inunit,*) verbosity_regrid
-c
-c     style of output
-c
-      read(inunit,*) output_format
-      read(inunit,*) nq_components
-      if (nq_components .gt. nvar) then
-         write(6,*) '*** output_nq_components too large'
-         stop
-         endif
-      read(inunit,*) (output_q_components(i),i=1,nq_components)
-      read(inunit,*) naux_components
-      if (naux_components .gt. naux) then
-         write(6,*) '*** output_naux_components too large'
-         stop
-         endif
-      read(inunit,*) (output_aux_components(i),i=1,naux_components)
 
 c
 c
@@ -564,14 +551,16 @@ c
       call outtre (mstart,printout,nvar,naux)
       write(outunit,*) "  original total mass ..."
       call conck(1,nvar,naux,time,rest)
-      call valout(1,lfine,time,nvar,naux)
+      if (output_t0) then
+          call valout(1,lfine,time,nvar,naux)
+          endif
       close(parmunit)
 c
 c     --------------------------------------------------------
 c     # tick is the main routine which drives the computation:
 c     --------------------------------------------------------
-      call tick(nvar,iout,nstart,nstop,cut,vtime,time,ichkpt,naux,
-     &          nout,tout,tchk,time,rest,nchkpt)
+      call tick(nvar,iout,nstart,nstop,tfinal,cut,vtime,time,
+     &          ichkpt,naux,nout,tout,tchk,time,rest,nchkpt)
 c     --------------------------------------------------------
 
 c     # Done with computation, cleanup:

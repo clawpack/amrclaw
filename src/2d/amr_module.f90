@@ -45,7 +45,7 @@
        real(kind=8), parameter :: badpro = 3.0
 
        real(kind=8), parameter :: rinfinity = 10.e32
-       integer, parameter :: iinfinity = 999999
+       integer, parameter :: iinfinity = 999999999
        integer, parameter :: horizontal = 1
        integer, parameter :: vertical = 2
        integer, parameter :: maxgr = 5000
@@ -54,17 +54,16 @@
 
 !      The max1d parameter should be changed if using OpenMP grid based 
 !      looping, usually set to max1d = 60
-#ifdef MAX1D
-       integer, parameter :: max1d = MAX1D
-#else
+!#ifdef MAX1D
+       !integer, parameter :: max1d = MAX1D
+!#else
        integer, parameter :: max1d = 60
-#endif
+!#endif
 
        integer, parameter :: maxvar = 10
        integer, parameter :: maxaux = 20
        integer, parameter :: maxout = 5000
 
-       logical    printout,matlabout,ncarout
 
        real(kind=8) hxposs(maxlv), hyposs(maxlv),possk(maxlv),&
                rnode(rsize, maxgr) 
@@ -81,7 +80,7 @@
                numgrids(maxlv),numcells(maxlv), &
                iorder,mxnest,kcheck,nghost
 
-       integer matlabu,ngrids
+       integer ngrids
 !
 !      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !      ::::  for alloc array/memory
@@ -131,11 +130,29 @@
        character * 10 auxtype(maxaux)
        integer  method(7), mthlim(maxwave), mwaves, mcapa
        real(kind=8) cfl,cflmax,cflv1,cfl_level
-!
+
+
+       integer :: ifwave
+       logical :: flag_richardson,flag_gradient
+       integer :: verbosity_regrid
+
+
 !      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      ::::  for i/o assignments
+!      ::::: Parameters and variables related to I/O
 !      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!
+
+
+       logical    printout,matlabout,ncarout
+
+!      variables for conservation checking:
+       real(kind=8) tstart,tmass0
+
+!      variables for specifying output format
+       integer :: nq_components,naux_components,output_format
+       integer, dimension(maxvar) :: output_q_components
+       integer, dimension(maxaux) :: output_aux_components
+       
+       integer :: matlabu
 
        integer, parameter :: parmunit = 12
        integer, parameter :: chkunit = 10
@@ -146,8 +163,7 @@
        integer, parameter :: dbugunit = 11
        integer, parameter :: matunit = 70
 
-
-!      ::::  common for debugging flags (verbose output)
+!      ::::  Debugging flags (verbose output)
 
        logical &
                dprint,     & !  domain flags output
@@ -161,17 +177,5 @@
                tprint,     & !  tick (time stepping) reporting
                uprint        !  updating/upbnding reporting
 
-
-!      variables for conservation checking:
-       real(kind=8) tstart,tmass0
-
-!      variables for specifying output format
-       integer :: nq_components,naux_components,output_format
-       integer, dimension(maxvar) :: output_q_components
-       integer, dimension(maxaux) :: output_aux_components
-
-       integer :: ifwave
-       logical :: flag_richardson,flag_gradient
-       integer :: verbosity_regrid
 
        end module amr_module

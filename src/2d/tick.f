@@ -1,8 +1,8 @@
 c
 c  -------------------------------------------------------------
 c
-      subroutine tick(nvar,iout,nstart,nstop,cut,vtime,time,ichkpt,
-     &                naux,nout,tout,tchk,t0,rest,nchkpt)
+      subroutine tick(nvar,iout,nstart,nstop,tfinal,cut,vtime,time,
+     &                ichkpt,naux,nout,tout,tchk,t0,rest,nchkpt)
 c
       use amr_module
 
@@ -11,7 +11,7 @@ c     include  "call.i"
 
       logical    vtime, dumpout, dumpchk, rest
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
-      dimension tout(nout)
+      dimension tout(maxout)
       dimension tchk(maxout)
 
 c
@@ -48,7 +48,7 @@ c
       
       nextout = 1
       if (nout .gt. 0) then
-         tfinal = tout(nout)
+c        tfinal = tout(nout)
 c        if this is a restart, make sure output times start after restart time
          if (nstart .gt. 0) then
             do ii = 1, nout
@@ -59,8 +59,8 @@ c        if this is a restart, make sure output times start after restart time
             end do
   2         continue
          endif
-      else
-         tfinal  = rinfinity
+c     else 
+c        tfinal  = rinfinity
       endif
 
       nextchk = 1
