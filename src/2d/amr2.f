@@ -122,8 +122,8 @@ c     Number of space dimensions:
 c
 c
 c     domain variables
-      read(inunit,*) xlower, xupper
-      read(inunit,*) ylower, yupper
+      read(inunit,*) xlower, ylower
+      read(inunit,*) xupper, yupper
       read(inunit,*) nx, ny
       read(inunit,*) nvar    ! meqn
       read(inunit,*) mwaves
@@ -447,7 +447,12 @@ c        ### arg added to restrt for compatibility with geoclaw, which
 c        ### allows variable refinement in time (and thus intrat vector
 c        ### is allowed to change upon restart). In geoclaw the calling
 c        ### sequence involves the variable varRefTime.
-         open(outunit, file=outfile,status='unknown',access='append',
+
+c        # gives errors...
+c        open(outunit, file=outfile,status='unknown',access='append',
+c    .        form='formatted')
+
+         open(outunit, file=outfile,status='unknown',
      .        form='formatted')
          call restrt(nsteps,time,nvar,.false.)
          nstart  = nsteps

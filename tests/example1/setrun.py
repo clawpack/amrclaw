@@ -83,10 +83,10 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_eqn = 1
 
     # Number of auxiliary variables in the aux array (initialized in setaux)
-    clawdata.num_aux = 3
+    clawdata.num_aux = 0
     
     # Index of aux array corresponding to capacity function, if there is one:
-    clawdata.capa_index = 1
+    clawdata.capa_index = 0
     
     
     # -------------
@@ -255,7 +255,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify type of each aux variable in clawdata.auxtype.
     # This must be a list of length num_aux, each element of which is one of:
     #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
-    clawdata.aux_type = ['capacity','xleft','yleft']
+    clawdata.aux_type = []
 
 
     # Flag for refinement based on Richardson error estimater:
