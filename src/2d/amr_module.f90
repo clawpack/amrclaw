@@ -57,7 +57,7 @@
 !#ifdef MAX1D
        !integer, parameter :: max1d = MAX1D
 !#else
-       integer, parameter :: max1d = 60
+       integer, parameter :: max1d = 600
 !#endif
 
        integer, parameter :: maxvar = 10

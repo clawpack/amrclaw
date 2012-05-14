@@ -127,7 +127,7 @@ c add second storage loc to grids at previous mxnest
      .                 ' to',mxnest
 10      continue
 
-        if (ee .and. tol .gt. 0) then
+        if (ee .and. flag_richardson) then
 c           ## if Richardson used, will delay error est. 1 step til have old soln. vals
              write(*,*)" first Richardson error estimation step"
              write(*,*)" will estimate mostly spatial error "

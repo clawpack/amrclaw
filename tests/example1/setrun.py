@@ -72,7 +72,7 @@ def setrun(claw_pkg='amrclaw'):
     
 
     # Number of grid cells:
-    clawdata.num_cells = [50,50]  # [mx,my]
+    clawdata.num_cells = [100,100]  # [mx,my]
     
 
     # ---------------
@@ -109,7 +109,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
  
-    clawdata.output_style = 1
+    clawdata.output_style = 3
  
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
@@ -124,8 +124,8 @@ def setrun(claw_pkg='amrclaw'):
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 2
-        clawdata.total_steps = 6
+        clawdata.output_step_interval = 1
+        clawdata.total_steps = 1
         clawdata.output_t0 = True  # output at initial time?
         
 
@@ -238,7 +238,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    clawdata.amr_levels_max = 3
+    clawdata.amr_levels_max = 2
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
     clawdata.refinement_ratio_x = [2,2]
@@ -260,7 +260,7 @@ def setrun(claw_pkg='amrclaw'):
 
     # Flag for refinement based on Richardson error estimater:
     clawdata.flag_richardson = False    # use Richardson?
-    clawdata.flag_richardson_tol = 0.1  # Richardson tolerance
+    clawdata.flag_richardson_tol = -0.1  # Richardson tolerance
     
     # Flag for refinement based routine flag2refine:
     clawdata.flag2refine = True      # use this?
@@ -316,10 +316,10 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.dprint = True       # print domain flags
     clawdata.eprint = True       # print err est flags
     clawdata.edebug = True       # even more err est flags
-    clawdata.gprint = False      # grid bisection/clustering
+    clawdata.gprint = True       # grid bisection/clustering
     clawdata.nprint = False      # proper nesting output
     clawdata.pprint = False      # proj. of tagged points
-    clawdata.rprint = False      # print regridding summary
+    clawdata.rprint = True       # print regridding summary
     clawdata.sprint = False      # space/memory output
     clawdata.tprint = True       # time step reporting each level
     clawdata.uprint = False      # update/upbnd reporting
