@@ -572,8 +572,6 @@ c     --------------------------------------------------------
 c     # tick is the main routine which drives the computation:
 c     --------------------------------------------------------
       call tick(nvar,cut,nstart,vtime,time,naux,time,rest)
-c     call tick(nvar,iout,nstart,nstop,tfinal,cut,vtime,time,
-c    &          ichkpt,naux,nout,tout,tchk,time,rest,nchkpt)
 c     --------------------------------------------------------
 
 c     # Done with computation, cleanup:

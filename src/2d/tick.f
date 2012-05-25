@@ -2,8 +2,6 @@ c
 c  -------------------------------------------------------------
 c
       subroutine tick(nvar,cut,nstart,vtime,time,naux,t0,rest)
-c     subroutine tick(nvar,iout,nstart,nstop,tfinal,cut,vtime,time,
-c    &                ichkpt,naux,nout,tout,tchk,t0,rest,nchkpt)
 c
       use amr_module
 
@@ -136,7 +134,6 @@ c           write(*,*)" new possk is ", possk(1)
             endif
       endif
 
-c     write(6,*) '+++ time,dumpout: ',time,dumpout
 
       if (time.lt.chktime .and. time + possk(1) .ge. chktime) then
 c        ## adjust time step  to hit chktime exactly, and do checkpointing
@@ -297,7 +294,6 @@ c
        endif
 
        if ((mod(ncycle,iout).eq.0) .or. dumpout) then
-         write(6,*) '+++ ncycle,iout,dumpout: ',ncycle,iout,dumpout
          call valout(1,lfine,time,nvar,naux)
          if (printout) call outtre(mstart,.true.,nvar,naux)
        endif
@@ -335,7 +331,6 @@ c
       if (((iout.lt.iinfinity) .and. (mod(ncycle,iout).ne.0))
      &            .or. ((nout.gt.0) .and. (tout(nout).eq.tfinal) .and.
      &                  (.not. dumpout))) then
-           write(6,*) '+++ dumpout,time: ',dumpout,time
            call valout(1,lfine,time,nvar,naux)
            if (printout) call outtre(mstart,.true.,nvar,naux)
       endif
