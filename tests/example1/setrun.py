@@ -60,19 +60,14 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_dim = num_dim
     
     # Lower and upper edge of computational domain:
-    clawdata.lower = [0., 0.]   # [xlower, ylower]
-    clawdata.upper = [1., 1.]   # [xupper, yupper]
-
-    ## Or is it clearer to write: ??
-    #clawdata.lower[0] = 0.  # xlower
-    #clawdata.upper[0] = 1.  # xupper
-    #
-    #clawdata.lower[1] = 0.  # ylower
-    #clawdata.upper[1] = 1.  # yupper
+    clawdata.lower[0] = 0.          # xlower
+    clawdata.upper[0] = 1.          # xupper
+    clawdata.lower[1] = 0.          # ylower
+    clawdata.upper[1] = 1.          # yupper
     
 
     # Number of grid cells:
-    clawdata.num_cells = [100,100]  # [mx,my]
+    clawdata.num_cells = [50,50]    # [mx,my]
     
 
     # ---------------
@@ -109,18 +104,18 @@ def setrun(claw_pkg='amrclaw'):
 
 
  
-    clawdata.output_style = 3
+    clawdata.output_style = 1
  
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 4
+        clawdata.num_output_times = 10
         clawdata.tfinal = 2.0
         clawdata.output_t0 = True  # output at initial time?
         
     elif clawdata.output_style == 2:
-        # Specify a list or numpy array of output times (can use np.linspace):
-        clawdata.output_times =  [0., 0.5, 1.0, 1.5, 2.0]   
+        # Specify a list or numpy array of output times:
+        clawdata.output_times =  np.linspace(0.,2.,11)
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
@@ -238,7 +233,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    clawdata.amr_levels_max = 2
+    clawdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
     clawdata.refinement_ratio_x = [2,2]
