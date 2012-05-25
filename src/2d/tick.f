@@ -85,10 +85,14 @@ c  ------ start of coarse grid integration loop. ------------------
 c
  20   if (ncycle .ge. nstop .or. time .ge. tfinal) goto 999
 
-      if (nextout  .le. nout) then
-         outtime       = tout(nextout)
+      if (nout .gt. 0) then
+          if (nextout  .le. nout) then
+             outtime       = tout(nextout)
+          else
+             outtime       = rinfinity
+          endif
       else
-         outtime       = rinfinity
+          outtime = tfinal
       endif
 
       if (nextchk  .le. nchkpt) then
@@ -123,7 +127,7 @@ c           write(*,*)" new possk is ", possk(1)
          do 12 i = 2, mxnest
  12         possk(i) = possk(i-1) / kratio(i-1)
          nextout = nextout + 1
-        dumpout = .true.
+        dumpout = (nout .gt. 0)
       else
         dumpout = .false.
       endif
@@ -321,11 +325,10 @@ c         # warn the user that calculation finished prematurely
 c
 c  # final output (unless we just did it above)
 c
-      if (.not. dumpout) then
-         if (mod(ncycle,iout).ne.0) then
+      if ((((iout.gt.0) .and. (mod(ncycle,iout).ne.0)) 
+     &            .or. (nout.gt.0)) .and. (.not. dumpout)) then
            call valout(1,lfine,time,nvar,naux)
            if (printout) call outtre(mstart,.true.,nvar,naux)
-         endif
       endif
 
 c  # checkpoint everything for possible future restart
