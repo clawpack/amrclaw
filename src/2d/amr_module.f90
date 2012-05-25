@@ -138,7 +138,7 @@
 
 
 !      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      ::::: Parameters and variables related to I/O
+!      ::::: Parameters and variables related to I/O and checkpointing
 !      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
@@ -148,10 +148,16 @@
        real(kind=8) tstart,tmass0
 
 !      variables for specifying output format
+       integer :: output_style, nstop, nout, iout
+       real(kind=8) :: tfinal, tout(maxout)
        integer :: nq_components,naux_components,output_format
        integer, dimension(maxvar) :: output_q_components
        integer, dimension(maxaux) :: output_aux_components
        logical :: output_aux_onlyonce
+
+!      checkpointing:
+       integer :: checkpt_style, nchkpt, checkpt_interval
+       real(kind=8) :: tchk(maxout)
        
        integer :: matlabu
 

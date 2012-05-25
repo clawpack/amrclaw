@@ -76,8 +76,6 @@ c
       character * 20     parmfile
       character * 25 fname
       logical            vtime,rest,output_t0
-      dimension          tout(maxout)
-      dimension          tchk(maxout)
 
       integer oldmode,omp_get_max_threads
 c
@@ -106,7 +104,8 @@ c     ## Open file and skip over leading lines with # comments:
       fname = 'amrclaw.data'
       call opendatafile(inunit,fname)
 c
-      open(10,file='fort.info',status='unknown',form='formatted')
+c     # oops - unit 10 is for checkpoint file !!
+c     open(10,file='fort.info',status='unknown',form='formatted')
 c
 c
 c     Number of space dimensions:  
@@ -134,24 +133,31 @@ c     domain variables
       endif
       read(inunit,*) naux
       read(inunit,*) t0
+
       tstart = t0                 ! for common block  !! FIX? !!
 
-      read(inunit,*) outstyle
-        if (outstyle.eq.1) then
+      read(inunit,*) output_style
+        if (output_style.eq.1) then
            read(inunit,*) nout
            read(inunit,*) tfinal
            read(inunit,*) output_t0
 c          # array tout is set below
            iout = 0
            endif
-        if (outstyle.eq.2) then
+        if (output_style.eq.2) then
            read(inunit,*) nout
            read(inunit,*) (tout(i), i=1,nout)
            output_t0 = (tout(1) .eq. t0)
+           if (output_t0) then
+              nout = nout - 1
+              do i=1,nout
+                 tout(i) = tout(i+1)
+                 enddo
+              endif
            iout = 0
            tfinal = tout(nout)
            endif
-        if (outstyle.eq.3) then
+        if (output_style.eq.3) then
            read(inunit,*) iout
            read(inunit,*) nstop
            read(inunit,*) output_t0
@@ -165,7 +171,7 @@ c          # array tout is set below
          stop
       endif
 
-      if ((outstyle.eq.1) .and. (nout.gt.0)) then
+      if ((output_style.eq.1) .and. (nout.gt.0)) then
 	   do i=1,nout
 	      tout(i) = t0 + i*(tfinal-t0)/float(nout)
 	      enddo
@@ -186,7 +192,7 @@ c
       read(inunit,*) cflv1      ! cfl_max
       read(inunit,*) cfl        ! clf_desired
       read(inunit,*) nv1        ! steps_max
-      if (outstyle.ne.3) then
+      if (output_style.ne.3) then
          nstop = nv1
          endif
 
@@ -271,7 +277,7 @@ c     -------------------------
       read(inunit,*) checkpt_style
       if (checkpt_style.eq.0) then
 c        # never checkpoint:
-         ichkpt = iinfinity
+         checkpt_interval = iinfinity
       else if (checkpt_style.eq.2) then
          read(inunit,*) nchkpt
          if (nchkpt .gt. maxout) then
@@ -280,8 +286,8 @@ c        # never checkpoint:
             endif
          read(inunit,*) (tchk(i), i=1,nchkpt)
       else if (checkpt_style.eq.3) then
-c        # checkpoint every ichkpt steps on coarse grid
-         read(inunit,*) ichkpt
+c        # checkpoint every checkpt_interval steps on coarse grid
+         read(inunit,*) checkpt_interval
          endif
 
       read(inunit,*) mxnest
@@ -518,7 +524,7 @@ c
 c  print out program parameters for this run
 c
       write(outunit,107)tol,tolsp,iorder,kcheck,ibuff,nghost,cut,
-     1            mxnest,ichkpt,cfl
+     1            mxnest,checkpt_interval,cfl
       write(outunit,109) xupper,yupper,xlower,ylower,nx,ny
       write(outunit,139)(intratx(i),i=1,mxnest)
       write(outunit,139)(intraty(i),i=1,mxnest)
@@ -565,8 +571,9 @@ c
 c     --------------------------------------------------------
 c     # tick is the main routine which drives the computation:
 c     --------------------------------------------------------
-      call tick(nvar,iout,nstart,nstop,tfinal,cut,vtime,time,
-     &          ichkpt,naux,nout,tout,tchk,time,rest,nchkpt)
+      call tick(nvar,cut,nstart,vtime,time,naux,time,rest)
+c     call tick(nvar,iout,nstart,nstop,tfinal,cut,vtime,time,
+c    &          ichkpt,naux,nout,tout,tchk,time,rest,nchkpt)
 c     --------------------------------------------------------
 
 c     # Done with computation, cleanup:

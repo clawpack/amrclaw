@@ -13,6 +13,9 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
       parameter (tchkunit = 12)
       character  chkname*12
       character  tchkname*12
+
+      write(6,601) time,nsteps
+ 601  format('Creating checkpoint file at t = ',e16.9,'  nsteps = ',i5)
 c
 c     ###  make the file name showing the time step
 c

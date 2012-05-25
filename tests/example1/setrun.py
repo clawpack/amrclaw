@@ -92,7 +92,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # If restarting, t0 above should be from original run
     clawdata.restart = False                # True to restart from prior results
-    clawdata.restart_file = 'restart.data'  # File to use for restart data
+    clawdata.restart_file = 'fort.chk0012'  # File to use for restart data
     
     
     # -------------
@@ -109,19 +109,19 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 10
-        clawdata.tfinal = 2.0
-        clawdata.output_t0 = True  # output at initial time?
+        clawdata.num_output_times = 1
+        clawdata.tfinal = 0.4
+        clawdata.output_t0 = False  # output at initial time?
         
     elif clawdata.output_style == 2:
         # Specify a list or numpy array of output times:
-        clawdata.output_times =  np.linspace(0.,2.,11)
+        clawdata.output_times =  [0.1]
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 1
-        clawdata.total_steps = 1
-        clawdata.output_t0 = True  # output at initial time?
+        clawdata.output_step_interval = 2
+        clawdata.total_steps = 4
+        clawdata.output_t0 = False  # output at initial time?
         
 
 
@@ -139,7 +139,7 @@ def setrun(claw_pkg='amrclaw'):
     # The current t, dt, and cfl will be printed every time step
     # at AMR levels <= verbosity.  Set verbosity = 0 for no printing.
     #   (E.g. verbosity == 2 means print only on levels 1 and 2.)
-    clawdata.verbosity = 0
+    clawdata.verbosity = 1
     
     
 
@@ -282,7 +282,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
-    clawdata.checkpt_style = 2
+    clawdata.checkpt_style = 1
 
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all
@@ -294,12 +294,12 @@ def setrun(claw_pkg='amrclaw'):
 
     elif clawdata.checkpt_style == 2:
         # Specify a list of checkpoint times.  
-        clawdata.checkpt_times = [1., 2.]
+        clawdata.checkpt_times = [0.1,0.15]
 
     elif clawdata.checkpt_style == 3:
         # Checkpoint every checkpt_interval timesteps (on Level 1)
         # and at the final time.
-        clawdata.checkpt_interval = 100
+        clawdata.checkpt_interval = 5
 
 
     #  ----- For developers ----- 
