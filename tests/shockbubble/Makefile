@@ -74,7 +74,6 @@ SOURCES = \
   $(CLAW_LIB)/bufnst2.f \
   $(CLAW_LIB)/setPhysBndry.f \
   $(CLAW_LIB)/setPhysBndryFlags.f \
-  $(CLAW_LIB)/setNeg.f \
   $(CLAW_LIB)/spest.f \
   $(CLAW_LIB)/spest2.f \
   $(CLAW_LIB)/flag2refine.f \
