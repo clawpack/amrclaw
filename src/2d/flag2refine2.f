@@ -56,7 +56,7 @@ c
       dimension   amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
       logical     allowflag
       external    allowflag
-      logical     db/.false./
+      logical     db/.true./
    
 c     # loop over interior points on this grid:
       do 20 j = 1,my

@@ -25,8 +25,8 @@ FC ?= gfortran   # default if not set as environment variable
 # gfortran flags
 #FFLAGS ?=  -g -fbounds-check -ffpe-trap=invalid,overflow,zero 
 #intel ifort flags
-FFLAGS ?=  -g -C -CB -CU -fpe0 -ftrapuv
-#FFLAGS ?=  -O2  -openmp -C -CB -CU -fpe0 -ftrapuv
+FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv -openmp
+#FFLAGS =  -O2  -openmp -C -CB -CU -fpe0 -ftrapuv
 
 
 

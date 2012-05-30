@@ -204,14 +204,14 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    mxnest = 3
+    mxnest = 5
 
     clawdata.mxnest = -mxnest   # negative ==> anisotropic refinement in x,y,t
 
     # List of refinement ratios at each level (length at least mxnest+1)
-    clawdata.inratx = [4,4,2,2]
-    clawdata.inraty = [4,4,2,2]
-    clawdata.inratt = [4,4,2,2]
+    clawdata.inratx = [4,2,2,2]
+    clawdata.inraty = [4,2,2,2]
+    clawdata.inratt = [4,2,2,2]
 
 
     # Specify type of each aux variable in clawdata.auxtype.
@@ -223,10 +223,10 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.tol = -1.0     # negative ==> don't use Richardson estimator
     clawdata.tolsp = 0.05   # used in default flag2refine subroutine
     clawdata.kcheck = 2     # how often to regrid (every kcheck steps)
-    clawdata.ibuff  = 3     # width of buffer zone around flagged points
+    clawdata.ibuff  = 1     # width of buffer zone around flagged points
 
     # More AMR parameters can be set -- see the defaults in pyclaw/data.py
-    clawdata.rprint = True
+    #clawdata.rprint = True
     #clawdata.eprint = True
     #clawdata.edebug = True
     

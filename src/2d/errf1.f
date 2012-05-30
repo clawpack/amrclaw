@@ -77,7 +77,7 @@ c         # divide by (aval*order) for relative error
           err2 = err2 + est*est
 c         write(outunit,102) i,j,est
  102      format(' i,j,est ',2i5,e12.5)
-c         rctcrse(i,j,2) = est
+c         rctcrse(2,i,j) = est
 c
           if (est .ge. tol .and. allowflag(xofi,yofj,time,levm)) then
              rflag  = badpt

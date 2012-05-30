@@ -60,8 +60,8 @@ c
 c for this version project to each grid separately, no giant iflags
       if (lcheck+2 .le. mxnest) then
          numpro2 = 0
-         write(outunit,*)" calling projec at time ",time
-         write(*,*)" calling projec at time ",time
+c        write(outunit,*)" calling projec at time ",time
+c        write(*,*)" calling projec at time ",time
          call projec2(lcheck,numpro2,alloc(locamrflags),
      .                ilo,ihi,jlo,jhi,mbuff)
          numpro = numpro + numpro2
@@ -85,13 +85,17 @@ c      endif
 
       if (eprint) then
          write(outunit,*)" flagged points after projecting to level", 
-     .                    lcheck, " grid ",mptr
-         write(outunit,*) " with ",numpro," additional points projected",
-     .                    "(with buff cells)"
+     .                    lcheck, " grid ",mptr,
+     .                    "(withOUT buff cells)"
+c    .                    "(with buff cells)"
 c        buffer zone (wider ghost cell region) now set after buffering
 c        so loop over larger span of indices
-         do 49 j = mjbuff, 1, -1
-           write(outunit,100)(int(alloc(iadd(i,j))),i=1,mibuff)
+c        do 49 j = mjbuff, 1, -1
+c          write(outunit,100)(int(alloc(iadd(i,j))),i=1,mibuff)
+c49      continue
+         do 49 j = mjbuff-mbuff, mbuff+1, -1
+           write(outunit,100)(int(alloc(iadd(i,j))),
+     .                           i=mbuff+1,mibuff-mbuff)
  49      continue
       endif
 
@@ -106,11 +110,11 @@ c
       call shiftset2(alloc(locamrflags),ilo,ihi,jlo,jhi,mbuff)
 
       if (eprint) then
-         write(outunit,*)" flagged points after buffering on level", 
-     .                    lcheck," grid ",mptr," (with buff cells))"
-         do 48 j = mjbuff, 1, -1
-           write(outunit,100)(int(alloc(iadd(i,j))),i=1, mibuff)
- 48      continue
+c        write(outunit,*)" flagged points after buffering on level", 
+c    .                    lcheck," grid ",mptr," (with buff cells))"
+c        do 48 j = mjbuff, 1, -1
+c          write(outunit,100)(int(alloc(iadd(i,j))),i=1, mibuff)
+c48      continue
 
          write(outunit,*)" flagged points after buffering on level", 
      .                    lcheck," grid ",mptr," (WITHOUT buff cells))"
@@ -129,7 +133,7 @@ c
              numflagged=numflagged + 1
            endif
  82       continue
-          write(outunit,116) numflagged, mptr
+c         write(outunit,116) numflagged, mptr
  116      format(i5,' points flagged on level ',i4,' grid ',i4)
           node(numflags,mptr) = numflagged
           numbad = numbad + numflagged

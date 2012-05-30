@@ -42,7 +42,7 @@ c
 
       mptr = lstart(lcheck)
  10      continue
-         write(outunit,*)" colating flags on grid ",mptr
+c        write(outunit,*)" colating flags on grid ",mptr
 
 c        handle each of 4 sides (in 2D)
 c        set tags to negative val. reset to positive if they have a home     
@@ -62,18 +62,18 @@ c        set tags to negative val. reset to positive if they have a home
 
 c
 c  more conservative alg. uses entire buffer in flagging
-c           jmin =  jlo-mbuff
-c           jmax =  jhi+mbuff
-c           imin =  ilo-mbuff
-c           imax =  ihi+mbuff
+            jmin =  jlo-mbuff
+            jmax =  jhi+mbuff
+            imin =  ilo-mbuff
+            imax =  ihi+mbuff
 c
 c  but to match old alg. use only this one. (not exactly the same? since
 c  old alg. used one level?)
 
-             jmin = max(jlo-mbuff,0)
-             jmax = min(jhi+mbuff,jregsz(lcheck)-1)
-             imin = max(ilo-mbuff,0)
-             imax = min(ihi+mbuff,iregsz(lcheck)-1)
+c            jmin = max(jlo-mbuff,0)
+c            jmax = min(jhi+mbuff,jregsz(lcheck)-1)
+c            imin = max(ilo-mbuff,0)
+c            imax = min(ihi+mbuff,iregsz(lcheck)-1)
 
 c do we still need setPhysBndry????
 c         call setPhysBndry(alloc(locamrflags),ilo,ihi,jlo,jhi,

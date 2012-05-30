@@ -1,27 +1,25 @@
 
-""" 
+"""
 Set up the plot figures, axes, and items to be done for each frame.
 
 This module is imported by the plotting routines and then the
 function setplot is called to set the plot parameters.
-    
-""" 
+"""
 
 #--------------------------
 def setplot(plotdata):
 #--------------------------
     
-    """ 
-    Specify what is to be plotted at each frame.
-    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.
-    Output: a modified version of plotdata.
-    
-    """ 
+    """
+Specify what is to be plotted at each frame.
+Input: plotdata, an instance of visclaw.plotters.data.ClawPlotData.
+Output: a modified version of plotdata.
+"""
 
 
-    from pyclaw.plotters import colormaps
+    from visclaw import colormaps
 
-    plotdata.clearfigures()  # clear any old figures,axes,items data
+    plotdata.clearfigures() # clear any old figures,axes,items data
 
     
     # Figure for pcolor plot
@@ -42,6 +40,9 @@ def setplot(plotdata):
     plotitem.pcolor_cmax = 1.
     plotitem.add_colorbar = True
 
+    plotitem.amr_celledges_show = [1,1,1]
+    plotitem.amr_patchedges_show = [1,1,1]
+
 
     # Figure for contour plot
     plotfigure = plotdata.new_plotfigure(name='contour', figno=1)
@@ -59,10 +60,10 @@ def setplot(plotdata):
     plotitem.contour_nlevels = 20
     plotitem.contour_min = 0.01
     plotitem.contour_max = 0.99
-    plotitem.amr_contour_colors = ['r','g','b']  # color on each level
-    plotitem.amr_grid_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
-    plotitem.gridlines_show = 0
-    plotitem.gridedges_show = 0
+    plotitem.amr_contour_colors = ['r','g','b'] # color on each level
+    plotitem.amr_patch_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
+    plotitem.celledges_show = 1
+    plotitem.patchedges_show = 1
 
 
     # Figure for grids
@@ -76,25 +77,24 @@ def setplot(plotdata):
     plotaxes.scaled = True
 
     # Set up for item on these axes:
-    plotitem = plotaxes.new_plotitem(plot_type='2d_grid')
-    plotitem.amr_grid_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
-    plotitem.amr_gridlines_show = [1,1,0]   
-    plotitem.amr_gridedges_show = [1]     
+    plotitem = plotaxes.new_plotitem(plot_type='2d_edges')
+    plotitem.amr_patch_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
+    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_patchedges_show = [1,1,1]
     
     # Parameters used only when creating html and/or latex hardcopy
-    # e.g., via pyclaw.plotters.frametools.printframes:
+    # e.g., via visclaw.plotters.frametools.printframes:
 
-    plotdata.printfigs = True                # print figures
-    plotdata.print_format = 'png'            # file format
-    plotdata.print_framenos = 'all'          # list of frames to print
-    plotdata.print_fignos = 'all'            # list of figures to print
-    plotdata.html = True                     # create html files of plots?
-    plotdata.html_homelink = '../README.html'   # pointer for top of index
-    plotdata.latex = True                    # create latex file of plots?
-    plotdata.latex_figsperline = 2           # layout of plots
-    plotdata.latex_framesperline = 1         # layout of plots
-    plotdata.latex_makepdf = False           # also run pdflatex?
+    plotdata.printfigs = True # print figures
+    plotdata.print_format = 'png' # file format
+    plotdata.print_framenos = 'all' # list of frames to print
+    plotdata.print_fignos = 'all' # list of figures to print
+    plotdata.html = True # create html files of plots?
+    plotdata.html_homelink = '../README.html' # pointer for top of index
+    plotdata.latex = True # create latex file of plots?
+    plotdata.latex_figsperline = 2 # layout of plots
+    plotdata.latex_framesperline = 1 # layout of plots
+    plotdata.latex_makepdf = False # also run pdflatex?
 
     return plotdata
 
-    

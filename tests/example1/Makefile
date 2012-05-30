@@ -21,8 +21,10 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
-# Add any desired compiler flags such as -g here:
-FFLAGS ?=  -g
+# gfortran flags 
+# FFLAGS =  -g -fbounds-check -ffpe-trap=invalid,overflow,zero
+# intel ifort flags
+FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
 
 
 # ---------------------------------
@@ -58,9 +60,14 @@ SOURCES = \
   $(CLAW_LIB)/birect.f \
   $(CLAW_LIB)/cleanup.f \
   $(CLAW_LIB)/colate.f \
+  $(CLAW_LIB)/colate2.f \
   $(CLAW_LIB)/bufnst.f \
+  $(CLAW_LIB)/bufnst2.f \
+  $(CLAW_LIB)/domgrid.f \
   $(CLAW_LIB)/spest.f \
+  $(CLAW_LIB)/spest2.f \
   $(CLAW_LIB)/flag2refine.f \
+  $(CLAW_LIB)/flag2refine2.f \
   $(CLAW_LIB)/allowflag.f \
   $(CLAW_LIB)/errest.f \
   $(CLAW_LIB)/errf1.f \
@@ -76,9 +83,13 @@ SOURCES = \
   $(CLAW_LIB)/intfil.f \
   $(CLAW_LIB)/moment.f \
   $(CLAW_LIB)/nestck.f \
+  $(CLAW_LIB)/nestck2.f \
+  $(CLAW_LIB)/flagcheck.f \
+  $(CLAW_LIB)/baseCheck.f \
   $(CLAW_LIB)/prepf.f \
   $(CLAW_LIB)/prepc.f \
   $(CLAW_LIB)/projec.f \
+  $(CLAW_LIB)/projec2.f \
   $(CLAW_LIB)/signs.f \
   $(CLAW_LIB)/findcut.f \
   $(CLAW_LIB)/smartbis.f \
@@ -101,12 +112,20 @@ SOURCES = \
   $(CLAW_LIB)/outtre.f \
   $(CLAW_LIB)/domain.f  \
   $(CLAW_LIB)/setflags.f \
+  $(CLAW_LIB)/setdomflags.f \
+  $(CLAW_LIB)/setIndices.f \
+  $(CLAW_LIB)/coarseGridFlagSet.f \
+  $(CLAW_LIB)/addflags.f \
   $(CLAW_LIB)/shiftset.f \
+  $(CLAW_LIB)/shiftset2.f \
   $(CLAW_LIB)/conck.f \
   $(CLAW_LIB)/domshrink.f \
+  $(CLAW_LIB)/griddomshrink.f \
   $(CLAW_LIB)/domprep.f \
   $(CLAW_LIB)/domup.f \
+  $(CLAW_LIB)/griddomup.f \
   $(CLAW_LIB)/domcopy.f \
+  $(CLAW_LIB)/griddomcopy.f \
   $(CLAW_LIB)/coarsen.f \
   $(CLAW_LIB)/intcopy.f \
   $(CLAW_LIB)/preintcopy.f \
@@ -121,8 +140,10 @@ SOURCES = \
   $(CLAW_LIB)/check.f \
   $(CLAW_LIB)/restrt.f \
   $(CLAW_LIB)/setgauges.f \
+  $(CLAW_LIB)/setPhysBndryFlags.f \
   $(CLAW_LIB)/dumpgauge.f \
   $(CLAW_LIB)/quick_sort1.f \
+  $(CLAW_LIB)/drivesort.f \
   $(CLAW_LIB)/opendatafile.f \
   $(CLAW_LIB)/init_alloc.f90 \
   $(CLAW_LIB)/restrt_alloc.f90 \

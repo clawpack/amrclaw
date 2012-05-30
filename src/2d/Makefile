@@ -57,7 +57,6 @@ CLAW_SOURCES = \
   $(CLAW_LIB)/addflags.f \
   $(CLAW_LIB)/baseCheck.f \
   $(CLAW_LIB)/setIndices.f \
-  $(CLAW_LIB)/setNeg.f \
   $(CLAW_LIB)/setPhysBndry.f \
   $(CLAW_LIB)/errf1.f \
   $(CLAW_LIB)/gfixup.f \
