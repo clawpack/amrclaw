@@ -22,7 +22,7 @@ subroutine resize_storage(new_size,status)
     integer, intent(out) :: status
     integer, intent(in) :: new_size
     
-    double precision, allocatable, target, dimension(:) :: new_storage
+    real(kind=8), allocatable, target, dimension(:) :: new_storage
     
 
     if (memsize < new_size) then
