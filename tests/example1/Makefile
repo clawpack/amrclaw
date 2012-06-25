@@ -24,16 +24,15 @@ FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
 FFLAGS ?=  -g
 
-
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
 
 # Clawpack library to be used:
-CLAW_LIB = $(CLAW)/amrclaw/src/2d/
+CLAW_LIB = $(CLAW)/amrclaw/src/2d
     
 MODULES = \
-  $(CLAW_LIB)/amr_module.f \
+  $(CLAW_LIB)/amr_module.f90 \
 
 SOURCES = \
   qinit.f \
@@ -60,6 +59,7 @@ SOURCES = \
   $(CLAW_LIB)/colate.f \
   $(CLAW_LIB)/bufnst.f \
   $(CLAW_LIB)/spest.f \
+  $(CLAW_LIB)/init_iflags.f \
   $(CLAW_LIB)/flag2refine.f \
   $(CLAW_LIB)/allowflag.f \
   $(CLAW_LIB)/errest.f \
@@ -112,7 +112,7 @@ SOURCES = \
   $(CLAW_LIB)/preintcopy.f \
   $(CLAW_LIB)/icall.f \
   $(CLAW_LIB)/preicall.f \
-  $(CLAW_LIB)/step2.f \
+  $(CLAW_LIB)/step2.f90 \
   $(CLAW_LIB)/flux2.f \
   $(CLAW_LIB)/inlinelimiter.f \
   $(CLAW_LIB)/cstore.f \

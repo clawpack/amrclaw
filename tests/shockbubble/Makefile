@@ -23,29 +23,28 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
 FFLAGS ?=  -O2
-FFLAGS += -I$(AMRCLAW)/src/2d # Have to add this here since amr2ez.f is local
 
+# These are here to support the OpenMP parallel tests
 # Create flags for threading and preprocessing
 PPFLAGS = 
+THREADING_METHOD ?= grid
 ifeq ($(findstring gfortran,$(FC)),gfortran)
-    PPFLAGS = -cpp
 	OMP_FLAG = -fopenmp
 endif
 ifeq ($(findstring ifort,$(FC)),ifort)
-    PPFLAGS = -fpp
 	OMP_FLAG = -openmp
 endif
 ifeq ($(THREADING_METHOD),grid)
-    PPFLAGS += $(OMP_FLAG) -DGRID_THREADING
+    PPFLAGS += $(OMP_FLAG) -D GRID_THREADING
 endif
-ifeq ($(THREADING_METHOD),sweep)
-	PPFLAGS += $(OMP_FLAG) -DSWEEP_THREADING
+ifeq ($(THREADING_METHOD),loop)
+	PPFLAGS += $(OMP_FLAG) -D LOOP_THREADING
 endif 
 ifeq ($(THREADING_METHOD),all)
-	PPFLAGS += $(OMP_FLAG) -DGRID_THREADING -DSWEEP_THREADING
+	PPFLAGS += $(OMP_FLAG) -D GRID_THREADING -D LOOP_THREADING
 endif
 ifdef MAX1D
-	PPFLAGS += -DMAX1D=$(MAX1D)
+	PPFLAGS += -D MAX1D=$(MAX1D)
 endif
 MAKELEVEL ?= 0
 ifeq ($(MAKELEVEL),0)
@@ -60,27 +59,34 @@ endif
 # Clawpack library to be used:
     
 MODULES = \
-  ./amr_module.f # For control of max1d
+  $(AMRCLAW)/src/2d/amr_module.f90
 
-# Note that the Riemann solvers included here are modified from those in $RIEMANN
-# by removing the common block roe variable storage, instead these recalculate the
-# Roe averages
+# Note that the Riemann solvers included here are modified from those in 
+# $RIEMANN by removing the common block roe variable storage, instead these 
+# recalculate the Roe averages done to support thread safe Riemann solvers
+
+# Local source for thread tests
+# stepgrid.f <=== Timing output
+# init_alloc.f90 <=== Larger initial memory allocation
+# amr2ez.f <=== Timing output, disable output
+# tick.f <=== Disable output
 SOURCES = \
-  rpn2_euler_5wave.f \
-  rpt2_euler_5wave.f \
-  fdisc.f \
-  qinit.f \
-  setaux.f \
-  setprob.f \
-  src2.f \
-  src1d.f \
-  init_alloc.f90 \
-  amr2ez.f \
+  ./rpn2_euler_5wave.f \
+  ./rpt2_euler_5wave.f \
+  ./fdisc.f \
+  ./qinit.f \
+  ./setaux.f \
+  ./setprob.f \
+  ./src2.f \
+  ./src1d.f \
+  $(AMRCLAW)/src/2d/init_alloc.f90 \
+  $(AMRCLAW)/src/2d/amr2ez.f \
+  $(AMRCLAW)/src/2d/tick.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/advanc.f \
   $(AMRCLAW)/src/2d/bound.f \
-  stepgrid.f \
+  $(AMRCLAW)/src/2d/stepgrid.f \
   $(AMRCLAW)/src/2d/cellave.f \
   $(AMRCLAW)/src/2d/fss.f \
   $(AMRCLAW)/src/2d/zeroin.f \
@@ -88,6 +94,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/auxcoarsen.f \
   $(AMRCLAW)/src/2d/fixcapaq.f \
   $(AMRCLAW)/src/2d/estdt.f \
+  $(AMRCLAW)/src/2d/init_iflags.f \
   $(AMRCLAW)/src/2d/igetsp.f \
   $(AMRCLAW)/src/2d/reclam.f \
   $(AMRCLAW)/src/2d/birect.f \
@@ -123,7 +130,6 @@ SOURCES = \
   $(AMRCLAW)/src/2d/setgrd.f \
   $(AMRCLAW)/src/2d/setuse.f \
   $(AMRCLAW)/src/2d/stst1.f \
-  $(AMRCLAW)/src/2d/tick.f \
   $(AMRCLAW)/src/2d/trimbd.f \
   $(AMRCLAW)/src/2d/update.f \
   $(AMRCLAW)/src/2d/nodget.f \

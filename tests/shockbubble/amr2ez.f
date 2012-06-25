@@ -129,11 +129,12 @@ c       print *,"  nx = ",nx
 c       print *,"  ny = ",ny
 C         stop
 c     endif
-      max_threads = omp_get_max_threads()
+      max_threads = 1
+!$    max_threads = omp_get_max_threads()
       print *," **** nx=",nx
       print *," **** ny=",ny
       print *," **** threads=",max_threads
-      print *," **** max1d=",max_1d
+      print *," **** max1d=",max1d
 c     if (nx /= max_threads * max1d) then
 c         print *," **** ERROR: nx was set incorrectly"
 c         print *,"  nx = ",nx
@@ -296,6 +297,7 @@ c     1 = left, 2 = right 3 = bottom 4 = top boundary
 c     restart and checkpointing
       read(inunit,*) rest
       read(inunit,*) ichkpt
+      print *,"ichkpt = ",ichkpt
       if (ichkpt .lt. 0) then
          if (-ichkpt .gt. maxout) then
             write(6,*) 'Error -ichkpt can be no greater than maxout'
@@ -527,7 +529,7 @@ c
       call outtre (mstart,printout,nvar,naux)
       write(outunit,*) "  original total mass ..."
       call conck(1,nvar,naux,time,rest)
-      call valout(1,lfine,time,nvar,naux)
+c     call valout(1,lfine,time,nvar,naux)
       close(parmunit)
 
 c     Timing

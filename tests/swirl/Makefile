@@ -22,20 +22,22 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2 
-FFLAGS += -cpp
-# FFLAGS += -DGRID_THREADING -fopenmp
-# FFLAGS += -DSWEEP_THREADING -fopenmp
+FFLAGS ?=  -O2
 
+# These flags are for adding the newer openmp threading, note that in order to
+# use openmp with ifort you must replace -fopenmp with -openmp
+# Grid threading refers to threads over the each grid
+# Loop threading refers to threading in the sweep calling the Riemann solvers
+# FFLAGS += -D GRID_THREADING -fopenmp
+# FFLAGS += -D LOOP_THREADING -fopenmp
+# This line changes the maximum size of the patches, default is 60
+# FFLAGS += -D MAX1D=200
 
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
-
-# Clawpack library to be used:
-    
 MODULES = \
-  $(AMRCLAW)/src/2d/amr_module.f \
+  $(AMRCLAW)/src/2d/amr_module.f90 \
 
 SOURCES = \
   $(RIEMANN)/src/rpn2_vc_advection.f \
@@ -56,6 +58,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/auxcoarsen.f \
   $(AMRCLAW)/src/2d/fixcapaq.f \
   $(AMRCLAW)/src/2d/estdt.f \
+  $(AMRCLAW)/src/2d/init_iflags.f \
   $(AMRCLAW)/src/2d/igetsp.f \
   $(AMRCLAW)/src/2d/reclam.f \
   $(AMRCLAW)/src/2d/birect.f \
