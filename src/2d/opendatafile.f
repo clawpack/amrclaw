@@ -30,14 +30,14 @@ c         fname12 = fname(1:12)
 c         #write(6,*) 'truncated fname12 = XXX',fname12,'XXX'
 c         inquire(file=fname12,exist=foundFile)
           if (.not. foundFile) then
-            write(*,*) '*** in opendatafile, file not found:', fname 
+            print "(2a)",'*** in opendatafile, file not found:', fname 
             stop
           endif
 c         open(unit=iunit,file=fname12,status='old',form='formatted')
 c         write(6,*) 'Reading data file: ', fname12
       else
           open(unit=iunit,file=fname,status='old',form='formatted')
-          write(6,*) 'Reading data file: ', fname
+          print "(2a)",'Reading data file: ', fname
       endif
 
 c     # this version may not work in f77
