@@ -104,7 +104,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
  
-    clawdata.output_style = 1
+    clawdata.output_style = 3
  
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
@@ -119,8 +119,8 @@ def setrun(claw_pkg='amrclaw'):
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 2
-        clawdata.total_steps = 4
+        clawdata.output_step_interval = 20
+        clawdata.total_steps = 1000
         clawdata.output_t0 = False  # output at initial time?
         
 
