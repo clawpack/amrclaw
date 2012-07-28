@@ -7,8 +7,7 @@ that will be read in by the Fortran code.
 """ 
 
 import os
-#from pyclaw import data 
-import clawutil.oldclawdata as data 
+from pyclaw import data 
 
 
 #------------------------------
@@ -67,9 +66,9 @@ def setrun(claw_pkg='amrclaw'):
         
 
     # Number of grid cells:
-    clawdata.mx = 20
+    clawdata.mx = 50
     
-    clawdata.my = 20
+    clawdata.my = 50
         
 
     # ---------------
@@ -102,12 +101,12 @@ def setrun(claw_pkg='amrclaw'):
     # Note that the time integration stops after the final output time.
     # The solution at initial time t0 is always written in addition.
 
-    clawdata.outstyle = 3
+    clawdata.outstyle = 1
 
     if clawdata.outstyle==1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.nout = 1
-        clawdata.tfinal = .016
+        clawdata.nout = 10
+        clawdata.tfinal = 2.0
 
     elif clawdata.outstyle == 2:
         # Specify a list of output times.  
@@ -117,7 +116,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.outstyle == 3:
         # Output every iout timesteps with a total of ntot time steps:
         iout = 1
-        ntot = 1
+        ntot = 5
         clawdata.iout = [iout, ntot]
     
 
@@ -209,7 +208,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    mxnest = 2
+    mxnest = 3
 
     clawdata.mxnest = -mxnest   # negative ==> anisotropic refinement in x,y,t
 
@@ -229,11 +228,9 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.tol = -1.0     # negative ==> don't use Richardson estimator
     clawdata.tolsp = 0.05   # used in default flag2refine subroutine
     clawdata.kcheck = 2     # how often to regrid (every kcheck steps)
-    clawdata.ibuff  = 0     # width of buffer zone around flagged points
+    clawdata.ibuff  = 3     # width of buffer zone around flagged points
 
     # More AMR parameters can be set -- see the defaults in pyclaw/data.py
-    clawdata.rprint = True
-    clawdata.tprint = True
 
     return rundata
     # end of function setrun
