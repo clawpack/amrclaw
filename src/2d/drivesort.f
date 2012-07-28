@@ -1,7 +1,7 @@
 c
 c -------------------------------------------------------------
 c
-       subroutine driveSort(npts,badpts,level,index,mbuff)
+       subroutine drivesort(npts,badpts,level,index,mbuff)
 
       use amr_module
       implicit  double precision (a-h,o-z)

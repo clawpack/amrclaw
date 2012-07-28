@@ -154,7 +154,7 @@ c
 c
 c colate flagged points into single integer array for quicksorting
 c
-      call driveSort(npts,badpts,lcheck,nUniquePts,mbuff)
+      call drivesort(npts,badpts,lcheck,nUniquePts,mbuff)
    
 
  99   return
