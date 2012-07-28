@@ -7,7 +7,7 @@ c
       implicit  double precision (a-h,o-z)
       dimension badpts(2,len)
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
-      logical db/.false./
+      logical db/.true./
 
 c
 c    index for flag array now based on integer index space, not 1:mibuff,1:mjbuff
@@ -66,6 +66,14 @@ c  more conservative alg. uses entire buffer in flagging
             jmax =  jhi+mbuff
             imin =  ilo-mbuff
             imax =  ihi+mbuff
+            if (.not. xperdom) then
+              imin = max(imin,0)
+              imax = min(ihi+mbuff,iregsz(lcheck)-1)
+            endif
+            if (.not. yperdom) then
+              jmin = max(jmin,0)
+              jmax = min(jhi+mbuff,jregsz(lcheck)-1)
+            endif
 c
 c  but to match old alg. use only this one. (not exactly the same? since
 c  old alg. used one level?)

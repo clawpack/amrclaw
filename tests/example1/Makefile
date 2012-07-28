@@ -22,7 +22,8 @@ PLOT_DIR = _plots                   # Directory for plots
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # gfortran flags 
-FFLAGS =  -g -fbounds-check -ffpe-trap=invalid,overflow,zero
+#FFLAGS =  -g -fbounds-check -ffpe-trap=invalid,overflow,zero
+FFLAGS =  -O2
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
 
