@@ -50,7 +50,7 @@ c  of course to dimension by maux by max1dp1 but this wont work if maux=0
 c  So need to access using your own indexing into auxl,auxr.
        iaddaux(iaux,i) = iaux + maux*(i-1)
 
-       data qprint/.true./
+       data qprint/.false./
 c
 c      aux is auxiliary array with user parameters needed in Riemann solvers
 c          on fine grid corresponding to valbig
