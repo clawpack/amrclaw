@@ -98,8 +98,10 @@ def setrun(claw_pkg='amrclaw'):
 
     if clawdata.outstyle==1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.nout = 2
-        clawdata.tfinal = 0.5
+        clawdata.nout = 25
+        clawdata.tfinal = 2.5
+        #clawdata.nout = 15
+        #clawdata.tfinal = 1.5
 
     elif clawdata.outstyle == 2:
         # Specify a list of output times.  
@@ -194,6 +196,9 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.mthbc_ylower = 2
     clawdata.mthbc_yupper = 2
 
+    #clawdata.mthbc_ylower = 1
+    #clawdata.mthbc_yupper = 1
+
 
     # ---------------
     # AMR parameters:
@@ -223,9 +228,11 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.ibuff  = 3     # width of buffer zone around flagged points
 
     # More AMR parameters can be set -- see the defaults in pyclaw/data.py
-    #clawdata.rprint = True
-    #clawdata.eprint = True
-    #clawdata.edebug = True
+    clawdata.rprint = True
+    clawdata.eprint = False
+    clawdata.dprint = False
+    clawdata.nprint = True
+    clawdata.gprint = True
     
     return rundata
     # end of function setrun

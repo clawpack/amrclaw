@@ -269,10 +269,10 @@ c     1 = left, 2 = right 3 = bottom 4 = top boundary
          endif
 
       if (outstyle.eq.1) then
-	   do i=1,nout
-	      tout(i) = t0 + i*(tfinal-t0)/float(nout)
-	      enddo
-           endif
+         do i=1,nout
+            tout(i) = t0 + i*(tfinal-t0)/float(nout)
+         enddo
+      endif
 
 
 c     restart and checkpointing
@@ -431,8 +431,8 @@ c        ### sequence involves the variable varRefTime.
 
 c	 # changed 4/24/09: store dxmin,dymin for setaux before
 c	 # grids are made, in order to average up from finest grid.
-	 dxmin = hxposs(mxnest)
-	 dymin = hyposs(mxnest)
+         dxmin = hxposs(mxnest)
+       	 dymin = hyposs(mxnest)
 
          call   domain (nvar,vtime,nx,ny,naux,t0)
 c        # hold off on gauges until grids are set. the fake call to advance at the very
@@ -549,6 +549,7 @@ c
  60     write(outunit,905) level, rvoll(level)
 
       write(outunit,906) evol
+
       if (evol+rvol .gt. 0.) then
          ratmet = rvol / (evol+rvol) * 100.0d0
       else

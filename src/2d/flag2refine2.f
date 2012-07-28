@@ -1,7 +1,8 @@
 c
 c -------------------------------------------------------------------
-      subroutine flag2refine(mx,my,mbc,meqn,maux,xlower,ylower,dx,dy,t,
-     &                  level,tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
+      subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,
+     &                       dx,dy,t,level,tolsp,q,aux,
+     &                       amrflags,DONTFLAG,DOFLAG)
 c -------------------------------------------------------------------
 
 c
@@ -52,9 +53,10 @@ c
 
       dimension   q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
       dimension   aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
-      dimension   amrflags(1-mbc:mx+mbc,1-mbc:my+mbc)
+      dimension   amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
       logical     allowflag
       external    allowflag
+      logical     db/.true./
    
 c     # loop over interior points on this grid:
       do 20 j = 1,my
@@ -76,11 +78,20 @@ c            # versions of amrclaw -- flag this point if dq > tolsp:
                 dq  = dmax1(dq,dqi, dqj)
     5           continue
 
-             if (dq .gt. tolsp) amrflags(i,j) = DOFLAG
+             if (dq .gt. tolsp) then
+                 amrflags(i,j) = DOFLAG
+             endif
              endif
 
  10          continue
  20       continue
+
+      if (db) then
+         do j = my,1,-1
+            write(66,100) (amrflags(i,j),i=1,mx)
+ 100        format(100f2.0)
+         end do   
+      endif
 
       return
       end

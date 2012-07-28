@@ -22,7 +22,13 @@ CLAW_PLOTDIR = _plots               # Directory for plots
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2
+
+# gfortran flags
+FFLAGS ?=  -g -fbounds-check -ffpe-trap=invalid,overflow,zero 
+#intel ifort flags
+#FFLAGS ?=  -g -C -CB -CU -fpe0 -ftrapuv
+#FFLAGS ?=  -O2  -openmp -C -CB -CU -fpe0 -ftrapuv
+
 
 # These flags are for adding the newer openmp threading, note that in order to
 # use openmp with ifort you must replace -fopenmp with -openmp
@@ -36,6 +42,7 @@ FFLAGS ?=  -O2
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
+
 MODULES = \
   $(AMRCLAW)/src/2d/amr_module.f90 \
 

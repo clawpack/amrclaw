@@ -1,31 +1,18 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine spest (nvar,naux,lcheck,dom1flags,isize,jsize,t0)
-c     subroutine spest (nvar,naux,lcheck,lociflags,isize,jsize,t0)
-c      subroutine spest (nvar,naux,lcheck,iflags,isize,jsize,t0)
+      subroutine spest2 (nvar,naux,lcheck,t0)
 c
       use amr_module
       implicit double precision (a-h,o-z)
 
-c      integer(kind=1)  iflags (0:isize+1,0:jsize+1)
-
  
-c :::::::::::::::::::::::::: SPEST :::::::::::::::::::::::::::::::::::
+c :::::::::::::::::::::::::: SPEST2 :::::::::::::::::::::::::::::::::::
 c For all grids at level lcheck:
 c   Call user-supplied routine flag2refine to flag any points where
 c   refinement is desired based on user's criterion.  
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
-c   initialize iflags here, so can put user flags right into it.
-c
-!--       do 4 i = 1, isize
-!--       do 4 j = 1, jsize
-!-- 4        iflags(i,j) = 0
-c
-c  now call initialization routine so can treat iflags as integer *1
-c      call init_iflags(alloc(lociflags),isize,jsize)
-       call init_iflags(dom1flags,isize,jsize)
 
        mptr = lstart(lcheck)
  5     continue
@@ -66,30 +53,31 @@ c for example.  Use old values of soln at time t  before
 c integration to get accurate boundary gradients
 c
       if (tolsp .gt. 0.) then
-         locamrflags = igetsp(mitot*mjtot)
-            do 20 i = 1, mitot*mjtot
+! need at least as big as nghost to fit ghost cells. if ibuff is bigger make
+! the flagged array bigger so can buffer in place
+         mbuff = max(nghost,ibuff+1)  
+         mibuff = nx + 2*mbuff  !NOTE THIS NEW DIMENSIONING 
+c                               !TO ALLOW ROOM FOR BUFFERING IN PLACE
+         mjbuff = ny + 2*mbuff
+         locamrflags = igetsp(mibuff*mjbuff)
+         node(storeflags,mptr) = locamrflags
+c           do 20 i = 1, mitot*mjtot
+            do 20 i = 1, mibuff*mjbuff
  20         alloc(locamrflags+i-1) = goodpt
 
 c        # call user-supplied routine to flag any points where 
 c        # refinement is desired based on user's criterion.  
 c        # Default version compares spatial gradient to tolsp.
 
-         call flag2refine(nx,ny,nghost,nvar,naux,xleft,ybot,dx,dy,
-     &              time,lcheck,tolsp,alloc(locbig),alloc(locaux),
-     &              alloc(locamrflags), goodpt, badpt)
+c         call flag2refine(nx,ny,nghost,nvar,naux,xleft,ybot,dx,dy,
+          call flag2refine2(nx,ny,nghost,mbuff,nvar,naux,xleft,ybot,
+     &        dx,dy,time,lcheck,tolsp,alloc(locbig),
+     &        alloc(locaux),alloc(locamrflags),goodpt,badpt)
 
-c        Put flags in iflags array now, so can reclaim space.
-c        Note change of dimension of amrflags array:
-c        3rd dim = 1 here, elsewhere flag array has idim3 = nvar
 c
-c
-         idim3 = 1   ! 3rd dim = 1 here, elsewhere is nvar
-c         call setflags (iflags,isize,jsize,
-c        call setflags (alloc(lociflags),isize,jsize,
-c    1                  alloc(locamrflags),idim3,mitot,mjtot,mptr)
-         call setflags (dom1flags,isize,jsize,
-     1                  alloc(locamrflags),idim3,mitot,mjtot,mptr)
-         call reclam(locamrflags, mitot*mjtot)
+c dont reclam here - save for colating and buffering in situ
+c         call reclam(locamrflags, mitot*mjtot)
+c         call reclam(locamrflags, mibuff*mbuff)
       endif
 
 c   previously used to reclam locbig space here. now save to reuse in errest
@@ -101,3 +89,4 @@ c     call reclam(locbig,mitot*mjtot*nvar)
 c
       return
       end
+

@@ -13,6 +13,7 @@ c     include  "call.i"
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
       dimension tout(nout)
       dimension tchk(maxout)
+      data dumpout/.false./, dumpchk/.true./
 
 c
 c :::::::::::::::::::::::::::: TICK :::::::::::::::::::::::::::::
@@ -181,12 +182,13 @@ c level 'lbase' stays fixed.
 c
           if (rprint) write(outunit,101) lbase
 101       format(8h  level ,i5,32h  stays fixed during regridding )
+          call conck(1,nvar,naux,time,rest)
           call regrid(nvar,lbase,cut,naux,t0)
           call setbestsrc()     ! need at every grid change
-c         call conck(1,nvar,naux,time,rest)
+          call conck(1,nvar,naux,time,rest)
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
 c note negative time to signal regridding output in plots
-c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
+          call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
 c
 c  maybe finest level in existence has changed. reset counters.
 c
@@ -337,7 +339,7 @@ c
 c  # don't checkpoint at all if user set ichkpt=0
 
       if (ichkpt .gt. 0) then
-         if ((ncycle/ichkpt)*ichkpt .ne. ncycle) then
+         if ((ncycle/ichkpt)*ichkpt .ne. ncycle .or. dumpchk) then
            call check(ncycle,time,nvar,naux)
          endif
        endif
