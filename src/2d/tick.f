@@ -188,7 +188,7 @@ c
           call conck(1,nvar,naux,time,rest)
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
 c note negative time to signal regridding output in plots
-          call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
+c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
 c
 c  maybe finest level in existence has changed. reset counters.
 c
