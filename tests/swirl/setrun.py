@@ -4,10 +4,10 @@ Module to set up run time parameters for Clawpack.
 The values set in the function setrun are then written out to data files
 that will be read in by the Fortran code.
     
-""" 
+"""
 
 import os
-from pyclaw import data 
+import clawpack.clawutil.oldclawdata as data
 
 
 #------------------------------

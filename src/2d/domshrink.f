@@ -7,8 +7,8 @@ c
       implicit double precision (a-h, o-z)
 
 
-      integer*1  iflags2(0:idim+1,0:jdim+1)
-      integer*1  iflags (0:idim+1,0:jdim+1)
+      integer(kind=1)  iflags2(0:idim+1,0:jdim+1)
+      integer(kind=1)  iflags (0:idim+1,0:jdim+1)
 
 c
 c :::::::::::::::::::::::::  DOMSHRINK ::::::::::::::::::::::::::::

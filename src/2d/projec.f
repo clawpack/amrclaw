@@ -7,7 +7,7 @@ c
       implicit double precision (a-h,o-z)
 
 
-      integer*1 iflags(0:isize+1,0:jsize+1)
+      integer(kind=1) iflags(0:isize+1,0:jsize+1)
 c
 c  ::::::::::::::::::::::: PROJEC ::::::::::::::::::::::::::::::
 c  for all newly created fine grids, project area onto a coarser

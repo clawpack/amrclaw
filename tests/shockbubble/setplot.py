@@ -7,67 +7,93 @@ function setplot is called to set the plot parameters.
     
 """ 
 
-
 #--------------------------
 def setplot(plotdata):
 #--------------------------
     
     """ 
     Specify what is to be plotted at each frame.
-    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.
+    Input:  plotdata, an instance of visclaw.plotters.data.ClawPlotData.
     Output: a modified version of plotdata.
     
     """ 
 
 
     from clawpack.visclaw import colormaps
+    from matplotlib import cm
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
     
 
-    # Figure for pcolor plot
-    plotfigure = plotdata.new_plotfigure(name='q[0]', figno=0)
+    # Figure for pressure
+    # -------------------
+
+    plotfigure = plotdata.new_plotfigure(name='Density', figno=0)
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = 'auto'
-    plotaxes.title = 'q[0]'
-    plotaxes.afteraxes = "pylab.axis('scaled')" 
+    plotaxes.title = 'Density'
+    plotaxes.scaled = True      # so aspect ratio is 1
+    plotaxes.afteraxes = label_axes
+
+    # Set up for item on these axes:
+    plotitem = plotaxes.new_plotitem(plot_type='2d_schlieren')
+    plotitem.schlieren_cmin = 0.0
+    plotitem.schlieren_cmax = 1.0
+    plotitem.plot_var = 0
+    plotitem.add_colorbar = False
+    plotitem.show = True       # show on plot?
+    plotitem.amr_patchedges_show = [1,1,1]
+    
+
+    plotfigure = plotdata.new_plotfigure(name='Tracer', figno=1)
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'Tracer'
+    plotaxes.scaled = True      # so aspect ratio is 1
+    plotaxes.afteraxes = label_axes
 
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
-    plotitem.plot_var = 0
+    plotitem.pcolor_cmin = 0.
+    plotitem.pcolor_cmax=1.0
+    plotitem.plot_var = 4
     plotitem.pcolor_cmap = colormaps.yellow_red_blue
-    plotitem.pcolor_cmin = 0.0
-    plotitem.pcolor_cmax = 1.0
-    plotitem.add_colorbar = True
-    plotitem.amr_celledges_show = [True, True, False]
-    plotitem.amr_patchedges_show = [True, True]
+    plotitem.add_colorbar = False
     plotitem.show = True       # show on plot?
+    plotitem.amr_patchedges_show = [1,1,1]
     
-    # Figure for contour plot
-    plotfigure = plotdata.new_plotfigure(name='contour', figno=1)
+
+    plotfigure = plotdata.new_plotfigure(name='Energy', figno=2)
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = 'auto'
-    plotaxes.title = 'q[0]'
-    plotaxes.afteraxes = "pylab.axis('scaled')" 
+    plotaxes.title = 'Energy'
+    plotaxes.scaled = True      # so aspect ratio is 1
+    plotaxes.afteraxes = label_axes
 
     # Set up for item on these axes:
-    plotitem = plotaxes.new_plotitem(plot_type='2d_contour')
-    plotitem.plot_var = 0
-    plotitem.contour_nlevels = 20
-    plotitem.contour_min = 0.01
-    plotitem.contour_max = 0.99
-    plotitem.amr_contour_colors = ['b','k','r']
+    plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
+    plotitem.pcolor_cmin = 2.
+    plotitem.pcolor_cmax=18.0
+    plotitem.plot_var = 3
+    plotitem.pcolor_cmap = colormaps.yellow_red_blue
+    plotitem.add_colorbar = False
     plotitem.show = True       # show on plot?
+    plotitem.amr_patchedges_show = [1,1,1]
     
 
+
+
     # Parameters used only when creating html and/or latex hardcopy
-    # e.g., via pyclaw.plotters.frametools.printframes:
+    # e.g., via visclaw.plotters.frametools.printframes:
 
     plotdata.printfigs = True                # print figures
     plotdata.print_format = 'png'            # file format
@@ -82,4 +108,9 @@ def setplot(plotdata):
 
     return plotdata
 
+def label_axes(current_data):
+    import matplotlib.pyplot as plt
+    plt.xlabel('z')
+    plt.ylabel('r')
+    #plt.draw()
     

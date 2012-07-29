@@ -7,8 +7,8 @@ c
       use amr_module
       implicit  double precision (a-h,o-z)
       dimension badpts(2,len)
-      integer*1   iflags  (0:isize+1,0:jsize+1)
-      integer*1   domflags(0:isize+1,0:jsize+1)
+      integer(kind=1)   iflags  (0:isize+1,0:jsize+1)
+      integer(kind=1)   domflags(0:isize+1,0:jsize+1)
 
 c
 c
