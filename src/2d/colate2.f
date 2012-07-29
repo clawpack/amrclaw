@@ -7,7 +7,7 @@ c
       implicit  double precision (a-h,o-z)
       dimension badpts(2,len)
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
-      logical db/.true./
+      logical db/.false./
 
 c
 c    index for flag array now based on integer index space, not 1:mibuff,1:mjbuff
