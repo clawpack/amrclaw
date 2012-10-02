@@ -6,7 +6,7 @@
 !  take the intersection of a grid patch with corners at ilo,ihi,jlo,jhi
 !  and all grids mptr at LEVEL.  If there is a non-null intersection
 !  copy the solution vaues from mptr (at TIME) into VAL array.
-!  assumes patch at same level so do straight copy, not skipping
+!  assumes patch at same levels do straight copy, not skipping
 !  every intrat or doing any interpolation here,
 !  assume called in correct order of levels, so that when copying
 !  is ok to overwrite.
@@ -73,11 +73,11 @@ subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nva
         imhi = node(ndihi, mptr)
         jmhi = node(ndjhi, mptr)
 
-        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+        nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
+        ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
         
-        mitot = nx + 2*nghost
-        mjtot = ny + 2*nghost
+        mitot = nx + 2 * nghost
+        mjtot = ny + 2 * nghost
         
         ixlo = max(imlo,ilo)
         ixhi = min(imhi,ihi)
@@ -131,7 +131,7 @@ subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nva
                 endif
             endif
 
-            ! Do interpolation
+            ! Actual interpolation
             if (.not. t_interpolate) then
                 ! No time interp. copy the solution values
                 do ivar = 1, nvar
