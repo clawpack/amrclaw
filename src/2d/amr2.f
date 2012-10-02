@@ -444,6 +444,14 @@ c     # call user routine to set up problem parameters:
 c
       hxposs(1) = (xupper - xlower) / nx
       hyposs(1) = (yupper - ylower) / ny
+
+c     # initialize frame number for output.  
+c     # Note: might be reset in restrt if this is a restart
+      if (output_t0) then
+          matlabu   = 0
+        else
+          matlabu   = 1
+        endif
 c
 c
 c
@@ -563,11 +571,8 @@ c
       write(outunit,*) "  original total mass ..."
       call conck(1,nvar,naux,time,rest)
       if (output_t0) then
-          matlabu   = 0
           call valout(1,lfine,time,nvar,naux)
-        else
-          matlabu   = 1
-        endif
+          endif
       close(parmunit)
 c
 c     --------------------------------------------------------
