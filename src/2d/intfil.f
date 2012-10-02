@@ -29,10 +29,6 @@ c
 c
       dimension   val(nvar,mi,mj)
       logical     tinterp
-c
-c      iadd(i,j,ivar)   = loc    + i - 1 + mitot*((ivar-1)*mjtot+j-1) OLD INDEXING
-c      iadnew(i,j,ivar) = locnew + i - 1 + mitot*((ivar-1)*mjtot+j-1)
-c      iadold(i,j,ivar) = locold + i - 1 + mitot*((ivar-1)*mjtot+j-1)
 
 c   NEW INDEXING, ORDER SWITCHED
       iadd(ivar,i,j)   = loc    + ivar-1 + nvar*((j-1)*mitot+i-1)
