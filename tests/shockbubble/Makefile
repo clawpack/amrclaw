@@ -115,7 +115,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/fluxsv.f \
   $(AMRCLAW)/src/2d/ginit.f \
   $(AMRCLAW)/src/2d/grdfit.f \
-  $(AMRCLAW)/src/2d/intfil.f \
+  $(AMRCLAW)/src/2d/intfil_new.f90 \
   $(AMRCLAW)/src/2d/moment.f \
   $(AMRCLAW)/src/2d/nestck.f \
   $(AMRCLAW)/src/2d/prepf.f \
@@ -130,7 +130,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/setgrd.f \
   $(AMRCLAW)/src/2d/setuse.f \
   $(AMRCLAW)/src/2d/stst1.f \
-  $(AMRCLAW)/src/2d/trimbd.f \
+  $(AMRCLAW)/src/2d/trimbd_new.f90 \
   $(AMRCLAW)/src/2d/update.f \
   $(AMRCLAW)/src/2d/nodget.f \
   $(AMRCLAW)/src/2d/upbnd.f  \

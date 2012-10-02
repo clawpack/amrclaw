@@ -73,7 +73,7 @@ SOURCES = \
   $(CLAW_LIB)/fluxsv.f \
   $(CLAW_LIB)/ginit.f \
   $(CLAW_LIB)/grdfit.f \
-  $(CLAW_LIB)/intfil.f \
+  $(CLAW_LIB)/intfil_new.f90 \
   $(CLAW_LIB)/moment.f \
   $(CLAW_LIB)/nestck.f \
   $(CLAW_LIB)/prepf.f \
@@ -89,7 +89,7 @@ SOURCES = \
   $(CLAW_LIB)/setuse.f \
   $(CLAW_LIB)/stst1.f \
   $(CLAW_LIB)/tick.f \
-  $(CLAW_LIB)/trimbd.f \
+  $(CLAW_LIB)/trimbd_new.f90 \
   $(CLAW_LIB)/update.f \
   $(CLAW_LIB)/nodget.f \
   $(CLAW_LIB)/upbnd.f  \
