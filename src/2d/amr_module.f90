@@ -54,11 +54,11 @@
 
 !      The max1d parameter should be changed if using OpenMP grid based 
 !      looping, usually set to max1d = 60
-!#ifdef MAX1D
-       !integer, parameter :: max1d = MAX1D
-!#else
-       integer, parameter :: max1d = 600
-!#endif
+!ifdef MAX1D
+!      integer, parameter :: max1d = MAX1D
+!else
+       integer, parameter :: max1d = 60
+!endif
 
        integer, parameter :: maxvar = 10
        integer, parameter :: maxaux = 20
