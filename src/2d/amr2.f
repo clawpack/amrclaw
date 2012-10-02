@@ -442,7 +442,6 @@ c     # call user routine to set up problem parameters:
       call setprob()
 
 c
-      matlabu   = 0
       hxposs(1) = (xupper - xlower) / nx
       hyposs(1) = (yupper - ylower) / ny
 c
@@ -564,8 +563,11 @@ c
       write(outunit,*) "  original total mass ..."
       call conck(1,nvar,naux,time,rest)
       if (output_t0) then
+          matlabu   = 0
           call valout(1,lfine,time,nvar,naux)
-          endif
+        else
+          matlabu   = 1
+        endif
       close(parmunit)
 c
 c     --------------------------------------------------------

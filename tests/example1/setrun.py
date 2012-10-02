@@ -65,9 +65,9 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.lower[1] = 0.          # ylower
     clawdata.upper[1] = 1.          # yupper
     
-
     # Number of grid cells:
-    clawdata.num_cells = [50,50]    # [mx,my]
+    clawdata.num_cells[0] = 50      # mx
+    clawdata.num_cells[1] = 50      # my
     
 
     # ---------------
@@ -101,26 +101,24 @@ def setrun(claw_pkg='amrclaw'):
 
     # Specify at what times the results should be written to fort.q files.
     # Note that the time integration stops after the final output time.
-
-
  
-    clawdata.output_style = 3
+    clawdata.output_style = 1
  
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 1
-        clawdata.tfinal = 0.4
-        clawdata.output_t0 = False  # output at initial time?
+        clawdata.num_output_times = 10
+        clawdata.tfinal = 2.0
+        clawdata.output_t0 = True  # output at initial time?
         
     elif clawdata.output_style == 2:
         # Specify a list or numpy array of output times:
-        clawdata.output_times =  [0.1]
+        clawdata.output_times =  [0., 0.1]
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 20
-        clawdata.total_steps = 1000
+        clawdata.output_step_interval = 2
+        clawdata.total_steps = 4
         clawdata.output_t0 = False  # output at initial time?
         
 
@@ -139,7 +137,7 @@ def setrun(claw_pkg='amrclaw'):
     # The current t, dt, and cfl will be printed every time step
     # at AMR levels <= verbosity.  Set verbosity = 0 for no printing.
     #   (E.g. verbosity == 2 means print only on levels 1 and 2.)
-    clawdata.verbosity = 1
+    clawdata.verbosity = 0
     
     
 
