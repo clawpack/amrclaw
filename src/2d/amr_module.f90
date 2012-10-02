@@ -186,6 +186,6 @@
 
 
 !     Restart file name:
-      character*12 :: rstfile
+      character*13 :: rstfile
 
        end module amr_module

@@ -10,19 +10,19 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
       use amr_module
       implicit double precision (a-h,o-z)
       integer tchkunit
-      parameter (tchkunit = 12)
-      character  chkname*12
-      character  tchkname*12
+      parameter (tchkunit = 13)
+      character  chkname*13
+      character  tchkname*13
 
       write(6,601) time,nsteps
  601  format('Creating checkpoint file at t = ',e16.9,'  nsteps = ',i5)
 c
 c     ###  make the file name showing the time step
 c
-      chkname = 'fort.chkxxxx'
-      tchkname = 'fort.tckxxxx'
+      chkname = 'fort.chkxxxxx'
+      tchkname = 'fort.tckxxxxx'
       nstp = nsteps
-      do 20 ipos = 12, 9, -1
+      do 20 ipos = 13, 9, -1
          idigit = mod(nstp,10)
          chkname(ipos:ipos) = char(ichar('0') + idigit)
          tchkname(ipos:ipos) = char(ichar('0') + idigit)
