@@ -46,6 +46,9 @@ endif
 ifdef MAX1D
 	PPFLAGS += -D MAX1D=$(MAX1D)
 endif
+ifdef STACKSHAPE
+	PPFLAGS += -D STACKSHAPE=$(STACKSHAPE)
+endif
 MAKELEVEL ?= 0
 ifeq ($(MAKELEVEL),0)
     FFLAGS += $(PPFLAGS)
@@ -108,7 +111,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/errf1.f \
   $(AMRCLAW)/src/2d/gfixup.f \
   $(AMRCLAW)/src/2d/filval.f \
-  $(AMRCLAW)/src/2d/filpatch.f \
+  $(AMRCLAW)/src/2d/filpatch_new.f90 \
   $(AMRCLAW)/src/2d/prefilp.f \
   $(AMRCLAW)/src/2d/flglvl.f \
   $(AMRCLAW)/src/2d/fluxad.f \

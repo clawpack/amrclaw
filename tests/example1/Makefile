@@ -66,7 +66,7 @@ SOURCES = \
   $(CLAW_LIB)/errf1.f \
   $(CLAW_LIB)/gfixup.f \
   $(CLAW_LIB)/filval.f \
-  $(CLAW_LIB)/filpatch.f \
+  $(CLAW_LIB)/filpatch_new.f90 \
   $(CLAW_LIB)/prefilp.f \
   $(CLAW_LIB)/flglvl.f \
   $(CLAW_LIB)/fluxad.f \
