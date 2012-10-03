@@ -13,19 +13,19 @@ CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
 # ----------------------------------
 
 CLAW_PKG = amrclaw                  # Clawpack package to use
-CLAW_EXE = xamr                     # Executable to create
+EXE = xamr                          # Executable to create
 SETRUN_FILE = setrun.py             # File containing function to make data
-OUTDIR = _output                   # Directory for output
+OUTDIR = _output                    # Directory for output
 SETPLOT_FILE = setplot.py           # File containing function to set plots
-PLOTDIR = _plots                   # Directory for plots
+PLOTDIR = _plots                    # Directory for plots
 
-OVERWRITE ?= True
-RESTART ?= False
+OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
+RESTART ?= False                    # Should = clawdata.restart in setrun
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -g
+FFLAGS ?=  -O2
 #FFLAGS = -W -Wall -fbounds-check -Wunderflow -O -ffpe-trap=zero,overflow,underflow -g
 
 # ---------------------------------
@@ -136,6 +136,3 @@ SOURCES = \
 # Include Makefile containing standard definitions and make options:
 include $(CLAWMAKE)
 
-
-### DO NOT remove this line - make depends on it ###
-    

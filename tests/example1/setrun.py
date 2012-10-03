@@ -90,9 +90,16 @@ def setrun(claw_pkg='amrclaw'):
 
     clawdata.t0 = 0.0                        
     
-    # If restarting, t0 above should be from original run
-    clawdata.restart = False                # True to restart from prior results
-    clawdata.restart_file = 'fort.chk0012'  # File to use for restart data
+
+    # Restart from checkpoint file of a previous run?
+    # Note: If restarting, you must also change the Makefile to set:
+    #    RESTART = True
+    # If restarting, t0 above should be from original run, and the
+    # restart_file 'fort.chkNNNNN' specified below should be in 
+    # the OUTDIR indicated in Makefile.
+
+    clawdata.restart = False               # True to restart from prior results
+    clawdata.restart_file = 'fort.chk00006'  # File to use for restart data
     
     
     # -------------
@@ -109,24 +116,24 @@ def setrun(claw_pkg='amrclaw'):
         # Can specify num_output_times = 0 for no output
         clawdata.num_output_times = 10
         clawdata.tfinal = 2.0
-        clawdata.output_t0 = True  # output at initial time?
+        clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
         # Specify a list or numpy array of output times:
+        # Include t0 if you want output at the initial time.
         clawdata.output_times =  [0., 0.1]
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
         clawdata.output_step_interval = 2
         clawdata.total_steps = 4
-        clawdata.output_t0 = False  # output at initial time?
+        clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
-
-    clawdata.output_format == 'ascii'      # 'ascii' or 'netcdf' or 'binary'
+    clawdata.output_format == 'ascii'      # 'ascii' or 'netcdf' 
 
     clawdata.output_q_components = 'all'   # could be list such as [True,True]
-    clawdata.output_aux_components = 'none'
+    clawdata.output_aux_components = 'none'  # could be list
     clawdata.output_aux_onlyonce = True    # output aux arrays only at t0
     
 
@@ -162,7 +169,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.cfl_max = 1.0
     
     # Maximum number of time steps to allow between output times:
-    clawdata.steps_max = 1000000
+    clawdata.steps_max = 100000
 
 
     # ------------------
@@ -173,7 +180,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.order = 2
     
     # Use dimensional splitting? (not yet available for AMR)
-    clawdata.dimensional_split = 0
+    clawdata.dimensional_split = 'unsplit'
     
     # For unsplit method, transverse_waves can be 
     #  0 or 'none'      ==> donor cell (only normal solver used)
@@ -234,9 +241,9 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    clawdata.refinement_ratio_x = [2,2]
-    clawdata.refinement_ratio_y = [2,2]
-    clawdata.refinement_ratio_t = [2,2]
+    clawdata.refinement_ratios_x = [2,2]
+    clawdata.refinement_ratios_y = [2,2]
+    clawdata.refinement_ratios_t = [2,2]
 
     # Instead of setting refinement ratios in t, these can be chosen
     # automatically if this is implemented:
@@ -255,7 +262,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.flag_richardson = False    # use Richardson?
     clawdata.flag_richardson_tol = 0.1  # Richardson tolerance
     
-    # Flag for refinement based routine flag2refine:
+    # Flag for refinement using routine flag2refine:
     clawdata.flag2refine = True      # use this?
     clawdata.flag2refine_tol = 0.05  # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
@@ -267,7 +274,7 @@ def setrun(claw_pkg='amrclaw'):
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
-    clawdata.regrid_buffer_width  = 3  
+    clawdata.regrid_buffer_width  = 2  
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)
