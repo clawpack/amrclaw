@@ -3,7 +3,7 @@
 !  fill the portion of valbig from rows  nrowst
 !                             and  cols  ncolst
 !  the patch can also be described by the corners (xlp,ybp) by (xrp,ytp).
-!  vals are needed at time time , and level level,
+!  vals are needed at time t, and level level,
 !
 !  first fill with  values obtainable from the level level
 !  grids. if any left unfilled, then enlarge remaining rectangle of
@@ -11,7 +11,7 @@
 !  obtain the remaining values from  coarser levels.
 !
 ! :::::::::::::::::::::::::::::::::::::::;:::::::::::::::::::::::;
-recursive subroutine filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nrowst,ncolst,ilo,ihi,jlo,jhi)
+recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my,nrowst,ncolst,ilo,ihi,jlo,jhi)
 
     use amr_module, only: hxposs, hyposs, xlower, ylower, xupper, yupper
     use amr_module, only: outunit, nghost, xperdom, yperdom, spheredom
@@ -20,22 +20,24 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nrowst
     implicit none
 
     ! Input
-    integer, intent(in) :: level, nvar, naux, mitot, mjtot, nrowst, ncolst
+    integer, intent(in) :: level, num_eqn, num_aux, mx, my, nrowst, ncolst
     integer, intent(in) :: ilo, ihi, jlo, jhi
-    real(kind=8), intent(in) :: time
+    real(kind=8), intent(in) :: t
 
     ! Output
-    real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
-    real(kind=8), intent(in out) :: aux(naux,mitot,mjtot)
+    real(kind=8), intent(in out) :: valbig(num_eqn,mx,my)
+    real(kind=8), intent(in out) :: aux(num_aux,mx,my)
 
     ! Local storage
-    integer :: nrowp, ncolp, levc, isl, isr, jsb, jst, lratiox, lratioy, iplo
-    integer :: jplo, iphi, jphi, nrowc, ncolc, ntot, iff, jf, ic, jc, ivar
-    integer :: il, ir, jb, jt
-    real(kind=8) :: hxf, hyf, xlp, xrp, ybp, ytp, hxc, hyc, xlc, ybc, xrc, ytc
+    integer :: mx_patch, my_patch, isl, isr, jsb, jst, iplo, jplo, iphi, jphi, nrowc, ncolc
+    integer :: i_fine, j_fine, i_coarse, j_coarse, n, unset_indices(4)
+    integer :: refinement_ratio_x, refinement_ratio_y
+    real(kind=8) :: dx_fine, dy_fine, fill_rect(4), dx_coarse, dy_coarse, xlc, ybc, xrc, ytc
     real(kind=8) :: eta1, eta2, valp10, valm10, valc, valp01, valm01, dupc, dumc
     real(kind=8) :: ducc, du, fu, dvpc, dvmc, dvcc, dv, fv, valint
     logical :: set
+
+    integer :: fill_indices(4)
 
     ! Scratch storage
     !  use stack-based scratch arrays instead of alloc, since dont really
@@ -44,30 +46,39 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nrowst
     !     use 1d scratch arrays that are potentially the same size as 
     !     current grid, since may not coarsen.
     !     need to make it 1d instead of 2 and do own indexing, since
-    !     when pass it in to subroutines they treat it as having different
+    !     when pass it in to subroutines they treat it as having dierent
     !     dimensions than the max size need to allocate here
     
-    !--      dimension valcrse((ihi-ilo+2)*(jhi-jlo+2)*nvar)  ! NB this is a 1D array 
-    !--      dimension auxcrse((ihi-ilo+2)*(jhi-jlo+2)*naux)  ! the +2 is to expand on coarse grid to enclose fine
+    !--      dimension valcrse((ihi-ilo+2)*(jhi-jlo+2)*num_eqn)  ! NB this is a 1D array 
+    !--      dimension auxcrse((ihi-ilo+2)*(jhi-jlo+2)*num_aux)  ! the +2 is to expand on coarse grid to enclose fine
     ! ### turns out you need 3 rows, forget offset of 1 plus one on each side
-    real(kind=8) :: valcrse((ihi-ilo+3)*(jhi-jlo+3)*nvar)  ! NB this is a 1D array 
-    real(kind=8) :: auxcrse((ihi-ilo+3)*(jhi-jlo+3)*naux)  ! the +3 is to expand on coarse grid to enclose fine
+    real(kind=8) :: valcrse((ihi-ilo+3)*(jhi-jlo+3)*num_eqn)  ! NB this is a 1D array 
+    real(kind=8) :: auxcrse((ihi-ilo+3)*(jhi-jlo+3)*num_aux)  ! the +3 is to expand on coarse grid to enclose fine
     integer(kind=1) :: flaguse(ihi-ilo+1,jhi-jlo+1)
 
 
     ! We begin by filling values for grids at level level. If all values can be
     ! filled in this way, we return;
-    nrowp   = ihi - ilo + 1
-    ncolp   = jhi - jlo + 1
+    fill_indices = [ilo,ihi,jlo,jhi]
+    mx_patch = fill_indices(2) - fill_indices(1) + 1 ! nrowp
+    my_patch = fill_indices(4) - fill_indices(3) + 1 ! ncolp
 
-    hxf     = hxposs(level)
-    hyf     = hyposs(level)
-    xlp     = xlower + ilo*hxf
-    xrp     = xlower + (ihi+1)*hxf
-    ybp     = ylower + jlo*hyf
-    ytp     = ylower + (jhi+1)*hyf
+    dx_fine     = hxposs(level)
+    dy_fine     = hyposs(level)
 
-    call intfil(valbig,mitot,mjtot,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nvar,naux)
+    ! Coordinates of edges of patch 
+    fill_rect = [xlower + fill_indices(1) * dx_fine, &
+                 xlower + (fill_indices(2) + 1) * dx_fine, &
+                 ylower + fill_indices(3) * dy_fine, &
+                 ylower + (fill_indices(4) + 1) * dy_fine]
+!     xlp     = xlower + fill_indices(1) * dx_fine
+!     xrp     = xlower + (fill_indices(2) + 1) * dx_fine
+!     ybp     = ylower + fill_indices(3) * dy_fine
+!     ytp     = ylower + (fill_indices(4) + 1) * dy_fine
+
+    ! Fill in the patch as much as possible using values at this level
+    call intfil(valbig,mx,my,t,flaguse,nrowst,ncolst,fill_indices(1), &
+                fill_indices(2),fill_indices(3),fill_indices(4),level,num_eqn,num_aux)
 
     ! Trimbd returns set = true if all of the entries are filled (=1.).
     ! set = false, otherwise. If set = true, then no other levels are
@@ -77,7 +88,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nrowst
     ! marking done there also takes  into account the points filled by
     ! the boundary conditions. bc2amr will be called later, after all 4
     ! boundary pieces filled.
-    call trimbd(flaguse,nrowp,ncolp,set,il,ir,jb,jt)
+    call trimbd(flaguse,mx_patch,my_patch,set,unset_indices)
+    ! il,ir,jb,jt = unset_indices(4)
 
     ! If set is .true. then all cells have been set and we can skip to setting
     ! the remaining boundary cells.  If it is .false. we need to interpolate
@@ -98,119 +110,126 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nrowst
 
         ! We begin by initializing the level level arrays, so that we can use
         ! purely recursive formulation for interpolating.
-        levc = level - 1
-        hxc  = hxposs(levc)
-        hyc  = hyposs(levc)
+        dx_coarse  = hxposs(level - 1)
+        dy_coarse  = hyposs(level - 1)
 
-        isl  = il + ilo - 1
-        isr  = ir + ilo - 1
-        jsb  = jb + jlo - 1
-        jst  = jt + jlo - 1
+        isl  = unset_indices(1) + fill_indices(1) - 1
+        isr  = unset_indices(2) + fill_indices(1) - 1
+        jsb  = unset_indices(3) + fill_indices(3) - 1
+        jst  = unset_indices(4) + fill_indices(3) - 1
 
         ! Coarsened geometry
-        lratiox = intratx(levc)
-        lratioy = intraty(levc)
-        iplo   = (isl-lratiox+nghost*lratiox)/lratiox - nghost
-        jplo   = (jsb-lratioy+nghost*lratioy)/lratioy - nghost
-        iphi   = (isr+lratiox)/lratiox
-        jphi   = (jst+lratioy)/lratioy
+        refinement_ratio_x = intratx(level - 1)
+        refinement_ratio_y = intraty(level - 1)
 
-        xlc  =  xlower + iplo*hxc
-        ybc  =  ylower + jplo*hyc
-        xrc  =  xlower + (iphi+1)*hxc
-        ytc  =  ylower + (jphi+1)*hyc
+        ! New patch rectangle (after we have partially filled it in) but in the
+        ! coarse patches 
+        iplo = (isl - refinement_ratio_x + nghost * refinement_ratio_x) &
+                                                / refinement_ratio_x - nghost
+        jplo = (jsb - refinement_ratio_y + nghost * refinement_ratio_y) &
+                                                / refinement_ratio_y - nghost
+        iphi = (isr + refinement_ratio_x) / refinement_ratio_x
+        jphi = (jst + refinement_ratio_y) / refinement_ratio_y
 
+        xlc  =  xlower + iplo * dx_coarse
+        ybc  =  ylower + jplo * dy_coarse
+        xrc  =  xlower + (iphi + 1) * dx_coarse
+        ytc  =  ylower + (jphi + 1) * dy_coarse
+
+        ! Coarse grid number of spatial points
         nrowc   =  iphi - iplo + 1
         ncolc   =  jphi - jplo + 1
-        ntot    = nrowc*ncolc*(nvar+naux)
-!        write(*,'(" needed coarse grid size ",2i5," allocated ",2i5)') nrowc,ncolc, ihi-ilo+2,jhi-jlo+2
-!        write(*,'(" needed coarse grid size ",2i5," allocated ",2i5)') nrowc,ncolc, ihi-ilo+3,jhi-jlo+3
-        if (nrowc .gt. ihi-ilo+3 .or. ncolc .gt. jhi-jlo+3) then
+!         ntot    = nrowc * ncolc * (num_eqn + num_aux)
+!        write(*,'(" needed coarse grid size ",2i5," allocated ",2i5)') nrowc,ncolc, fill_indices(2)-fill_indices(1)+2,fill_indices(4)-fill_indices(3)+2
+!        write(*,'(" needed coarse grid size ",2i5," allocated ",2i5)') nrowc,ncolc, fill_indices(2)-fill_indices(1)+3,fill_indices(4)-fill_indices(3)+3
+        if (nrowc > fill_indices(2)-fill_indices(1)+3 .or. ncolc > fill_indices(4)-fill_indices(3)+3) then
             print *," did not make big enough work space in filrecur "
             print *," need coarse space with nrowc,ncolc ",nrowc,ncolc
-            print *," made space for ilo,ihi,jlo,jhi ",ilo,ihi,jlo,jhi
+            print *," made space for ilo,ihi,jlo,jhi ",fill_indices
             stop
         endif
 
-        ! Set the aux array values, this could be done instead in intfil using
-        ! possibly already available bathy data from the grids
-        if (naux > 0) then
+        ! Set the aux array values for the coarse grid, this could be done 
+        ! instead in intfil using possibly already available bathy data from the
+        ! grids
+        if (num_aux > 0) then
             call setaux(nrowc - 2*nghost,ncolc - 2*nghost,nghost, &
                         nrowc - 2*nghost,ncolc - 2*nghost, &
-                        xlc + nghost*hxc,ybc + nghost*hyc, &
-                        hxc,hyc,naux,auxcrse)
+                        xlc + nghost*dx_coarse,ybc + nghost*dy_coarse, &
+                        dx_coarse,dy_coarse,num_aux,auxcrse)
         endif
 
-        ! *** NEED TO LOOK INTO THIS CALL AND WHY IT IS DONE ***
+        ! Fill in the edges of the coarse grid
         if ((xperdom .or. (yperdom .or. spheredom)) .and. sticksout(iplo,iphi,jplo,jphi)) then
-            call prefilrecur(levc,nvar,valcrse,auxcrse,naux,time,nrowc,ncolc,1,1,iplo,iphi,jplo,jphi)
+            call prefilrecur(level - 1,num_eqn,valcrse,auxcrse,num_aux,t,nrowc,ncolc,1,1,iplo,iphi,jplo,jphi)
         else
-            call filrecur(levc,nvar,valcrse,auxcrse,naux,time,nrowc,ncolc,1,1,iplo,iphi,jplo,jphi)
+            call filrecur(level - 1,num_eqn,valcrse,auxcrse,num_aux,t,nrowc,ncolc,1,1,iplo,iphi,jplo,jphi)
         endif
 
-        do iff = 1,nrowp
-            ic = 2 + (iff - (isl - ilo) - 1) / lratiox
-            eta1 = (-0.5d0 + real(mod(iff-1, lratiox),kind=8)) &
-                                / real(lratiox,kind=8)
+        do i_fine = 1,mx_patch
+            i_coarse = 2 + (i_fine - (isl - fill_indices(1)) - 1) / refinement_ratio_x
+            eta1 = (-0.5d0 + real(mod(i_fine - 1, refinement_ratio_x),kind=8)) &
+                                / real(refinement_ratio_x,kind=8)
 
-            do jf  = 1,ncolp
-                jc = 2 + (jf - (jsb - jlo) - 1) / lratioy
-                eta2 = (-0.5d0 + real(mod(jf -1, lratioy),kind=8)) &
-                                    / real(lratioy,kind=8)
+            do j_fine  = 1,my_patch
+                j_coarse = 2 + (j_fine - (jsb - fill_indices(3)) - 1) / refinement_ratio_y
+                eta2 = (-0.5d0 + real(mod(j_fine - 1, refinement_ratio_y),kind=8)) &
+                                    / real(refinement_ratio_y,kind=8)
 
-                if (flaguse(iff,jf) == 0) then
+                if (flaguse(i_fine,j_fine) == 0) then
 
-                    do ivar = 1,nvar
+                    do n=1,num_eqn
 
-                        valp10 = valcrse(ivalc(ivar,ic+1,jc))
-                        valm10 = valcrse(ivalc(ivar,ic-1,jc))
-                        valc   = valcrse(ivalc(ivar,ic  ,jc))
-                        valp01 = valcrse(ivalc(ivar,ic  ,jc+1))
-                        valm01 = valcrse(ivalc(ivar,ic  ,jc-1))
+                        valp10 = valcrse(ivalc(n,i_coarse + 1,j_coarse))
+                        valm10 = valcrse(ivalc(n,i_coarse - 1,j_coarse))
+                        valc   = valcrse(ivalc(n,i_coarse    ,j_coarse))
+                        valp01 = valcrse(ivalc(n,i_coarse    ,j_coarse + 1))
+                        valm01 = valcrse(ivalc(n,i_coarse    ,j_coarse - 1))
         
                         dupc = valp10 - valc
                         dumc = valc   - valm10
                         ducc = valp10 - valm10
-                        du   = dmin1(dabs(dupc),dabs(dumc))
-                        du   = dmin1(2.d0*du,.5d0*dabs(ducc))
-                        fu = dmax1(0.d0,dsign(1.d0,dupc*dumc))
+                        du   = min(abs(dupc), abs(dumc))
+                        du   = min(2.d0 * du, 0.5d0 * abs(ducc))
+                        fu = max(0.d0, sign(1.d0, dupc * dumc))
         
                         dvpc = valp01 - valc
                         dvmc = valc   - valm01
                         dvcc = valp01 - valm01
-                        dv   = dmin1(dabs(dvpc),dabs(dvmc))
-                        dv   = dmin1(2.d0*dv,.5d0*dabs(dvcc))
-                        fv = dmax1(0.d0,dsign(1.d0,dvpc*dvmc))
+                        dv   = min(abs(dvpc), abs(dvmc))
+                        dv   = min(2.d0 * dv, 0.5d0 * abs(dvcc))
+                        fv = max(0.d0,sign(1.d0, dvpc * dvmc))
 
                         valint = valc + eta1 * du * sign(1.d0, ducc) * fu &
                                       + eta2 * dv * sign(1.d0, dvcc) * fv
 
 
-                        valbig(ivar,iff+nrowst-1,jf+ncolst-1) = valint
+                        valbig(n,i_fine+nrowst-1,j_fine+ncolst-1) = valint
 
                     end do
+
                 endif
             end do
         end do
     end if
 
     !  set bcs, whether or not recursive calls needed. set any part of patch that stuck out
-    call bc2amr(valbig,aux,mitot,mjtot,nvar,naux,hxf,hyf,level,time,xlp,xrp, &
-                ybp,ytp,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
+    call bc2amr(valbig,aux,mx,my,num_eqn,num_aux,dx_fine,dy_fine,level,t,fill_rect(1),fill_rect(2), &
+                fill_rect(3),fill_rect(4),xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
 
 contains
 
-    integer pure function ivalc(ivar,i,j)
+    integer pure function ivalc(n,i,j)
         implicit none
-        integer, intent(in) :: ivar, i, j
-        ivalc = ivar + nvar*(i-1)+nvar*nrowc*(j-1)
+        integer, intent(in) :: n, i, j
+        ivalc = n + num_eqn*(i-1)+num_eqn*nrowc*(j-1)
     end function ivalc
 
     logical pure function sticksout(iplo,iphi,jplo,jphi)
         implicit none
         integer, intent(in) :: iplo, iphi, jplo, jphi
         sticksout = (iplo < 0 .or. jplo < 0 .or. &
-                     iphi >= iregsz(levc) .or. jphi >= jregsz(levc))
+                     iphi >= iregsz(level - 1) .or. jphi >= jregsz(level - 1))
     end function sticksout
 
 end subroutine filrecur

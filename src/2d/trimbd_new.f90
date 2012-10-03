@@ -5,7 +5,7 @@
 !  rectangle containing all unset points in il,ir,jb,jt.
 ! ::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::;
 !
-subroutine trimbd(used,nrow,ncol,set,il,ir,jb,jt)
+subroutine trimbd(used,nrow,ncol,set,unset_rect)
 
     implicit none
 
@@ -15,7 +15,8 @@ subroutine trimbd(used,nrow,ncol,set,il,ir,jb,jt)
 
     ! Output
     logical, intent(out) :: set
-    integer, intent(out) :: il, ir, jb, jt
+!     integer, intent(out) :: il, ir, jb, jt
+    integer, intent(out) :: unset_rect(4)
 
     ! Locals
     integer :: i, j
@@ -31,7 +32,7 @@ subroutine trimbd(used,nrow,ncol,set,il,ir,jb,jt)
              do j = 1,ncol
                 check = min(check,used(i,j))
             enddo
-            il = i
+            unset_rect(1) = i
             if (check == 0) exit
         enddo
 
@@ -40,7 +41,7 @@ subroutine trimbd(used,nrow,ncol,set,il,ir,jb,jt)
             do j = 1,ncol
                 check = min(check,used(nrow - i + 1,j))
             enddo
-            ir = nrow - i + 1
+            unset_rect(2) = nrow - i + 1
             if (check == 0) exit
         enddo
 
@@ -49,7 +50,7 @@ subroutine trimbd(used,nrow,ncol,set,il,ir,jb,jt)
             do i = 1,nrow
                 check = min(check,used(i,j))
             enddo
-           jb = j
+           unset_rect(3) = j
            if (check == 0) exit
         enddo
      
@@ -58,7 +59,7 @@ subroutine trimbd(used,nrow,ncol,set,il,ir,jb,jt)
             do i = 1,nrow
                 check = min(check,used(i,ncol - j + 1))
             enddo
-            jt = ncol - j + 1
+            unset_rect(4) = ncol - j + 1
             if (check == 0) exit
         enddo
 
