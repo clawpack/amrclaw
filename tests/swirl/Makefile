@@ -24,14 +24,6 @@ FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
 FFLAGS ?=  -O2
 
-# These flags are for adding the newer openmp threading, note that in order to
-# use openmp with ifort you must replace -fopenmp with -openmp
-# Grid threading refers to threads over the each grid
-# Loop threading refers to threading in the sweep calling the Riemann solvers
-# FFLAGS += -D GRID_THREADING -fopenmp
-# FFLAGS += -D LOOP_THREADING -fopenmp
-# This line changes the maximum size of the patches, default is 60
-# FFLAGS += -D MAX1D=200
 
 # ---------------------------------
 # List of sources for this program:
@@ -40,14 +32,14 @@ MODULES = \
   $(AMRCLAW)/src/2d/amr_module.f90 \
 
 SOURCES = \
-  $(RIEMANN)/src/rpn2_vc_advection.f \
-  $(RIEMANN)/src/rpt2_vc_advection.f \
   setaux.f \
   psi.f \
   setprob.f \
   b4step2.f \
   qinit.f \
-  $(AMRCLAW)/src/2d/amr2ez.f \
+  $(RIEMANN)/src/rpn2_vc_advection.f \
+  $(RIEMANN)/src/rpt2_vc_advection.f \
+  $(AMRCLAW)/src/2d/amr2.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/src2.f \
@@ -138,6 +130,3 @@ SOURCES = \
 # Include Makefile containing standard definitions and make options:
 include $(CLAWMAKE)
 
-
-### DO NOT remove this line - make depends on it ###
-    
