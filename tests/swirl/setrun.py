@@ -108,7 +108,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify at what times the results should be written to fort.q files.
     # Note that the time integration stops after the final output time.
  
-    clawdata.output_style = 1
+    clawdata.output_style = 3
  
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
@@ -275,6 +275,14 @@ def setrun(claw_pkg='amrclaw'):
 
     # print info about each regridding up to this level:
     clawdata.verbosity_regrid = 0      
+
+
+    # == setgauges.data values ==
+    clawdata.gauges = []
+    # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
+    clawdata.gauges.append([1, 0.5, 0.6, 0, 1e9])
+    clawdata.gauges.append([2, 0.9, 0.9, 0, 1e9])
+
 
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.

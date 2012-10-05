@@ -188,4 +188,16 @@
 !     Restart file name:
       character*13 :: rstfile
 
+
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      ::::: Parameters and variables related to gauges
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+      integer, parameter :: maxgauges=1000
+      integer, parameter :: OUTGAUGEUNIT=89
+      integer :: mgauges
+      real(kind=8), dimension(maxgauges) :: xgauge, ygauge, &
+          t1gauge, t2gauge
+      integer, dimension(maxgauges) ::  mbestsrc, mbestorder, igauge
+
        end module amr_module

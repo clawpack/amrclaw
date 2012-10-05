@@ -66,7 +66,6 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-      include "gauges.i"
       include "regions.i"
 
       common /combc2/ mthbc(4)
@@ -223,10 +222,10 @@ c
          write(*,*)       'Error ***   naux > maxaux'
          stop
       endif
-c     do iaux = 1, naux
-c        read(inunit,*) auxtype(iaux)
-c     end do
-      read(inunit,*) (auxtype(iaux), iaux=1,naux)
+
+      if (naux .gt. 0) then
+         read(inunit,*) (auxtype(iaux), iaux=1,naux)
+         endif
 
       read(inunit,*) fwave
       read(inunit,*) (mthlim(mw), mw=1,mwaves)
@@ -434,9 +433,7 @@ c
       write(6,*) 'Running amrclaw ...  '
       write(6,*) ' '
 
-c     # default values of parameters that may be reset if user's setprob
-c     # routine calls settopo, setdtopo, setqinit, setregions or setgauges.
-      mgauges = 0
+c     # Need to add regions option...
       mregions = 0
 
 c     # call user routine to set up problem parameters:
@@ -575,7 +572,8 @@ c
           call valout(1,lfine,time,nvar,naux)
           endif
       close(parmunit)
-c
+
+
 c     --------------------------------------------------------
 c     # tick is the main routine which drives the computation:
 c     --------------------------------------------------------
