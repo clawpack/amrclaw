@@ -72,15 +72,11 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my,nrowst,nc
     dx_fine     = hxposs(level)
     dy_fine     = hyposs(level)
 
-    ! Coordinates of edges of patch 
+    ! Coordinates of edges of patch (xlp,xrp,ybp,ytp)
     fill_rect = [xlower + fill_indices(1) * dx_fine, &
                  xlower + (fill_indices(2) + 1) * dx_fine, &
                  ylower + fill_indices(3) * dy_fine, &
                  ylower + (fill_indices(4) + 1) * dy_fine]
-!     xlp     = xlower + fill_indices(1) * dx_fine
-!     xrp     = xlower + (fill_indices(2) + 1) * dx_fine
-!     ybp     = ylower + fill_indices(3) * dy_fine
-!     ytp     = ylower + (fill_indices(4) + 1) * dy_fine
 
     ! Fill in the patch as much as possible using values at this level
     call intfil(valbig,mx,my,t,flaguse,nrowst,ncolst,fill_indices(1), &
@@ -119,6 +115,7 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my,nrowst,nc
         dx_coarse  = hxposs(level - 1)
         dy_coarse  = hyposs(level - 1)
 
+        ! Adjust unset_indices to account for the patch
         ! isl, isr, jsb, jst
         unset_indices(1) = unset_indices(1) + fill_indices(1) - 1
         unset_indices(2) = unset_indices(2) + fill_indices(1) - 1
@@ -130,27 +127,21 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my,nrowst,nc
         refinement_ratio_y = intraty(level - 1)
 
         ! New patch rectangle (after we have partially filled it in) but in the
-        ! coarse patches 
+        ! coarse patches [iplo,iphi,jplo,jphi]
         coarse_indices = [(unset_indices(1) - refinement_ratio_x + nghost * refinement_ratio_x) &
                                                 / refinement_ratio_x - nghost, &
                           (unset_indices(2) + refinement_ratio_x) / refinement_ratio_x, &
                           (unset_indices(3) - refinement_ratio_y + nghost * refinement_ratio_y) &
                                                 / refinement_ratio_y - nghost, &
                           (unset_indices(4) + refinement_ratio_y) / refinement_ratio_y]
-!         iplo = (isl - refinement_ratio_x + nghost * refinement_ratio_x) &
-!                                                 / refinement_ratio_x - nghost
-!         jplo = (jsb - refinement_ratio_y + nghost * refinement_ratio_y) &
-!                                                 / refinement_ratio_y - nghost
-!         iphi = (isr + refinement_ratio_x) / refinement_ratio_x
-!         jphi = (jst + refinement_ratio_y) / refinement_ratio_y
         coarse_rect = [xlower + coarse_indices(1) * dx_coarse, &
                        xlower + (coarse_indices(2) + 1) * dx_coarse, &
                        ylower + coarse_indices(3) * dy_coarse, &
                        ylower + (coarse_indices(4) + 1) * dy_coarse]
 
-        ! Coarse grid number of spatial points
-        mx_coarse   =  coarse_indices(2) - coarse_indices(1) + 1 ! nrowc
-        my_coarse   =  coarse_indices(4) - coarse_indices(3) + 1 ! ncolc
+        ! Coarse grid number of spatial points (nrowc,ncolc)
+        mx_coarse   =  coarse_indices(2) - coarse_indices(1) + 1
+        my_coarse   =  coarse_indices(4) - coarse_indices(3) + 1
 
         ! Check to make sure we created big enough scratch arrays
         if (mx_coarse > fill_indices(2) - fill_indices(1) + 3 .or. &
@@ -168,7 +159,7 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my,nrowst,nc
         if (num_aux > 0) then
             call setaux(mx_coarse - 2*nghost,my_coarse - 2*nghost,nghost, &
                         mx_coarse - 2*nghost,my_coarse - 2*nghost, &
-                        coarse_rect(1) + nghost*dx_coarse,coarse_rect(3) + nghost*dy_coarse, &
+                        coarse_rect(1) + nghost * dx_coarse,coarse_rect(3) + nghost * dy_coarse, &
                         dx_coarse,dy_coarse,num_aux,auxcrse)
         endif
 
@@ -193,11 +184,11 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my,nrowst,nc
 
                     do n=1,num_eqn
 
-                        valp10 = valcrse(ivalc(n,i_coarse + 1,j_coarse))
-                        valm10 = valcrse(ivalc(n,i_coarse - 1,j_coarse))
-                        valc   = valcrse(ivalc(n,i_coarse    ,j_coarse))
-                        valp01 = valcrse(ivalc(n,i_coarse    ,j_coarse + 1))
-                        valm01 = valcrse(ivalc(n,i_coarse    ,j_coarse - 1))
+                        valp10 = valcrse(coarse_index(n,i_coarse + 1,j_coarse))
+                        valm10 = valcrse(coarse_index(n,i_coarse - 1,j_coarse))
+                        valc   = valcrse(coarse_index(n,i_coarse    ,j_coarse))
+                        valp01 = valcrse(coarse_index(n,i_coarse    ,j_coarse + 1))
+                        valm01 = valcrse(coarse_index(n,i_coarse    ,j_coarse - 1))
         
                         dupc = valp10 - valc
                         dumc = valc   - valm10
@@ -232,11 +223,11 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my,nrowst,nc
 
 contains
 
-    integer pure function ivalc(n,i,j)
+    integer pure function coarse_index(n,i,j)
         implicit none
         integer, intent(in) :: n, i, j
-        ivalc = n + num_eqn*(i-1)+num_eqn*mx_coarse*(j-1)
-    end function ivalc
+        coarse_index = n + num_eqn*(i-1)+num_eqn*mx_coarse*(j-1)
+    end function coarse_index
 
     logical pure function sticksout(rect)
         implicit none
