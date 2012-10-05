@@ -110,9 +110,9 @@ SOURCES = \
   $(AMRCLAW)/src/2d/errest.f \
   $(AMRCLAW)/src/2d/errf1.f \
   $(AMRCLAW)/src/2d/gfixup.f \
-  $(AMRCLAW)/src/2d/filval.f \
+  $(AMRCLAW)/src/2d/filval_new.f90 \
   $(AMRCLAW)/src/2d/filpatch_new.f90 \
-  $(AMRCLAW)/src/2d/prefilp.f \
+  $(AMRCLAW)/src/2d/prefilp_new.f90 \
   $(AMRCLAW)/src/2d/flglvl.f \
   $(AMRCLAW)/src/2d/fluxad.f \
   $(AMRCLAW)/src/2d/fluxsv.f \
