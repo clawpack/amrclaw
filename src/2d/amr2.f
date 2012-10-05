@@ -223,9 +223,10 @@ c
          write(*,*)       'Error ***   naux > maxaux'
          stop
       endif
-      do iaux = 1, naux
-         read(inunit,*) auxtype(iaux)
-      end do
+c     do iaux = 1, naux
+c        read(inunit,*) auxtype(iaux)
+c     end do
+      read(inunit,*) (auxtype(iaux), iaux=1,naux)
 
       read(inunit,*) fwave
       read(inunit,*) (mthlim(mw), mw=1,mwaves)
