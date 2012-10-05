@@ -329,10 +329,6 @@ def setrun(claw_pkg='amrclaw'):
 if __name__ == '__main__':
     # Set up run-time parameters and write all data files.
     import sys
-    if len(sys.argv) == 2:
-        rundata = setrun(sys.argv[1])
-    else:
-        rundata = setrun()
-
+    rundata = setrun(*sys.argv[1:])
     rundata.write()
     
