@@ -97,7 +97,7 @@ c                 # output in 1d format if ny=1:
          do j = nghost+1, mjtot-nghost
             do i = nghost+1, mitot-nghost
                do ivar=1,nvar
-                  if (dabs(alloc(iadd(ivar,i,j))) .lt. 1d-90) then
+                  if (abs(alloc(iadd(ivar,i,j))) < 1d-90) then
                      alloc(iadd(ivar,i,j)) = 0.d0
                   endif
                enddo
@@ -150,7 +150,7 @@ c                 # output in 1d format if ny=1:
          do j = nghost+1, mjtot-nghost
             do i = nghost+1, mitot-nghost
                do ivar=1,naux
-                  if (dabs(alloc(iaddaux(ivar,i,j))) .lt. 1d-90) then
+                  if (abs(alloc(iaddaux(ivar,i,j))) .lt. 1d-90) then
                      alloc(iaddaux(ivar,i,j)) = 0.d0
                   endif
                enddo

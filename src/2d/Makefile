@@ -7,7 +7,7 @@
 # Makefile for Clawpack code in this directory.
 # This version only sets the local files and frequently changed
 # options, and then includes the standard makefile pointed to by CLAWMAKE.
-CLAWMAKE = $(CLAW)/util/Makefile.common
+CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
 
 # See the above file for details and a list of make options, or type
 #   make .help
@@ -38,6 +38,7 @@ CLAW_SOURCES = \
   $(CLAW_LIB)/flag2refine.f  \
   $(CLAW_LIB)/allowflag.f  \
   $(CLAW_LIB)/spest.f  \
+  $(CLAW_LIB)/init_iflags.f  \
   $(CLAW_LIB)/igetsp.f \
   $(CLAW_LIB)/reclam.f \
   $(CLAW_LIB)/birect.f \

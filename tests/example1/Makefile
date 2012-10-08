@@ -52,6 +52,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/auxcoarsen.f \
   $(AMRCLAW)/src/2d/fixcapaq.f \
   $(AMRCLAW)/src/2d/estdt.f \
+  $(AMRCLAW)/src/2d/init_iflags.f \
   $(AMRCLAW)/src/2d/igetsp.f \
   $(AMRCLAW)/src/2d/reclam.f \
   $(AMRCLAW)/src/2d/birect.f \
