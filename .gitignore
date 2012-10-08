@@ -1,0 +1,12 @@
+*.pyc
+*.o
+*.mod
+.ouput
+.data
+.plots
+xclaw
+xamr
+xgeoclaw
+*.html
+_output/
+_plots/
