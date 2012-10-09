@@ -26,12 +26,10 @@ FFLAGS ?=  -O2
 
 # These flags are for adding the newer openmp threading, note that in order to
 # use openmp with ifort you must replace -fopenmp with -openmp
-# Grid threading refers to threads over the each grid
-# Loop threading refers to threading in the sweep calling the Riemann solvers
-# FFLAGS += -D GRID_THREADING -fopenmp
-# FFLAGS += -D LOOP_THREADING -fopenmp
-# This line changes the maximum size of the patches, default is 60
-# FFLAGS += -D MAX1D=200
+MAKELEVEL ?= 0
+ifeq ($(MAKELEVEL),0)
+	FFLAGS += -fopenmp
+endif
 
 # ---------------------------------
 # List of sources for this program:

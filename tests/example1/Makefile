@@ -22,7 +22,10 @@ PLOT_DIR = _plots                   # Directory for plots
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -g
+MAKELEVEL ?= 0
+ifeq ($(MAKELEVEL),0)
+	FFLAGS += -fopenmp
+endif
 
 # ---------------------------------
 # List of sources for this program:
