@@ -142,7 +142,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/preintcopy.f \
   $(AMRCLAW)/src/2d/icall.f \
   $(AMRCLAW)/src/2d/preicall.f \
-  $(AMRCLAW)/src/2d/step2_sweep.f90 \
+  $(AMRCLAW)/src/2d/step2.f90 \
   $(AMRCLAW)/src/2d/flux2.f \
   $(AMRCLAW)/src/2d/inlinelimiter.f \
   $(AMRCLAW)/src/2d/cstore.f \
