@@ -34,22 +34,9 @@ endif
 ifeq ($(findstring ifort,$(FC)),ifort)
 	OMP_FLAG = -openmp
 endif
-ifeq ($(THREADING_METHOD),grid)
-    PPFLAGS += $(OMP_FLAG) -D GRID_THREADING
-endif
-ifeq ($(THREADING_METHOD),loop)
-	PPFLAGS += $(OMP_FLAG) -D LOOP_THREADING
-endif 
-ifeq ($(THREADING_METHOD),all)
-	PPFLAGS += $(OMP_FLAG) -D GRID_THREADING -D LOOP_THREADING
-endif
-ifdef MAX1D
-	PPFLAGS += -D MAX1D=$(MAX1D)
-endif
 MAKELEVEL ?= 0
 ifeq ($(MAKELEVEL),0)
-    FFLAGS += $(PPFLAGS)
-    LFLAGS += $(FFLAGS)
+    FFLAGS += $(OMP_FLAG)
 endif
 
 # ---------------------------------
@@ -65,11 +52,13 @@ MODULES = \
 # $RIEMANN by removing the common block roe variable storage, instead these 
 # recalculate the Roe averages done to support thread safe Riemann solvers
 
+# If timing tests are desired, you can include the following source
+# $(AMRCLAW)/timing/tick.f 			<== Disables output
+# $(AMRCLAW)/timing/init_alloc.f90  <== Allocate large initial memory allocation
+# $(AMRCLAW)/timing/amr2ez.f 		<== Timing output, disables output
+# $(AMRCLAW)/timing/stepgrid.f      <== Timing output
+
 # Local source for thread tests
-# stepgrid.f <=== Timing output
-# init_alloc.f90 <=== Larger initial memory allocation
-# amr2ez.f <=== Timing output, disable output
-# tick.f <=== Disable output
 SOURCES = \
   ./rpn2_euler_5wave.f \
   ./rpt2_euler_5wave.f \
@@ -153,7 +142,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/preintcopy.f \
   $(AMRCLAW)/src/2d/icall.f \
   $(AMRCLAW)/src/2d/preicall.f \
-  $(AMRCLAW)/src/2d/step2.f \
+  $(AMRCLAW)/src/2d/step2_sweep.f90 \
   $(AMRCLAW)/src/2d/flux2.f \
   $(AMRCLAW)/src/2d/inlinelimiter.f \
   $(AMRCLAW)/src/2d/cstore.f \
