@@ -26,8 +26,9 @@ c
 c Points may also be flagged for refining based on a Richardson estimate
 c of the error, obtained by comparing solutions on the current grid and a
 c coarsened grid.  Points are flagged if the estimated error is larger than
-c the parameter tol in amr2ez.data, provided tol>0.  If tol<=0 then
-c the coarsening and Richardson estimation is not performed!  
+c the parameter tol in amr2ez.data, provided flag_richardson is .true.,
+c otherwise the coarsening and Richardson estimation is not performed!  
+c
 c This is a change from previous versions (4.2 and before) of amrclaw.
 c Note: in previous versions, the routine errf1 used a function
 c allowed(x,y,level) that has been replaced by the allowflag.  This new
@@ -76,7 +77,9 @@ c            # versions of amrclaw -- flag this point if dq > tolsp:
                 dq  = dmax1(dq,dqi, dqj)
     5           continue
 
-             if (dq .gt. tolsp) amrflags(i,j) = DOFLAG
+             if (dq .gt. tolsp) then
+                amrflags(i,j) = DOFLAG
+                endif
              endif
 
  10          continue

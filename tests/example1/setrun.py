@@ -7,8 +7,7 @@ that will be read in by the Fortran code.
 """ 
 
 import os
-import clawpack.clawutil.oldclawdata as data 
-
+import numpy as np
 
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
@@ -25,10 +24,13 @@ def setrun(claw_pkg='amrclaw'):
     
     """ 
     
+    from clawpack.clawutil import clawdata 
+    
+    
     assert claw_pkg.lower() == 'amrclaw',  "Expected claw_pkg = 'amrclaw'"
 
-    ndim = 2
-    rundata = data.ClawRunData(claw_pkg, ndim)
+    num_dim = 2
+    rundata = clawdata.ClawRunData(claw_pkg, num_dim)
 
     #------------------------------------------------------------------
     # Problem-specific parameters to be written to setprob.data:
@@ -55,42 +57,49 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
 
     # Number of space dimensions:
-    clawdata.ndim = ndim
+    clawdata.num_dim = num_dim
     
     # Lower and upper edge of computational domain:
-    clawdata.xlower = 0.0
-    clawdata.xupper = 1.0
+    clawdata.lower[0] = 0.          # xlower
+    clawdata.upper[0] = 1.          # xupper
+    clawdata.lower[1] = 0.          # ylower
+    clawdata.upper[1] = 1.          # yupper
     
-    clawdata.ylower = 0.0
-    clawdata.yupper = 1.0
-        
-
     # Number of grid cells:
-    clawdata.mx = 50
+    clawdata.num_cells[0] = 50      # mx
+    clawdata.num_cells[1] = 50      # my
     
-    clawdata.my = 50
-        
 
     # ---------------
     # Size of system:
     # ---------------
 
     # Number of equations in the system:
-    clawdata.meqn = 1
+    clawdata.num_eqn = 1
 
     # Number of auxiliary variables in the aux array (initialized in setaux)
-    clawdata.maux = 0
+    clawdata.num_aux = 0
     
     # Index of aux array corresponding to capacity function, if there is one:
-    clawdata.mcapa = 0
-    
+    clawdata.capa_index = 0
     
     
     # -------------
     # Initial time:
     # -------------
 
-    clawdata.t0 = 0.0
+    clawdata.t0 = 0.0                        
+    
+
+    # Restart from checkpoint file of a previous run?
+    # Note: If restarting, you must also change the Makefile to set:
+    #    RESTART = True
+    # If restarting, t0 above should be from original run, and the
+    # restart_file 'fort.chkNNNNN' specified below should be in 
+    # the OUTDIR indicated in Makefile.
+
+    clawdata.restart = False               # True to restart from prior results
+    clawdata.restart_file = 'fort.chk00006'  # File to use for restart data
     
     
     # -------------
@@ -99,27 +108,34 @@ def setrun(claw_pkg='amrclaw'):
 
     # Specify at what times the results should be written to fort.q files.
     # Note that the time integration stops after the final output time.
-    # The solution at initial time t0 is always written in addition.
-
-    clawdata.outstyle = 1
-
-    if clawdata.outstyle==1:
-        # Output nout frames at equally spaced times up to tfinal:
-        clawdata.nout = 10
+ 
+    clawdata.output_style = 1
+ 
+    if clawdata.output_style==1:
+        # Output ntimes frames at equally spaced times up to tfinal:
+        # Can specify num_output_times = 0 for no output
+        clawdata.num_output_times = 10
         clawdata.tfinal = 2.0
+        clawdata.output_t0 = True  # output at initial (or restart) time?
+        
+    elif clawdata.output_style == 2:
+        # Specify a list or numpy array of output times:
+        # Include t0 if you want output at the initial time.
+        clawdata.output_times =  [0., 0.1]
+ 
+    elif clawdata.output_style == 3:
+        # Output every step_interval timesteps over total_steps timesteps:
+        clawdata.output_step_interval = 2
+        clawdata.total_steps = 4
+        clawdata.output_t0 = True  # output at initial (or restart) time?
+        
 
-    elif clawdata.outstyle == 2:
-        # Specify a list of output times.  
-        clawdata.tout =  [0.5, 1.0]   # used if outstyle == 2
-        clawdata.nout = len(clawdata.tout)
+    clawdata.output_format == 'ascii'      # 'ascii' or 'netcdf' 
 
-    elif clawdata.outstyle == 3:
-        # Output every iout timesteps with a total of ntot time steps:
-        iout = 1
-        ntot = 5
-        clawdata.iout = [iout, ntot]
+    clawdata.output_q_components = 'all'   # could be list such as [True,True]
+    clawdata.output_aux_components = 'none'  # could be list
+    clawdata.output_aux_onlyonce = True    # output aux arrays only at t0
     
-
 
     # ---------------------------------------------------
     # Verbosity of messages to screen during integration:  
@@ -136,27 +152,25 @@ def setrun(claw_pkg='amrclaw'):
     # Time stepping:
     # --------------
 
-    # if dt_variable==1: variable time steps used based on cfl_desired,
-    # if dt_variable==0: fixed time steps dt = dt_initial will always be used.
-    clawdata.dt_variable = 1
+    # if dt_variable==True:  variable time steps used based on cfl_desired,
+    # if dt_variable==False: fixed time steps dt = dt_initial always used.
+    clawdata.dt_variable = True
     
     # Initial time step for variable dt.  
-    # If dt_variable==0 then dt=dt_initial for all steps:
+    # (If dt_variable==0 then dt=dt_initial for all steps)
     clawdata.dt_initial = 0.016
     
     # Max time step to be allowed if variable dt used:
     clawdata.dt_max = 1e+99
     
-    # Desired Courant number if variable dt used, and max to allow without 
-    # retaking step with a smaller dt:
+    # Desired Courant number if variable dt used 
     clawdata.cfl_desired = 0.9
+    # max Courant number to allow without retaking step with a smaller dt:
     clawdata.cfl_max = 1.0
     
     # Maximum number of time steps to allow between output times:
-    clawdata.max_steps = 500
+    clawdata.steps_max = 100000
 
-    
-    
 
     # ------------------
     # Method to be used:
@@ -165,21 +179,36 @@ def setrun(claw_pkg='amrclaw'):
     # Order of accuracy:  1 => Godunov,  2 => Lax-Wendroff plus limiters
     clawdata.order = 2
     
-    # Transverse order for 2d or 3d (not used in 1d):
-    clawdata.order_trans = 2
+    # Use dimensional splitting? (not yet available for AMR)
+    clawdata.dimensional_split = 'unsplit'
+    
+    # For unsplit method, transverse_waves can be 
+    #  0 or 'none'      ==> donor cell (only normal solver used)
+    #  1 or 'increment' ==> corner transport of waves
+    #  2 or 'all'       ==> corner transport of 2nd order corrections too
+    clawdata.transverse_waves = 'all'
+    
     
     # Number of waves in the Riemann solution:
-    clawdata.mwaves = 1
+    clawdata.num_waves = 1
     
     # List of limiters to use for each wave family:  
-    # Required:  len(mthlim) == mwaves
-    clawdata.mthlim = [3]
+    # Required:  len(limiter) == num_waves
+    # Some options:
+    #   0 or 'none'     ==> no limiter (Lax-Wendroff)
+    #   1 or 'minmod'   ==> minmod
+    #   2 or 'superbee' ==> superbee
+    #   3 or 'mc'       ==> MC limiter
+    #   4 or 'vanleer'  ==> van Leer
+    clawdata.limiter = ['mc']
+    
+    clawdata.fwave = False    # True ==> use f-wave version of algorithms
     
     # Source terms splitting:
-    #   src_split == 0  => no source term (src routine never called)
-    #   src_split == 1  => Godunov (1st order) splitting used, 
-    #   src_split == 2  => Strang (2nd order) splitting used,  not recommended.
-    clawdata.src_split = 0
+    #   src_split == 0 or 'none'    ==> no source term (src routine never called)
+    #   src_split == 1 or 'godunov' ==> Godunov (1st order) splitting used, 
+    #   src_split == 2 or 'strang'  ==> Strang (2nd order) splitting used,  not recommended.
+    clawdata.source_split = 'none'
     
     
     # --------------------
@@ -187,19 +216,20 @@ def setrun(claw_pkg='amrclaw'):
     # --------------------
 
     # Number of ghost cells (usually 2)
-    clawdata.mbc = 2
+    clawdata.num_ghost = 2
     
     # Choice of BCs at xlower and xupper:
-    #   0 => user specified (must modify bcN.f to use this option)
-    #   1 => extrapolation (non-reflecting outflow)
-    #   2 => periodic (must specify this at both boundaries)
-    #   3 => solid wall for systems where q(2) is normal velocity
+    #   0 or 'user'     => user specified (must modify bcNamr.f to use this option)
+    #   1 or 'extrap'   => extrapolation (non-reflecting outflow)
+    #   2 or 'periodic' => periodic (must specify this at both boundaries)
+    #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
     
-    clawdata.mthbc_xlower = 2
-    clawdata.mthbc_xupper = 2
-    
-    clawdata.mthbc_ylower = 2
-    clawdata.mthbc_yupper = 2
+    clawdata.bc_lower[0] = 'periodic'   # at xlower
+    clawdata.bc_upper[0] = 'periodic'   # at xupper
+
+    clawdata.bc_lower[1] = 'periodic'   # at ylower
+    clawdata.bc_upper[1] = 'periodic'   # at yupper
+                         
     
 
     # ---------------
@@ -208,31 +238,90 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    mxnest = 3
+    clawdata.amr_levels_max = 3
 
-    clawdata.mxnest = -mxnest   # negative ==> anisotropic refinement in x,y,t
+    # List of refinement ratios at each level (length at least amr_level_max-1)
+    clawdata.refinement_ratios_x = [2,2]
+    clawdata.refinement_ratios_y = [2,2]
+    clawdata.refinement_ratios_t = [2,2]
 
-    # List of refinement ratios at each level (length at least mxnest+1)
-    clawdata.inratx = [2,2,2]
-    clawdata.inraty = [2,2,2]
-    clawdata.inratt = [2,2,2]
+    # Instead of setting refinement ratios in t, these can be chosen
+    # automatically if this is implemented:
+    clawdata.variable_dt_refinement_ratios = True
+    # Currently only available in GeoClaw, where it's needed for special
+    # case of tsunami modeling.  Is it useful more generally??
 
 
     # Specify type of each aux variable in clawdata.auxtype.
-    # This must be a list of length maux, each element of which is one of:
+    # This must be a list of length num_aux, each element of which is one of:
     #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
+    clawdata.aux_type = []
 
-    clawdata.auxtype = []
+
+    # Flag for refinement based on Richardson error estimater:
+    clawdata.flag_richardson = False    # use Richardson?
+    clawdata.flag_richardson_tol = 0.1  # Richardson tolerance
+    
+    # Flag for refinement using routine flag2refine:
+    clawdata.flag2refine = True      # use this?
+    clawdata.flag2refine_tol = 0.05  # tolerance used in this routine
+    # User can modify flag2refine to change the criterion for flagging.
+    # Default: check maximum absolute difference of first component of q
+    # between a cell and each of its neighbors.
+
+    # steps to take on each level L between regriddings of level L+1:
+    clawdata.regrid_interval = 2       
+
+    # width of buffer zone around flagged points:
+    # (typically the same as regrid_interval so waves don't escape):
+    clawdata.regrid_buffer_width  = 2  
+
+    # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
+    # (closer to 1.0 => more small grids may be needed to cover flagged cells)
+    clawdata.clustering_cutoff = 0.7  
+
+    # print info about each regridding up to this level:
+    clawdata.verbosity_regrid = 3      
 
 
-    clawdata.tol = -1.0     # negative ==> don't use Richardson estimator
-    clawdata.tolsp = 0.05   # used in default flag2refine subroutine
-    clawdata.kcheck = 2     # how often to regrid (every kcheck steps)
-    clawdata.ibuff  = 3     # width of buffer zone around flagged points
+    # Specify when checkpoint files should be created that can be
+    # used to restart a computation.
 
-    # More AMR parameters can be set -- see the defaults in pyclaw/data.py
+    clawdata.checkpt_style = 1
 
+    if clawdata.checkpt_style == 0:
+        # Do not checkpoint at all
+        pass
+
+    elif clawdata.checkpt_style == 1:
+        # Checkpoint only at tfinal.
+        pass
+
+    elif clawdata.checkpt_style == 2:
+        # Specify a list of checkpoint times.  
+        clawdata.checkpt_times = [0.1,0.15]
+
+    elif clawdata.checkpt_style == 3:
+        # Checkpoint every checkpt_interval timesteps (on Level 1)
+        # and at the final time.
+        clawdata.checkpt_interval = 5
+
+
+    #  ----- For developers ----- 
+    # Toggle debugging print statements:
+    clawdata.dprint = True       # print domain flags
+    clawdata.eprint = True       # print err est flags
+    clawdata.edebug = True       # even more err est flags
+    clawdata.gprint = False      # grid bisection/clustering
+    clawdata.nprint = False      # proper nesting output
+    clawdata.pprint = False      # proj. of tagged points
+    clawdata.rprint = False      # print regridding summary
+    clawdata.sprint = False      # space/memory output
+    clawdata.tprint = True       # time step reporting each level
+    clawdata.uprint = False      # update/upbnd reporting
+    
     return rundata
+
     # end of function setrun
     # ----------------------
 
@@ -240,10 +329,6 @@ def setrun(claw_pkg='amrclaw'):
 if __name__ == '__main__':
     # Set up run-time parameters and write all data files.
     import sys
-    if len(sys.argv) == 2:
-	rundata = setrun(sys.argv[1])
-    else:
-	rundata = setrun()
-
+    rundata = setrun(*sys.argv[1:])
     rundata.write()
     

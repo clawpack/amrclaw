@@ -6,8 +6,6 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-      include "gauges.i"
-
       integer bsearch
       dimension q(nvar,mitot,mjtot), var(maxvar)
       dimension aux(naux,mitot,mjtot)
@@ -18,7 +16,8 @@ c
 c  # array is sorted according to indices in mbestorder array
 c  # so do binary search to find start. Could have many same source grids
 c
-c     write(34,*) 'in dumpgauge with mgauges, mptr = ',mgauges,mptr
+c     write(*,*) 'in dumpgauge with mgauges, mptr = ',mgauges,mptr
+
       if (mgauges.eq.0) then
          return
          endif
@@ -96,7 +95,6 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-      include "gauges.i"
 c
 c ##  set source grid for each loc fromcoarsest level to finest.
 c ##  that way finest src grid left and old ones overwritten
@@ -139,8 +137,8 @@ c ------------------------------------------------------------------------
 c
       integer function bsearch(mptr)
 
+      use amr_module
       implicit double precision (a-h,o-z)
-      include "gauges.i"
 
       bsearch = -1           ! signal if not found
 

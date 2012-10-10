@@ -13,7 +13,7 @@ def setplot(plotdata):
     
     """ 
     Specify what is to be plotted at each frame.
-    Input:  plotdata, an instance of visclaw.plotters.data.ClawPlotData.
+    Input:  plotdata, an instance of visclaw.data.ClawPlotData.
     Output: a modified version of plotdata.
     
     """ 
@@ -65,24 +65,24 @@ def setplot(plotdata):
     plotitem.patchedges_show = 0
 
 
-    # Figure for grids
-    plotfigure = plotdata.new_plotfigure(name='grids', figno=2)
+    # Figure for grid cells
+    plotfigure = plotdata.new_plotfigure(name='cells', figno=2)
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = [0,1]
     plotaxes.ylimits = [0,1]
-    plotaxes.title = 'grids'
+    plotaxes.title = 'Grid patches'
     plotaxes.scaled = True
 
     # Set up for item on these axes:
-    plotitem = plotaxes.new_plotitem(plot_type='2d_edges')
+    plotitem = plotaxes.new_plotitem(plot_type='2d_patch')
     plotitem.amr_patch_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
     plotitem.amr_celledges_show = [1,1,0]
     plotitem.amr_patchedges_show = [1]
     
     # Parameters used only when creating html and/or latex hardcopy
-    # e.g., via visclaw.plotters.frametools.printframes:
+    # e.g., via visclaw.frametools.printframes:
 
     plotdata.printfigs = True                # print figures
     plotdata.print_format = 'png'            # file format
