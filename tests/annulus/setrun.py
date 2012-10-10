@@ -36,8 +36,15 @@ def setrun(claw_pkg='amrclaw'):
     # Problem-specific parameters to be written to setprob.data:
     #------------------------------------------------------------------
     # Sample setup to write one line to setprob.data ...
-    #probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    #probdata.add_param('u',     0.5,  'ubar advection velocity')
+    probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
+    probdata.add_param('A1',     1.0,  'amplitude on first Gaussian')
+    probdata.add_param('beta1', 40.0,  'decay')
+    probdata.add_param('x1',    -0.5,  'x-location')
+    probdata.add_param('y1',     0.0,  'y-location')
+    probdata.add_param('A2',    -1.0,  'amplitude on second Gaussian')
+    probdata.add_param('beta2', 40.0,  'decay')
+    probdata.add_param('x2',     0.5,  'x-location')
+    probdata.add_param('y2',     0.0,  'y-location')
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
