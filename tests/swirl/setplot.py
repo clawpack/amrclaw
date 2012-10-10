@@ -14,7 +14,7 @@ def setplot(plotdata):
     
     """ 
     Specify what is to be plotted at each frame.
-    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.
+    Input:  plotdata, an instance of ClawPlotData.
     Output: a modified version of plotdata.
     
     """ 
@@ -64,10 +64,29 @@ def setplot(plotdata):
     plotitem.contour_max = 0.99
     plotitem.amr_contour_colors = ['b','k','r']
     plotitem.show = True       # show on plot?
-    
+
+    #-----------------------------------------
+    # Figures for gauges
+    #-----------------------------------------
+    plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
+                    type='each_gauge')
+    plotfigure.clf_each_gauge = True
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'q'
+
+    # Plot q as blue curve:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 0
+    plotitem.plotstyle = 'b-'
+
+    #-----------------------------------------
 
     # Parameters used only when creating html and/or latex hardcopy
-    # e.g., via pyclaw.plotters.frametools.printframes:
+    # e.g., via clawpack.visclaw.frametools.printframes:
 
     plotdata.printfigs = True                # print figures
     plotdata.print_format = 'png'            # file format

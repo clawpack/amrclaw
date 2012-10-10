@@ -28,8 +28,7 @@ c
       ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
       mitot  = nx + 2*nghost
       mjtot  = ny + 2*nghost
-c     negative tol means richardson not done      
-      if (tol .gt. 0) then    
+      if (flag_richardson) then    
             loctmp = node(store2, mptr)
             call setflags(iflags,isize,jsize,
      .           alloc(loctmp),nvar,mitot,mjtot,mptr)

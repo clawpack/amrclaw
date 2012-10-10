@@ -36,14 +36,15 @@ MODULES = \
 
 SOURCES = \
   setaux.f \
-  psi.f \
+  mapc2p.f \
+  stream.f \
   setprob.f \
-  b4step2.f \
   qinit.f \
   $(RIEMANN)/src/rpn2_vc_advection.f \
   $(RIEMANN)/src/rpt2_vc_advection.f \
   $(AMRCLAW)/src/2d/amr2.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
+  $(AMRCLAW)/src/2d/b4step2.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/src2.f \
   $(AMRCLAW)/src/2d/src1d.f \
