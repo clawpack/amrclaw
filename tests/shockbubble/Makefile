@@ -13,40 +13,26 @@ CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
 # ----------------------------------
 
 CLAW_PKG = amrclaw                  # Clawpack package to use
-CLAW_EXE = xamr                     # Executable to create
-CLAW_setrun_file = setrun.py        # File containing function to make data
-CLAW_OUTDIR = _output               # Directory for output
-CLAW_setplot_file = setplot.py      # File containing function to set plots
-CLAW_PLOTDIR = _plots               # Directory for plots
+EXE = xamr                          # Executable to create
+SETRUN_FILE = setrun.py             # File containing function to make data
+OUTDIR = _output                    # Directory for output
+SETPLOT_FILE = setplot.py           # File containing function to set plots
+PLOTDIR = _plots                    # Directory for plots
+
+OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
+RESTART ?= False                    # Should = clawdata.restart in setrun
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2
-
-# These are here to support the OpenMP parallel tests
-# Create flags for threading and preprocessing
-PPFLAGS = 
-THREADING_METHOD ?= grid
-ifeq ($(findstring gfortran,$(FC)),gfortran)
-	OMP_FLAG = -fopenmp
-endif
-ifeq ($(findstring ifort,$(FC)),ifort)
-	OMP_FLAG = -openmp
-endif
-MAKELEVEL ?= 0
-ifeq ($(MAKELEVEL),0)
-    FFLAGS += $(OMP_FLAG)
-endif
+FFLAGS ?=  -O2 -fopenmp
+#FFLAGS ?= -W -Wall -fbounds-check -Wunderflow -O -ffpe-trap=zero,overflow,underflow -g
 
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
-
-# Clawpack library to be used:
-    
 MODULES = \
-  $(AMRCLAW)/src/2d/amr_module.f90
+  $(AMRCLAW)/src/2d/amr_module.f90 \
 
 # Note that the Riemann solvers included here are modified from those in 
 # $RIEMANN by removing the common block roe variable storage, instead these 
@@ -60,26 +46,24 @@ MODULES = \
 
 # Local source for thread tests
 SOURCES = \
-  ./rpn2_euler_5wave.f \
-  ./rpt2_euler_5wave.f \
   ./fdisc.f \
   ./qinit.f \
   ./setaux.f \
   ./setprob.f \
-  ./src2.f \
-  ./src1d.f \
-  $(AMRCLAW)/src/2d/init_alloc.f90 \
-  $(AMRCLAW)/src/2d/amr2ez.f \
-  $(AMRCLAW)/src/2d/tick.f \
+  $(RIEMANN)/src/rpn2_euler_5wave.f90 \
+  $(RIEMANN)/src/rpt2_euler_5wave.f90 \
+  $(AMRCLAW)/src/2d/amr2.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
+  $(AMRCLAW)/src/2d/b4step2.f \
   $(AMRCLAW)/src/2d/qad.f \
+  $(AMRCLAW)/src/2d/src2.f \
+  $(AMRCLAW)/src/2d/src1d.f \
   $(AMRCLAW)/src/2d/advanc.f \
   $(AMRCLAW)/src/2d/bound.f \
   $(AMRCLAW)/src/2d/stepgrid.f \
   $(AMRCLAW)/src/2d/cellave.f \
   $(AMRCLAW)/src/2d/fss.f \
   $(AMRCLAW)/src/2d/zeroin.f \
-  $(AMRCLAW)/src/2d/b4step2.f \
   $(AMRCLAW)/src/2d/auxcoarsen.f \
   $(AMRCLAW)/src/2d/fixcapaq.f \
   $(AMRCLAW)/src/2d/estdt.f \
@@ -119,6 +103,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/setgrd.f \
   $(AMRCLAW)/src/2d/setuse.f \
   $(AMRCLAW)/src/2d/stst1.f \
+  $(AMRCLAW)/src/2d/tick.f \
   $(AMRCLAW)/src/2d/trimbd.f \
   $(AMRCLAW)/src/2d/update.f \
   $(AMRCLAW)/src/2d/nodget.f \
@@ -154,6 +139,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/dumpgauge.f \
   $(AMRCLAW)/src/2d/quick_sort1.f \
   $(AMRCLAW)/src/2d/opendatafile.f \
+  $(AMRCLAW)/src/2d/init_alloc.f90 \
   $(AMRCLAW)/src/2d/restrt_alloc.f90 \
   $(AMRCLAW)/src/2d/resize_alloc.f90 \
 # $(AMRCLAW)/src/2d/resize_alloc_static.f90 \
@@ -162,5 +148,3 @@ SOURCES = \
 # Include Makefile containing standard definitions and make options:
 include $(CLAWMAKE)
 
-### DO NOT remove this line - make depends on it ###
-    

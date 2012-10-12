@@ -9,7 +9,6 @@ c
       logical   ee, varRefTime
  
  
-      character*12 rstfile
       logical foundFile
       dimension intrtx(maxlv),intrty(maxlv),intrtt(maxlv)
 c
@@ -20,14 +19,17 @@ c some input variables might have changed, and also the
 c alloc array could have been written with a smaller size at checkpoint
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
-      rstfile  = 'restart.data'
-      inquire(file=rstfile,exist=foundFile)
+c     !! Now allow user-specified file name !!
+c     rstfile  = 'restart.data'
+
+      write(6,*) 'Attempting to restart computation using '
+      write(6,*) '  checkpoint file: ',trim(rstfile)
+      inquire(file=trim(rstfile),exist=foundFile)
       if (.not. foundFile) then
-        write(*,*)" Did you forget to link file 'restart.data'"
-        write(*,*)"  to a checkpoint file?"
+        write(*,*)" Did not find checkpoint file!"
         stop
       endif
-      open(rstunit,file=rstfile,status='old',form='unformatted')
+      open(rstunit,file=trim(rstfile),status='old',form='unformatted')
       rewind rstunit
 
       read(rstunit) lenmax,lendim,isize
@@ -45,6 +47,8 @@ c     # need to allocate for dynamic memory:
      3       numgrids,kcheck1,nsteps,time,
      3       matlabu
       read(rstunit) evol,rvol,rvoll,lentot,tmass0,cflmax
+
+      close(rstunit) 
 
       write(outunit,100) nsteps,time
       write(6,100) nsteps,time
@@ -126,7 +130,7 @@ c add second storage loc to grids at previous mxnest
      .                 ' to',mxnest
 10      continue
 
-        if (ee .and. tol .gt. 0) then
+        if (ee .and. flag_richardson) then
 c           ## if Richardson used, will delay error est. 1 step til have old soln. vals
              write(*,*)" first Richardson error estimation step"
              write(*,*)" will estimate mostly spatial error "

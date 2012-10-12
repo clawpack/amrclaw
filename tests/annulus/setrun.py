@@ -35,9 +35,16 @@ def setrun(claw_pkg='amrclaw'):
     #------------------------------------------------------------------
     # Problem-specific parameters to be written to setprob.data:
     #------------------------------------------------------------------
-
+    # Sample setup to write one line to setprob.data ...
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('tperiod',     4.0,  'period')
+    probdata.add_param('A1',     1.0,  'amplitude on first Gaussian')
+    probdata.add_param('beta1', 40.0,  'decay')
+    probdata.add_param('x1',    -0.5,  'x-location')
+    probdata.add_param('y1',     0.0,  'y-location')
+    probdata.add_param('A2',    -1.0,  'amplitude on second Gaussian')
+    probdata.add_param('beta2', 40.0,  'decay')
+    probdata.add_param('x2',     0.5,  'x-location')
+    probdata.add_param('y2',     0.0,  'y-location')
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -59,14 +66,14 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_dim = num_dim
     
     # Lower and upper edge of computational domain:
-    clawdata.lower[0] = 0.000000e+00          # xlower
+    clawdata.lower[0] = 2.000000e-01          # xlower
     clawdata.upper[0] = 1.000000e+00          # xupper
     clawdata.lower[1] = 0.000000e+00          # ylower
-    clawdata.upper[1] = 1.000000e+00          # yupper
+    clawdata.upper[1] = 6.28318530718e+00          # yupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 40      # mx
-    clawdata.num_cells[1] = 40      # my
+    clawdata.num_cells[0] = 20      # mx
+    clawdata.num_cells[1] = 120      # my
     
 
     # ---------------
@@ -80,7 +87,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_aux = 3
     
     # Index of aux array corresponding to capacity function, if there is one:
-    clawdata.capa_index = 0
+    clawdata.capa_index = 3
     
     
     # -------------
@@ -108,19 +115,19 @@ def setrun(claw_pkg='amrclaw'):
     # Specify at what times the results should be written to fort.q files.
     # Note that the time integration stops after the final output time.
  
-    clawdata.output_style = 1
+    clawdata.output_style = 3
  
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
         clawdata.num_output_times = 25
-        clawdata.tfinal = 2.5
+        clawdata.tfinal = 2.500000
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
         # Specify a list or numpy array of output times:
         # Include t0 if you want output at the initial time.
-        clawdata.output_times =  [0., 0.5, 1.0]
+        clawdata.output_times =  [0., 0.1]
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
@@ -153,11 +160,11 @@ def setrun(claw_pkg='amrclaw'):
 
     # if dt_variable==True:  variable time steps used based on cfl_desired,
     # if dt_variable==False: fixed time steps dt = dt_initial always used.
-    clawdata.dt_variable = True
+    clawdata.dt_variable = False
     
     # Initial time step for variable dt.  
     # (If dt_variable==0 then dt=dt_initial for all steps)
-    clawdata.dt_initial = 2.000000e-02
+    clawdata.dt_initial = 0.005
     
     # Max time step to be allowed if variable dt used:
     clawdata.dt_max = 1.000000e+99
@@ -235,7 +242,6 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     clawdata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    clawdata.gauges.append([1, 0.6, 0.6, 0, 1e9])
 
     
 
@@ -245,18 +251,18 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    clawdata.amr_levels_max = 3
+    clawdata.amr_levels_max = 2
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    clawdata.refinement_ratios_x = [2, 4, 2]
-    clawdata.refinement_ratios_y = [2, 4, 2]
-    clawdata.refinement_ratios_t = [2, 4, 2]
+    clawdata.refinement_ratios_x = [2, 2, 2]
+    clawdata.refinement_ratios_y = [2, 2, 2]
+    clawdata.refinement_ratios_t = [2, 2, 2]
 
 
     # Specify type of each aux variable in clawdata.auxtype.
     # This must be a list of length num_aux, each element of which is one of:
     #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
-    clawdata.aux_type = ['xleft', 'yleft', 'center']
+    clawdata.aux_type = ['xleft', 'yleft', 'capacity']
 
 
     # Flag for refinement based on Richardson error estimater:
@@ -300,7 +306,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
-    clawdata.checkpt_style = 1
+    clawdata.checkpt_style = 0
 
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all
