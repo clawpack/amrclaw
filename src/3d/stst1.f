@@ -30,9 +30,14 @@ c the last free node will have a null pointer
       node(nextfree, maxgr) = null
 c
       lfine = 1
-      do 20 i  = 1, memsize
-        alloc(i) = 0.0d0
- 20   continue
+! old style alloc creation
+!--      do 20 i  = 1, memsize
+!--        alloc(i) = 0.0d0
+!-- 20   continue
+! new style uses dynamic memory
+c
+c     Initialize dynamic memory. sets memsize used later in this proc
+      call init_alloc()
 c
 c  initialize linked list of alloc storage as well.
 c  first and last locations are dummy placeholders of zero words

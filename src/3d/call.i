@@ -1,11 +1,11 @@
 
-c  :::::::   number of spatial dimensions
+!  :::::::   number of spatial dimensions
        parameter(numdim = 3)
 
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c      :::::   data structure info.
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      :::::   data structure info.
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!
        integer    cornxlo,cornylo,cornxhi,cornyhi,timemult
        integer    cornzlo,        cornzhi
        integer    store1,store2,storeaux
@@ -16,7 +16,7 @@ c
        parameter (rsize =  7)
        parameter (nsize = 15)
 
-c  :::::::   integer part of node descriptor
+!  :::::::   integer part of node descriptor
        parameter (levelptr  = 1)
        parameter (tempptr   = 2)
        parameter (errptr    = 3)
@@ -33,7 +33,7 @@ c  :::::::   integer part of node descriptor
        parameter (ndkhi     = 14)
        parameter (storeaux  = 15)
 
-c :::::::  real part of node descriptor
+! :::::::  real part of node descriptor
        parameter (cornxlo  = 1)
        parameter (cornylo  = 2)
        parameter (cornzlo  = 3)
@@ -42,12 +42,12 @@ c :::::::  real part of node descriptor
        parameter (cornzhi  = 6)
        parameter (timemult = 7)
 
-c :::::::   for linking nodes
+! :::::::   for linking nodes
        parameter (nextfree = 2)
        parameter (null = 0)
        parameter (nil  = 0)
 
-c :::::::  for flagging points
+! :::::::  for flagging points
        parameter (goodpt = 0.0)
        parameter (badpt  = 2.0)
        parameter (badpro = 3.0)
@@ -60,7 +60,7 @@ c :::::::  for flagging points
        parameter  (maxgr = 852)
        parameter  (maxlv = 6)
        parameter  (maxcl = 852)
-c      parameter  (max1d = 120)
+!      parameter  (max1d = 120)
        parameter  (max1d = 180)
        parameter  (maxvar = 9)
        parameter  (maxaux = 10)
@@ -79,57 +79,63 @@ c      parameter  (max1d = 120)
 
        common /cmatlab/ matlabu,ngrids
 
-c
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c      ::::  for alloc array/memory
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      ::::  for alloc array/memory
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-       parameter  (memsize = 19999999)
-       common  /calloc/   alloc(memsize)
+!       Static memory implementation
+!        parameter  (memsize = 10000000)
+!        common  /calloc/   alloc(memsize)
 
-c
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c      :::::   for space management of alloc array
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c
+!      Dynamic memmory
+       double precision, pointer, dimension(:) :: alloc
+       common /calloc/ alloc, memsize
+       
+
+!
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      :::::   for space management of alloc array
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!
        parameter (lfdim=500)
 
        common /space/
      1               lfree(lfdim,2),lenf
 
-c
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c      :::::  domain description variables
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c
+!
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      :::::  domain description variables
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!
        logical xperdom, yperdom, zperdom
 
        common /cdom/ xupper,yupper,zupper,xlower,ylower,zlower,
      1                 xperdom, yperdom, zperdom
 
 
-c
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c      :::::  collect stats
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c
+!
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      :::::  collect stats
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!
        common   /stats/  rvoll(10),evol,rvol,lentot,lenmax,lendim
 
-c
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c      :::::  method parameters
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c
+!
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      :::::  method parameters
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!
        parameter (maxwave = 10)
        character * 10 auxtype(maxaux)
        common /cmeth/ method(7), mthlim(maxwave), mwaves, mcapa
        common /auxstuff/ auxtype
        common /ccfl/ cfl,cflmax, cflv1
-c
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c      ::::  for i/o assignments
-c      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c
+!
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      ::::  for i/o assignments
+!      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!
 
        integer chkunit,dbugunit,inunit,outunit,pltunit1,rstunit
        integer matunit
@@ -143,7 +149,7 @@ c
        parameter (matunit = 70)
 
 
-c      ::::  common for debugging flags (verbose output)
+!      ::::  common for debugging flags (verbose output)
 
        logical
      .         dprint,     !  domain flags output
