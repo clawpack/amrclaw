@@ -27,7 +27,7 @@ FC ?= gfortran   # default if not set as environment variable
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2
+FFLAGS ?= -O2 
 #FFLAGS = -W -Wall -fbounds-check -Wunderflow -O -ffpe-trap=zero,overflow,underflow -g
 
 # ---------------------------------
@@ -41,114 +41,6 @@ SOURCES = \
   setprob.f \
   $(RIEMANN)/src/rpn2_advection.f \
   $(RIEMANN)/src/rpt2_advection.f \
-<<<<<<< HEAD
-  $(CLAW_LIB)/amr2ez.f \
-  $(CLAW_LIB)/bc2amr.f \
-  $(CLAW_LIB)/setaux.f \
-  $(CLAW_LIB)/b4step2.f \
-  $(CLAW_LIB)/qad.f \
-  $(CLAW_LIB)/src2.f \
-  $(CLAW_LIB)/src1d.f \
-  $(CLAW_LIB)/advanc.f \
-  $(CLAW_LIB)/bound.f \
-  $(CLAW_LIB)/stepgrid.f \
-  $(CLAW_LIB)/auxcoarsen.f \
-  $(CLAW_LIB)/fixcapaq.f \
-  $(CLAW_LIB)/estdt.f \
-  $(CLAW_LIB)/igetsp.f \
-  $(CLAW_LIB)/reclam.f \
-  $(CLAW_LIB)/birect.f \
-  $(CLAW_LIB)/cleanup.f \
-  $(CLAW_LIB)/colate.f \
-  $(CLAW_LIB)/colate2.f \
-  $(CLAW_LIB)/bufnst.f \
-  $(CLAW_LIB)/bufnst2.f \
-  $(CLAW_LIB)/domgrid.f \
-  $(CLAW_LIB)/spest2.f \
-  $(CLAW_LIB)/flag2refine.f \
-  $(CLAW_LIB)/flag2refine2.f \
-  $(CLAW_LIB)/allowflag.f \
-  $(CLAW_LIB)/errest.f \
-  $(CLAW_LIB)/errf1.f \
-  $(CLAW_LIB)/gfixup.f \
-  $(CLAW_LIB)/filval.f \
-  $(CLAW_LIB)/filpatch.f \
-  $(CLAW_LIB)/prefilp.f \
-  $(CLAW_LIB)/flglvl.f \
-  $(CLAW_LIB)/fluxad.f \
-  $(CLAW_LIB)/fluxsv.f \
-  $(CLAW_LIB)/ginit.f \
-  $(CLAW_LIB)/grdfit.f \
-  $(CLAW_LIB)/intfil.f \
-  $(CLAW_LIB)/moment.f \
-  $(CLAW_LIB)/nestck.f \
-  $(CLAW_LIB)/nestck2.f \
-  $(CLAW_LIB)/flagcheck.f \
-  $(CLAW_LIB)/baseCheck.f \
-  $(CLAW_LIB)/prepf.f \
-  $(CLAW_LIB)/prepc.f \
-  $(CLAW_LIB)/projec.f \
-  $(CLAW_LIB)/projec2.f \
-  $(CLAW_LIB)/signs.f \
-  $(CLAW_LIB)/findcut.f \
-  $(CLAW_LIB)/smartbis.f \
-  $(CLAW_LIB)/putnod.f \
-  $(CLAW_LIB)/putsp.f \
-  $(CLAW_LIB)/regrid.f \
-  $(CLAW_LIB)/setgrd.f \
-  $(CLAW_LIB)/setuse.f \
-  $(CLAW_LIB)/stst1.f \
-  $(CLAW_LIB)/tick.f \
-  $(CLAW_LIB)/trimbd.f \
-  $(CLAW_LIB)/update.f \
-  $(CLAW_LIB)/nodget.f \
-  $(CLAW_LIB)/upbnd.f  \
-  $(CLAW_LIB)/basic.f \
-  $(CLAW_LIB)/outval.f \
-  $(CLAW_LIB)/copysol.f \
-  $(CLAW_LIB)/outvar.f \
-  $(CLAW_LIB)/outmsh.f \
-  $(CLAW_LIB)/outtre.f \
-  $(CLAW_LIB)/domain.f  \
-  $(CLAW_LIB)/setflags.f \
-  $(CLAW_LIB)/setdomflags.f \
-  $(CLAW_LIB)/setIndices.f \
-  $(CLAW_LIB)/coarseGridFlagSet.f \
-  $(CLAW_LIB)/addflags.f \
-  $(CLAW_LIB)/shiftset.f \
-  $(CLAW_LIB)/shiftset2.f \
-  $(CLAW_LIB)/conck.f \
-  $(CLAW_LIB)/domshrink.f \
-  $(CLAW_LIB)/griddomshrink.f \
-  $(CLAW_LIB)/domprep.f \
-  $(CLAW_LIB)/domup.f \
-  $(CLAW_LIB)/griddomup.f \
-  $(CLAW_LIB)/domcopy.f \
-  $(CLAW_LIB)/griddomcopy.f \
-  $(CLAW_LIB)/coarsen.f \
-  $(CLAW_LIB)/intcopy.f \
-  $(CLAW_LIB)/preintcopy.f \
-  $(CLAW_LIB)/icall.f \
-  $(CLAW_LIB)/preicall.f \
-  $(CLAW_LIB)/step2.f90 \
-  $(CLAW_LIB)/flux2.f \
-  $(CLAW_LIB)/inlinelimiter.f \
-  $(CLAW_LIB)/cstore.f \
-  $(CLAW_LIB)/saveqc.f \
-  $(CLAW_LIB)/valout.f \
-  $(CLAW_LIB)/check.f \
-  $(CLAW_LIB)/restrt.f \
-  $(CLAW_LIB)/setgauges.f \
-  $(CLAW_LIB)/setPhysBndryFlags.f \
-  $(CLAW_LIB)/dumpgauge.f \
-  $(CLAW_LIB)/quick_sort1.f \
-  $(CLAW_LIB)/drivesort.f \
-  $(CLAW_LIB)/opendatafile.f \
-  $(CLAW_LIB)/init_alloc.f90 \
-  $(CLAW_LIB)/restrt_alloc.f90 \
-  $(CLAW_LIB)/resize_alloc.f90 \
-# $(CLAW_LIB)/resize_alloc_static.f90 \
-=======
   $(AMRCLAW)/src/2d/amr2.f \
   $(AMRCLAW)/src/2d/setaux.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
@@ -168,9 +60,13 @@ SOURCES = \
   $(AMRCLAW)/src/2d/birect.f \
   $(AMRCLAW)/src/2d/cleanup.f \
   $(AMRCLAW)/src/2d/colate.f \
+  $(AMRCLAW)/src/2d/colate2.f \
   $(AMRCLAW)/src/2d/bufnst.f \
+  $(AMRCLAW)/src/2d/bufnst2.f \
   $(AMRCLAW)/src/2d/spest.f \
+  $(AMRCLAW)/src/2d/spest2.f \
   $(AMRCLAW)/src/2d/flag2refine.f \
+  $(AMRCLAW)/src/2d/flag2refine2.f \
   $(AMRCLAW)/src/2d/allowflag.f \
   $(AMRCLAW)/src/2d/errest.f \
   $(AMRCLAW)/src/2d/errf1.f \
@@ -186,9 +82,11 @@ SOURCES = \
   $(AMRCLAW)/src/2d/intfil.f \
   $(AMRCLAW)/src/2d/moment.f \
   $(AMRCLAW)/src/2d/nestck.f \
+  $(AMRCLAW)/src/2d/nestck2.f \
   $(AMRCLAW)/src/2d/prepf.f \
   $(AMRCLAW)/src/2d/prepc.f \
   $(AMRCLAW)/src/2d/projec.f \
+  $(AMRCLAW)/src/2d/projec2.f \
   $(AMRCLAW)/src/2d/signs.f \
   $(AMRCLAW)/src/2d/findcut.f \
   $(AMRCLAW)/src/2d/smartbis.f \
@@ -212,6 +110,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/domain.f  \
   $(AMRCLAW)/src/2d/setflags.f \
   $(AMRCLAW)/src/2d/shiftset.f \
+  $(AMRCLAW)/src/2d/shiftset2.f \
   $(AMRCLAW)/src/2d/conck.f \
   $(AMRCLAW)/src/2d/domshrink.f \
   $(AMRCLAW)/src/2d/domprep.f \
@@ -234,11 +133,23 @@ SOURCES = \
   $(AMRCLAW)/src/2d/dumpgauge.f \
   $(AMRCLAW)/src/2d/quick_sort1.f \
   $(AMRCLAW)/src/2d/opendatafile.f \
+  $(AMRCLAW)/src/2d/addflags.f \
+  $(AMRCLAW)/src/2d/domgrid.f \
+  $(AMRCLAW)/src/2d/drivesort.f \
+  $(AMRCLAW)/src/2d/flagcheck.f \
+  $(AMRCLAW)/src/2d/setdomflags.f \
+  $(AMRCLAW)/src/2d/setIndices.f \
+  $(AMRCLAW)/src/2d/setPhysBndry.f \
+  $(AMRCLAW)/src/2d/setPhysBndryFlags.f \
+  $(AMRCLAW)/src/2d/coarseGridFlagSet.f \
+  $(AMRCLAW)/src/2d/griddomcopy.f \
+  $(AMRCLAW)/src/2d/griddomshrink.f \
+  $(AMRCLAW)/src/2d/griddomup.f \
+  $(AMRCLAW)/src/2d/baseCheck.f \
   $(AMRCLAW)/src/2d/init_alloc.f90 \
   $(AMRCLAW)/src/2d/restrt_alloc.f90 \
   $(AMRCLAW)/src/2d/resize_alloc.f90 \
 # $(AMRCLAW)/src/2d/resize_alloc_static.f90 \
->>>>>>> rjl
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
