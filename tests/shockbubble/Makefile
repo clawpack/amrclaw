@@ -39,10 +39,8 @@ MODULES = \
 # recalculate the Roe averages done to support thread safe Riemann solvers
 
 # If timing tests are desired, you can include the following source
-# $(AMRCLAW)/timing/tick.f 			<== Disables output
 # $(AMRCLAW)/timing/init_alloc.f90  <== Allocate large initial memory allocation
-# $(AMRCLAW)/timing/amr2ez.f 		<== Timing output, disables output
-# $(AMRCLAW)/timing/stepgrid.f      <== Timing output
+# $(AMRCLAW)/timing/amr2.f 		<== Timing output, disables output
 
 # Local source for thread tests
 SOURCES = \
@@ -52,7 +50,7 @@ SOURCES = \
   ./setprob.f \
   ./rpn2_euler_5wave.f \
   ./rpt2_euler_5wave.f \
-  $(AMRCLAW)/src/2d/amr2.f \
+  $(AMRCLAW)/src/2d/timing/amr2.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/b4step2.f \
   $(AMRCLAW)/src/2d/qad.f \
@@ -139,7 +137,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/dumpgauge.f \
   $(AMRCLAW)/src/2d/quick_sort1.f \
   $(AMRCLAW)/src/2d/opendatafile.f \
-  $(AMRCLAW)/src/2d/init_alloc.f90 \
+  $(AMRCLAW)/src/2d/timing/init_alloc.f90 \
   $(AMRCLAW)/src/2d/restrt_alloc.f90 \
   $(AMRCLAW)/src/2d/resize_alloc.f90 \
 # $(AMRCLAW)/src/2d/resize_alloc_static.f90 \

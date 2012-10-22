@@ -328,11 +328,13 @@ c         # warn the user that calculation finished prematurely
 c
 c  # final output (unless we just did it above)
 c
-      if (((iout.lt.iinfinity) .and. (mod(ncycle,iout).ne.0))
+      if (nout > 0) then
+        if (((iout.lt.iinfinity) .and. (mod(ncycle,iout).ne.0))
      &            .or. ((nout.gt.0) .and. (tout(nout).eq.tfinal) .and.
      &                  (.not. dumpout))) then
-           call valout(1,lfine,time,nvar,naux)
-           if (printout) call outtre(mstart,.true.,nvar,naux)
+             call valout(1,lfine,time,nvar,naux)
+             if (printout) call outtre(mstart,.true.,nvar,naux)
+        endif
       endif
 
 c  # checkpoint everything for possible future restart
