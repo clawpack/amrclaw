@@ -77,8 +77,22 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
     
     ! ============================================================================
     ! Perform X-Sweeps
+    !$OMP PARALLEL DO PRIVATE(j,jcom,thread_num)                  &
+    !$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdx1d) &
+    !$OMP             PRIVATE(aux1,aux2,aux3)                     &
+    !$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
+    !$OMP             PRIVATE(cfl1d)                              &
+    !$OMP             SHARED(mx,my,maxm,maux,mcapa,mbc,meqn,dtdx) &
+    !$OMP             SHARED(cflgrid,fm,fp,gm,gp,qold,aux)        &
+    !$OMP             DEFAULT(none)                               
+
     do j = 0,my+1
         ! For 1D AMR - cannot be used in conjunction with sweep threading        
+
+!         if (my == 1 .and. j /= 1) then
+!             exit
+!         endif
+
 
         ! Copy old q into 1d slice
         q1d(:,1-mbc:mx+mbc) = qold(:,1-mbc:mx+mbc,j)
@@ -98,6 +112,7 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         endif
         
         ! Store value of j along the slice into common block
+        ! *** WARNING *** This may not working with threading
         jcom = j
 
         ! Compute modifications fadd and gadd to fluxes along this slice:
@@ -105,7 +120,16 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
                    faddm,faddp,gaddm,gaddp,cfl1d,wave,s, &
                    amdq,apdq,cqxx,bmadq,bpadq,rpn2,rpt2)       
                    
+
+        !$OMP CRITICAL (cfl_row_x)
+
         cflgrid = max(cflgrid,cfl1d)
+
+        !$OMP END CRITICAL (cfl_row_x)
+
+
+
+        !$OMP CRITICAL (flux_accumulation_x)
 
         ! Update fluxes
         fm(:,1:mx+1,j) = fm(:,1:mx+1,j) + faddm(:,1:mx+1)
@@ -114,11 +138,33 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         gp(:,1:mx+1,j) = gp(:,1:mx+1,j) + gaddp(:,1:mx+1,1)
         gm(:,1:mx+1,j+1) = gm(:,1:mx+1,j+1) + gaddm(:,1:mx+1,2)
         gp(:,1:mx+1,j+1) = gp(:,1:mx+1,j+1) + gaddp(:,1:mx+1,2)
+
+        !$OMP END CRITICAL (flux_accumulation_x)
+
     enddo
+
+    !$OMP END PARALLEL DO
+
+
+
+    ! For 1D AMR
+    if (my == 1) then
+        return
+    endif
+
 
     ! ============================================================================
     !  y-sweeps    
     !
+!$OMP PARALLEL DO PRIVATE(i,icom)                             &
+!$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdy1d) &
+!$OMP             PRIVATE(aux1,aux2,aux3)                     &
+!$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
+!$OMP             PRIVATE(cfl1d)                              &
+!$OMP             SHARED(mx,my,maxm,maux,mcapa,mbc,meqn,dtdy) &
+!$OMP             SHARED(cflgrid,fm,fp,gm,gp,qold,aux)        &
+!$OMP             DEFAULT(none)                               
+
     do i = 0,mx+1
         
         ! Copy data along a slice into 1d arrays:
@@ -139,6 +185,7 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         endif
         
         ! Store the value of i along this slice in the common block
+        ! *** WARNING *** This may not working with threading
         icom = i
         
         ! Compute modifications fadd and gadd to fluxes along this slice
@@ -146,7 +193,17 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
                    faddm,faddp,gaddm,gaddp,cfl1d,wave,s,amdq,apdq,cqxx, &
                    bmadq,bpadq,rpn2,rpt2)
 
-        cflgrid = max(cflgrid,cfl1d)
+
+       !$OMP CRITICAL (cfl_row_y)
+
+       cflgrid = max(cflgrid,cfl1d)
+
+       !$OMP END CRITICAL (cfl_row_y)
+
+
+
+
+!$OMP CRITICAL (flux_accumulation_y)
 
         ! Update fluxes
         gm(:,i,1:my+1) = gm(:,i,1:my+1) + faddm(:,1:my+1)
@@ -156,7 +213,11 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         fm(:,i+1,1:my+1) = fm(:,i+1,1:my+1) + gaddm(:,1:my+1,2)
         fp(:,i+1,1:my+1) = fp(:,i+1,1:my+1) + gaddp(:,1:my+1,2)
 
+!$OMP END CRITICAL (flux_accumulation_y)
+
     enddo
+
+!$OMP END PARALLEL DO
 
 
 end subroutine step2

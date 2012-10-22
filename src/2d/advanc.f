@@ -34,10 +34,10 @@ c
       delt = possk(level)
 c     this is linear alg.
       call prepgrids(listgrids,numgrids(level),level)
-#ifdef GRID_THREADING
+
 c     maxthreads initialized to 1 above in case no openmp
 !$    maxthreads = omp_get_max_threads()
-#endif
+
 
 c We want to do this regardless of the threading type
 !$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot
@@ -92,7 +92,7 @@ c grids smaller than max1d on a side.
         locgp_save(j) = igetsp(2*max1d*max1d*nvar)
 
       end do
-#ifdef GRID_THREADING
+
 !$OMP PARALLEL DO PRIVATE(j,locold, locnew, mptr,nx,ny,mitot,mjtot)  
 !$OMP&            PRIVATE(locfp, locfm, locgp,locgm,ntot,xlow,ylow)
 !$OMP&            PRIVATE(locaux,lenbc,locsvf,locsvq,locx1d,i)
@@ -103,7 +103,7 @@ c grids smaller than max1d on a side.
 !$OMP&            SHARED(locfp_save,locgp_save)
 !$OMP&            SCHEDULE (DYNAMIC,1)
 !$OMP&            DEFAULT(none)
-#endif
+
       do  j = 1, numgrids(level)
 c          mptr   = mget(j,level)
           mptr = listgrids(j)
@@ -128,9 +128,9 @@ c next way so dont call igetsp so much, less parallel bottleneck in critical sec
 !--           locgp = igetsp(2*mitot*mjtot*nvar)
 !--           locgm = locgp + mitot*mjtot*nvar
 c next way for dynamic memory enlargement safety
-#ifdef GRID_THREADING
+
 !$         mythread = omp_get_thread_num()
-#endif
+
            locfp = locfp_save(mythread+1)
            locfm = locfp + mitot*mjtot*nvar
            locgp = locgp_save(mythread+1)
@@ -151,14 +151,14 @@ cdir$ ivdep
 c
       xlow = rnode(cornxlo,mptr) - nghost*hx
       ylow = rnode(cornylo,mptr) - nghost*hy
-#ifdef GRID_THREADING
+
 !$OMP CRITICAL(rv)
-#endif
+
       rvol = rvol + nx * ny
       rvoll(level) = rvoll(level) + nx * ny
-#ifdef GRID_THREADING
+
 !$OMP END CRITICAL(rv)
-#endif
+
 
 
 
@@ -219,19 +219,19 @@ c         next way to reclaim was to minimize calls to
 c         reclam, due to critical section and openmp
 !--          call reclam(locfp, 2*mitot*mjtot*nvar)
 !--          call reclam(locgp, 2*mitot*mjtot*nvar)
-#ifdef GRID_THREADING
+
 !$OMP CRITICAL (newdt)
-#endif
+
           dtlevnew = dmin1(dtlevnew,dtnew)
-#ifdef GRID_THREADING
+
 !$OMP END CRITICAL (newdt)    
-#endif
+
 c
           rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
       end do
-#ifdef GRID_THREADING
+
 !$OMP END PARALLEL DO
-#endif
+
 c
 c     debug statement:
 c     write(*,*)" from advanc: level ",level," dtlevnew ",dtlevnew
