@@ -50,8 +50,8 @@ SOURCES = \
   ./qinit.f \
   ./setaux.f \
   ./setprob.f \
-  $(RIEMANN)/src/rpn2_euler_5wave.f90 \
-  $(RIEMANN)/src/rpt2_euler_5wave.f90 \
+  ./rpn2_euler_5wave.f \
+  ./rpt2_euler_5wave.f \
   $(AMRCLAW)/src/2d/amr2.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/b4step2.f \
