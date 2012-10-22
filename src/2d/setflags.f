@@ -21,8 +21,11 @@ c
       ibeg = node(ndilo,mptr) - nghost
       jbeg = node(ndjlo,mptr) - nghost
 
+      write(6,*) '+++ isize, jsize: ',isize,jsize
+
       do 10 j = nghost+1, mjtot-nghost
       do 10 i = nghost+1, mitot-nghost
+        write(6,*) '+++ i,j: ',i,j
         iflags(ibeg+i,jbeg+j) = iflags(ibeg+i,jbeg+j) + rctold(1,i,j)
  10   continue
 c

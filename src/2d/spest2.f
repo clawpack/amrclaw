@@ -52,7 +52,7 @@ c get user flags for refinement, which might be based on spatial gradient,
 c for example.  Use old values of soln at time t  before
 c integration to get accurate boundary gradients
 c
-      if (tolsp .gt. 0.) then
+      if (flag_gradient) then
 ! need at least as big as nghost to fit ghost cells. if ibuff is bigger make
 ! the flagged array bigger so can buffer in place
          mbuff = max(nghost,ibuff+1)  

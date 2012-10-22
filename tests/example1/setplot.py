@@ -41,8 +41,8 @@ def setplot(plotdata):
     plotitem.pcolor_cmax = 1.
     plotitem.add_colorbar = True
 
-    plotitem.amr_celledges_show = [1,1,1]
-    plotitem.amr_patchedges_show = [1,1,1]
+    plotitem.amr_celledges_show = [0]  # [1,1,1]
+    plotitem.amr_patchedges_show = [0]  # [1,1,1]
 
 
     # Figure for contour plot
@@ -82,6 +82,23 @@ def setplot(plotdata):
     plotitem.amr_patch_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
     plotitem.amr_celledges_show = [1,1,0]
     plotitem.amr_patchedges_show = [1]
+
+    # Figure for slice
+    plotfigure = plotdata.new_plotfigure(name='slice', figno=3)
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = [0,1]
+    plotaxes.title = 'slice'
+
+    # Set up for item on these axes:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_from_2d_data')
+    def slice(current_data):
+        from numpy import ma
+
+        
+    plotitem.map_2d_to_1d = slice
+    plotitem.plotstyle = 'bo'
     
     # Parameters used only when creating html and/or latex hardcopy
     # e.g., via visclaw.frametools.printframes:

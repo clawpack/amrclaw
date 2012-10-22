@@ -27,8 +27,8 @@ FC ?= gfortran   # default if not set as environment variable
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
 # Add any desired compiler flags such as -g here:
-FFLAGS ?= -O2 
-#FFLAGS = -W -Wall -fbounds-check -Wunderflow -O -ffpe-trap=zero,overflow,underflow -g
+#FFLAGS ?= -O2 
+FFLAGS = -W -Wall -fbounds-check -Wunderflow -O -ffpe-trap=zero,overflow,underflow -g
 
 # ---------------------------------
 # List of sources for this program:

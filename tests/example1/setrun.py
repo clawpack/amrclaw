@@ -274,7 +274,7 @@ def setrun(claw_pkg='amrclaw'):
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
-    clawdata.regrid_buffer_width  = 2  
+    clawdata.regrid_buffer_width  = 3  
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)

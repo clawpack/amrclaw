@@ -22,8 +22,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 c
 c copy flagged arrays in individual grids (now stored in loctmp)
-c into 1 big iflag array (iflags). NO MORE  only do if tol>0, since otherwise no
-c richardson error estimation took place
+c into 1 big iflag array (iflags). NO MORE  only do if flag_richardson is true.
 c
       numpro = 0 
       numbad = 0 
@@ -44,8 +43,8 @@ c
       mibuff = nx + 2*mbuff
       mjbuff = ny + 2*mbuff
       locamrflags = node(storeflags,mptr)
-c     negative tol means richardson not done      
-      if (tol .gt. 0) then    
+
+      if (flag_richardson) then    
             loctmp = node(store2, mptr)
 c            call setflags(iflags,isize,jsize,
 c     .           alloc(loctmp),nvar,mitot,mjtot,mptr)  
@@ -57,6 +56,15 @@ c     which was saved for possible errest reuse
       locbig = node(tempptr,mptr)
       call reclam(locbig,mitot*mjtot*nvar)
 c
+       if (eprint) then
+         write(outunit,*)" flagged points before projec2", 
+     .                   lcheck," grid ",mptr, " (no buff cells)"
+         do j = mjbuff-mbuff, mbuff+1, -1
+           write(outunit,100)(int(alloc(iadd(i,j))),
+     &                        i=mbuff+1,mibuff-mbuff)
+         enddo
+      endif
+
 c for this version project to each grid separately, no giant iflags
       if (lcheck+2 .le. mxnest) then
          numpro2 = 0

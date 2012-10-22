@@ -235,7 +235,7 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     clawdata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    clawdata.gauges.append([1, 0.6, 0.6, 0, 1e9])
+    #clawdata.gauges.append([1, 0.6, 0.6, 0, 1e9])
 
     
 
