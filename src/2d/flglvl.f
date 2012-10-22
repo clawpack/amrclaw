@@ -25,8 +25,9 @@ c
       numbad = 0
 
 c     always call spest to set up stuff (initialize iflags, fill locbig)
-      if (tolsp .gt. 0.) call spest2(nvar,naux,lcheck,t0)
-      if (tol .gt. 0.) call errest(nvar,naux,lcheck)
+      call spest(nvar,naux,lcheck,dom1flags,isize,jsize,t0)
+      if (flag_richardson) call errest(nvar,naux,lcheck)
+c     if (tol .gt. 0.) call errest(nvar,naux,lcheck)
 
       call bufnst2(nvar,naux,numbad,lcheck)
 

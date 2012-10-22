@@ -13,31 +13,20 @@ CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
 # ----------------------------------
 
 CLAW_PKG = amrclaw                  # Clawpack package to use
-CLAW_EXE = xamr                     # Executable to create
-CLAW_setrun_file = setrun.py        # File containing function to make data
-CLAW_OUTDIR = _output               # Directory for output
-CLAW_setplot_file = setplot.py      # File containing function to set plots
-CLAW_PLOTDIR = _plots               # Directory for plots
+EXE = xamr                          # Executable to create
+SETRUN_FILE = setrun.py             # File containing function to make data
+OUTDIR = _output                    # Directory for output
+SETPLOT_FILE = setplot.py           # File containing function to set plots
+PLOTDIR = _plots                    # Directory for plots
+
+OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
+RESTART ?= False                    # Should = clawdata.restart in setrun
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-
-# gfortran flags
-FFLAGS ?=  -g -fbounds-check -ffpe-trap=invalid,overflow,zero 
-#intel ifort flags
-#FFLAGS ?=  -g -C -CB -CU -fpe0 -ftrapuv
-#FFLAGS ?=  -O2  -openmp -C -CB -CU -fpe0 -ftrapuv
-
-
-# These flags are for adding the newer openmp threading, note that in order to
-# use openmp with ifort you must replace -fopenmp with -openmp
-# Grid threading refers to threads over the each grid
-# Loop threading refers to threading in the sweep calling the Riemann solvers
-# FFLAGS += -D GRID_THREADING -fopenmp
-# FFLAGS += -D LOOP_THREADING -fopenmp
-# This line changes the maximum size of the patches, default is 60
-# FFLAGS += -D MAX1D=200
+FFLAGS ?=  -O2
+#FFLAGS = -W -Wall -fbounds-check -Wunderflow -O -ffpe-trap=zero,overflow,underflow -g
 
 # ---------------------------------
 # List of sources for this program:
@@ -47,14 +36,14 @@ MODULES = \
   $(AMRCLAW)/src/2d/amr_module.f90 \
 
 SOURCES = \
-  $(RIEMANN)/src/rpn2_vc_advection.f \
-  $(RIEMANN)/src/rpt2_vc_advection.f \
   setaux.f \
   psi.f \
   setprob.f \
   b4step2.f \
   qinit.f \
-  $(AMRCLAW)/src/2d/amr2ez.f \
+  $(RIEMANN)/src/rpn2_vc_advection.f \
+  $(RIEMANN)/src/rpt2_vc_advection.f \
+  $(AMRCLAW)/src/2d/amr2.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/src2.f \
@@ -146,6 +135,3 @@ SOURCES = \
 # Include Makefile containing standard definitions and make options:
 include $(CLAWMAKE)
 
-
-### DO NOT remove this line - make depends on it ###
-    

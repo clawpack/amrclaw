@@ -7,8 +7,6 @@ c=========================================================================
       character*25 fname
       logical foundFile
 
-      include "gauges.i"
-
 
       fname  = 'setgauges.data'
       inquire(file=fname,exist=foundFile)
@@ -21,10 +19,11 @@ c=========================================================================
       call opendatafile(iunit,fname)
 
       read(iunit,*) mgauges
+      write(6,*) '+++ in setgauges: mgauges = ',mgauges
       if (mgauges.gt.maxgauges) then
             write(*,*) 'ERROR in setgauges'
             write(*,*) 'mgauges = ',mgauges,'   maxgauges = ',maxgauges
-            write(*,*) 'increase maxgauges in gauges.i'
+            write(*,*) 'increase maxgauges in amr_module.f90'
             stop
             endif
 

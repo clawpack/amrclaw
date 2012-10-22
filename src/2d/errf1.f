@@ -16,7 +16,7 @@ c
 c
 c ::::::::::::::::::::::::::::: ERRF1 ::::::::::::::::::::::::::::::::
 c
-c  Richardson error estimator:  Used when tol>0 in user input.
+c  Richardson error estimator:  Used when flag_richardson is .true.
 c  Compare error estimates in rctfine, rctcrse, 
 c  A point is flagged if the error estimate is greater than tol
 c  and if allowflag(x,y,t,level)=.true. at this point.
