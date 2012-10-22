@@ -45,7 +45,7 @@ c
 c      mptr = lstart(lget)
 c 20   if (mptr .eq. 0) go to 85
 
-#ifdef GRID_THREADING
+
 !$OMP PARALLEL DO PRIVATE(ng,mptr,loc,loccaux,nx,ny,mitot,mjtot,
 !$OMP&                    ilo,jlo,ihi,jhi,mkid,iclo,jclo,
 !$OMP&                    ichi,jchi,mi,mj,locf,locfaux,
@@ -55,7 +55,7 @@ c 20   if (mptr .eq. 0) go to 85
 !$OMP&                   intratx,intraty,nghost,uprint,mcapa,node,
 !$OMP&                   lstart,level),
 !$OMP&         DEFAULT(none)
-#endif
+
        do ng = 1, numgrids(lget)
 c         mptr = mget(ng,level)
          mptr    = listgrids(ng)
@@ -163,9 +163,9 @@ c
 c
  80         continue
             end do
-#ifdef GRID_THREADING
+
 !$OMP END PARALLEL DO
-#endif
+
 c
 c 80         mptr = node(levelptr, mptr)
 c            go to 20

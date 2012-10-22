@@ -77,7 +77,23 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
     
     ! ============================================================================
     ! Perform X-Sweeps
+#ifdef LOOP_THREADING
+    !$OMP PARALLEL DO PRIVATE(j,jcom,thread_num)                  &
+    !$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdx1d) &
+    !$OMP             PRIVATE(aux1,aux2,aux3)                     &
+    !$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
+    !$OMP             PRIVATE(cfl1d)                              &
+    !$OMP             SHARED(mx,my,maxm,maux,mcapa,mbc,meqn,dtdx) &
+    !$OMP             SHARED(cflgrid,fm,fp,gm,gp,qold,aux)        &
+    !$OMP             DEFAULT(none)                               
+#endif
     do j = 0,my+1
+        ! For 1D AMR - cannot be used in conjunction with sweep threading        
+#ifndef LOOP_THREADING
+        if (my == 1 .and. j /= 1) then
+            exit
+        endif
+#endif
 
         ! Copy old q into 1d slice
         q1d(:,1-mbc:mx+mbc) = qold(:,1-mbc:mx+mbc,j)
@@ -105,8 +121,17 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
                    faddm,faddp,gaddm,gaddp,cfl1d,wave,s, &
                    amdq,apdq,cqxx,bmadq,bpadq,rpn2,rpt2)       
                    
+#ifdef LOOP_THREADING
+        !$OMP CRITICAL (cfl_row_x)
+#endif
         cflgrid = max(cflgrid,cfl1d)
+#ifdef LOOP_THREADING
+        !$OMP END CRITICAL (cfl_row_x)
+#endif
 
+#ifdef LOOP_THREADING
+        !$OMP CRITICAL (flux_accumulation_x)
+#endif
         ! Update fluxes
         fm(:,1:mx+1,j) = fm(:,1:mx+1,j) + faddm(:,1:mx+1)
         fp(:,1:mx+1,j) = fp(:,1:mx+1,j) + faddp(:,1:mx+1)
@@ -114,12 +139,34 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         gp(:,1:mx+1,j) = gp(:,1:mx+1,j) + gaddp(:,1:mx+1,1)
         gm(:,1:mx+1,j+1) = gm(:,1:mx+1,j+1) + gaddm(:,1:mx+1,2)
         gp(:,1:mx+1,j+1) = gp(:,1:mx+1,j+1) + gaddp(:,1:mx+1,2)
-
+#ifdef LOOP_THREADING
+        !$OMP END CRITICAL (flux_accumulation_x)
+#endif
     enddo
+#ifdef LOOP_THREADING
+    !$OMP END PARALLEL DO
+#endif
+
+#ifndef LOOP_THREADING
+    ! For 1D AMR
+    if (my == 1) then
+        return
+    endif
+#endif
 
     ! ============================================================================
     !  y-sweeps    
     !
+#ifdef LOOP_THREADING
+!$OMP PARALLEL DO PRIVATE(i,icom)                             &
+!$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdy1d) &
+!$OMP             PRIVATE(aux1,aux2,aux3)                     &
+!$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
+!$OMP             PRIVATE(cfl1d)                              &
+!$OMP             SHARED(mx,my,maxm,maux,mcapa,mbc,meqn,dtdy) &
+!$OMP             SHARED(cflgrid,fm,fp,gm,gp,qold,aux)        &
+!$OMP             DEFAULT(none)                               
+#endif
     do i = 0,mx+1
         
         ! Copy data along a slice into 1d arrays:
@@ -148,8 +195,18 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
                    faddm,faddp,gaddm,gaddp,cfl1d,wave,s,amdq,apdq,cqxx, &
                    bmadq,bpadq,rpn2,rpt2)
 
-        cflgrid = max(cflgrid,cfl1d)
+#ifdef LOOP_THREADING
+       !$OMP CRITICAL (cfl_row_y)
+#endif
+       cflgrid = max(cflgrid,cfl1d)
+#ifdef LOOP_THREADING
+       !$OMP END CRITICAL (cfl_row_y)
+#endif
 
+
+#ifdef LOOP_THREADING
+!$OMP CRITICAL (flux_accumulation_y)
+#endif
         ! Update fluxes
         gm(:,i,1:my+1) = gm(:,i,1:my+1) + faddm(:,1:my+1)
         gp(:,i,1:my+1) = gp(:,i,1:my+1) + faddp(:,1:my+1)
@@ -157,8 +214,12 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         fp(:,i,1:my+1) = fp(:,i,1:my+1) + gaddp(:,1:my+1,1)
         fm(:,i+1,1:my+1) = fm(:,i+1,1:my+1) + gaddm(:,1:my+1,2)
         fp(:,i+1,1:my+1) = fp(:,i+1,1:my+1) + gaddp(:,1:my+1,2)
-
+#ifdef LOOP_THREADING
+!$OMP END CRITICAL (flux_accumulation_y)
+#endif
     enddo
-
+#ifdef LOOP_THREADING
+!$OMP END PARALLEL DO
+#endif
 
 end subroutine step2

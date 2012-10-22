@@ -67,14 +67,14 @@ c       ## bilinear interpolation
         end do
 
 c       # output values at gauge, along with gauge no, level, time:
-#ifdef GRID_THREADING
+
 !$OMP CRITICAL (gaugeio)
-#endif
+
         write(OUTGAUGEUNIT,100)igauge(i),level,
      .                         tgrid,(var(j),j=1,nvar)
-#ifdef GRID_THREADING
+
 !$OMP END CRITICAL (gaugeio)
-#endif
+
 100     format(2i5,15e15.7)
 
  10     continue
