@@ -1,7 +1,7 @@
 c
 c ---------------------------------------------------------
 c
-      subroutine grdfit (lbase,lcheck,nvar,naux,cut,time)
+      subroutine grdfit (lbase,lcheck,nvar,naux,cut,time,t0)
 c
       implicit double precision (a-h,o-z)
 
@@ -11,6 +11,8 @@ c
       integer    numptc(maxcl), prvptr
       logical    fit, nestck, cout
       data       cout/.false./
+      integer*1  i1flags(iregsz(lcheck)+2,jregsz(lcheck)+2,
+     .                                    kregsz(lcheck)+2)
 c
 c ::::::::::::::::::::: GRDFIT :::::::::::::::::::::::::::::::::;
 c  grdfit called by setgrd and regrid to actually fit the new grids
@@ -21,14 +23,23 @@ c
       isize = iregsz(lcheck)
       jsize = jregsz(lcheck)
       ksize = kregsz(lcheck)
-      ldom2 = igetsp((isize+2)*(jsize+2)*(ksize+2))
+c      ldom2 = igetsp((isize+2)*(jsize+2)*(ksize+2))
+
+c ### initialize region start and end indices for new level grids
+      iregst(lcheck+1) = iinfinity
+      jregst(lcheck+1) = iinfinity
+      kregst(lcheck+1) = iinfinity
+      iregend(lcheck+1) = -1
+      jregend(lcheck+1) = -1
+      kregend(lcheck+1) = -1
 
 c     ## flag all grids at given level based on error ests.
 c     ## npts is number of points actually colated - some
 c     ## flagged points turned off due to proper nesting requirement.
 c     ## (storage based on nptmax calculation however).
 
-      call flglvl (nvar, naux, lcheck, nptmax, index, lbase, ldom2,npts)
+      call flglvl (nvar, naux, lcheck, nptmax, index, lbase, 
+     .             i1flags,npts,t0,isize,jsize,ksize)
       if (npts .eq. 0) go to 99
 c
       levnew    = lcheck + 1
@@ -51,7 +62,7 @@ c
        call reclam(lociscr,idim+jdim+kdim)
 
        if (gprint) then
-	  write(outunit,103) nclust
+          write(outunit,103) nclust
           write(outunit,104) (icl, numptc(icl),icl=1,nclust)
  103      format(' ',i4,' clusters after bisect')
  104      format('         cluster ',i5,' has points: ',i6)
@@ -91,38 +102,42 @@ c     ##  and returns 2 clusters where there used to be 1.
 c
 c 2/28/02 : Add naux to argument list; needed by call to outtre in nestck.
       fit = nestck(mnew,lbase,alloc(index+numdim*ibase),numptc(icl),
-     1             numptc,
-     2             icl,nclust,alloc(ldom2),isize,jsize,ksize,nvar,naux)
+     1            numptc,icl,nclust,i1flags,isize,jsize,ksize,nvar,naux)
       if (.not. fit) go to 75
 c
 c     ##  grid accepted. put in list.
       if (newstl(levnew) .eq. null) then
-	  newstl(levnew)  = mnew
+         newstl(levnew)  = mnew
       else
-	  node(levelptr,prvptr) = mnew
+         node(levelptr,prvptr) = mnew
       endif
       prvptr = mnew
+c     # keep track of min and max location of grids at this level
+      iregst(levnew)  = MIN(iregst(levnew), node(ndilo,mnew))
+      jregst(levnew)  = MIN(jregst(levnew), node(ndjlo,mnew))
+      kregst(levnew)  = MIN(kregst(levnew), node(ndklo,mnew))
+      iregend(levnew) = MAX(iregend(levnew),node(ndihi,mnew))
+      jregend(levnew) = MAX(jregend(levnew),node(ndjhi,mnew))
+      kregend(levnew) = MAX(kregend(levnew),node(ndkhi,mnew))
 
 c     ##  on to next cluster
       ibase  = ibase + numptc(icl)
       icl = icl + 1
       if (icl .le. nclust) go to 70
 
-      if (cout) then
-c        2/28/02 : 2d version makes this call to drawrg; What should the
-c        3d version do
-c        call drawrg(time,lcheck,newstl(levnew),
-c        1               nclust,numptc,npts,alloc(index))
-      endif
-
-
 c
 c    ##  clean up. for all grids check final size.
 
       call birect(newstl(levnew))
-      call reclam(index, numdim*nptmax)
+ 99   continue
+
+c    ## may have npts 0 but array was allocated due to initially flagged points
+c    ## that were not allowed for proper nesting or other reasons. in this case
+c    ## the array was still allocated, so need to test further to see if colating
+c    ## array space needs to be reclaimed
+      if (nptmax .gt. 0)  call reclam(index, numdim*nptmax)
 c
- 99   call reclam(ldom2, (isize+2)*(jsize+2)*(ksize+2))
+c 99   call reclam(ldom2, (isize+2)*(jsize+2)*(ksize+2))
 
       return
       end

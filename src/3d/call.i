@@ -74,6 +74,8 @@
      3         icheck(maxlv),lstart(maxlv),newstl(maxlv),listsp(maxlv),
      4         intratx(maxlv), intraty(maxlv),intratz(maxlv),
      5         kratio(maxlv),iregsz(maxlv),jregsz(maxlv),kregsz(maxlv),
+     .         iregst(maxlv),jregst(maxlv),kregst(maxlv),
+     .         iregend(maxlv),jregend(maxlv),kregend(maxlv),
      6         tol, tolsp, ibuff,  mstart, ndfree, lfine,
      7         iorder,mxnest,kcheck,nghost,printout,matlabout,ncarout
 

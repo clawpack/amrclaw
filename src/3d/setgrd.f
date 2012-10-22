@@ -22,7 +22,7 @@ c
       if (mxnest .eq. 1) go to 99
 c
       levnew =  2
-      time   = 0.0d0
+      time   = t0
 c
  10   if (levnew .gt. mxnest) go to 30
           levold = levnew - 1
@@ -42,13 +42,13 @@ c
          end do
          dtinit = min(dtinit, dtlev*kfac)
  
-c        don't count it in real integration stats
+c        dont count it in real integration stats
          do 20 level=1,mxnest
  20         rvoll(level) = 0.d0
 c
 c  flag, cluster, and make new grids
 c
-         call grdfit(lbase,levold,nvar,naux,cut,time)
+         call grdfit(lbase,levold,nvar,naux,cut,time,t0)
          if (newstl(levnew) .ne. 0) lfnew = levnew
 c
 c  init new level. after each iteration. fix the data structure

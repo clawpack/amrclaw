@@ -194,6 +194,7 @@ c        # array tout is set below after reading t0
 
 
       read(inunit,*) t0
+      tstart = t0
       read(inunit,*) xlower
       read(inunit,*) xupper
       read(inunit,*) ylower

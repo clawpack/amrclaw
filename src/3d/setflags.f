@@ -9,7 +9,7 @@ c
       include  "call.i"
 
       dimension rctold(mitot,mjtot,mktot,idim3)
-      dimension iflags(0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1 iflags(0:isize+1,0:jsize+1,0:ksize+1)
 
 c :::::::::::::::::::::: SETFLAGS ::::::::::::::::::::::::::::::::::
 c transfer flagged arrays into 1 large array of entire domain

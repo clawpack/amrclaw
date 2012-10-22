@@ -7,8 +7,8 @@ c
 
       include  "call.i"
 
-      dimension  iflags2(0:idim+1,0:jdim+1,0:kdim+1)
-      dimension  iflags (0:idim+1,0:jdim+1,0:kdim+1)
+      integer*1  iflags2(0:idim+1,0:jdim+1,0:kdim+1)
+      integer*1  iflags (0:idim+1,0:jdim+1,0:kdim+1)
 
 c
 c :::::::::::::::::::::::::  DOMSHRINK ::::::::::::::::::::::::::::
@@ -20,14 +20,14 @@ c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
       if (dprint) then
-	write(outunit,*)" from domshrink: on entry, iflags2"
-        do 10 kk = 1, kdim
-        k = kdim + 1 - kk
-	do 10 jj = 1, jdim
-	j = jdim + 1 - jj
-	write(outunit,100)(iflags2(i,j,k),i=1,idim)
- 100    format(80i1)
- 10     continue
+         write(outunit,*)" from domshrink: on entry, iflags2"
+         do 10 kk = 1, kdim
+            k = kdim + 1 - kk
+            do 10 jj = 1, jdim
+               j = jdim + 1 - jj
+               write(outunit,100)(iflags2(i,j,k),i=1,idim)
+ 100        format(80i1)
+ 10      continue
       endif
 
       do 40 k = 1, kdim
@@ -79,13 +79,13 @@ c
        endif
 
       if (dprint) then
-	write(outunit,*)" from domshrink: on exit, iflags"
-        do 80 kk = 1, kdim
-        k = kdim + 1 - kk
-	do 80 jj = 1, jdim
-	j = jdim + 1 - jj
-	write(outunit,100)(iflags(i,j,k),i=1,idim)
- 80     continue
+         write(outunit,*)" from domshrink: on exit, iflags"
+         do 80 kk = 1, kdim
+            k = kdim + 1 - kk
+            do 80 jj = 1, jdim
+               j = jdim + 1 - jj
+               write(outunit,100)(iflags(i,j,k),i=1,idim)
+ 80      continue
       endif
 
       return
