@@ -61,7 +61,7 @@
        parameter  (maxlv = 6)
        parameter  (maxcl = 852)
 !      parameter  (max1d = 120)
-       parameter  (max1d = 180)
+       parameter  (max1d = 60)
        parameter  (maxvar = 9)
        parameter  (maxaux = 10)
        parameter  (maxout = 50)

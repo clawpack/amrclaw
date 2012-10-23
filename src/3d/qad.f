@@ -35,7 +35,7 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 c      # local storage
 c      # note that dimension here are bigger than dimensions used
-c      # in rp2, but shouldn't matter since wave is not used in qad
+c      # in rp2, but shouldnt matter since wave is not used in qad
 c      # and for other arrays it is only the last parameter that is wrong
 c      #  ok as long as meqn, mwaves < maxvar
 
@@ -46,7 +46,7 @@ c      parameter (max1dp1 = (max1d+1)**2+1)
        dimension amdq(max1dp1,maxvar),  apdq(max1dp1,maxvar)
        dimension auxl(max1dp1,maxaux),  auxr(max1dp1,maxaux)
 
-       data qprint/.false./
+       data qprint/.true./
 c
 c      aux is auxiliary array with user parameters needed in Riemann solvers
 c          on fine grid corresponding to valbig
@@ -56,7 +56,6 @@ c      maux is the number of aux variables, which may be zero.
 c
 c      nr, nc, nf are the number of rows, columns, files
 c
-
 
        if (qprint) write(dbugunit,*)" working on grid ",mptr
        tgrid = rnode(timemult, mptr)

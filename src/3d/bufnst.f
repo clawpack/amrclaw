@@ -59,7 +59,7 @@ c
 c  project finer grids to insure level nesting
       numpro = 0
       if (lcheck+2 .le. mxnest) then
-         call projec(lcheck,numpro,iflags,isize,jsize)
+         call projec(lcheck,numpro,iflags,isize,jsize,ksize)
       endif
 
       if (eprint) then
