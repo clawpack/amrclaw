@@ -76,6 +76,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/filpatch.f \
   $(AMRCLAW)/src/2d/prefilp.f \
   $(AMRCLAW)/src/2d/flglvl.f \
+  $(AMRCLAW)/src/2d/flglvl2.f \
   $(AMRCLAW)/src/2d/fluxad.f \
   $(AMRCLAW)/src/2d/fluxsv.f \
   $(AMRCLAW)/src/2d/ginit.f \
