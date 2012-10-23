@@ -37,8 +37,8 @@ def setplot(plotdata):
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
     plotitem.plot_var = 0
     plotitem.pcolor_cmap = colormaps.yellow_red_blue
-    plotitem.pcolor_cmin = 0.1
-    plotitem.pcolor_cmax = 0.11
+    plotitem.pcolor_cmin = 0.0
+    plotitem.pcolor_cmax = 1.0
     plotitem.add_colorbar = True
 
     plotitem.amr_celledges_show = [1,0]  

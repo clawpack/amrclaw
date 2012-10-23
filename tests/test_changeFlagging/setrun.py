@@ -270,11 +270,11 @@ def setrun(claw_pkg='amrclaw'):
     # between a cell and each of its neighbors.
 
     # steps to take on each level L between regriddings of level L+1:
-    clawdata.regrid_interval = 3       
+    clawdata.regrid_interval = 2       
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
-    clawdata.regrid_buffer_width  = 1  
+    clawdata.regrid_buffer_width  = 2  
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)
