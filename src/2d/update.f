@@ -18,8 +18,8 @@ c$$$      iaddcaux(i,j)   = loccaux + i - 1 + mitot*((mcapa-1)*mjtot+(j-1))
 c   NEW INDEXING, ORDER SWITCHED
       iadd(ivar,i,j)  = loc    + ivar-1 + nvar*((j-1)*mitot+i-1)
       iaddf(ivar,i,j) = locf   + ivar-1 + nvar*((j-1)*mi+i-1)
-      iaddfaux(i,j)   = locfaux + mcapa-1 + naux*((j-1)*mi + (j-1))
-      iaddcaux(i,j)   = loccaux + mcapa-1 + naux*((j-1)*mitot+(j-1))
+      iaddfaux(i,j)   = locfaux + mcapa-1 + naux*((j-1)*mi + (i-1))
+      iaddcaux(i,j)   = loccaux + mcapa-1 + naux*((j-1)*mitot+(i-1))
 c
 c
 c :::::::::::::::::::::::::: UPDATE :::::::::::::::::::::::::::::::::
