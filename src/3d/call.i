@@ -74,10 +74,11 @@
      3         icheck(maxlv),lstart(maxlv),newstl(maxlv),listsp(maxlv),
      4         intratx(maxlv), intraty(maxlv),intratz(maxlv),
      5         kratio(maxlv),iregsz(maxlv),jregsz(maxlv),kregsz(maxlv),
-     .         iregst(maxlv),jregst(maxlv),kregst(maxlv),
-     .         iregend(maxlv),jregend(maxlv),kregend(maxlv),
-     6         tol, tolsp, ibuff,  mstart, ndfree, lfine,
-     7         iorder,mxnest,kcheck,nghost,printout,matlabout,ncarout
+     6         iregst(maxlv),jregst(maxlv),kregst(maxlv),
+     7         iregend(maxlv),jregend(maxlv),kregend(maxlv),
+     8         numgrids(maxlv),numcells(maxlv),
+     9         tol, tolsp, ibuff,  mstart, ndfree, lfine,
+     1         iorder,mxnest,kcheck,nghost,printout,matlabout,ncarout
 
        common /cmatlab/ matlabu,ngrids
 
@@ -168,3 +169,10 @@
 
        common /bugflags/ dprint, eprint, edebug, gprint, nprint, pprint,
      .                   rprint, sprint, tprint, uprint
+
+
+c
+c      ::::  common for conservation check
+      common /ctstart/ tstart
+      common /comconck/ tmass0
+

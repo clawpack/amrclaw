@@ -112,7 +112,7 @@ c
  101          format(' updating pt. ',3i4,' of grid ',i3,' using ',3i4,
      1               ' of grid ',i4)
               write(outunit,102)(alloc(iadd(i,j,k,ivar)),ivar=1,nvar)
- 102          format(' old vals: ',5e12.4)
+ 102          format(' old vals: ',5e30.20)
 	   endif
 c
 c

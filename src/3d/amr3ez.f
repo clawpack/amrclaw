@@ -423,14 +423,14 @@ c
       write(6,*) ' '
 
       call outtre (mstart,printout,nvar,naux)
-      call conck(1,nvar)
+      call conck(1,nvar,time,rest)
       call valout(1,lfine,time,nvar,naux)
 c
 c     --------------------------------------------------------
 c     # tick is the main routine which drives the computation:
 c     --------------------------------------------------------
       call tick(nvar,iout,nstart,nstop,cut,vtime,time,ichkpt,naux,
-     &          nout,tout)
+     &          nout,tout,rest)
 c     --------------------------------------------------------
 
 c     # Done with computation, cleanup:

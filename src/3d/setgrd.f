@@ -60,6 +60,27 @@ c
          lfine = lfnew
          call ginit(lstart(levold),.false., nvar, naux,t0)
 c
+c count number of grids on newly created levels (needed for openmp
+c parallelization). this is also  done in regridding.
+c  set up numgrids now for new level, since advanc will use it for parallel execution
+c 
+         mptr = lstart(levnew)
+         ngrids = 0
+         ncells = 0
+         do while (mptr .gt. 0)
+            ngrids = ngrids + 1
+            ncells = ncells + (node(ndihi,mptr)-node(ndilo,mptr)+1)
+     .                      * (node(ndjhi,mptr)-node(ndjlo,mptr)+1)
+            mptr = node(levelptr, mptr)
+          end do
+          numgrids(levnew) = ngrids
+          numcells(levnew) = ncells
+          if (verbosity_regrid .ge. levnew) then
+             write(*,100) ngrids,ncells,levnew
+ 100         format("there are ",i4," grids with ",i8,
+     &               " cells at level ", i3)
+          endif 
+c
          levnew = levnew + 1
       go to 10
  30   continue

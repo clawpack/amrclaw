@@ -58,8 +58,8 @@ c     still need to reclaim error est space from spest.f which was saved for pos
 c
 c  project finer grids to insure level nesting
       numpro = 0
-      if (lcheck+2 .le. maxlv) then
-         call projec(lcheck,numpro,iflags,isize,jsize,ksize)
+      if (lcheck+2 .le. mxnest) then
+         call projec(lcheck,numpro,iflags,isize,jsize)
       endif
 
       if (eprint) then
