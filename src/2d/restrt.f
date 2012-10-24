@@ -59,6 +59,8 @@ c     error checking that refinement ratios have not changed
 c     ### new feature: when using variable refinement in time
 c     ### (varRefTime = T) the time ratios are allowed to be different
 c     ###  (since they are ignored and calc. on the fly)
+c     ### varRefTime is currently only used in GeoClaw, is set to .false.
+c     ### when this routine is called from amrclaw.
 c
       do i = 1, mxnold-1
         if ( (intratx(i) .ne. intrtx(i)) .or.

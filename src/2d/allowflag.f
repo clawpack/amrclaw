@@ -16,8 +16,8 @@ c     # of finer grids only for  y >= 0.4:
 c     # allowed(x,y,t,level) = (level.le.1 .or. y.ge.0.4d0) 
 c
 c     # This routine is called from routine flag2refine.
-c     # If Richardson error estimates are used (if tol>0) then this routine
-c     # is also called from errf1.
+c     # If Richardson error estimates are used (if flag_richardson is true) 
+c     # then this routine is also called from errf1.
 
       implicit double precision (a-h,o-z)
 

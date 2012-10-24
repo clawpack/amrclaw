@@ -66,8 +66,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[1] = 1.          # yupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 50      # mx
-    clawdata.num_cells[1] = 50      # my
+    clawdata.num_cells[0] = 49      # mx
+    clawdata.num_cells[1] = 49      # my
     
 
     # ---------------
@@ -109,7 +109,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify at what times the results should be written to fort.q files.
     # Note that the time integration stops after the final output time.
  
-    clawdata.output_style = 1
+    clawdata.output_style = 3
  
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
@@ -126,7 +126,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
         clawdata.output_step_interval = 2
-        clawdata.total_steps = 4
+        clawdata.total_steps = 2
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
@@ -241,9 +241,9 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    clawdata.refinement_ratios_x = [2,2]
-    clawdata.refinement_ratios_y = [2,2]
-    clawdata.refinement_ratios_t = [2,2]
+    clawdata.refinement_ratios_x = [51,3]
+    clawdata.refinement_ratios_y = [51,3]
+    clawdata.refinement_ratios_t = [51,3]
 
     # Instead of setting refinement ratios in t, these can be chosen
     # automatically if this is implemented:
@@ -274,7 +274,7 @@ def setrun(claw_pkg='amrclaw'):
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
-    clawdata.regrid_buffer_width  = 3  
+    clawdata.regrid_buffer_width  = 2  
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)

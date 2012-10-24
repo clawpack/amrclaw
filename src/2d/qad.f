@@ -59,8 +59,9 @@ c      auxl, auxr are work arrays needed to pass stuff to rpn2
 c      maux is the number of aux variables, which may be zero.
 c
 
-       if (qprint) write(dbugunit,*)" working on grid ",mptr
        tgrid = rnode(timemult, mptr)
+       if (qprint) 
+     .      write(dbugunit,*)" working on grid ",mptr," time ",tgrid
        nc = mjtot-2*nghost
        nr = mitot-2*nghost
        level = node(nestlevel, mptr)
