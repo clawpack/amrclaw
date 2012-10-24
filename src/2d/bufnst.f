@@ -33,8 +33,7 @@ c
             call setflags(iflags,isize,jsize,
      .           alloc(loctmp),nvar,mitot,mjtot,mptr)
       endif 
-c     still need to reclaim error est space from spest.f 
-c     which was saved for possible errest reuse
+c     still need to reclaim error est space from spest.f which was saved for possible errest reuse
       locbig = node(tempptr,mptr)
       call reclam(locbig,mitot*mjtot*nvar)
       mptr = node(levelptr,mptr)

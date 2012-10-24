@@ -1,7 +1,7 @@
 c
 c -------------------------------------------------------------------
       subroutine flag2refine(mx,my,mbc,meqn,maux,xlower,ylower,dx,dy,t,
-     &                  level,tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
+     &                   level,tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
 c -------------------------------------------------------------------
 
 c

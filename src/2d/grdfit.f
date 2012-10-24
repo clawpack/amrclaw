@@ -46,11 +46,12 @@ c        till each cluster ok. needs scratch space.
 c
        idim = iregsz(lcheck)
        jdim = jregsz(lcheck)
-       lociscr = igetsp(idim+jdim)
-       locjscr = lociscr + idim
+c      lociscr = igetsp(idim+jdim)
+c      locjscr = lociscr + idim
        call smartbis(alloc(index),npts,cut,numptc,nclust,lbase,
-     2               corner,alloc(lociscr),alloc(locjscr),idim,jdim)
-       call reclam(lociscr,idim+jdim)
+     2               corner,idim,jdim)
+c    2               corner,alloc(lociscr),alloc(locjscr),idim,jdim)
+c      call reclam(lociscr,idim+jdim)
 
        if (gprint) then
           write(outunit,103) nclust

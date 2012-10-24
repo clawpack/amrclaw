@@ -3,13 +3,12 @@ c ---------------------------------------------------------
 c
       logical function nestck(mnew,lbase,badpts,npts,numptc,icl,
      1                        nclust,domflags,isize,jsize,
-     &                        nvar,naux)
+     &      nvar,naux)
 c
       use amr_module
       implicit double precision (a-h,o-z)
       dimension  badpts(2,npts)
       integer(kind=1)  domflags(0:isize+1,0:jsize+1)
-      logical badcells
 
 
       integer   numptc(maxcl)
@@ -44,16 +43,9 @@ c
 c  ### use grid indices coarsened by 1 level in checking
 c  ### remember to offset by 1 since 1st grid cell is 0,0
 c
-       badcells = .false.
        do 10 i = node(ndilo,mnew)/lratiox+1, node(ndihi,mnew)/lratiox+1
        do 10 j = node(ndjlo,mnew)/lratioy+1, node(ndjhi,mnew)/lratioy+1
-c          if (domflags(i,j) .eq. 0) go to 50
-          if (domflags(i,j) .eq. 0) then
-               write(*,*)" nestck says pt. i,j ",i,j,
-     .              " of grid ",mnew," not nested"
-               badcells = .true.
-          endif
-          if (badcells) go to 50
+          if (domflags(i,j) .eq. 0) go to 50
  10    continue
 c
 c      if made it here, then mnew is properly nested
@@ -70,24 +62,18 @@ c
            write(outunit,104) badpts(1,npts),badpts(2,npts)
            write(*,104)       badpts(1,npts),badpts(2,npts)
  104       format(' non-nested flagged pt. at: ',2e15.7)
-!--           call outtre(mstart, .false.,nvar,naux)
-!--           call outmsh(mnew, .false.,nvar,naux)
-!--           stop
+           call outtre(mstart, .false.,nvar,naux)
+           call outmsh(mnew, .false.,nvar,naux)
+           stop
 
  55    if (nclust .lt. maxcl) go to 60
            write(outunit,102) maxcl
            write(*,102)       maxcl
  102       format(' too many clusters: > ',i5,' (from nestck) ')
-!--           stop
+           stop
 
  60   if (nprint) write(outunit,103) icl, npts
  103  format(' bisecting cluster ',i5,' with ',i5,' pts. in nestck')
-c
-c dont do the bisection - now done in nestck2 - just calling this routine for
-c debugging right now, then will delete
-         nestck = .false. ! add here then return
-        go to 99
- 
       if (rnode(cornxhi,mnew)-rnode(cornxlo,mnew) .gt.
      1    rnode(cornyhi,mnew) - rnode(cornylo,mnew)) then
            rmid  = (rnode(cornxhi,mnew) + rnode(cornxlo,mnew) ) / 2.
