@@ -19,7 +19,7 @@ c     ---------------------------
             xi = xlower + (i-0.5d0)*dx
             if (xi.gt.0.499d0 .and. xi.lt.0.501d0 .and.
      &            yj.gt.0.499d0 .and. yj.lt.0.501d0) then
-               q(1,i,j) = 1.d6
+               q(1,i,j) = 1.
             else
                q(1,i,j) = 0.1d0
             endif

@@ -126,7 +126,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
         clawdata.output_step_interval = 2
-        clawdata.total_steps = 10
+        clawdata.total_steps = 2
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
@@ -241,9 +241,9 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    clawdata.refinement_ratios_x = [3,101]
-    clawdata.refinement_ratios_y = [3,101]
-    clawdata.refinement_ratios_t = [3,101]
+    clawdata.refinement_ratios_x = [51,3]
+    clawdata.refinement_ratios_y = [51,3]
+    clawdata.refinement_ratios_t = [51,3]
 
     # Instead of setting refinement ratios in t, these can be chosen
     # automatically if this is implemented:

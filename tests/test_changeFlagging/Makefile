@@ -80,7 +80,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/fluxad.f \
   $(AMRCLAW)/src/2d/fluxsv.f \
   $(AMRCLAW)/src/2d/ginit.f \
-  $(AMRCLAW)/src/2d/grdfit.f \
+  $(AMRCLAW)/src/2d/grdfit2.f \
   $(AMRCLAW)/src/2d/intfil.f \
   $(AMRCLAW)/src/2d/moment.f \
   $(AMRCLAW)/src/2d/nestck.f \
