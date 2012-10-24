@@ -26,7 +26,7 @@ c
       node(levelptr,mstart)  = 0
       lstart(1) = mstart
 
-      if (tol .gt. 0.d0) then
+      if (flag_richardson) then
       if (((nx/2)*2 .ne. nx) .or. (ny/2)*2 .ne. ny) then 
          write(outunit,*)" must have even number of cells"
          write(*,*)      " must have even number of cells"

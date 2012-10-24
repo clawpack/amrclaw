@@ -37,12 +37,12 @@ def setplot(plotdata):
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
     plotitem.plot_var = 0
     plotitem.pcolor_cmap = colormaps.yellow_red_blue
-    plotitem.pcolor_cmin = 0.1
-    plotitem.pcolor_cmax = 1.
+    plotitem.pcolor_cmin = 0
+    plotitem.pcolor_cmax = 1.1
     plotitem.add_colorbar = True
 
-    plotitem.amr_celledges_show = [0]  
-    plotitem.amr_patchedges_show = [0]
+    plotitem.amr_celledges_show = [1,0]  
+    plotitem.amr_patchedges_show = [1]
 
 
     # Figure for contour plot
@@ -80,7 +80,7 @@ def setplot(plotdata):
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_patch')
     plotitem.amr_patch_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
-    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_celledges_show = [1,1,1,0]
     plotitem.amr_patchedges_show = [1]
 
     

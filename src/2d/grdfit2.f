@@ -10,8 +10,8 @@ c
       dimension  corner(nsize,maxcl)
       integer    numptc(maxcl), prvptr
       logical    fit, nestck, cout
+      logical    fit2, nestck2
       data       cout/.false./
-      integer(kind=1)  i1flags(iregsz(lcheck)+2,jregsz(lcheck)+2)
 c
 c ::::::::::::::::::::: GRDFIT :::::::::::::::::::::::::::::::::;
 c  grdfit called by setgrd and regrid to actually fit the new grids
@@ -19,8 +19,6 @@ c         on each level. lcheck is the level being error estimated
 c         so that lcheck+1 will be the level of the new grids.
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
-      isize = iregsz(lcheck)
-      jsize = jregsz(lcheck)
 
 c ### initialize region start and end indices for new level grids
       iregst(lcheck+1) = iinfinity
@@ -33,8 +31,8 @@ c     ## npts is number of points actually colated - some
 c     ## flagged points turned off due to proper nesting requirement.
 c     ## (storage based on nptmax calculation however).
 
-      call flglvl (nvar,naux,lcheck,nptmax,index,lbase,i1flags,npts,t0,
-     .             isize,jsize)
+      call flglvl2(nvar,naux,lcheck,nptmax,index,lbase,npts,t0)
+
       if (npts .eq. 0) go to 99
 c
       levnew    = lcheck + 1
@@ -46,12 +44,12 @@ c        till each cluster ok. needs scratch space.
 c
        idim = iregsz(lcheck)
        jdim = jregsz(lcheck)
-c      lociscr = igetsp(idim+jdim)
-c      locjscr = lociscr + idim
+c       lociscr = igetsp(idim+jdim)
+c       locjscr = lociscr + idim
        call smartbis(alloc(index),npts,cut,numptc,nclust,lbase,
      2               corner,idim,jdim)
-c    2               corner,alloc(lociscr),alloc(locjscr),idim,jdim)
-c      call reclam(lociscr,idim+jdim)
+c     2               corner,alloc(lociscr),alloc(locjscr),idim,jdim)
+c       call reclam(lociscr,idim+jdim)
 
        if (gprint) then
           write(outunit,103) nclust
@@ -67,6 +65,8 @@ c
       prvptr  =  null
 c
  70   mnew      = nodget(dummy)
+c       if (lcheck .eq. 2 .and. (mnew .ne. 6 .and. mnew .ne. 7)) go to 69 
+c       if (lcheck .eq. 1 .and. (mnew .ne. 3 .and. mnew .ne. 2 )) go to 69 
  75   call  moment(node(1,mnew),alloc(index+2*ibase),numptc(icl),usage)
 
       if (gprint) write(outunit,100) icl,mnew,usage,numptc(icl)
@@ -83,14 +83,19 @@ c
       rnode(cornyhi,mnew)  = (node(ndjhi,mnew)+1)*hyfine + ylower
       node(nestlevel,mnew)     = levnew
       rnode(timemult,mnew)   = time
+
+      if (gprint) write(outunit,101) (node(i,mnew),i=1,nsize),
+     &                              (rnode(i,mnew),i=1,rsize)
+ 101  format(17i5,/,5e15.7)
 c
 c     ##  if new grid doesn't fit in base grid, nestck bisect it
 c     ##  and returns 2 clusters where there used to be 1.
 c
 c 2/28/02 : Added naux to argument list; needed by call to outtre in nestck
-      fit = nestck(mnew,lbase,alloc(index+2*ibase),numptc(icl),numptc,
-     1             icl,nclust,i1flags,isize,jsize,nvar, naux)
-      if (.not. fit) go to 75
+
+      fit2 = nestck2(mnew,lbase,alloc(index+2*ibase),numptc(icl),numptc,
+     1             icl,nclust,nvar, naux)
+      if (.not. fit2) go to 75
 c
 c     ##  grid accepted. put in list.
       if (newstl(levnew) .eq. null) then
@@ -106,10 +111,11 @@ c     # keep track of min and max location of grids at this level
       jregend(levnew) = MAX(jregend(levnew),node(ndjhi,mnew))
 
 c     ##  on to next cluster
-      ibase  = ibase + numptc(icl)
+ 69     ibase  = ibase + numptc(icl)
       icl = icl + 1
       if (icl .le. nclust) go to 70
-
+c
+ 71   continue   !DEBUG
 c
 c    ##  clean up. for all grids check final size.
 

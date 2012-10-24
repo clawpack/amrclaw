@@ -9,7 +9,7 @@
 !      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !
        integer, parameter :: rsize = 5
-       integer, parameter :: nsize = 13
+       integer, parameter :: nsize = 17
 
 !  :::::::   integer part of node descriptor
        integer, parameter :: levelptr  = 1
@@ -25,6 +25,10 @@
        integer, parameter :: ndjlo     = 11
        integer, parameter :: ndjhi     = 12
        integer, parameter :: storeaux  = 13
+       integer, parameter :: storeflags  = 14
+       integer, parameter :: numflags  = 15
+       integer, parameter :: domflags_base  = 16
+       integer, parameter :: domflags2  = 17
 
 ! :::::::  real part of node descriptor
        integer, parameter :: cornxlo  = 1
