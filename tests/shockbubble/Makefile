@@ -25,8 +25,8 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2
-#FFLAGS = -W -Wall -fbounds-check -Wunderflow -O -ffpe-trap=zero,overflow,underflow -g
+FFLAGS ?=  -O2 -fopenmp
+#FFLAGS ?= -W -Wall -fbounds-check -Wunderflow -O -ffpe-trap=zero,overflow,underflow -g
 
 # ---------------------------------
 # List of sources for this program:
@@ -34,6 +34,17 @@ FFLAGS ?=  -O2
 MODULES = \
   $(AMRCLAW)/src/2d/amr_module.f90 \
 
+# Note that the Riemann solvers included here are modified from those in 
+# $RIEMANN by removing the common block roe variable storage, instead these 
+# recalculate the Roe averages done to support thread safe Riemann solvers
+
+# If timing tests are desired, you can include the following source
+# $(AMRCLAW)/timing/tick.f 			<== Disables output
+# $(AMRCLAW)/timing/init_alloc.f90  <== Allocate large initial memory allocation
+# $(AMRCLAW)/timing/amr2ez.f 		<== Timing output, disables output
+# $(AMRCLAW)/timing/stepgrid.f      <== Timing output
+
+# Local source for thread tests
 SOURCES = \
   ./fdisc.f \
   ./qinit.f \
