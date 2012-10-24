@@ -15,9 +15,9 @@ CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
 CLAW_PKG = amrclaw                  # Clawpack package to use
 EXE = xamr                          # Executable to create
 SETRUN_FILE = setrun.py             # File containing function to make data
-OUTDIR = _output                    # Directory for output
+OUTDIR = _output_cFnew              # Directory for output
 SETPLOT_FILE = setplot.py           # File containing function to set plots
-PLOTDIR = _plots                    # Directory for plots
+PLOTDIR = _plots_cFnew              # Directory for plots
 
 OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
 RESTART ?= False                    # Should = clawdata.restart in setrun
@@ -78,10 +78,11 @@ SOURCES = \
   $(AMRCLAW)/src/2d/filpatch.f \
   $(AMRCLAW)/src/2d/prefilp.f \
   $(AMRCLAW)/src/2d/flglvl.f \
+  $(AMRCLAW)/src/2d/flglvl2.f \
   $(AMRCLAW)/src/2d/fluxad.f \
   $(AMRCLAW)/src/2d/fluxsv.f \
   $(AMRCLAW)/src/2d/ginit.f \
-  $(AMRCLAW)/src/2d/grdfit.f \
+  $(AMRCLAW)/src/2d/grdfit2.f \
   $(AMRCLAW)/src/2d/intfil.f \
   $(AMRCLAW)/src/2d/moment.f \
   $(AMRCLAW)/src/2d/nestck.f \
