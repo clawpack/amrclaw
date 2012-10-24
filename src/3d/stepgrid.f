@@ -128,7 +128,9 @@ c
 c
 c       write(outunit,*) ' Courant # of grid ',mptr, '  is  ',cflgrid
 c
+!$OMP CRITICAL (cflmax)
       cflmax = dmax1(cflmax,cflgrid)
+!$OMP END CRITICAL (cflmax)
 c
 c       # update q
       dtdx = dt/dx
