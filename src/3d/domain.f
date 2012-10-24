@@ -62,6 +62,8 @@ c parallelization
        end do
        numgrids(1) = ngrids
        numcells(1) = ncells
+       avenumgrids(1) = avenumgrids(1) + ngrids
+       iregridcount(1) = 1
        write(*,100) ngrids,ncells
  100   format("there are ",i4," grids with ",i8," cells at level   1")
 

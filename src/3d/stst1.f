@@ -56,6 +56,8 @@ c after kcheck integrations of parent grid, move its refinements.
 c finest level grid never needs to have its finer subgrids moved.
 c
       do 60 i   = 1, maxlv
+         iregridcount(i) = 0
+         avenumgrids(i) = 0
          numgrids(i) = 0
          numcells(i) = 0
          lstart(i) = 0

@@ -79,6 +79,8 @@ c
          end do
          numgrids(levnew) = ngrids
          numcells(levnew) = ncells
+         avenumgrids(levnew) = avenumgrids(levnew) + ngrids
+         iregridcount(levnew) = iregridcount(levnew) + 1
          if (verbosity_regrid .ge. levnew) then
            write(*,100) ngrids,ncells,levnew
            write(outunit,100) ngrids,ncells,levnew

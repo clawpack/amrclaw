@@ -53,13 +53,8 @@ c
        idim = iregsz(lcheck)
        jdim = jregsz(lcheck)
        kdim = kregsz(lcheck)
-       lociscr = igetsp(idim+jdim+kdim)
-       locjscr = lociscr + idim
-       lockscr = locjscr + jdim
        call smartbis(alloc(index),npts,cut,numptc,nclust,lbase,corner,
-     1               alloc(lociscr),alloc(locjscr),alloc(lockscr),
      2               idim,jdim,kdim)
-       call reclam(lociscr,idim+jdim+kdim)
 
        if (gprint) then
           write(outunit,103) nclust

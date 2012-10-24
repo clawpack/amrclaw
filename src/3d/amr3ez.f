@@ -77,7 +77,7 @@ c
       logical            vtime,rest
       dimension          tout(maxout)
 
-      integer oldmode
+      integer oldmode,omp_get_max_threads
 c
 c
 c  you may want to turn this on for SUN workstation, or replace
@@ -194,7 +194,7 @@ c        # array tout is set below after reading t0
 
 
       read(inunit,*) t0
-      tstart = t0
+      tstart = t0                 ! for common block
       read(inunit,*) xlower
       read(inunit,*) xupper
       read(inunit,*) ylower
@@ -356,6 +356,10 @@ c
       if (rest) then
          call restrt(nsteps,time,nvar)
          nstart  = nsteps
+         write(6,*) ' '
+         write(6,*) 'Restarting from previous run'
+         write(6,*) '   at time = ',time
+         write(6,*) ' '
       else
          lentot = 0
          lenmax = 0
@@ -379,6 +383,9 @@ c        ## initial time step was too large. reset to dt from setgrd
          time = t0
          nstart = 0
       endif
+
+!$    write(outunit,*)" max threads set to ",omp_get_max_threads()
+!$    write(*,*)" max threads set to ",omp_get_max_threads()
 c
 c  print out program parameters for this run
 c
@@ -423,6 +430,7 @@ c
       write(6,*) ' '
 
       call outtre (mstart,printout,nvar,naux)
+      write(outunit,*) "  original total mass ..."
       call conck(1,nvar,time,rest)
       call valout(1,lfine,time,nvar,naux)
 c
@@ -451,6 +459,17 @@ c
       write(matunit,*) matlabu-1
       write(matunit,*) mxnest
       close(matunit)
+
+      write(outunit,*)
+      write(outunit,*)
+      do i = 1, mxnest
+        if (iregridcount(i) > 0) then
+          write(outunit,801) i,avenumgrids(i)/iregridcount(i),
+     1                       iregridcount(i)
+ 801      format("for level ",i3, " average num. grids = ",f10.2,
+     1           " over ",i10," steps")
+        endif
+      end do
 
       write(outunit,*)
       write(outunit,*)
@@ -483,10 +502,9 @@ c
       write(outunit,909)
  909  format(//,' ------  end of AMRCLAW integration --------  ')
 c
-c     # Close output/debug files
+c     # Close output and debug files.
       close(outunit)
       close(dbugunit)
-
 c
       stop
       end

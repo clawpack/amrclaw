@@ -63,7 +63,7 @@
 !      parameter  (max1d = 120)
        parameter  (max1d = 60)
        parameter  (maxvar = 9)
-       parameter  (maxaux = 10)
+       parameter  (maxaux = 20)
        parameter  (maxout = 50)
 
        logical    printout, matlabout, ncarout
@@ -122,7 +122,9 @@
 !      :::::  collect stats
 !      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !
-       common   /stats/  rvoll(10),evol,rvol,lentot,lenmax,lendim
+       common   /stats/  rvoll(maxlv),avenumgrids(maxlv),
+     1                   iregridcount(maxlv),evol,rvol,
+     2                   lentot,lenmax,lendim
 
 !
 !      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
