@@ -8,7 +8,7 @@ c=========================================================================
       logical foundFile
 
 
-      fname  = 'setgauges.data'
+      fname  = 'gauges.data'
       inquire(file=fname,exist=foundFile)
       if (.not. foundFile) then
         write(*,*) 'You must provide a file ', fname 
