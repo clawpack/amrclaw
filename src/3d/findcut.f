@@ -15,7 +15,7 @@ c
       include "call.i"
 
       parameter(ithres = 2)
-      parameter(minoff = 4)
+      parameter(minoff = 2)
 
       dimension iscr(idim), jscr(jdim), kscr(kdim)
       dimension locval(4,numdim)

@@ -10,3 +10,4 @@ xgeoclaw
 *.html
 _output/
 _plots/
+*~

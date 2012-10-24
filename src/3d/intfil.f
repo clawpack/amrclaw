@@ -1,7 +1,7 @@
 c
 c ------------------------------------------------------
 c
-       subroutine intfil(val,mi,mj,mk,time,locuse,nrowst,ncolst,nfilst,
+       subroutine intfil(val,mi,mj,mk,time,flaguse,nrowst,ncolst,nfilst,
      2                   ilo,ihi,jlo,jhi,klo,khi,level,nvar,naux)
 c
 c ::::::::::::::::::::::: INTFIL ::::::::::::::::::::::::::::::::;
@@ -49,9 +49,7 @@ c     3D
      &                            +    (j-1)*mitot
      &                            +    (k-1)*mitot*mjtot
      &                            + (ivar-1)*mitot*mjtot*mktot
-      iaduse(i,j,k)      = locuse +    (i-1)
-     &                            +    (j-1)*nrow
-     &                            +    (k-1)*nrow*ncol
+      dimension flaguse(ilo:ihi, jlo:jhi, klo:khi)
 c
       dt     = possk(level)
       teps   = dt / 10.
@@ -59,9 +57,13 @@ c
       nrow = ihi - ilo + 1
       ncol = jhi - jlo + 1
       nfil = khi - klo + 1
-      ntot   = nrow *ncol *nfil
-      do 5 i = 1, ntot
-5        alloc(locuse+i-1) = 0.0
+      do k = klo, khi
+         do j = jlo, jhi
+            do i = ilo, ihi
+               flaguse(i,j,k) = 0.0
+            end do
+         end do
+      end do
 
       mptr   = lstart(level)
  10   if (mptr .eq. 0) go to 105
@@ -155,7 +157,7 @@ c     ::: no time interp. copy the solution values
      1            alloc(iadd(i-imlo+nghost+1,
      2                       j-jmlo+nghost+1,
      3                       k-kmlo+nghost+1,ivar))
-             alloc(iaduse(i-ilo+1,j-jlo+1,k-klo+1)) = 1.d0
+             flaguse(i,j,k) = 1.d0
  15      continue
  25      continue
  35      continue
@@ -173,7 +175,7 @@ c     ::: linear interpolation in time
      1            alloc(iadold(i-imlo+nghost+1,
      2                         j-jmlo+nghost+1,
      3                         k-kmlo+nghost+1,ivar))*alphac
-             alloc(iaduse(i-ilo+1,j-jlo+1,k-klo+1)) = 1.d0
+             flaguse(i,j,k) = 1.d0
  55      continue
  65      continue
  75      continue
@@ -192,7 +194,7 @@ c  they will be set elsewhere
         do 1100 k = max(kregsz(level),klo), khi
         do 1100 j = jlo, jhi
         do 1100 i = ilo, ihi
-           alloc(iaduse(i-ilo+1,j-jlo+1,k-klo+1)) = 1.d0
+           flaguse(i,j,k) = 1.d0
 1100    continue
       endif
  
@@ -201,7 +203,7 @@ c  they will be set elsewhere
         do 1200 k = klo, min(-1,nfilend)
         do 1200 j = jlo, jhi
         do 1200 i = ilo, ihi
-            alloc(iaduse(i-ilo+1,j-jlo+1,k-klo+1)) = 1.d0
+            flaguse(i,j,k) = 1.d0
 1200    continue
       endif
 
@@ -209,7 +211,7 @@ c  they will be set elsewhere
         do 1300 k = klo, khi
         do 1300 j = max(jregsz(level),jlo), jhi
         do 1300 i = ilo, ihi
-           alloc(iaduse(i-ilo+1,j-jlo+1,k-klo+1)) = 1.d0
+           flaguse(i,j,k) = 1.d0
 1300    continue
       endif
  
@@ -218,7 +220,7 @@ c  they will be set elsewhere
         do 1400 k = klo, khi
         do 1400 j = jlo, min(-1,ncolend)
         do 1400 i = ilo, ihi
-            alloc(iaduse(i-ilo+1,j-jlo+1,k-klo+1)) = 1.d0
+           flaguse(i,j,k) = 1.d0
 1400    continue
       endif
  
@@ -227,7 +229,7 @@ c  they will be set elsewhere
         do 1500 k = klo, khi
         do 1500 j = jlo, jhi
         do 1500 i = ilo, min(-1,nrowend)
-           alloc(iaduse(i-ilo+1,j-jlo+1,k-klo+1)) = 1.d0
+           flaguse(i,j,k) = 1.d0
 1500    continue
       endif
  
@@ -235,7 +237,7 @@ c  they will be set elsewhere
         do 1600 k = klo, khi
         do 1600 j = jlo, jhi
         do 1600 i = max(iregsz(level),ilo), ihi
-           alloc(iaduse(i-ilo+1,j-jlo+1,k-klo+1)) = 1.d0
+           flaguse(i,j,k) = 1.d0
 1600    continue
       endif
 c

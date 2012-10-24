@@ -216,9 +216,15 @@ c     -----------------------------------------------------------
 c
 c     # aux2(1-mbc,1,2) is the start of a 1d array now used by rpn3
 c
-      call rpn3(ixyz,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &      aux2(1-mbc,1,2),aux2(1-mbc,1,2),
-     &      maux,wave,s,amdq,apdq)
+      if (maux > 0) then
+        call rpn3(ixyz,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+     &          aux2(1-mbc,1,2),aux2(1-mbc,1,2),
+     &          maux,wave,s,amdq,apdq)
+      else
+        call rpn3(ixyz,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+     &          aux2,aux2,
+     &          maux,wave,s,amdq,apdq)
+      endif
 c
 c     # Set fadd for the donor-cell upwind method (Godunov)
       do 40 i=1,mx+1

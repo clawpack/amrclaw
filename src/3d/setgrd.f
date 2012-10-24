@@ -22,7 +22,7 @@ c
       if (mxnest .eq. 1) go to 99
 c
       levnew =  2
-      time   = 0.0d0
+      time   = t0
 c
  10   if (levnew .gt. mxnest) go to 30
           levold = levnew - 1
@@ -42,13 +42,13 @@ c
          end do
          dtinit = min(dtinit, dtlev*kfac)
  
-c        don't count it in real integration stats
+c        dont count it in real integration stats
          do 20 level=1,mxnest
  20         rvoll(level) = 0.d0
 c
 c  flag, cluster, and make new grids
 c
-         call grdfit(lbase,levold,nvar,naux,cut,time)
+         call grdfit(lbase,levold,nvar,naux,cut,time,t0)
          if (newstl(levnew) .ne. 0) lfnew = levnew
 c
 c  init new level. after each iteration. fix the data structure
@@ -59,6 +59,29 @@ c
          lstart(levnew) = newstl(levnew)
          lfine = lfnew
          call ginit(lstart(levold),.false., nvar, naux,t0)
+c
+c count number of grids on newly created levels (needed for openmp
+c parallelization). this is also  done in regridding.
+c  set up numgrids now for new level, since advanc will use it for parallel execution
+c 
+         mptr = lstart(levnew)
+         ngrids = 0
+         ncells = 0
+         do while (mptr .gt. 0)
+            ngrids = ngrids + 1
+            ncells = ncells + (node(ndihi,mptr)-node(ndilo,mptr)+1)
+     .                      * (node(ndjhi,mptr)-node(ndjlo,mptr)+1)
+            mptr = node(levelptr, mptr)
+          end do
+          numgrids(levnew) = ngrids
+          numcells(levnew) = ncells
+          avenumgrids(levnew) = avenumgrids(levnew) + ngrids
+          iregridcount(levnew) = iregridcount(levnew) + 1
+          if (verbosity_regrid .ge. levnew) then
+             write(*,100) ngrids,ncells,levnew
+ 100         format("there are ",i4," grids with ",i8,
+     &               " cells at level ", i3)
+          endif 
 c
          levnew = levnew + 1
       go to 10

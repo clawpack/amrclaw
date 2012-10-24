@@ -8,7 +8,7 @@ c
 
       include  "call.i"
 
-      dimension  iflags (0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1  iflags (0:isize+1,0:jsize+1,0:ksize+1)
       logical    vtime
       data       vtime/.false./
 c
@@ -58,7 +58,7 @@ c     still need to reclaim error est space from spest.f which was saved for pos
 c
 c  project finer grids to insure level nesting
       numpro = 0
-      if (lcheck+2 .le. maxlv) then
+      if (lcheck+2 .le. mxnest) then
          call projec(lcheck,numpro,iflags,isize,jsize,ksize)
       endif
 
@@ -82,18 +82,19 @@ c
 c    # first get scratch work space (not that other scratch
 c    # arrays above have been reclaimed. 
 c
-      ldom3 = igetsp((isize+2)*(jsize+2)*(ksize+2))
+c      ldom3 = igetsp((isize+2)*(jsize+2)*(ksize+2))
 c
-      do 55 inum = 1, ibuff
-
-          call shiftset(iflags,alloc(ldom3),+1, 0, 0,isize,jsize,ksize)
-          call shiftset(iflags,alloc(ldom3),-1, 0, 0,isize,jsize,ksize)
-          call shiftset(iflags,alloc(ldom3), 0,+1, 0,isize,jsize,ksize)
-          call shiftset(iflags,alloc(ldom3), 0,-1, 0,isize,jsize,ksize)
-          call shiftset(iflags,alloc(ldom3), 0, 0,+1,isize,jsize,ksize)
-          call shiftset(iflags,alloc(ldom3), 0, 0,-1,isize,jsize,ksize)
-
- 55   continue
+!--      do 55 inum = 1, ibuff
+!--
+!--          call shiftset(iflags,alloc(ldom3),+1, 0, 0,isize,jsize,ksize)
+!--          call shiftset(iflags,alloc(ldom3),-1, 0, 0,isize,jsize,ksize)
+!--          call shiftset(iflags,alloc(ldom3), 0,+1, 0,isize,jsize,ksize)
+!--          call shiftset(iflags,alloc(ldom3), 0,-1, 0,isize,jsize,ksize)
+!--          call shiftset(iflags,alloc(ldom3), 0, 0,+1,isize,jsize,ksize)
+!--          call shiftset(iflags,alloc(ldom3), 0, 0,-1,isize,jsize,ksize)
+!--
+!-- 55   continue
+      call shiftset(iflags, isize,jsize,ksize)
 
       if (eprint) then
          write(outunit,*)" flagged points after buffering on level", 
@@ -117,7 +118,7 @@ c
        write(outunit,116) numbad, lcheck
  116   format(i5,' points flagged on level ',i4)
 
-      call reclam(ldom3,(isize+2)*(jsize+2)*(ksize+2))
+c      call reclam(ldom3,(isize+2)*(jsize+2)*(ksize+2))
 
       return
       end

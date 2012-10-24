@@ -7,7 +7,7 @@ c
 
       include  "call.i"
 
-      dimension iflags(0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1 iflags(0:isize+1,0:jsize+1,0:ksize+1)
 c
 c  ::::::::::::::::::::::: PROJEC ::::::::::::::::::::::::::::::
 c  for all newly created fine grids, project area onto a coarser
@@ -85,7 +85,7 @@ c
       endif
 c
  95   if (pprint) then
-	 write(outunit,103) level
+         write(outunit,103) level
  103     format(/,'  from projec: flagged pts. at level ',i4,':')
          do 110 kk = 1, ksize
             k        = ksize + 1 - kk

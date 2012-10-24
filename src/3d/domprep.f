@@ -7,7 +7,7 @@ c
 
       include  "call.i"
 
-      integer  domflags(0:ibase+1,0:jbase+1,0:kbase+1)
+      integer*1 domflags(0:ibase+1,0:jbase+1,0:kbase+1)
 
 c
 c ::::::::::::::::::::::::::: PREPDOM :::::::::::::::::::::
@@ -154,7 +154,7 @@ c
      .      domflags(ibase+1,jbase+1,kbase+1)   =   1
 
       if (dprint) then
-	 write(outunit,*)" from domprep: domflags at level  ", lbase
+         write(outunit,*)" from domprep: domflags at level  ", lbase
          do 40 kk = 1, kbase
          k = kbase + 1 - kk
          do 40 jj = 1, jbase
