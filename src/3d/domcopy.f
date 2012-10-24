@@ -7,8 +7,8 @@ c
 
       include  "call.i"
 
-      dimension  iflags2(0:isize+1,0:jsize+1,0:ksize+1)
-      dimension  iflags (0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1  iflags2(0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1  iflags (0:isize+1,0:jsize+1,0:ksize+1)
 
 c
 c ::::::::::::::::::::::::::: DOMCOPY :::::::::::::::::::::

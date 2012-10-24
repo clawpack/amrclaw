@@ -63,5 +63,31 @@ c
         call prepc(level,nvar)
  60   continue
 c
+c  reset numgrids per level, needed for omp parallelization.
+c  note that grids may have disappeared, so next loop resets to 0
+c  if there are no grids from lfine+1 to mxnest
+c
+      do 72 levnew = lbase+1, mxnest
+        mptr = lstart(levnew)
+        ngrids = 0
+        ncells = 0
+        do while (mptr .gt. 0)
+           ngrids = ngrids + 1
+           ncells = ncells + (node(ndihi,mptr)-node(ndilo,mptr)+1)
+     .                     * (node(ndjhi,mptr)-node(ndjlo,mptr)+1)
+           mptr = node(levelptr, mptr)
+         end do
+         numgrids(levnew) = ngrids
+         numcells(levnew) = ncells
+         avenumgrids(levnew) = avenumgrids(levnew) + ngrids
+         iregridcount(levnew) = iregridcount(levnew) + 1
+         if (verbosity_regrid .ge. levnew) then
+           write(*,100) ngrids,ncells,levnew
+           write(outunit,100) ngrids,ncells,levnew
+ 100       format("there are ",i4," grids with ",i8,
+     &            " cells at level ", i3)
+         endif
+72     continue
+
       return
       end

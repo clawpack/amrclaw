@@ -17,7 +17,7 @@ c read back in the check point files written by subr. check.
 c
 c some input variables might have changed, and also the
 c alloc array could have been written with a smaller size at checkpoint
-c Error check that ref. ratios haven't changecx, only been added to.
+c Error check that ref. ratios haven't changed, only been added to.
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
       rstfile  = 'restart.data'
@@ -30,14 +30,21 @@ c
       open(rstunit,file=rstfile,status='old',form='unformatted')
       rewind rstunit
 
-      read(rstunit) lenmax,lendim,isize,(alloc(i),i=1,lendim)
+      read(rstunit) lenmax,lendim,isize
+c     # need to allocate for dynamic memory:      
+      call restrt_alloc(isize)
+
+      read(rstunit)(alloc(i),i=1,lendim)
       read(rstunit) hxposs,hyposs,hzposs,possk,icheck
       read(rstunit) lfree,lenf
       read(rstunit) rnode,node,lstart,newstl,listsp,tl,
      1      ibuf,mstart,ndfree,lfine,iorder,mxnold,
-     2      intrtx,intrty,intrtz,intrtt,iregsz,jregsz,kregsz,kcheck1,
-     3      nsteps,time,matlabu
-      read(rstunit) evol, rvol, rvoll, lentot
+     2      intrtx,intrty,intrtz,intrtt,iregsz,jregsz,kregsz,
+     3      iregst,jregst,kregst,iregend,jregend,kregend,
+     4      numgrids,kcheck1,nsteps,time,matlabu
+
+      read(rstunit) avenumgrids, iregridcount,
+     1              evol, rvol, rvoll, lentot, tmass0, cflmax
 
       write(outunit,100) nsteps,time
       write(6,100) nsteps,time

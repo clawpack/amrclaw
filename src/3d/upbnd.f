@@ -2,7 +2,7 @@ c
 c ------------------------------------------------------------
 c
        subroutine upbnd(listbc,val,nvar,mitot,mjtot,mktot,
-     1                  maxsp,iused,mptr)
+     1                  maxsp,mptr)
 
       implicit double precision (a-h,o-z)
 
@@ -54,26 +54,26 @@ c
          norm = 2**(iside-1)
          iflag =iused(icrse,jcrse,kcrse)/norm
          if (mod(iflag,2).eq.1) then
-	    go to 40
-	 endif
+           go to 40
+         endif
          mkid = listbc(5,ispot)
          lkid = listbc(6,ispot)
          sgnm = chsign(iside)
          kidlst = node(ffluxptr,mkid)
 
 c        ## debugging output
-	 if (uprint) then
-	   write(outunit,101) icrse,jcrse,kcrse,
-     .         (val(icrse,jcrse,kcrse,ivar),ivar=1,nvar)
+         if (uprint) then
+           write(outunit,101) icrse,jcrse,kcrse,
+     .            (val(icrse,jcrse,kcrse,ivar),ivar=1,nvar)
  101       format(" old ",1x,3i4,5e15.7)
-	 endif
+         endif
 
          if (mcapa .gt. 0) then
 c            # capacity array:  need to divide by capa in each cell.
 c            # modify sgnm which is reset for each grid cell.
 c            # Note capa is stored in aux(icrse,jcrse,kcrse,mcapa)
              sgnm = sgnm / alloc(iaddaux(icrse,jcrse,kcrse))
-	 endif
+         endif
 
          do 20 ivar = 1,nvar
             val(icrse,jcrse,kcrse,ivar) = val(icrse,jcrse,kcrse,ivar) +
@@ -82,11 +82,11 @@ c            # Note capa is stored in aux(icrse,jcrse,kcrse,mcapa)
          iused(icrse,jcrse,kcrse) = iused(icrse,jcrse,kcrse) + norm
 
 c        ## debugging output
-	 if (uprint) then
-	   write(outunit,102) mkid,
+         if (uprint) then
+           write(outunit,102) mkid,
      .         (val(icrse,jcrse,kcrse,ivar),ivar=1,nvar)
  102       format(" new ","(grid",i3,")",5e15.7)
-	 endif
+         endif
 
  40   continue
 c

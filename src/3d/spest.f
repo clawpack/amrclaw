@@ -1,11 +1,11 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine spest (nvar,naux,lcheck,iflags,isize,jsize,ksize)
+      subroutine spest (nvar,naux,lcheck,dom1flags,isize,jsize,ksize,t0)
 c
       implicit double precision (a-h,o-z)
 
-      dimension  iflags (0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1  dom1flags (0:isize+1,0:jsize+1,0:ksize+1)
       include  "call.i"
 
  
@@ -20,7 +20,7 @@ c
        do 4 i = 1, isize
        do 4 j = 1, jsize
        do 4 k = 1, ksize
- 4        iflags(i,j,k) = 0
+ 4        dom1flags(i,j,k) = 0
 c
        mptr = lstart(lcheck)
  5     continue
@@ -47,11 +47,19 @@ c
           locbig = igetsp(mitot*mjtot*mktot*nvar)
           node(tempptr,mptr) = locbig
 c         # straight copy into scratch array so don't mess up latest soln.
-          do 10 i = 1, mitot*mjtot*mktot*nvar
- 10          alloc(locbig+i-1) = alloc(locnew+i-1)
+c  ## at later times want to use newest soln for spatial error flagging
+c  ## at initial time want to use initial conditions (so retain symmetry for example)
+!         if (t0+possk(lcheck) .ne. time) then  ! exact equality test here. counting on ieee arith.
+            do 10 i = 1, mitot*mjtot*mktot*nvar
+ 10            alloc(locbig+i-1) = alloc(locnew+i-1)
 
-          call bound(time,nvar,nghost,alloc(locbig),mitot,mjtot,mktot,
+            call bound(time,nvar,nghost,alloc(locbig),mitot,mjtot,mktot,
      1               mptr,alloc(locaux),naux)
+!         else   ! boundary values already in locold
+!             locold = node(store2,mptr)
+!             do 11 i = 1, mitot*mjtot*nvar
+! 11             alloc(locbig+i-1) = alloc(locold+i-1)
+!         endif
 c
 c get user flags for refinement, which might be based on spatial gradient, 
 c for example.  Use old values of soln at time t  before
@@ -59,8 +67,8 @@ c integration to get accurate boundary gradients
 c
           if (tolsp .gt. 0.) then
              locamrflags = igetsp(mitot*mjtot*mktot)
-	        do 20 i = 1, mitot*mjtot*mktot
- 20          alloc(locamrflags+i-1) = goodpt
+	           do 20 i = 1, mitot*mjtot*mktot
+ 20             alloc(locamrflags+i-1) = goodpt
 c
 c        # call user-supplied routine to flag any points where 
 c        # refinement is desired based on user's criterion.  
@@ -76,7 +84,7 @@ c        Note change of dimension of amrflags array:
 c        3rd dim = 1 here, elsewhere flag array has idim3 = nvar
 c
          idim3 = 1   ! 3rd dim = 1 here, elsewhere is nvar
-         call setflags (iflags,isize,jsize,ksize,
+         call setflags (dom1flags,isize,jsize,ksize,
      1                  alloc(locamrflags),idim3,mitot,mjtot,mktot,mptr)
          call reclam(locamrflags, mitot*mjtot*mktot)
       endif

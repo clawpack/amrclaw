@@ -19,7 +19,7 @@ c mptr      = grid number  (for debugging)
 c xlow,ylow,zlow = lower left corner of enlarged grid (including ghost cells).
 c dt         = incoming time step
 c dx,dy,dz   = mesh widths for this grid
-c dtnew      = return suggested new time step for this grid's soln.
+c dtnew      = return suggested new time step for this grids soln.
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -53,14 +53,14 @@ c     # needed there.
 c
       if (dump) then
          write(outunit,*)" grid ", mptr
-	 do k = nghost+1, mktot-nghost
-	 do j = nghost+1, mjtot-nghost
-	 do i = nghost+1, mitot-nghost
-	    write(outunit,545) i,j,k,(q(i,j,k,ivar),ivar=1,nvar)
- 545        format(3i3,3x,5e15.7)
-	 end do
-	 end do
-	 end do
+         do k = 1, mktot
+         do j = 1, mjtot
+         do i = 1, mitot
+           write(outunit,545) i,j,k,(q(i,j,k,ivar),ivar=1,nvar)
+ 545       format(3i3,3x,5e30.20)
+         end do
+         end do
+         end do
       endif
 c
       meqn   = nvar
@@ -117,48 +117,50 @@ c
 c     # take one step on the conservation law:
 c
       call step3(mbig,mx,my,mz,nvar,maux,mbc,mx,my,mz,
-     &		 q,aux,dx,dy,dz,dt,cflgrid,
+     &             q,aux,dx,dy,dz,dt,cflgrid,
      &           fm,fp,gm,gp,hm,hp,
      &           work(i0faddm),work(i0faddp),
      &           work(i0gadd),work(i0hadd),
      &           work(i0q1d),work(i0dtdx1),work(i0dtdy1),work(i0dtdz1),
-     &		 work(i0aux1),work(i0aux2),work(i0aux3),
+     &             work(i0aux1),work(i0aux2),work(i0aux3),
      &           work(i0next),mwork1,rpn3,rpt3, rptt3)
 c
 c
 c       write(outunit,*) ' Courant # of grid ',mptr, '  is  ',cflgrid
 c
-	cflmax = dmax1(cflmax,cflgrid)
+!$OMP CRITICAL (cflmax)
+      cflmax = dmax1(cflmax,cflgrid)
+!$OMP END CRITICAL (cflmax)
 c
 c       # update q
-	dtdx = dt/dx
-	dtdy = dt/dy
-	dtdz = dt/dz
+      dtdx = dt/dx
+      dtdy = dt/dy
+      dtdz = dt/dz
         if (mcapa.eq.0) then
-	   do 50 m=1,nvar
-	   do 50 i=mbc+1,mitot-mbc
-	   do 50 j=mbc+1,mjtot-mbc
-	   do 50 k=mbc+1,mktot-mbc
+         do 50 m=1,nvar
+         do 50 i=mbc+1,mitot-mbc
+         do 50 j=mbc+1,mjtot-mbc
+         do 50 k=mbc+1,mktot-mbc
 c
 c            # no capa array.  Standard flux differencing:
 
-	      q(i,j,k,m) = q(i,j,k,m)
-     &	  	   - dtdx * (fm(i+1,j,k,m) - fp(i,j,k,m))
-     &	  	   - dtdy * (gm(i,j+1,k,m) - gp(i,j,k,m))
-     &	  	   - dtdz * (hm(i,j,k+1,m) - hp(i,j,k,m))
+            q(i,j,k,m) = q(i,j,k,m)
+     &                 - dtdx * (fm(i+1,j,k,m) - fp(i,j,k,m))
+     &                 - dtdy * (gm(i,j+1,k,m) - gp(i,j,k,m))
+     &                 - dtdz * (hm(i,j,k+1,m) - hp(i,j,k,m))
  50       continue
        else
-	   do 51 m=1,nvar
-	   do 51 i=mbc+1,mitot-mbc
-	   do 51 j=mbc+1,mjtot-mbc
-	   do 51 k=mbc+1,mktot-mbc
+         do 51 m=1,nvar
+         do 51 i=mbc+1,mitot-mbc
+         do 51 j=mbc+1,mjtot-mbc
+         do 51 k=mbc+1,mktot-mbc
 
 c            # with capa array.
 
-	    q(i,j,k,m) = q(i,j,k,m)
-     &		 - (dtdx * (fm(i+1,j,k,m) - fp(i,j,k,m))
-     & 		 +  dtdy * (gm(i,j+1,k,m) - gp(i,j,k,m))
-     &		 +  dtdz * (hm(i,j,k+1,m) - hp(i,j,k,m)))
+          q(i,j,k,m) = q(i,j,k,m)
+     &              - (dtdx * (fm(i+1,j,k,m) - fp(i,j,k,m))
+     &              +  dtdy * (gm(i,j+1,k,m) - gp(i,j,k,m))
+     &              +  dtdz * (hm(i,j,k+1,m) - hp(i,j,k,m)))
      &         / aux(i,j,k,mcapa)
  51       continue
        endif
@@ -170,23 +172,23 @@ c        # with source term:   use Godunov splitting
 c         call src3(q,mitot,mjtot,mktot,nvar,aux,maux,time,dt)
          call src3(mx,my,mz,nvar,mbc,mx,my,mz,xlowmbc,
      &         ylowmbc,zlowmbc,dx,dy,dz,q,maux,aux,time,dt)
-	 endif
+       endif
 c
 c
 c
 c     # output fluxes for debugging purposes:
       if (debug) then
-	 write(dbugunit,*)" fluxes for grid ",mptr
+       write(dbugunit,*)" fluxes for grid ",mptr
          do 830 i = mbc+1, mitot-1
             do 830 j = mbc+1, mjtot-1
             do 830 k = mbc+1, mktot-1
                write(dbugunit,831) i,j,k,fm(i,j,k,1),fp(i,j,k,1),
-     .				   gm(i,j,k,1),gp(i,j,k,1),
-     .				   hm(i,j,k,1),hp(i,j,k,1)
-	       do 830 m = 2, meqn
-		  write(dbugunit,832) fm(i,j,k,m),fp(i,j,k,m),
-     .		  gm(i,j,k,m),gp(i,j,k,m),
-     .		  hm(i,j,k,m),hp(i,j,k,m)
+     .                           gm(i,j,k,1),gp(i,j,k,1),
+     .                           hm(i,j,k,1),hp(i,j,k,1)
+             do 830 m = 2, meqn
+              write(dbugunit,832) fm(i,j,k,m),fp(i,j,k,m),
+     .              gm(i,j,k,m),gp(i,j,k,m),
+     .              hm(i,j,k,m),hp(i,j,k,m)
   831          format(3i4,6d16.6)
   832          format(8x,6d16.6)
   830    continue
@@ -198,13 +200,13 @@ c For variable time stepping, use max speed seen on this grid to
 c choose the allowable new time step dtnew.  This will later be
 c compared to values seen on other grids.
 c
- 	 if (cflgrid .gt. 0.d0) then
- 	     dtnew = dt*cfl/cflgrid
- 	   else
+        if (cflgrid .gt. 0.d0) then
+            dtnew = dt*cfl/cflgrid
+          else
 c            # velocities are all zero on this grid so there's no
 c            # time step restriction coming from this grid.
- 	     dtnew = rinfinity
- 	   endif
+            dtnew = rinfinity
+          endif
 c
 
       if (cflgrid .gt. cflv1) then
@@ -213,6 +215,17 @@ c
   810       format('*** WARNING *** Courant number  =', d12.4,
      &              '  is larger than cflv(1) ')
             endif
+
+      if (dump) then
+         write(outunit,*)" after time step on grid ", mptr
+         do k = 1, mktot
+         do j = 1, mjtot
+         do i = 1, mitot
+           write(outunit,545) i,j,k,(q(i,j,k,ivar),ivar=1,nvar)
+         end do
+         end do
+         end do
+      endif
 
       return
       end

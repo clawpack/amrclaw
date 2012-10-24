@@ -9,8 +9,8 @@ c
       include  "call.i"
 
       dimension badpts(numdim,len)
-      integer   iflags  (0:isize+1,0:jsize+1,0:ksize+1)
-      integer   domflags(0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1 iflags  (0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1 domflags(0:isize+1,0:jsize+1,0:ksize+1)
 c
 c
 c *************************************************************

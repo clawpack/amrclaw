@@ -8,8 +8,8 @@ c
 
       include  "call.i"
 
-      dimension  iflags2(0:isize+1,0:jsize+1,0:ksize+1)
-      dimension  iflags (0:ibase+1,0:jbase+1,0:kbase+1)
+      integer*1  iflags2(0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1  iflags (0:ibase+1,0:jbase+1,0:kbase+1)
 
 c
 c ::::::::::::::::::::::::::: DOMUP :::::::::::::::::::::
@@ -32,7 +32,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
       do 10 k = 0, ksize+1
       do 10 j = 0, jsize+1
       do 10 i = 0, isize+1
-	 iflags2(i,j,k) = 0
+         iflags2(i,j,k) = 0
  10   continue
 
       do 20 k = 1, kbase

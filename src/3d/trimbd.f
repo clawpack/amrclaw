@@ -39,7 +39,7 @@ c some unset cells were found
            do 220 j = jlo, jhi
               uleft = dmin1(uleft,used(i,j,k))
 220        continue
-           il = i
+           il = i -ilo + 1
            if (uleft .eq. 0.) go to 230
 200     continue
 
@@ -49,7 +49,7 @@ c some unset cells were found
            do 320 j = jlo, jhi
               uright = dmin1(uright,used(i,j,k))
 320        continue
-           ir = i
+           ir = i - ilo + 1
            if (uright .eq. 0.) go to 330
 300     continue
 
@@ -59,7 +59,7 @@ c some unset cells were found
            do 420 i = ilo, ihi
               ufront = dmin1(ufront,used(i,j,k))
 420        continue
-           jf = j
+           jf = j - jlo + 1
            if (ufront .eq. 0.) go to 430
 400        continue
  
@@ -69,7 +69,7 @@ c some unset cells were found
            do 520 i = ilo, ihi
               urear = dmin1(urear,used(i,j,k))
 520        continue
-           jr = j
+           jr = j - jlo + 1
            if (urear .eq. 0.) go to 530
 500     continue
  
@@ -79,7 +79,7 @@ c some unset cells were found
            do 620 i = ilo, ihi
               ubot = dmin1(ubot,used(i,j,k))
 620        continue
-           kb = k
+           kb = k - klo + 1
            if (ubot .eq. 0.) go to 630
 600     continue
  
@@ -89,7 +89,7 @@ c some unset cells were found
            do 720 i = ilo, ihi
               utop = dmin1(utop,used(i,j,k))
 720        continue
-           kt = k
+           kt = k - klo + 1
            if (utop .eq. 0.) go to 730
 700     continue
 

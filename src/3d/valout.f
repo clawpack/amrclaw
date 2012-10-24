@@ -86,7 +86,8 @@ c        ###  make the file names and open output files
 
          level = lst
          ngrids = 0
- 65      if (level .gt. lfine) go to 90
+c65      if (level .gt. lfine) go to 90
+ 65      if (level .gt. lend) go to 90
             mptr = lstart(level)
  70         if (mptr .eq. 0) go to 80
               ngrids  = ngrids + 1

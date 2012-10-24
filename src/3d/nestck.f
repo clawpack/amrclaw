@@ -3,14 +3,14 @@ c ---------------------------------------------------------
 c
       logical function nestck(mnew,lbase,badpts,npts,numptc,icl,
      1                        nclust,domflags,isize,jsize,ksize,
-     &      nvar,naux)
+     &                        nvar,naux)
 c
       implicit double precision (a-h,o-z)
 
       include  "call.i"
 
       dimension  badpts(numdim,npts)
-      integer    domflags(0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1  domflags(0:isize+1,0:jsize+1,0:ksize+1)
       integer   numptc(maxcl)
 c
 c ::::::::::::::::::::::: NESTCK :::::::::::::::::::::::::::::::::::
@@ -47,7 +47,7 @@ c
        do 10 k = node(ndklo,mnew)/lratioz+1, node(ndkhi,mnew)/lratioz+1
        do 10 j = node(ndjlo,mnew)/lratioy+1, node(ndjhi,mnew)/lratioy+1
        do 10 i = node(ndilo,mnew)/lratiox+1, node(ndihi,mnew)/lratiox+1
-	  if (domflags(i,j,k) .eq. 0) go to 50
+          if (domflags(i,j,k) .eq. 0) go to 50
  10    continue
 c
 c      if made it here, then mnew is properly nested
