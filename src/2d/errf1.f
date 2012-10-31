@@ -16,7 +16,7 @@ c
 c
 c ::::::::::::::::::::::::::::: ERRF1 ::::::::::::::::::::::::::::::::
 c
-c  Richardson error estimator:  Used when tol>0 in user input.
+c  Richardson error estimator:  Used when flag_richardson is .true.
 c  Compare error estimates in rctfine, rctcrse, 
 c  A point is flagged if the error estimate is greater than tol
 c  and if allowflag(x,y,t,level)=.true. at this point.
@@ -72,12 +72,12 @@ c
           term4 = rctfine(1,ifine,jfine+1)
 c         # divide by (aval*order) for relative error
           aval  = (term1+term2+term3+term4)/4.d0
-          est   =  dabs((aval-rctcrse(i,j,1))/ order)
+          est   =  dabs((aval-rctcrse(1,i,j))/ order)
           if (est .gt. errmax) errmax = est
           err2 = err2 + est*est
 c         write(outunit,102) i,j,est
  102      format(' i,j,est ',2i5,e12.5)
-c         rctcrse(i,j,2) = est
+c         rctcrse(2,i,j) = est
 c
           if (est .ge. tol .and. allowflag(xofi,yofj,time,levm)) then
              rflag  = badpt
@@ -120,7 +120,7 @@ c
       do 70 j = nghost+1, mj2tot-nghost
       ifine   = nghost+1
       do 60 i = nghost+1, mi2tot-nghost
-         if (rctcrse(i,j,1) .eq. goodpt) go to 55
+         if (rctcrse(1,i,j) .eq. goodpt) go to 55
             rctflg(1,ifine,jfine)    = badpt
             rctflg(1,ifine+1,jfine)  = badpt
             rctflg(1,ifine,jfine+1)  = badpt

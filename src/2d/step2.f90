@@ -78,7 +78,6 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
     ! ============================================================================
     ! Perform X-Sweeps
     do j = 0,my+1
-
         ! Copy old q into 1d slice
         q1d(:,1-mbc:mx+mbc) = qold(:,1-mbc:mx+mbc,j)
         
@@ -97,7 +96,6 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         endif
         
         ! Store value of j along the slice into common block
-        ! *** WARNING *** This may not working with threading
         jcom = j
 
         ! Compute modifications fadd and gadd to fluxes along this slice:
@@ -114,7 +112,7 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         gp(:,1:mx+1,j) = gp(:,1:mx+1,j) + gaddp(:,1:mx+1,1)
         gm(:,1:mx+1,j+1) = gm(:,1:mx+1,j+1) + gaddm(:,1:mx+1,2)
         gp(:,1:mx+1,j+1) = gp(:,1:mx+1,j+1) + gaddp(:,1:mx+1,2)
-
+        
     enddo
 
     ! ============================================================================
@@ -140,7 +138,6 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         endif
         
         ! Store the value of i along this slice in the common block
-        ! *** WARNING *** This may not working with threading
         icom = i
         
         ! Compute modifications fadd and gadd to fluxes along this slice

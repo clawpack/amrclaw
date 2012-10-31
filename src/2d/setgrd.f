@@ -6,8 +6,6 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-
-      integer verbosity_regrid
       logical  vtime
       data     vtime/.false./
 

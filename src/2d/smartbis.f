@@ -2,13 +2,17 @@ c
 c ---------------------------------------------------------
 c
       subroutine smartbis(badpts,npts,cutoff,numptc,nclust,
-     1                    lbase,intcorn,iscr,jscr,idim,jdim)
+     1                    lbase,intcorn,idim,jdim)
+c     1                    lbase,intcorn,iscr,jscr,idim,jdim)
+c
+c  iscr, jscr now stackbased, no need for use of alloc
 c
       use amr_module
       implicit double precision (a-h,o-z)
 
-
       dimension     badpts(2,npts),intcorn(nsize,maxcl)
+c
+c  iscr, jscr now stackbased, no need for use of alloc
       dimension     iscr(idim), jscr(jdim)
       integer       nclust, numptc(maxcl)
       parameter     (usemin=.4)

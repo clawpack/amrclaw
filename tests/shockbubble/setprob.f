@@ -13,6 +13,7 @@ c     ==================
       real(kind=8) :: x0,y0,alf,beta,r0
       integer :: idisc
       real(kind=8) :: rinf,vinf,einf
+      character*25 fname
       
       common /comic/ qin,qout
       common /cparam/  gamma,gamma1
@@ -20,8 +21,9 @@ c     ==================
       common /cominf/ rinf,vinf,einf
 c
 c
-C       open(unit=7,file='setprob.data',status='old',form='formatted')
-	   call opendatafile(7,"setprob.data")
+       fname = 'setprob.data'
+       call opendatafile(7,fname)
+
 c      # set idisc for cellave routines (see function fdisc) 
        idisc = 2
 c

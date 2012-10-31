@@ -13,41 +13,40 @@ CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
 # ----------------------------------
 
 CLAW_PKG = amrclaw                  # Clawpack package to use
-CLAW_EXE = xamr                     # Executable to create
-CLAW_setrun_file = setrun.py        # File containing function to make data
-CLAW_OUTDIR = _output               # Directory for output
-CLAW_setplot_file = setplot.py      # File containing function to set plots
-CLAW_PLOTDIR = _plots               # Directory for plots
+EXE = xamr                          # Executable to create
+SETRUN_FILE = setrun.py             # File containing function to make data
+OUTDIR = _output_cFnew              # Directory for output
+SETPLOT_FILE = setplot.py           # File containing function to set plots
+PLOTDIR = _plots_cFnew              # Directory for plots
+
+OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
+RESTART ?= False                    # Should = clawdata.restart in setrun
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
-# Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2
 
-# These flags are for adding the newer openmp threading, note that in order to
-# use openmp with ifort you must replace -fopenmp with -openmp
-# Grid threading refers to threads over the each grid
-# Loop threading refers to threading in the sweep calling the Riemann solvers
-# FFLAGS += -D GRID_THREADING -fopenmp
-# FFLAGS += -D LOOP_THREADING -fopenmp
-# This line changes the maximum size of the patches, default is 60
-# FFLAGS += -D MAX1D=200
+# Add any desired compiler flags such as -g here:
+FFLAGS ?= -O2 
+#FFLAGS = -W -Wall -fbounds-check -ffpe-trap=zero,overflow,invalid -g
+# intel ifort flags
+# FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
 
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
+
 MODULES = \
   $(AMRCLAW)/src/2d/amr_module.f90 \
 
 SOURCES = \
-  $(RIEMANN)/src/rpn2_vc_advection.f \
-  $(RIEMANN)/src/rpt2_vc_advection.f \
   setaux.f \
   psi.f \
   setprob.f \
   b4step2.f \
   qinit.f \
-  $(AMRCLAW)/src/2d/amr2ez.f \
+  $(RIEMANN)/src/rpn2_vc_advection.f \
+  $(RIEMANN)/src/rpt2_vc_advection.f \
+  $(AMRCLAW)/src/2d/amr2.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/src2.f \
@@ -64,9 +63,13 @@ SOURCES = \
   $(AMRCLAW)/src/2d/birect.f \
   $(AMRCLAW)/src/2d/cleanup.f \
   $(AMRCLAW)/src/2d/colate.f \
+  $(AMRCLAW)/src/2d/colate2.f \
   $(AMRCLAW)/src/2d/bufnst.f \
+  $(AMRCLAW)/src/2d/bufnst2.f \
   $(AMRCLAW)/src/2d/spest.f \
+  $(AMRCLAW)/src/2d/spest2.f \
   $(AMRCLAW)/src/2d/flag2refine.f \
+  $(AMRCLAW)/src/2d/flag2refine2.f \
   $(AMRCLAW)/src/2d/allowflag.f \
   $(AMRCLAW)/src/2d/errest.f \
   $(AMRCLAW)/src/2d/errf1.f \
@@ -75,16 +78,19 @@ SOURCES = \
   $(AMRCLAW)/src/2d/filpatch_new.f90 \
   $(AMRCLAW)/src/2d/prefilp_new.f90 \
   $(AMRCLAW)/src/2d/flglvl.f \
+  $(AMRCLAW)/src/2d/flglvl2.f \
   $(AMRCLAW)/src/2d/fluxad.f \
   $(AMRCLAW)/src/2d/fluxsv.f \
   $(AMRCLAW)/src/2d/ginit.f \
-  $(AMRCLAW)/src/2d/grdfit.f \
-  $(AMRCLAW)/src/2d/intfil_new.f90 \
+  $(AMRCLAW)/src/2d/grdfit2.f \
+  $(AMRCLAW)/src/2d/intfil.f \
   $(AMRCLAW)/src/2d/moment.f \
   $(AMRCLAW)/src/2d/nestck.f \
+  $(AMRCLAW)/src/2d/nestck2.f \
   $(AMRCLAW)/src/2d/prepf.f \
   $(AMRCLAW)/src/2d/prepc.f \
   $(AMRCLAW)/src/2d/projec.f \
+  $(AMRCLAW)/src/2d/projec2.f \
   $(AMRCLAW)/src/2d/signs.f \
   $(AMRCLAW)/src/2d/findcut.f \
   $(AMRCLAW)/src/2d/smartbis.f \
@@ -108,6 +114,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/domain.f  \
   $(AMRCLAW)/src/2d/setflags.f \
   $(AMRCLAW)/src/2d/shiftset.f \
+  $(AMRCLAW)/src/2d/shiftset2.f \
   $(AMRCLAW)/src/2d/conck.f \
   $(AMRCLAW)/src/2d/domshrink.f \
   $(AMRCLAW)/src/2d/domprep.f \
@@ -130,6 +137,19 @@ SOURCES = \
   $(AMRCLAW)/src/2d/dumpgauge.f \
   $(AMRCLAW)/src/2d/quick_sort1.f \
   $(AMRCLAW)/src/2d/opendatafile.f \
+  $(AMRCLAW)/src/2d/addflags.f \
+  $(AMRCLAW)/src/2d/domgrid.f \
+  $(AMRCLAW)/src/2d/drivesort.f \
+  $(AMRCLAW)/src/2d/flagcheck.f \
+  $(AMRCLAW)/src/2d/setdomflags.f \
+  $(AMRCLAW)/src/2d/setIndices.f \
+  $(AMRCLAW)/src/2d/setPhysBndry.f \
+  $(AMRCLAW)/src/2d/setPhysBndryFlags.f \
+  $(AMRCLAW)/src/2d/coarseGridFlagSet.f \
+  $(AMRCLAW)/src/2d/griddomcopy.f \
+  $(AMRCLAW)/src/2d/griddomshrink.f \
+  $(AMRCLAW)/src/2d/griddomup.f \
+  $(AMRCLAW)/src/2d/baseCheck.f \
   $(AMRCLAW)/src/2d/init_alloc.f90 \
   $(AMRCLAW)/src/2d/restrt_alloc.f90 \
   $(AMRCLAW)/src/2d/resize_alloc.f90 \
@@ -139,6 +159,3 @@ SOURCES = \
 # Include Makefile containing standard definitions and make options:
 include $(CLAWMAKE)
 
-
-### DO NOT remove this line - make depends on it ###
-    

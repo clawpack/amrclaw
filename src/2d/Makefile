@@ -7,7 +7,7 @@
 # Makefile for Clawpack code in this directory.
 # This version only sets the local files and frequently changed
 # options, and then includes the standard makefile pointed to by CLAWMAKE.
-CLAWMAKE = $(CLAW)/util/Makefile.common
+CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
 
 # See the above file for details and a list of make options, or type
 #   make .help
@@ -19,7 +19,10 @@ CLAWMAKE = $(CLAW)/util/Makefile.common
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2 
+# INTEL ifort flags
+#FFLAGS ?=  -g -C -CB -CU -fpe0 -ftrapuv
+# gfortran flags
+# #FFLAGS = -g -fbounds-check -ffpe-trap=invalid,overflow,zero
 
 
 CLAW_LIB = $(shell pwd)
@@ -38,12 +41,24 @@ CLAW_SOURCES = \
   $(CLAW_LIB)/flag2refine.f  \
   $(CLAW_LIB)/allowflag.f  \
   $(CLAW_LIB)/spest.f  \
+  $(CLAW_LIB)/init_iflags.f  \
   $(CLAW_LIB)/igetsp.f \
   $(CLAW_LIB)/reclam.f \
   $(CLAW_LIB)/birect.f \
   $(CLAW_LIB)/cleanup.f \
   $(CLAW_LIB)/colate.f \
   $(CLAW_LIB)/bufnst.f \
+  $(CLAW_LIB)/colate2.f \
+  $(CLAW_LIB)/bufnst2.f \
+  $(CLAW_LIB)/spest2.f \
+  $(CLAW_LIB)/flag2refine2.f \
+  $(CLAW_LIB)/nestck2.f \
+  $(CLAW_LIB)/projec2.f \
+  $(CLAW_LIB)/shiftset2.f \
+  $(CLAW_LIB)/addflags.f \
+  $(CLAW_LIB)/baseCheck.f \
+  $(CLAW_LIB)/setIndices.f \
+  $(CLAW_LIB)/setPhysBndry.f \
   $(CLAW_LIB)/errf1.f \
   $(CLAW_LIB)/gfixup.f \
   $(CLAW_LIB)/filval.f \

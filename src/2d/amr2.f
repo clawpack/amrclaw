@@ -1,7 +1,7 @@
 c
 c ----------------------------------------------------------------
 c
-       program amr2ez
+       program amr2
 c
 c  Use adaptive mesh refinement to solve the hyperbolic 2-d equation:
 c
@@ -22,11 +22,8 @@ c  in (qinit.f), b.c.'s in (physbd.f).
 c  Specify rectangular domain from
 c           (xlower,ylower) to (xupper,yupper).
 c
-c  No rotated rectangles are used in this version.
-c  Periodic b.c.'s finally implemented.
 c
 c =========================================================================
-c  Copyright 1996,  Marsha J. Berger and Randall J. LeVeque
 c
 c  This software is made available for research and instructional use only.
 c  You may copy and use this software without charge for these non-commercial
@@ -39,9 +36,8 @@ c  *** will work for your purposes.  The software may in fact have defects, so
 c  *** use the software at your own risk.
 c
 c  --------------------------------------
-c    AMRCLAW Version 0.4,  June, 1999
-c     compatible with CLAWPACK Version 4.0
-c    Homepage: http://www.amath.washington.edu/~claw/
+c    AMRCLAW Version 5.0,  2012
+c    Homepage: http://www.clawpack.org
 c  --------------------------------------
 c
 c   Authors:
@@ -58,7 +54,7 @@ c             Applied Mathematics
 c             Box 352420
 c             University of Washington,
 c             Seattle, WA 98195-2420
-c             rjl@amath.washington.edu
+c             rjl@uw.edu
 c
 c =========================================================================
 c
@@ -70,7 +66,6 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-      include "gauges.i"
       include "regions.i"
 
       common /combc2/ mthbc(4)
@@ -79,9 +74,7 @@ c
       character * 12     pltfile,infile,outfile,dbugfile,matfile
       character * 20     parmfile
       character * 25 fname
-      logical            vtime,rest
-      dimension          tout(maxout)
-      dimension          tchk(maxout)
+      logical            vtime,rest,output_t0
 
       integer oldmode,omp_get_max_threads
 c
@@ -98,7 +91,6 @@ c        endif
 c
       infile   = 'amr2ez.data'
       outfile  = 'fort.amr'
-      pltfile  = 'fort.ncar'
       dbugfile = 'fort.debug'
       matfile  = 'fort.nplot'
       parmfile  = 'fort.parameters'
@@ -108,133 +100,140 @@ c
 c
 c     ## New in 4.4:  
 c     ## Open file and skip over leading lines with # comments:
-      fname = 'amr2ez.data'
+      fname = 'amrclaw.data'
       call opendatafile(inunit,fname)
 c
-      open(10,file='fort.info',status='unknown',form='formatted')
+c     # oops - unit 10 is for checkpoint file !!
+c     open(10,file='fort.info',status='unknown',form='formatted')
 c
 c
-c     Number of space dimensions:  ## New in 4.4
-c     read(55,*) ndim  ## not yet in amrclaw
-c
-c     ## The remainder is unchanged from 4.3:
-
-c
-c     domain variables
-      read(inunit,*) nx
-      read(inunit,*) ny
-      read(inunit,*) mxnest
-      if (abs(mxnest) .gt. maxlv) then
-         write(outunit,*)
-     &    'Error ***   mxnest > max. allowable levels (maxlv) in common'
-         write(*,*)
-     &    'Error ***   mxnest > max. allowable levels (maxlv) in common'
-         stop
-      endif
-      if (mxnest .lt. 0) then
-c         # mxnext<0 flags anisotropic refinement - read in refinement
-c         # ratios in x,y,t from next three lines:
-          mxnest = -mxnest
-          read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
-          read(inunit,*) (intraty(i),i=1,max(1,mxnest-1))
-          read(inunit,*) (kratio(i), i=1,max(1,mxnest-1))
-      else
-          read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
-          do i=1,max(1,mxnest-1)
-             intraty(i) = intratx(i)
-             kratio(i)  = intratx(i)
-          enddo
+c     Number of space dimensions:  
+      read(inunit,*) ndim  
+      if (ndim .ne. 2) then
+          write(outunit,*)
+     &       'Error ***   ndim = 2 is required,  ndim = ',ndim
+          write(outunit,*) '*** Are you sure input has been converted'
+          write(outunit,*) '*** to Clawpack 5.x form?'
+          stop
       endif
           
-c      if (intrat(1) .lt. 0) then
-c          # this flags the situation where we do not want to refine in t
-c           write(6,*) '*** No refinement in time!'
-c           intrat(1) = -intrat(1)
-c           do i=1,max(1,mxnest-1)
-c              kratio(i) = 1
-c              enddo
-c        else
-c          # the normal situation is to refine dt by same factors as dx,dy
-c           do i=1,max(1,mxnest-1)
-c              kratio(i) = intrat(i)
-c              enddo
-c        endif
+c
+c
+c     domain variables
+      read(inunit,*) xlower, ylower
+      read(inunit,*) xupper, yupper
+      read(inunit,*) nx, ny
+      read(inunit,*) nvar    ! meqn
+      read(inunit,*) mwaves
+      if (mwaves .gt. maxwave) then
+         write(outunit,*) 'Error ***   mwaves > maxwave'
+         write(*,*)       'Error ***   mwaves > maxwave'
+         stop
+      endif
+      read(inunit,*) naux
+      read(inunit,*) t0
 
+      tstart = t0                 ! for common block  !! FIX? !!
 
-      read(inunit,*) nout
+      read(inunit,*) output_style
+        if (output_style.eq.1) then
+           read(inunit,*) nout
+           read(inunit,*) tfinal
+           read(inunit,*) output_t0
+c          # array tout is set below
+           iout = 0
+           endif
+        if (output_style.eq.2) then
+           read(inunit,*) nout
+           read(inunit,*) (tout(i), i=1,nout)
+           output_t0 = (tout(1) .eq. t0)
+           if (output_t0) then
+              nout = nout - 1
+              do i=1,nout
+                 tout(i) = tout(i+1)
+                 enddo
+              endif
+           iout = 0
+           tfinal = tout(nout)
+           endif
+        if (output_style.eq.3) then
+           read(inunit,*) iout
+           read(inunit,*) nstop
+           read(inunit,*) output_t0
+           nout = 0
+           tfinal = rinfinity
+           endif
+
       if (nout .gt. maxout) then
          write(outunit,*) 'Error ***   nout > maxout in common'
          write(*,*)       'Error ***   nout > maxout in common'
          stop
       endif
-      read(inunit,*) outstyle
-        if (outstyle.eq.1) then
-           read(inunit,*) tfinal
-c          # array tout is set below after reading t0
-           iout = 0
-           endif
-        if (outstyle.eq.2) then
-           read(inunit,*) (tout(i), i=1,nout)
-           iout = 0
-           endif
-        if (outstyle.eq.3) then
-           read(inunit,*) iout,nstop
-           nout = 0
-           endif
-      read(inunit,*) possk(1)
-      read(inunit,*) dtv2
-      read(inunit,*) cflv1
-      read(inunit,*) cfl
-      read(inunit,*) nv1
-      if (outstyle.eq.1 .or. outstyle.eq.2) then
-         nstop = nv1
-      endif
 
-      read(inunit,*) method(1)
-      vtime = (method(1) .eq. 1)
-      read(inunit,*) method(2)
+      if ((output_style.eq.1) .and. (nout.gt.0)) then
+	   do i=1,nout
+	      tout(i) = t0 + i*(tfinal-t0)/float(nout)
+	      enddo
+       endif
+
+c
+c     style of output
+c
+      read(inunit,*) output_format
+      read(inunit,*) (output_q_components(i),i=1,nvar)
+      if (naux .gt. 0) then
+          read(inunit,*) (output_aux_components(i),i=1,naux)
+          read(inunit,*) output_aux_onlyonce
+          endif
+
+      read(inunit,*) possk(1)   ! dt_initial
+      read(inunit,*) dtv2       ! dt_max
+      read(inunit,*) cflv1      ! cfl_max
+      read(inunit,*) cfl        ! clf_desired
+      read(inunit,*) nv1        ! steps_max
+      if (output_style.ne.3) then
+         nstop = nv1
+         endif
+
+      read(inunit,*) vtime      ! dt_variable
+      if (vtime) then
+         method(1) = 2
+       else
+         method(1) = 1
+       endif
+
+      read(inunit,*) method(2)  ! order
       iorder = method(2)
-      read(inunit,*) method(3)
-      if (method(3) .lt. 0) then
-         write(6,*) '*** ERROR ***  method(3) < 0'
-         write(6,*) '    dimensional splitting not supported in amrclaw'
+      read(inunit,*) method(3)  ! order_trans
+
+      read(inunit,*) dimensional_split
+      if (dimensional_split.gt.0) then
+         write(6,*) '*** ERROR ***  dimensional_split = ',
+     &               dimensional_split
+         write(6,*) ' dimensional splitting not supported in amrclaw'
          stop
          endif
 
-      read(inunit,*) method(4)
-      read(inunit,*) method(5)
+      read(inunit,*) method(4)   ! verbosity
+      read(inunit,*) method(5)   ! src_split
       read(inunit,*) mcapa1
-      read(inunit,*) naux
       if (naux .gt. maxaux) then
-         write(outunit,*) 'Error ***   naux > maxaux in common'
-         write(*,*)       'Error ***   naux > maxaux in common'
+         write(outunit,*) 'Error ***   naux > maxaux'
+         write(*,*)       'Error ***   naux > maxaux'
          stop
       endif
-      do iaux = 1, naux
-         read(inunit,*) auxtype(iaux)
-      end do
 
-      read(inunit,*) nvar
-      read(inunit,*) mwaves
-      if (mwaves .gt. maxwave) then
-         write(outunit,*) 'Error ***   mwaves > maxwave in common'
-         write(*,*)       'Error ***   mwaves > maxwave in common'
-         stop
-      endif
+      if (naux .gt. 0) then
+         read(inunit,*) (auxtype(iaux), iaux=1,naux)
+         endif
+
+      read(inunit,*) fwave
       read(inunit,*) (mthlim(mw), mw=1,mwaves)
 
-      read(inunit,*) t0
-      tstart = t0                 ! for common block
-      read(inunit,*) xlower
-      read(inunit,*) xupper
-      read(inunit,*) ylower
-      read(inunit,*) yupper
 
       read(inunit,*) nghost
-      read(inunit,*) mthbc(1)
-      read(inunit,*) mthbc(2)
-      read(inunit,*) mthbc(3)
-      read(inunit,*) mthbc(4)
+      read(inunit,*) mthbc(1),mthbc(3)
+      read(inunit,*) mthbc(2),mthbc(4)
 
 c     1 = left, 2 = right 3 = bottom 4 = top boundary
       xperdom = (mthbc(1).eq.2 .and. mthbc(2).eq.2)
@@ -268,36 +267,88 @@ c     1 = left, 2 = right 3 = bottom 4 = top boundary
          stop
          endif
 
-      if (outstyle.eq.1) then
-	   do i=1,nout
-	      tout(i) = t0 + i*(tfinal-t0)/float(nout)
-	      enddo
-           endif
-
 
 c     restart and checkpointing
+c     -------------------------
+
       read(inunit,*) rest
-      read(inunit,*) ichkpt
-      if (ichkpt .lt. 0) then
-         if (-ichkpt .gt. maxout) then
-            write(6,*) 'Error -ichkpt can be no greater than maxout'
+      read(inunit,*) rstfile
+
+      read(inunit,*) checkpt_style
+      if (checkpt_style.eq.0) then
+c        # never checkpoint:
+         checkpt_interval = iinfinity
+      else if (checkpt_style.eq.2) then
+         read(inunit,*) nchkpt
+         if (nchkpt .gt. maxout) then
+            write(6,*) '*** Error nchkpt can be no greater than maxout'
             stop
             endif
-         read(inunit,*) (tchk(i), i=1,-ichkpt)
+         read(inunit,*) (tchk(i), i=1,nchkpt)
+      else if (checkpt_style.eq.3) then
+c        # checkpoint every checkpt_interval steps on coarse grid
+         read(inunit,*) checkpt_interval
          endif
+
+      read(inunit,*) mxnest
+      if (mxnest .le. 0) then
+          write(outunit,*)
+     &       'Error ***   mxnest (amrlevels_max) <= 0 not allowed'
+         stop
+      endif
+          
+      if (mxnest .gt. maxlv) then
+         write(outunit,*)
+     &    'Error ***   mxnest > max. allowable levels (maxlv) in common'
+         write(*,*)
+     &    'Error ***   mxnest > max. allowable levels (maxlv) in common'
+         stop
+      endif
+      
+      !# anisotropic refinement always allowed in 5.x:
+      read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
+      read(inunit,*) (intraty(i),i=1,max(1,mxnest-1))
+      read(inunit,*) (kratio(i), i=1,max(1,mxnest-1))
+
+      do i=1,mxnest-1
+          if ((intratx(i).gt.max1d) .or. (intraty(i).gt.max1d)) then 
+              write(6,*) 
+              write(6,601) max1d
+ 601          format(' *** Error: Refinement ratios must be',
+     &               ' no larger than  max1d = ',i5,/
+     &               '     (set max1d in amr_module.f90)')
+              stop
+              endif
+           enddo
+              
+      
+          
+c      if (intrat(1) .lt. 0) then
+c          # this flags the situation where we do not want to refine in t
+c           write(6,*) '*** No refinement in time!'
+c           intrat(1) = -intrat(1)
+c           do i=1,max(1,mxnest-1)
+c              kratio(i) = 1
+c              enddo
+c        else
+c          # the normal situation is to refine dt by same factors as dx,dy
+c           do i=1,max(1,mxnest-1)
+c              kratio(i) = intrat(i)
+c              enddo
+c        endif
+
+
+
 c
 c     refinement variables
-      read(inunit,*) tol
-      read(inunit,*) tolsp
+      read(inunit,*) flag_richardson
+      read(inunit,*) tol            ! for richardson
+      read(inunit,*) flag_gradient
+      read(inunit,*) tolsp          ! for gradient
       read(inunit,*) kcheck
       read(inunit,*) ibuff
       read(inunit,*) cut
-c
-c     style of output
-c
-      read(inunit,*) printout
-      read(inunit,*) ncarout
-      read(inunit,*) matlabout
+      read(inunit,*) verbosity_regrid
 
 c
 c
@@ -312,6 +363,15 @@ c     # read verbose/debugging flags
       read(inunit,*) sprint
       read(inunit,*) tprint
       read(inunit,*) uprint
+
+      !read(inunit,*) nregions
+      !if (nregions .gt. 0) then
+      !   write(6,*) '*** Regions not yet implemented'
+      !   stop
+      !   endif
+
+      call setgauges
+
       close(inunit)
 
 c     # look for capacity function via auxtypes:
@@ -373,9 +433,6 @@ c        stop
       endif
 c
 c
-      if (ncarout)
-     .   open(pltunit1,file=pltfile,status='unknown',form='formatted')
-c
 c
 c     # write out parameters to fort.parameters if desired... (add?)
 c
@@ -388,18 +445,23 @@ c
       write(6,*) 'Running amrclaw ...  '
       write(6,*) ' '
 
-c     # default values of parameters that may be reset if user's setprob
-c     # routine calls settopo, setdtopo, setqinit, setregions or setgauges.
-      mgauges = 0
+c     # Need to add regions option...
       mregions = 0
 
 c     # call user routine to set up problem parameters:
       call setprob()
 
 c
-      matlabu   = 0
       hxposs(1) = (xupper - xlower) / nx
       hyposs(1) = (yupper - ylower) / ny
+
+c     # initialize frame number for output.  
+c     # Note: might be reset in restrt if this is a restart
+      if (output_t0) then
+          matlabu   = 0
+        else
+          matlabu   = 1
+        endif
 c
 c
 c
@@ -408,7 +470,12 @@ c        ### arg added to restrt for compatibility with geoclaw, which
 c        ### allows variable refinement in time (and thus intrat vector
 c        ### is allowed to change upon restart). In geoclaw the calling
 c        ### sequence involves the variable varRefTime.
-         open(outunit, file=outfile,status='unknown',access='append',
+
+c        # gives errors...
+c        open(outunit, file=outfile,status='unknown',access='append',
+c    .        form='formatted')
+
+         open(outunit, file=outfile,status='unknown',
      .        form='formatted')
          call restrt(nsteps,time,nvar,.false.)
          nstart  = nsteps
@@ -424,19 +491,23 @@ c        ### sequence involves the variable varRefTime.
          lenmax = 0
          lendim = 0
          rvol   = 0.0d0
-         do 8 i   = 1, mxnest
- 8         rvoll(i) = 0.0d0
+         do i   = 1, mxnest
+           rvoll(i) = 0.0d0
+           enddo
          evol   = 0.0d0
          call   stst1
 
-c	 # changed 4/24/09: store dxmin,dymin for setaux before
-c	 # grids are made, in order to average up from finest grid.
-	 dxmin = hxposs(mxnest)
-	 dymin = hyposs(mxnest)
+
+c	     # changed 4/24/09: store dxmin,dymin for setaux before
+c    	 # grids are made, in order to average up from finest grid.
+	     dxmin = hxposs(mxnest)
+	     dymin = hyposs(mxnest)
 
          call   domain (nvar,vtime,nx,ny,naux,t0)
-c        # hold off on gauges until grids are set. the fake call to advance at the very
-c        # first timestep looks at the gauge array but it is not yet built
+
+c        # Hold off on gauges until grids are set. 
+c        # The fake call to advance at the very first timestep 
+c        # looks at the gauge array but it is not yet built
          mgaugeSave = mgauges
          mgauges = 0
          call   setgrd (nvar,cut,naux,dtinit,t0)
@@ -470,7 +541,7 @@ c
 c  print out program parameters for this run
 c
       write(outunit,107)tol,tolsp,iorder,kcheck,ibuff,nghost,cut,
-     1            mxnest,ichkpt,cfl
+     1            mxnest,checkpt_interval,cfl
       write(outunit,109) xupper,yupper,xlower,ylower,nx,ny
       write(outunit,139)(intratx(i),i=1,mxnest)
       write(outunit,139)(intraty(i),i=1,mxnest)
@@ -509,14 +580,16 @@ c
       call outtre (mstart,printout,nvar,naux)
       write(outunit,*) "  original total mass ..."
       call conck(1,nvar,naux,time,rest)
-      call valout(1,lfine,time,nvar,naux)
+      if (output_t0) then
+          call valout(1,lfine,time,nvar,naux)
+          endif
       close(parmunit)
-c
+
+
 c     --------------------------------------------------------
 c     # tick is the main routine which drives the computation:
 c     --------------------------------------------------------
-      call tick(nvar,iout,nstart,nstop,cut,vtime,time,ichkpt,naux,
-     &          nout,tout,tchk,time,rest)
+      call tick(nvar,cut,nstart,vtime,time,naux,time,rest)
 c     --------------------------------------------------------
 
 c     # Done with computation, cleanup:
@@ -574,4 +647,4 @@ c     # Close output and debug files.
       close(dbugunit)
 c
       stop
-      end
+      end program amr2
