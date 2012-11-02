@@ -122,8 +122,10 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         cflgrid = max(cflgrid,cfl1d)
         !$OMP END CRITICAL (cfl_row_x)
 
-        !$OMP CRITICAL (flux_accumulation_x)
+        
         ! Update fluxes
+        !$OMP CRITICAL (flux_accumulation_x)
+        
         fm(:,1:mx+1,j) = fm(:,1:mx+1,j) + faddm(:,1:mx+1)
         fp(:,1:mx+1,j) = fp(:,1:mx+1,j) + faddp(:,1:mx+1)
         gm(:,1:mx+1,j) = gm(:,1:mx+1,j) + gaddm(:,1:mx+1,1)
@@ -138,14 +140,14 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
     ! ============================================================================
     !  y-sweeps    
     !
-!$OMP PARALLEL DO PRIVATE(i,icom)                             &
-!$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdy1d) &
-!$OMP             PRIVATE(aux1,aux2,aux3)                     &
-!$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
-!$OMP             PRIVATE(cfl1d)                              &
-!$OMP             SHARED(mx,my,maxm,maux,mcapa,mbc,meqn,dtdy) &
-!$OMP             SHARED(cflgrid,fm,fp,gm,gp,qold,aux)        &
-!$OMP             DEFAULT(none)
+    !$OMP PARALLEL DO PRIVATE(i,icom)                             &
+    !$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdy1d) &
+    !$OMP             PRIVATE(aux1,aux2,aux3)                     &
+    !$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
+    !$OMP             PRIVATE(cfl1d)                              &
+    !$OMP             SHARED(mx,my,maxm,maux,mcapa,mbc,meqn,dtdy) &
+    !$OMP             SHARED(cflgrid,fm,fp,gm,gp,qold,aux)        &
+    !$OMP             DEFAULT(none)
     do i = 0,mx+1
         
         ! Copy data along a slice into 1d arrays:
@@ -174,13 +176,14 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
                    faddm,faddp,gaddm,gaddp,cfl1d,wave,s,amdq,apdq,cqxx, &
                    bmadq,bpadq,rpn2,rpt2)
        
-       !$OMP CRITICAL (cfl_row_y)
-       cflgrid = max(cflgrid,cfl1d)
-       !$OMP END CRITICAL (cfl_row_y)
+        !$OMP CRITICAL (cfl_row_y)
+        cflgrid = max(cflgrid,cfl1d)
+        !$OMP END CRITICAL (cfl_row_y)
 
-!$OMP CRITICAL (flux_accumulation_y)
-
+        
         ! Update fluxes
+        !$OMP CRITICAL (flux_accumulation_y)
+
         gm(:,i,1:my+1) = gm(:,i,1:my+1) + faddm(:,1:my+1)
         gp(:,i,1:my+1) = gp(:,i,1:my+1) + faddp(:,1:my+1)
         fm(:,i,1:my+1) = fm(:,i,1:my+1) + gaddm(:,1:my+1,1)
@@ -188,9 +191,9 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         fm(:,i+1,1:my+1) = fm(:,i+1,1:my+1) + gaddm(:,1:my+1,2)
         fp(:,i+1,1:my+1) = fp(:,i+1,1:my+1) + gaddp(:,1:my+1,2)
 
-!$OMP END CRITICAL (flux_accumulation_y)
+        !$OMP END CRITICAL (flux_accumulation_y)
 
     enddo
-!$OMP END PARALLEL DO
+    !$OMP END PARALLEL DO
 
 end subroutine step2

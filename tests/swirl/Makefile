@@ -15,9 +15,9 @@ CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
 CLAW_PKG = amrclaw                  # Clawpack package to use
 EXE = xamr                          # Executable to create
 SETRUN_FILE = setrun.py             # File containing function to make data
-OUTDIR = _output_cFnew              # Directory for output
+OUTDIR = _output      		        # Directory for output
 SETPLOT_FILE = setplot.py           # File containing function to set plots
-PLOTDIR = _plots_cFnew              # Directory for plots
+PLOTDIR = _plots	                # Directory for plots
 
 OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
 RESTART ?= False                    # Should = clawdata.restart in setrun
@@ -31,12 +31,16 @@ FFLAGS ?= -O2
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
 
+FFLAGS += $(OMP_FLAGS)
+
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
 
 MODULES = \
   $(AMRCLAW)/src/2d/amr_module.f90 \
+  $(AMRCLAW)/src/2d/regions_module.f90 \
+  $(AMRCLAW)/src/2d/gauges_module.f90
 
 SOURCES = \
   setaux.f \
@@ -46,7 +50,7 @@ SOURCES = \
   qinit.f \
   $(RIEMANN)/src/rpn2_vc_advection.f \
   $(RIEMANN)/src/rpt2_vc_advection.f \
-  $(AMRCLAW)/src/2d/amr2.f \
+  $(AMRCLAW)/src/2d/amr2.f90 \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/src2.f \
@@ -68,8 +72,8 @@ SOURCES = \
   $(AMRCLAW)/src/2d/bufnst2.f \
   $(AMRCLAW)/src/2d/spest.f \
   $(AMRCLAW)/src/2d/spest2.f \
-  $(AMRCLAW)/src/2d/flag2refine.f \
-  $(AMRCLAW)/src/2d/flag2refine2.f \
+  $(AMRCLAW)/src/2d/flag2refine.f90 \
+  $(AMRCLAW)/src/2d/flag2refine2.f90 \
   $(AMRCLAW)/src/2d/allowflag.f \
   $(AMRCLAW)/src/2d/errest.f \
   $(AMRCLAW)/src/2d/errf1.f \
@@ -133,7 +137,6 @@ SOURCES = \
   $(AMRCLAW)/src/2d/valout.f \
   $(AMRCLAW)/src/2d/check.f \
   $(AMRCLAW)/src/2d/restrt.f \
-  $(AMRCLAW)/src/2d/setgauges.f \
   $(AMRCLAW)/src/2d/dumpgauge.f \
   $(AMRCLAW)/src/2d/quick_sort1.f \
   $(AMRCLAW)/src/2d/opendatafile.f \
