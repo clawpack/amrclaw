@@ -41,14 +41,6 @@ MODULES = \
   $(AMRCLAW)/src/2d/regions_module.f90 \
   $(AMRCLAW)/src/2d/gauges_module.f90
 
-# Note that the Riemann solvers included here are modified from those in 
-# $RIEMANN by removing the common block roe variable storage, instead these 
-# recalculate the Roe averages done to support thread safe Riemann solvers
-
-# If timing tests are desired, you can include the following source
-# $(AMRCLAW)/timing/init_alloc.f90  <== Allocate large initial memory allocation
-# $(AMRCLAW)/timing/amr2.f 		<== Timing output, disables output
-
 # Local source for thread tests
 SOURCES = \
   ./fdisc.f \
@@ -57,7 +49,7 @@ SOURCES = \
   ./setprob.f \
   $(RIEMANN)/src/rpn2_euler_5wave.f90 \
   $(RIEMANN)/src/rpt2_euler_5wave.f90 \
-  $(AMRCLAW)/src/2d/timing/amr2.f90 \
+  $(AMRCLAW)/src/2d/amr2.f90 \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/b4step2.f \
   $(AMRCLAW)/src/2d/qad.f \
