@@ -1,16 +1,19 @@
+! ==============================================================================
+!  Regions Module
+!   Module containing data structures and setup routines for region refinement.
+!
+! ==============================================================================
 module regions_module
 
     implicit none
     save
-      
-    ! ========================================================================
-    !  Refinement Regions
-    ! ========================================================================
+
+    ! Region type definition
     type region_type
         integer :: min_level,max_level
         real(kind=8) :: x_low,y_low,x_hi,y_hi,t_low,t_hi
     end type region_type
-    
+
     integer :: num_regions
     type(region_type), allocatable :: regions(:)
       
@@ -58,4 +61,4 @@ contains
 
     end subroutine set_regions
 
-end module
+end module regions_module
