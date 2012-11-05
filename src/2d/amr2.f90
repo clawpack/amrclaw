@@ -98,6 +98,8 @@ program amr2
     logical :: vtime, rest, output_t0    
     character(len=25) :: fname
 
+    ! Timing variables
+    integer :: clock_start, clock_finish, clock_rate
 
     ! Common block variables
     real(kind=8) :: dxmin, dymin
@@ -540,12 +542,19 @@ program amr2
     endif
     close(parmunit)
 
+    ! Timing
+    call system_clock(clock_start,clock_rate)
 
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
     ! --------------------------------------------------------
     call tick(nvar,cut,nstart,vtime,time,naux,time,rest)
     ! --------------------------------------------------------
+
+    call system_clock(clock_finish,clock_rate)
+    format_string = "('Total time to solution = ',1f16.8,' s')"
+    write(outunit,format_string) &
+            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
 
     ! Done with computation, cleanup:
     lentotsave = lentot
