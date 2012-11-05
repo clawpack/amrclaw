@@ -24,15 +24,20 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
+
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -O2
-#FFLAGS = -W -Wall -fbounds-check -Wunderflow -O -ffpe-trap=zero,overflow,underflow -g
+FFLAGS ?= -O2 
+#FFLAGS = -W -Wall -fbounds-check -ffpe-trap=zero,overflow,invalid -g
+# intel ifort flags
+# FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
 
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
 MODULES = \
   $(AMRCLAW)/src/2d/amr_module.f90 \
+  $(AMRCLAW)/src/2d/regions_module.f90 \
+  $(AMRCLAW)/src/2d/gauges_module.f90
 
 SOURCES = \
   setaux.f \
@@ -42,7 +47,7 @@ SOURCES = \
   qinit.f \
   $(RIEMANN)/src/rpn2_vc_advection.f \
   $(RIEMANN)/src/rpt2_vc_advection.f \
-  $(AMRCLAW)/src/2d/amr2.f \
+  $(AMRCLAW)/src/2d/amr2.f90 \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/b4step2.f \
   $(AMRCLAW)/src/2d/qad.f \
@@ -60,27 +65,34 @@ SOURCES = \
   $(AMRCLAW)/src/2d/birect.f \
   $(AMRCLAW)/src/2d/cleanup.f \
   $(AMRCLAW)/src/2d/colate.f \
+  $(AMRCLAW)/src/2d/colate2.f \
   $(AMRCLAW)/src/2d/bufnst.f \
+  $(AMRCLAW)/src/2d/bufnst2.f \
   $(AMRCLAW)/src/2d/spest.f \
-  $(AMRCLAW)/src/2d/flag2refine.f \
+  $(AMRCLAW)/src/2d/spest2.f \
+  $(AMRCLAW)/src/2d/flag2refine.f90 \
+  $(AMRCLAW)/src/2d/flag2refine2.f90 \
   $(AMRCLAW)/src/2d/allowflag.f \
   $(AMRCLAW)/src/2d/errest.f \
   $(AMRCLAW)/src/2d/errf1.f \
   $(AMRCLAW)/src/2d/gfixup.f \
-  $(AMRCLAW)/src/2d/filval.f \
-  $(AMRCLAW)/src/2d/filpatch.f \
-  $(AMRCLAW)/src/2d/prefilp.f \
+  $(AMRCLAW)/src/2d/filval_new.f90 \
+  $(AMRCLAW)/src/2d/filpatch_new.f90 \
+  $(AMRCLAW)/src/2d/prefilp_new.f90 \
   $(AMRCLAW)/src/2d/flglvl.f \
+  $(AMRCLAW)/src/2d/flglvl2.f \
   $(AMRCLAW)/src/2d/fluxad.f \
   $(AMRCLAW)/src/2d/fluxsv.f \
   $(AMRCLAW)/src/2d/ginit.f \
-  $(AMRCLAW)/src/2d/grdfit.f \
+  $(AMRCLAW)/src/2d/grdfit2.f \
   $(AMRCLAW)/src/2d/intfil.f \
   $(AMRCLAW)/src/2d/moment.f \
   $(AMRCLAW)/src/2d/nestck.f \
+  $(AMRCLAW)/src/2d/nestck2.f \
   $(AMRCLAW)/src/2d/prepf.f \
   $(AMRCLAW)/src/2d/prepc.f \
   $(AMRCLAW)/src/2d/projec.f \
+  $(AMRCLAW)/src/2d/projec2.f \
   $(AMRCLAW)/src/2d/signs.f \
   $(AMRCLAW)/src/2d/findcut.f \
   $(AMRCLAW)/src/2d/smartbis.f \
@@ -91,7 +103,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/setuse.f \
   $(AMRCLAW)/src/2d/stst1.f \
   $(AMRCLAW)/src/2d/tick.f \
-  $(AMRCLAW)/src/2d/trimbd.f \
+  $(AMRCLAW)/src/2d/trimbd_new.f90 \
   $(AMRCLAW)/src/2d/update.f \
   $(AMRCLAW)/src/2d/nodget.f \
   $(AMRCLAW)/src/2d/upbnd.f  \
@@ -104,6 +116,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/domain.f  \
   $(AMRCLAW)/src/2d/setflags.f \
   $(AMRCLAW)/src/2d/shiftset.f \
+  $(AMRCLAW)/src/2d/shiftset2.f \
   $(AMRCLAW)/src/2d/conck.f \
   $(AMRCLAW)/src/2d/domshrink.f \
   $(AMRCLAW)/src/2d/domprep.f \
@@ -122,10 +135,22 @@ SOURCES = \
   $(AMRCLAW)/src/2d/valout.f \
   $(AMRCLAW)/src/2d/check.f \
   $(AMRCLAW)/src/2d/restrt.f \
-  $(AMRCLAW)/src/2d/setgauges.f \
   $(AMRCLAW)/src/2d/dumpgauge.f \
   $(AMRCLAW)/src/2d/quick_sort1.f \
   $(AMRCLAW)/src/2d/opendatafile.f \
+  $(AMRCLAW)/src/2d/addflags.f \
+  $(AMRCLAW)/src/2d/domgrid.f \
+  $(AMRCLAW)/src/2d/drivesort.f \
+  $(AMRCLAW)/src/2d/flagcheck.f \
+  $(AMRCLAW)/src/2d/setdomflags.f \
+  $(AMRCLAW)/src/2d/setIndices.f \
+  $(AMRCLAW)/src/2d/setPhysBndry.f \
+  $(AMRCLAW)/src/2d/setPhysBndryFlags.f \
+  $(AMRCLAW)/src/2d/coarseGridFlagSet.f \
+  $(AMRCLAW)/src/2d/griddomcopy.f \
+  $(AMRCLAW)/src/2d/griddomshrink.f \
+  $(AMRCLAW)/src/2d/griddomup.f \
+  $(AMRCLAW)/src/2d/baseCheck.f \
   $(AMRCLAW)/src/2d/init_alloc.f90 \
   $(AMRCLAW)/src/2d/restrt_alloc.f90 \
   $(AMRCLAW)/src/2d/resize_alloc.f90 \

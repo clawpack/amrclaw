@@ -109,11 +109,12 @@ c     left boundary
       zt = zhi
 
       if (periodic) then
-	call  prefilp(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1                1,1,ng+1,
-     2                ilo-ng,ilo-1,jlo-ng,jhi+ng,klo,khi)
+	call  prefilrecur(level,nvar,valbig,aux,naux,time,
+     1                    mitot,mjtot,mktot,
+     2                    1,1,ng+1,
+     3                    ilo-ng,ilo-1,jlo-ng,jhi+ng,klo,khi)
       else
-	call filpatch(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
+	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                1,1,ng+1,
      2                ilo-ng,ilo-1,jlo-ng,jhi+ng,klo,khi)
       endif
@@ -129,11 +130,12 @@ c     right boundary
       zt = zhi
 
       if (periodic) then
-	call  prefilp(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1                mitot-ng+1,1,ng+1,
-     2                ihi+1,ihi+ng,jlo-ng,jhi+ng,klo,khi)
+	call  prefilrecur(level,nvar,valbig,aux,naux,time,
+     1                    mitot,mjtot,mktot,
+     2                    mitot-ng+1,1,ng+1,
+     3                    ihi+1,ihi+ng,jlo-ng,jhi+ng,klo,khi)
       else
-	call filpatch(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
+	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                mitot-ng+1,1,ng+1,
      2                ihi+1,ihi+ng,jlo-ng,jhi+ng,klo,khi)
       endif
@@ -147,11 +149,12 @@ c     front boundary
       zb = zlo
       zt = zhi
       if (periodic) then
-        call prefilp(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1               ng+1,1,ng+1,
-     2               ilo,ihi,jlo-ng,jlo-1,klo,khi)
+        call prefilrecur(level,nvar,valbig,aux,naux,time,
+     1                   mitot,mjtot,mktot,
+     2                   ng+1,1,ng+1,
+     3                   ilo,ihi,jlo-ng,jlo-1,klo,khi)
       else
-        call filpatch(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
+        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                ng+1,1,ng+1,
      2                ilo,ihi,jlo-ng,jlo-1,klo,khi)
       endif
@@ -164,11 +167,12 @@ c     rear boundary
       zb = zlo
       zt = zhi
       if (periodic) then
-	call prefilp(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1                ng+1,mjtot-ng+1,ng+1,
-     2               ilo,ihi,jhi+1,jhi+ng,klo,khi)
+	call prefilrecur(level,nvar,valbig,aux,naux,time,
+     1                   mitot,mjtot,mktot,
+     2                   ng+1,mjtot-ng+1,ng+1,
+     3                   ilo,ihi,jhi+1,jhi+ng,klo,khi)
       else
-        call filpatch(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
+        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                ng+1,mjtot-ng+1,ng+1,
      2                ilo,ihi,jhi+1,jhi+ng,klo,khi)
       endif
@@ -181,11 +185,12 @@ c     bottom boundary
       zb = zlo - ng*hz
       zt = zlo
       if (periodic) then
-        call prefilp(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1               1,1,1,
-     2               ilo-ng,ihi+ng,jlo-ng,jhi+ng,klo-ng,klo-1)
+        call prefilrecur(level,nvar,valbig,aux,naux,time,
+     1                   mitot,mjtot,mktot,
+     2                   1,1,1,
+     3                   ilo-ng,ihi+ng,jlo-ng,jhi+ng,klo-ng,klo-1)
       else
-        call filpatch(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
+        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                1,1,1,
      2                ilo-ng,ihi+ng,jlo-ng,jhi+ng,klo-ng,klo-1)
       end if
@@ -198,11 +203,12 @@ c     top boundary
       zb = zhi
       zt = zhi + ng*hz
       if (periodic) then
-        call prefilp(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1               1,1,mktot-ng+1,
-     2               ilo-ng,ihi+ng,jlo-ng,jhi+ng,khi+1,khi+ng)
+        call prefilrecur(level,nvar,valbig,aux,naux,time,
+     1                   mitot,mjtot,mktot,
+     2                   1,1,mktot-ng+1,
+     3                   ilo-ng,ihi+ng,jlo-ng,jhi+ng,khi+1,khi+ng)
       else
-        call filpatch(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
+        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                1,1,mktot-ng+1,
      2                ilo-ng,ihi+ng,jlo-ng,jhi+ng,khi+1,khi+ng)
       end if
@@ -210,19 +216,19 @@ c     top boundary
 c
 c external boundary conditions
 c
-      if (.not. ((xperdom .and. yperdom) .and. zperdom)) then
-	xl = xlo    - ng*hx
-	yf = ylo    - ng*hy
-        zb = zlo    - ng*hz
-	xr = xhi    + ng*hx
-	yr = yhi    + ng*hy
-        zt = zhi    + ng*hz
-
-	call bc3amr( valbig,aux,mitot,mjtot,mktot,nvar,naux,
-     1        	     hx,hy,hz,level,time,xl,xr,yf,yr,zb,zt,
-     3               xlower,ylower,zlower,xupper,yupper,zupper,
-     4               xperdom,yperdom,zperdom)
-      endif
+c$$$      if (.not. ((xperdom .and. yperdom) .and. zperdom)) then
+c$$$	xl = xlo    - ng*hx
+c$$$	yf = ylo    - ng*hy
+c$$$        zb = zlo    - ng*hz
+c$$$	xr = xhi    + ng*hx
+c$$$	yr = yhi    + ng*hy
+c$$$        zt = zhi    + ng*hz
+c$$$
+c$$$	call bc3amr( valbig,aux,mitot,mjtot,mktot,nvar,naux,
+c$$$     1        	     hx,hy,hz,level,time,xl,xr,yf,yr,zb,zt,
+c$$$     3               xlower,ylower,zlower,xupper,yupper,zupper,
+c$$$     4               xperdom,yperdom,zperdom)
+c$$$      endif
 c
       return
       end

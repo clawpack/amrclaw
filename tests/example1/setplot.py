@@ -1,11 +1,10 @@
 
-""" 
+"""
 Set up the plot figures, axes, and items to be done for each frame.
 
 This module is imported by the plotting routines and then the
 function setplot is called to set the plot parameters.
-    
-""" 
+"""
 
 #--------------------------
 def setplot(plotdata):
@@ -21,7 +20,7 @@ def setplot(plotdata):
 
     from clawpack.visclaw import colormaps
 
-    plotdata.clearfigures()  # clear any old figures,axes,items data
+    plotdata.clearfigures() # clear any old figures,axes,items data
 
     
     # Figure for pcolor plot
@@ -41,6 +40,9 @@ def setplot(plotdata):
     plotitem.pcolor_cmin = 0.1
     plotitem.pcolor_cmax = 1.
     plotitem.add_colorbar = True
+
+    plotitem.amr_celledges_show = [0]  
+    plotitem.amr_patchedges_show = [0]
 
 
     # Figure for contour plot
@@ -97,4 +99,3 @@ def setplot(plotdata):
 
     return plotdata
 
-    

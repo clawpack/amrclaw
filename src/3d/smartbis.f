@@ -2,7 +2,7 @@ c
 c ---------------------------------------------------------
 c
       subroutine smartbis(badpts,npts,cutoff,numptc,nclust,
-     1                    lbase,intcorn,iscr,jscr,kscr,idim,jdim,kdim)
+     1                    lbase,intcorn,idim,jdim,kdim)
 c
       implicit double precision (a-h,o-z)
 

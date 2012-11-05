@@ -30,9 +30,14 @@ c the last free node will have a null pointer
       node(nextfree, maxgr) = null
 c
       lfine = 1
-      do 20 i  = 1, memsize
-        alloc(i) = 0.0d0
- 20   continue
+! old style alloc creation
+!--      do 20 i  = 1, memsize
+!--        alloc(i) = 0.0d0
+!-- 20   continue
+! new style uses dynamic memory
+c
+c     Initialize dynamic memory. sets memsize used later in this proc
+      call init_alloc()
 c
 c  initialize linked list of alloc storage as well.
 c  first and last locations are dummy placeholders of zero words
@@ -51,6 +56,10 @@ c after kcheck integrations of parent grid, move its refinements.
 c finest level grid never needs to have its finer subgrids moved.
 c
       do 60 i   = 1, maxlv
+         iregridcount(i) = 0
+         avenumgrids(i) = 0
+         numgrids(i) = 0
+         numcells(i) = 0
          lstart(i) = 0
  60      icheck(i) = 0
 c

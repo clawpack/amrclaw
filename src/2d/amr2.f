@@ -309,6 +309,18 @@ c        # checkpoint every checkpt_interval steps on coarse grid
       read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
       read(inunit,*) (intraty(i),i=1,max(1,mxnest-1))
       read(inunit,*) (kratio(i), i=1,max(1,mxnest-1))
+
+      do i=1,mxnest-1
+          if ((intratx(i).gt.max1d) .or. (intraty(i).gt.max1d)) then 
+              write(6,*) 
+              write(6,601) max1d
+ 601          format(' *** Error: Refinement ratios must be',
+     &               ' no larger than  max1d = ',i5,/
+     &               '     (set max1d in amr_module.f90)')
+              stop
+              endif
+           enddo
+              
       
           
 c      if (intrat(1) .lt. 0) then

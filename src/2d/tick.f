@@ -8,7 +8,7 @@ c
       implicit double precision (a-h,o-z)
 c     include  "call.i"
 
-      logical    vtime, dumpout, dumpchk, rest
+      logical    vtime, dumpout, dumpchk, rest, dump_final
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
 
 c
@@ -184,9 +184,10 @@ c level 'lbase' stays fixed.
 c
           if (rprint) write(outunit,101) lbase
 101       format(8h  level ,i5,32h  stays fixed during regridding )
+          call conck(1,nvar,naux,time,rest)
           call regrid(nvar,lbase,cut,naux,t0)
           call setbestsrc()     ! need at every grid change
-c         call conck(1,nvar,naux,time,rest)
+          call conck(1,nvar,naux,time,rest)
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
 c note negative time to signal regridding output in plots
 c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
@@ -328,13 +329,16 @@ c         # warn the user that calculation finished prematurely
 c
 c  # final output (unless we just did it above)
 c
-      if (nout > 0) then
-        if (((iout.lt.iinfinity) .and. (mod(ncycle,iout).ne.0))
-     &            .or. ((nout.gt.0) .and. (tout(nout).eq.tfinal) .and.
-     &                  (.not. dumpout))) then
-             call valout(1,lfine,time,nvar,naux)
-             if (printout) call outtre(mstart,.true.,nvar,naux)
-        endif
+      dump_final = ((iout.lt.iinfinity) .and. (mod(ncycle,iout).ne.0))
+      if (.not. dumpout) then
+          if (nout > 0) then
+              dump_final = (tout(nout).eq.tfinal)
+              endif
+          endif
+      
+      if (dump_final) then
+           call valout(1,lfine,time,nvar,naux)
+           if (printout) call outtre(mstart,.true.,nvar,naux)
       endif
 
 c  # checkpoint everything for possible future restart

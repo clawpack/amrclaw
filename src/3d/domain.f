@@ -30,9 +30,9 @@ c
 
       if (((nx/2)*2 .ne. nx) .or. (ny/2)*2 .ne. ny
      &                       .or. (nz/2)*2 .ne. nz) then
-	 write(outunit,*)" must have even number of cells"
-	 write(*,*)      " must have even number of cells"
-	 stop
+       write(outunit,*)" must have even number of cells"
+       write(*,*)      " must have even number of cells"
+       stop
       endif
 
       node(ndilo,mstart) = 0
@@ -45,6 +45,28 @@ c
       lfine = 1
       call  birect(mstart)
       call  ginit (mstart, .true., nvar, naux,t0)
+
+c
+c compute number of grids at level 1 (may have been bi-rected above)
+c needs to be done here since this is used hwen calling advnac for
+c parallelization
+       ngrids = 0
+       ncells = 0
+       mptr = lstart(1)
+       do while (mptr .gt. 0)
+          ngrids = ngrids + 1
+          ncells = ncells + (node(ndihi,mptr)-node(ndilo,mptr)+1)
+     &                    * (node(ndjhi,mptr)-node(ndjlo,mptr)+1)
+     &                    * (node(ndkhi,mptr)-node(ndklo,mptr)+1)
+          mptr = node(levelptr, mptr)
+       end do
+       numgrids(1) = ngrids
+       numcells(1) = ncells
+       avenumgrids(1) = avenumgrids(1) + ngrids
+       iregridcount(1) = 1
+       write(*,100) ngrids,ncells
+ 100   format("there are ",i4," grids with ",i8," cells at level   1")
+
 c
 c  set stable initial time step using coarse grid data
 c
@@ -55,18 +77,18 @@ c
          dx   = hxposs(1)
          dy   = hyposs(1)
          dz   = hzposs(1)
- 60           mitot = node(ndihi,mptr)-node(ndilo,mptr) + 1 + 2*nghost
-              mjtot = node(ndjhi,mptr)-node(ndjlo,mptr) + 1 + 2*nghost
-              mktot = node(ndkhi,mptr)-node(ndklo,mptr) + 1 + 2*nghost
-	      locaux = node(storeaux,mptr)
+ 60      mitot = node(ndihi,mptr)-node(ndilo,mptr) + 1 + 2*nghost
+         mjtot = node(ndjhi,mptr)-node(ndjlo,mptr) + 1 + 2*nghost
+         mktot = node(ndkhi,mptr)-node(ndklo,mptr) + 1 + 2*nghost
+         locaux = node(storeaux,mptr)
 c 4/1/02 : Added cfl to call to estdt, so that we dont need call.i in estdt
-	      call estdt(alloc(node(store1,mptr)),mitot,mjtot,mktot,
-     1                   nvar,dx,dy,dz,dtgrid,nghost,alloc(locaux),
-     &              naux,cfl)
-              dt     = dmin1(dt,dtgrid)
-              mptr   = node(levelptr,mptr)
-            if (mptr .ne. 0) go to 60
-	 possk(1) = dt
+          call estdt(alloc(node(store1,mptr)),mitot,mjtot,mktot,
+     1               nvar,dx,dy,dz,dtgrid,nghost,alloc(locaux),
+     &               naux,cfl)
+          dt     = dmin1(dt,dtgrid)
+          mptr   = node(levelptr,mptr)
+          if (mptr .ne. 0) go to 60
+          possk(1) = dt
       endif
 c
 c set rest of possk array for refined timesteps
@@ -74,9 +96,15 @@ c
       iregsz(1) = nx
       jregsz(1) = ny
       kregsz(1) = nz
+      iregst(1) = 0
+      jregst(1) = 0
+      kregst(1) = 0
+      iregend(1) = nx-1
+      jregend(1) = ny-1
+      kregend(1) = nz-1
       do 70 level = 2, mxnest
-	 iregsz(level) = iregsz(level-1) * intratx(level-1)
-	 jregsz(level) = jregsz(level-1) * intraty(level-1)
+         iregsz(level) = iregsz(level-1) * intratx(level-1)
+         jregsz(level) = jregsz(level-1) * intraty(level-1)
          kregsz(level) = kregsz(level-1) * intratz(level-1)
 
          possk(level)  = possk(level-1) / dfloat(kratio(level-1))

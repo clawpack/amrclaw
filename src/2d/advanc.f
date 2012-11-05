@@ -38,7 +38,6 @@ c     this is linear alg.
 c     maxthreads initialized to 1 above in case no openmp
 !$    maxthreads = omp_get_max_threads()
 
-
 c We want to do this regardless of the threading type
 !$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot
 !$OMP&                    ,mjtot,time),
@@ -219,19 +218,13 @@ c         next way to reclaim was to minimize calls to
 c         reclam, due to critical section and openmp
 !--          call reclam(locfp, 2*mitot*mjtot*nvar)
 !--          call reclam(locgp, 2*mitot*mjtot*nvar)
-
 !$OMP CRITICAL (newdt)
-
           dtlevnew = dmin1(dtlevnew,dtnew)
-
 !$OMP END CRITICAL (newdt)    
-
 c
           rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
       end do
-
 !$OMP END PARALLEL DO
-
 c
 c     debug statement:
 c     write(*,*)" from advanc: level ",level," dtlevnew ",dtlevnew

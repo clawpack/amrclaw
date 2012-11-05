@@ -1,12 +1,14 @@
 c
 c -----------------------------------------------------------
 c
-      subroutine flglvl(nvar,naux,lcheck,nxypts,index,lbase,ldom2,npts)
+      subroutine flglvl(nvar,naux,lcheck,nxypts,index,lbase,
+     1                  i1flags,npts,t0,isize,jsize,ksize)
 c
       implicit double precision (a-h,o-z)
 
       include  "call.i"
-
+      integer*1 i1flags(isize+2,jsize+2,ksize+2)
+      integer*1 dom1flags(isize+2,jsize+2,ksize+2)
 c
 c :::::::::::::::::::: FLGLVL :::::::::::::::::::::::::::::::::
 c
@@ -34,7 +36,8 @@ c
       isize = iregsz(lcheck)
       jsize = jregsz(lcheck)
       ksize = kregsz(lcheck)
-      ldom  = igetsp((isize+2)*(jsize+2)*(ksize+2))
+c    ldom  = igetsp((isize+2)*(jsize+2)*(ksize+2))
+
 c    
 c   prepare domain in ldom2 (so can use ldom as scratch array before 
 c   putting in the flags)
@@ -42,26 +45,27 @@ c
       idim = iregsz(lbase)
       jdim = jregsz(lbase)
       kdim = kregsz(lbase)
-      call domprep(alloc(ldom2),lbase,idim,jdim,kdim)
-      call domshrink(alloc(ldom2),alloc(ldom),idim,jdim,kdim)
+      call domprep(i1flags,lbase,idim,jdim,kdim)
+      call domshrink(i1flags,dom1flags,idim,jdim,kdim)
 
       do 6 lev = lbase+1, lcheck
-         call domup(alloc(ldom2),alloc(ldom),idim,jdim,kdim,
+         call domup(i1flags,dom1flags,idim,jdim,kdim,
      1              intratx(lev-1)*idim,intraty(lev-1)*jdim,
      2              intratz(lev-1)*kdim,lev-1)
-	 idim = intratx(lev-1)*idim
-	 jdim = intraty(lev-1)*jdim
-         kdim = intratz(lev-1)*kdim
-         call domshrink(alloc(ldom2),alloc(ldom),idim,jdim,kdim)
+        idim = intratx(lev-1)*idim
+        jdim = intraty(lev-1)*jdim
+        kdim = intratz(lev-1)*kdim
+         call domshrink(i1flags,dom1flags,idim,jdim,kdim)
  6    continue
 c     # finish by transferring from iflags to iflags2
-      call domcopy(alloc(ldom2),alloc(ldom),isize,jsize,ksize)
+      call domcopy(i1flags,dom1flags,isize,jsize,ksize)
 c
       numbad = 0
 c     always call spest to set up stuff (initialize iflags, fill locbig)
-      call spest(nvar,naux,lcheck,alloc(ldom),isize,jsize,ksize)
+      call spest(nvar,naux,lcheck,dom1flags,isize,jsize,ksize,t0)
       if (tol .gt. 0.) call errest(nvar,naux,lcheck)
-      call bufnst(nvar,naux,numbad,lcheck,alloc(ldom),isize,jsize,ksize)
+
+      call bufnst(nvar,naux,numbad,lcheck,dom1flags,isize,jsize,ksize)
       nxypts = nxypts + numbad
 c
 c  colate flagged pts into flagged points array
@@ -69,12 +73,12 @@ c
       if (nxypts .gt. 0) then
           index = igetsp(numdim*nxypts)
           call colate(alloc(index),nxypts,lcheck,
-     1                alloc(ldom),alloc(ldom2),isize,jsize,ksize,npts)
+     1                dom1flags,i1flags,isize,jsize,ksize,npts)
       else 
-	 npts = nxypts
+          npts = nxypts
       endif
-
-      call reclam(ldom,  (isize+2)*(jsize+2)*(ksize+2))
+c
+c      call reclam(ldom,  (isize+2)*(jsize+2)*(ksize+2))
 
       return
       end
