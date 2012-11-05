@@ -31,6 +31,8 @@ FFLAGS ?= -O2
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
 
+FFLAGS += $(OMP_FLAG)
+
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
@@ -53,8 +55,8 @@ SOURCES = \
   ./qinit.f \
   ./setaux.f \
   ./setprob.f \
-  ./rpn2_euler_5wave.f \
-  ./rpt2_euler_5wave.f \
+  $(RIEMANN)/src/rpn2_euler_5wave.f90 \
+  $(RIEMANN)/src/rpt2_euler_5wave.f90 \
   $(AMRCLAW)/src/2d/timing/amr2.f90 \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/b4step2.f \
