@@ -54,11 +54,11 @@ c     left boundary
       if ((xl .lt. xlower) .and. xperdom) then
         call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,
      1                    1,ng+1,
-     2                    [ilo-ng,ilo-1,jlo,jhi])
+     2                    ilo-ng,ilo-1,jlo,jhi)
       else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,
      1                1,ng+1,
-     2                [ilo-ng,ilo-1,jlo,jhi])
+     2                ilo-ng,ilo-1,jlo,jhi)
       endif
 
 
@@ -72,11 +72,11 @@ c     right boundary
       if ((xr .gt. xupper) .and. xperdom) then
         call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,
      1                    mitot-ng+1,ng+1,
-     2                    [ihi+1,ihi+ng,jlo,jhi])
+     2                    ihi+1,ihi+ng,jlo,jhi)
       else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,
      1                mitot-ng+1,ng+1,
-     2                [ihi+1,ihi+ng,jlo,jhi])
+     2                ihi+1,ihi+ng,jlo,jhi)
       endif
 
 
@@ -89,11 +89,11 @@ c       bottom boundary
      1   (((xl .lt. xlower) .or. (xr .gt. xupper)) .and. xperdom) ) then
            call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,
      1                      1,1,
-     2                      [ilo-ng,ihi+ng,jlo-ng,jlo-1])
+     2                      ilo-ng,ihi+ng,jlo-ng,jlo-1)
         else
            call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,
      1                   1,1,
-     2                   [ilo-ng,ihi+ng,jlo-ng,jlo-1])
+     2                   ilo-ng,ihi+ng,jlo-ng,jlo-1)
         endif
 
 c       top boundary
@@ -105,11 +105,11 @@ c       top boundary
      1   (((xl .lt. xlower) .or. (xr .gt. xupper)) .and. xperdom) ) then
           call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,
      1                     1,mjtot-ng+1,
-     2                     [ilo-ng,ihi+ng,jhi+1,jhi+ng])
+     2                     ilo-ng,ihi+ng,jhi+1,jhi+ng)
         else
           call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,
      1                  1,mjtot-ng+1,
-     2                  [ilo-ng,ihi+ng,jhi+1,jhi+ng])
+     2                  ilo-ng,ihi+ng,jhi+1,jhi+ng)
         endif
 
 c
