@@ -56,7 +56,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/src2.f \
   $(AMRCLAW)/src/2d/src1d.f \
   $(AMRCLAW)/src/2d/advanc.f \
-  $(AMRCLAW)/src/2d/bound.f \
+  $(AMRCLAW)/src/2d/bound_new.f90 \
   $(AMRCLAW)/src/2d/stepgrid.f \
   $(AMRCLAW)/src/2d/cellave.f \
   $(AMRCLAW)/src/2d/fss.f \

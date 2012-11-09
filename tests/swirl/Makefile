@@ -30,8 +30,10 @@ FFLAGS ?= -O2
 #FFLAGS = -W -Wall -fbounds-check -ffpe-trap=zero,overflow,invalid -g
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
-
-FFLAGS += $(OMP_FLAGS)
+MAKELEVEL ?= 0
+ifeq ($(MAKELEVEL),0)
+	FFLAGS += $(OMP_FLAG)
+endif
 
 # ---------------------------------
 # List of sources for this program:
@@ -56,7 +58,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/src2.f \
   $(AMRCLAW)/src/2d/src1d.f \
   $(AMRCLAW)/src/2d/advanc.f \
-  $(AMRCLAW)/src/2d/bound.f \
+  $(AMRCLAW)/src/2d/bound_new.f90 \
   $(AMRCLAW)/src/2d/stepgrid.f \
   $(AMRCLAW)/src/2d/auxcoarsen.f \
   $(AMRCLAW)/src/2d/fixcapaq.f \
