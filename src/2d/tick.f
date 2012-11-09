@@ -329,7 +329,6 @@ c         # warn the user that calculation finished prematurely
 c
 c  # final output (unless we just did it above)
 c
-      
       dump_final = ((iout.lt.iinfinity) .and. (mod(ncycle,iout).ne.0))
       if (.not. dumpout) then
           if (nout > 0) then

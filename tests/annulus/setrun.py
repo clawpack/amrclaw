@@ -115,7 +115,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify at what times the results should be written to fort.q files.
     # Note that the time integration stops after the final output time.
  
-    clawdata.output_style = 3
+    clawdata.output_style = 1
  
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
@@ -160,7 +160,7 @@ def setrun(claw_pkg='amrclaw'):
 
     # if dt_variable==True:  variable time steps used based on cfl_desired,
     # if dt_variable==False: fixed time steps dt = dt_initial always used.
-    clawdata.dt_variable = False
+    clawdata.dt_variable = True
     
     # Initial time step for variable dt.  
     # (If dt_variable==0 then dt=dt_initial for all steps)

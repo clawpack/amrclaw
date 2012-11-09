@@ -142,6 +142,7 @@ c
 
       use amr_module
       use gauges_module
+      
       implicit double precision (a-h,o-z)
 
       bsearch = -1           ! signal if not found
