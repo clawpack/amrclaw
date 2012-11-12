@@ -133,7 +133,7 @@ module amr_module
     ! variables for specifying output format
     integer :: output_style, nstop, nout, iout
     real(kind=8), allocatable :: tout(:)
-    real(kind=8) :: tfinal
+    real(kind=8) :: t0, tfinal
     integer :: nq_components, naux_components, output_format
     integer, allocatable :: output_q_components(:)
     integer, allocatable :: output_aux_components(:)

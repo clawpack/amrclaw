@@ -142,6 +142,12 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.output_aux_components = 'none'  # could be list
     clawdata.output_aux_onlyonce = True    # output aux arrays only at t0
     
+    # ---------------
+    # Gauges:
+    # ---------------
+    # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
+    #rundata.gaugedata.add_gauge([])
+    
 
     # ---------------------------------------------------
     # Verbosity of messages to screen during integration:  
@@ -235,15 +241,7 @@ def setrun(claw_pkg='amrclaw'):
 
     clawdata.bc_lower[1] = 'periodic'   # at ylower
     clawdata.bc_upper[1] = 'periodic'   # at yupper
-                         
 
-    # ---------------
-    # Gauges:
-    # ---------------
-    clawdata.gauges = []
-    # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-
-    
 
     # ---------------
     # AMR parameters:
@@ -292,12 +290,11 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # ---------------
-    # Regions:
+    # Refinement Regions:
     # ---------------
-    clawdata.regions = []
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
-
+    #rundata.regiondata.regions.append([])
 
     # --------------
     # Checkpointing:

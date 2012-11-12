@@ -1,9 +1,9 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine spest (nvar,naux,lcheck,dom1flags,isize,jsize,t0)
-c     subroutine spest (nvar,naux,lcheck,lociflags,isize,jsize,t0)
-c      subroutine spest (nvar,naux,lcheck,iflags,isize,jsize,t0)
+      subroutine spest (nvar,naux,lcheck,dom1flags,isize,jsize,start_t)
+c     subroutine spest (nvar,naux,lcheck,lociflags,isize,jsize,start_t)
+c      subroutine spest (nvar,naux,lcheck,iflags,isize,jsize,start_t)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -49,7 +49,7 @@ c         # straight copy into scratch array so don't mess up latest soln.
 
 c  ## at later times want to use newest soln for spatial error flagging
 c  ## at initial time want to use initial conditions (so retain symmetry for example)
-         if (t0+possk(lcheck) .ne. time) then  ! exact equality test here. counting on ieee arith.
+         if (start_t+possk(lcheck) .ne. time) then  ! exact equality test here. counting on ieee arith.
              do 10 i = 1, mitot*mjtot*nvar
  10             alloc(locbig+i-1) = alloc(locnew+i-1)
 

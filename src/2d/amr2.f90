@@ -73,7 +73,7 @@ program amr2
     use amr_module, only: nghost, mthbc
     use amr_module, only: xperdom, yperdom, spheredom
 
-    use amr_module, only: nstop, nout, iout, tfinal, tout, output_style
+    use amr_module, only: nstop, nout, iout, t0, tfinal, tout, output_style
     use amr_module, only: output_format, printout, verbosity_regrid
     use amr_module, only: output_q_components, output_aux_components
     use amr_module, only: output_aux_onlyonce, matlabu
@@ -94,7 +94,7 @@ program amr2
     integer :: ndim, nvar, naux, mcapa1, mindim, dimensional_split
     integer :: nstart, nsteps, nv1, nx, ny, lentotsave, num_gauge_SAVE
     integer :: omp_get_max_threads
-    real(kind=8) :: t0, time, ratmet, cut, dtinit, dtv2
+    real(kind=8) :: time, ratmet, cut, dtinit, dtv2
     logical :: vtime, rest, output_t0    
     character(len=25) :: fname
 

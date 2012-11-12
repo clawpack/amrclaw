@@ -1,7 +1,7 @@
 c
 c ---------------------------------------------------------
 c
-      subroutine grdfit (lbase,lcheck,nvar,naux,cut,time,t0)
+      subroutine grdfit (lbase,lcheck,nvar,naux,cut,time,start_time)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -33,8 +33,8 @@ c     ## npts is number of points actually colated - some
 c     ## flagged points turned off due to proper nesting requirement.
 c     ## (storage based on nptmax calculation however).
 
-      call flglvl (nvar,naux,lcheck,nptmax,index,lbase,i1flags,npts,t0,
-     .             isize,jsize)
+      call flglvl (nvar,naux,lcheck,nptmax,index,lbase,i1flags,npts,
+     .             start_time,isize,jsize)
       if (npts .eq. 0) go to 99
 c
       levnew    = lcheck + 1
