@@ -11,7 +11,8 @@
 !  obtain the remaining values from  coarser levels.
 !
 ! :::::::::::::::::::::::::::::::::::::::;:::::::::::::::::::::::;
-recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my,nrowst,ncolst,fill_indices)
+recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my, &
+                              nrowst,ncolst,fill_indices)
 
     use amr_module, only: hxposs, hyposs, xlower, ylower, xupper, yupper
     use amr_module, only: outunit, nghost, xperdom, yperdom, spheredom

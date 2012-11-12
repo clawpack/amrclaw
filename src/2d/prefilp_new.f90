@@ -31,7 +31,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
     
     ! Local storage
     integer :: i, j, ii, jj, ivar, nr, nc, ng, i1, i2, j1, j2, iputst, jputst
-    integer :: jbump, iwrap1, iwrap2, jwrap1, tmp, locflip
+    integer :: jbump, iwrap1, iwrap2, jwrap1, tmp, locflip, rect(4)
     real(kind=8) :: xlwrap, ybwrap
 
     integer :: ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
@@ -83,8 +83,9 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
                 if (.not. spheredom .or. j == 2 ) then
                     iputst = (i1 - fill_indices(1)) + nrowst
                     jputst = (j1 - fill_indices(3)) + ncolst
-                    call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,iputst,jputst, &
-                                  [i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j)])
+                    rect = [i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j)]
+                    call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
+                                  iputst,jputst,rect)
                 else
                     nr = i2 - i1 + 1
                     nc = j2 - j1 + 1
@@ -112,8 +113,9 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
                     if (naux>0) then
                         call setaux(nr,nc,ng,nr,nc,xlwrap,ybwrap,hxposs(level),hyposs(level),naux,scratchaux)
                     endif
-
-                    call filrecur(level,nvar,scratch,scratchaux,naux,time,nr,nc,1,1,[iwrap1,iwrap2,j1+jbump,j2+jbump])
+                    rect = [iwrap1,iwrap2,j1+jbump,j2+jbump]
+                    call filrecur(level,nvar,scratch,scratchaux,naux,time,nr, &
+                                  nc,1,1,rect)
 
                     ! copy back using weird mapping for spherical folding
                     do ii = i1, i2
