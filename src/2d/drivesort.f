@@ -49,7 +49,7 @@ c           write(*,*)" duplicate in sorted array loc ",ixarray(k)
        if (k .gt. npts) exit !did we stop because we ran off end or pts not equal
       end do
 
-      if (gprint .or. .true.) then
+      if (gprint) then
           write(outunit,929) index
  929      format(i5," flagged pts after removing duplicates and ",
      &           " non-nested flags")
