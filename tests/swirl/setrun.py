@@ -306,14 +306,6 @@ def setrun(claw_pkg='amrclaw'):
         # Do not checkpoint at all
         pass
 
-<<<<<<< HEAD
-    # More AMR parameters can be set -- see the defaults in pyclaw/data.py
-    clawdata.rprint = True
-    clawdata.eprint = True
-    clawdata.dprint = True
-    clawdata.nprint = True
-    clawdata.gprint = True
-=======
     elif clawdata.checkpt_style == 1:
         # Checkpoint only at tfinal.
         pass
@@ -340,7 +332,6 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.sprint = False      # space/memory output
     clawdata.tprint = False      # time step reporting each level
     clawdata.uprint = False      # update/upbnd reporting
->>>>>>> upstream/master
     
     return rundata
 
