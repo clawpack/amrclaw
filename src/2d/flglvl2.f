@@ -30,7 +30,7 @@ c     always call spest to set up stuff (initialize iflags, fill locbig)
       if (flag_richardson) call errest(nvar,naux,lcheck)
 c     if (tol .gt. 0.) call errest(nvar,naux,lcheck)
 
-      call bufnst2(nvar,naux,numbad,lcheck)
+      call bufnst2(nvar,naux,numbad,lcheck,lbase) !NOW INCLUDES CALL TO DOMGRID INTERNALLY
 
       nxypts = nxypts + numbad
 c
@@ -41,7 +41,7 @@ c
       if (nxypts .gt. 0) then  
 c        build domain flags for each grid at level lcheck, instead of
 c        previous approach using domain flags over entire  domain
-         call domgrid(lbase,lcheck)   ! will need since there are flagged pts
+c         call domgrid(lbase,lcheck)   ! will need since there are flagged pts  NOW IN BUFNST2
 c
 c in new version, there are bad cells but nxypts isnt true count any longer
 c since there are duplicates, and proper nesting not yet checked

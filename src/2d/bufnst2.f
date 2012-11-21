@@ -1,7 +1,7 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine bufnst2 (nvar,naux,numbad,lcheck)
+      subroutine bufnst2(nvar,naux,numbad,lcheck,lbase)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -32,19 +32,19 @@ c
 
       numpro = 0 
       numbad = 0 
-      mbuff = max(nghost,ibuff+1)
       time = rnode(timemult,lstart(lcheck))
 
 c      mptr = lstart(lcheck)
 c41   continue
 !$OMP PARALLEL DO PRIVATE(jg,mptr,ilo,ihi,jlo,jhi,nx,ny,mitot,mjtot),
-!$OMP&            PRIVATE(mibuff,mjbuff,locamrflags),
+!$OMP&            PRIVATE(mibuff,mjbuff,locamrflags,mbuff,ibytesPerDP),
 !$OMP&            PRIVATE(loctmp,locbig,j,i,numpro2,numflagged),
+!$OMP&            PRIVATE(locdomflags,locdom2),
 !$OMP&            SHARED(numgrids, listgrids,nghost,flag_richardson),
-!$OMP&            SHARED(nvar,eprint,maxthreads,mbuff,node),
+!$OMP&            SHARED(nvar,eprint,maxthreads,node,lbase,ibuff),
 !$OMP&            SHARED(alloc,lcheck,numpro,mxnest,numbad),
-!$OMP&            SCHEDULE (DYNAMIC,1),
-!$OMP&            DEFAULT(none)      
+!$OMP&            DEFAULT(none),      
+!$OMP&            SCHEDULE (DYNAMIC,1)
       do  jg = 1, numgrids(lcheck)
          mptr = listgrids(jg)
          ilo    = node(ndilo,mptr)
@@ -55,6 +55,7 @@ c41   continue
          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
          mitot  = nx + 2*nghost
          mjtot  = ny + 2*nghost
+         mbuff = max(nghost,ibuff+1)
          mibuff = nx + 2*mbuff
          mjbuff = ny + 2*mbuff
          locamrflags = node(storeflags,mptr)
@@ -87,7 +88,7 @@ c     write(outunit,*)" calling projec at time ",time
 c     write(*,*)" calling projec at time ",time
             call projec2(lcheck,numpro2,alloc(locamrflags),
      .           ilo,ihi,jlo,jhi,mbuff)
-c            numpro = numpro + numpro2  not used for now
+c            numpro = numpro + numpro2  not used for now. would need critical section for numpro
          endif      
 
          if (eprint .and. maxthreads .eq. 1) then
@@ -107,9 +108,6 @@ c
 c     .                    "(with buff cells)"
 c     buffer zone (wider ghost cell region) now set after buffering
 c     so loop over larger span of indices
-c     do 49 j = mjbuff, 1, -1
-c     write(outunit,100)(int(alloc(iadd(i,j))),i=1,mibuff)
-c     49      continue
             do 49 j = mjbuff-mbuff, mbuff+1, -1
                write(outunit,100)(int(alloc(iadd(i,j))),
      .              i=mbuff+1,mibuff-mbuff)
@@ -120,10 +118,6 @@ c
 c  diffuse flagged points in all 4 directions to make buffer zones 
 c  note that this code flags with a same value as true flagged
 c  points, not a different number.
-c
-c    # first get scratch work space (not that other scratch
-c    # arrays above have been reclaimed. 
-c
       call shiftset2(alloc(locamrflags),ilo,ihi,jlo,jhi,mbuff)
 
       if (eprint .and. maxthreads .eq. 1) then
@@ -150,6 +144,19 @@ c     write(outunit,116) numflagged, mptr
 !$OMP CRITICAL(nb)
          numbad = numbad + numflagged   
 !$OMP END CRITICAL(nb)
+
+c ADD WORK THAT USED TO BE IN FLGLVL2 FOR MORE PARALLEL WORK WITHOUT JOINING AND SPAWNING AGAIN
+c in effect this is domgrid, but since variables already defined just need half of it, inserted here
+      ibytesPerDP = 8      
+c     bad names, for historical reasons. they are both smae size now
+      locdomflags = igetsp( (mibuff*mjbuff)/ibytesPerDP+1)
+      locdom2 = igetsp( (mibuff*mjbuff)/ibytesPerDP+1)
+
+      node(domflags_base,mptr) = locdomflags
+      node(domflags2,mptr) = locdom2
+      call setdomflags(mptr,alloc(locdomflags),ilo,ihi,jlo,jhi,
+     .                 mbuff,lbase,lcheck,mibuff,mjbuff)
+
 
       end do
 c     mptr = node(levelptr,mptr)
