@@ -1,7 +1,7 @@
 c
 c  ----------------------------------------------------------
 c
-      subroutine domain (nvar,vtime,nx,ny,naux,t0)
+      subroutine domain (nvar,vtime,nx,ny,naux,start_time)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -41,7 +41,7 @@ c
 
       lfine = 1
       call  birect(mstart)
-      call  ginit (mstart, .true., nvar, naux, t0)
+      call  ginit (mstart, .true., nvar, naux, start_time)
 c
 c compute number of grids at level 1 (may have been bi-rected above)
 c needs to be done here since this is used hwen calling advnac for

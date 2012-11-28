@@ -41,7 +41,7 @@ c ### turns out you need 3 rows, forget offset of 1 plus one on each side
       dimension valcrse((ihi-ilo+3)*(jhi-jlo+3)*nvar)  ! NB this is a 1D array 
       dimension auxcrse((ihi-ilo+3)*(jhi-jlo+3)*naux)  ! the +3 is to expand on coarse grid to enclose fine
 c
-      dimension flaguse(ihi-ilo+1,jhi-jlo+1)
+      integer(kind=1) :: flaguse(ihi-ilo+1,jhi-jlo+1)
 
 c      iadflag(i,j) =  locuse + i-1+(j-1)*nrowp  ! no longer used
 

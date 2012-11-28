@@ -1,7 +1,7 @@
 c
 c -----------------------------------------------------------
 c
-      subroutine regrid  (nvar,lbase,cut,naux,t0)
+      subroutine regrid  (nvar,lbase,cut,naux,start_time)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -37,7 +37,7 @@ c
       time      = rnode(timemult, lstart(lbase))
 c
  20   if (lcheck .lt. lbase) go to 50
-          call grdfit(lbase,lcheck,nvar,naux,cut,time,t0)
+          call grdfit(lbase,lcheck,nvar,naux,cut,time,start_time)
           if (newstl(lcheck+1) .eq. 0) go to 40
           lfnew = max0(lcheck + 1,lfnew)
  40       continue

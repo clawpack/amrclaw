@@ -78,8 +78,6 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
     ! ============================================================================
     ! Perform X-Sweeps
     do j = 0,my+1
-        ! For 1D AMR - cannot be used in conjunction with sweep threading        
-
         ! Copy old q into 1d slice
         q1d(:,1-mbc:mx+mbc) = qold(:,1-mbc:mx+mbc,j)
         
@@ -114,6 +112,7 @@ subroutine step2(maxm,maxmx,maxmy,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,
         gp(:,1:mx+1,j) = gp(:,1:mx+1,j) + gaddp(:,1:mx+1,1)
         gm(:,1:mx+1,j+1) = gm(:,1:mx+1,j+1) + gaddm(:,1:mx+1,2)
         gp(:,1:mx+1,j+1) = gp(:,1:mx+1,j+1) + gaddp(:,1:mx+1,2)
+        
     enddo
 
     ! ============================================================================

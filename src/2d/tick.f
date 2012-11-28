@@ -1,7 +1,7 @@
 c
 c  -------------------------------------------------------------
 c
-      subroutine tick(nvar,cut,nstart,vtime,time,naux,t0,rest)
+      subroutine tick(nvar,cut,nstart,vtime,time,naux,start_time,rest)
 c
       use amr_module
 
@@ -185,7 +185,7 @@ c
           if (rprint) write(outunit,101) lbase
 101       format(8h  level ,i5,32h  stays fixed during regridding )
           call conck(1,nvar,naux,time,rest)
-          call regrid(nvar,lbase,cut,naux,t0)
+          call regrid(nvar,lbase,cut,naux,start_time)
           call setbestsrc()     ! need at every grid change
           call conck(1,nvar,naux,time,rest)
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
@@ -329,7 +329,6 @@ c         # warn the user that calculation finished prematurely
 c
 c  # final output (unless we just did it above)
 c
-      
       dump_final = ((iout.lt.iinfinity) .and. (mod(ncycle,iout).ne.0))
       if (.not. dumpout) then
           if (nout > 0) then

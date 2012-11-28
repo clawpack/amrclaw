@@ -1,7 +1,8 @@
 c
 c -----------------------------------------------------------
 c
-      subroutine flglvl2(nvar,naux,lcheck,nxypts,index,lbase,npts,t0)
+      subroutine flglvl2(nvar,naux,lcheck,nxypts,index,lbase,npts,
+     &                   start_time)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -25,7 +26,7 @@ c
       numbad = 0
 
 c     always call spest to set up stuff (initialize iflags, fill locbig)
-      call spest2(nvar,naux,lcheck,t0)
+      call spest2(nvar,naux,lcheck,start_time)
       if (flag_richardson) call errest(nvar,naux,lcheck)
 c     if (tol .gt. 0.) call errest(nvar,naux,lcheck)
 
