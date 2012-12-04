@@ -116,9 +116,9 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 0
-        clawdata.tfinal = 0.75
-        clawdata.output_t0 = False  # output at initial (or restart) time?
+        clawdata.num_output_times = 10
+        clawdata.tfinal = 1.000000
+        clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
         # Specify a list or numpy array of output times:
