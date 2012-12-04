@@ -52,16 +52,15 @@ c
 112   format(1x,23h! integer index space :,53x,1h!)
 113   format(1x,2h! ,18x,2(1h(,i8,2h, ,i8,1h)),16x,1h!)
 104   format(1x,23h! corners of rectangle:,53x,1h!)
-C 111   format(1x,2h! ,18x,2(1h(,f8.3,2h, ,f8.3,1h)),16x,1h!)
+111   format(1x,2h! ,18x,2(1h(,f12.7,2h, ,f12.7,1h)),8x,1h!)
 
 c     This is a replacement for line 45-46 format that used to be format 111
-111   format(1x,2h! ,18x,2(1h(,d10.3,2h, ,d10.3,1h)),8x,1h!)
+c111   format(1x,2h! ,18x,2(1h(,d10.3,2h, ,d10.3,1h)),8x,1h!)
 
-       write(outunit,105) hxposs(lev),hyposs(lev)
-       write(outunit,114) possk(lev)
-c 105   format(1x,7h! hrow=,f9.6,7h, hcol=,f9.6,8h, ktime=,f16.6,20x,1h!)  << Original
-105   format(1x,7h! hrow=,D16.8,7h, hcol=,D16.8,30x,1h!)
-114   format(1x,8h! ktime=,D16.8,52x,1h!)
+      write(outunit,105) hxposs(lev),hyposs(lev),possk(lev)
+ 105  format(1x,7h! hrow=,f19.9,7h, hcol=,f16.9,8h, ktime=,f16.9,3x,1h!) 
+c105   format(1x,7h! hrow=,D16.8,7h, hcol=,D16.8,30x,1h!)
+c114   format(1x,8h! ktime=,D16.8,52x,1h!)
 
       write(outunit,100)
 c
