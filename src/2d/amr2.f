@@ -613,6 +613,18 @@ c
 
       write(outunit,*)
       write(outunit,*)
+      do i = 1, mxnest
+        if (iregridcount(i) > 0) then
+          write(outunit,801) i,avenumgrids(i)/iregridcount(i),
+     1                       iregridcount(i)
+ 801      format("for level ",i3, " average num. grids = ",f10.2,
+     1           " over ",i10," steps")
+        endif
+      end do
+
+
+      write(outunit,*)
+      write(outunit,*)
       write(outunit,901) lentotsave
       write(outunit,902) lenmax
       write(outunit,903) lendim

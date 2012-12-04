@@ -73,12 +73,13 @@ program amr2
     use amr_module, only: nghost, mthbc
     use amr_module, only: xperdom, yperdom, spheredom
 
-    use amr_module, only: nstop, nout, iout, t0, tfinal, tout, output_style
+    use amr_module, only: nstop, nout, iout, tfinal, tout, output_style
     use amr_module, only: output_format, printout, verbosity_regrid
     use amr_module, only: output_q_components, output_aux_components
     use amr_module, only: output_aux_onlyonce, matlabu
 
-    use amr_module, only: lfine, lentot, rvoll, rvol, mstart, possk, ibuff
+    use amr_module, only: lfine, lentot, iregridcount, avenumgrids
+    use amr_module, only: tvoll, rvoll, rvol, mstart, possk, ibuff
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
@@ -94,7 +95,7 @@ program amr2
     integer :: ndim, nvar, naux, mcapa1, mindim, dimensional_split
     integer :: nstart, nsteps, nv1, nx, ny, lentotsave, num_gauge_SAVE
     integer :: omp_get_max_threads
-    real(kind=8) :: time, ratmet, cut, dtinit, dtv2
+    real(kind=8) :: t0, time, ratmet, cut, dtinit, dtv2
     logical :: vtime, rest, output_t0    
     character(len=25) :: fname
 
@@ -555,6 +556,14 @@ program amr2
     format_string = "('Total time to solution = ',1f16.8,' s')"
     write(outunit,format_string) &
             real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
+    write(*,format_string) &
+            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
+
+    do level = 1, mxnest            
+      format_string = "('Total advanc time on level ',i3,' = ',1f16.8,' s')"
+      write(*,format_string) level, &
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8)
+    end do
 
     ! Done with computation, cleanup:
     lentotsave = lentot
@@ -571,6 +580,15 @@ program amr2
     write(matunit,*) matlabu-1
     write(matunit,*) mxnest
     close(matunit)
+
+    write(outunit,*)
+    write(outunit,*)
+    do i = 1, mxnest
+      if (iregridcount(i) > 0) then
+        write(outunit,801) i,avenumgrids(i)/iregridcount(i),iregridcount(i)
+ 801    format("for level ",i3, " average num. grids = ",f10.2," over ",i10," steps")
+      endif
+    end do
 
     write(outunit,*)
     write(outunit,*)

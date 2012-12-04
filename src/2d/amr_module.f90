@@ -91,7 +91,7 @@ module amr_module
     real(kind=8), pointer, dimension(:) :: alloc
     integer memsize
        
-    ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\
     ! :::::   for space management of alloc array
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     integer, parameter :: lfdim=5000
@@ -107,7 +107,8 @@ module amr_module
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ! :::::  collect stats
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    real(kind=8) rvoll(10),evol,rvol
+    real(kind=8)  rvoll(maxlv),evol,rvol,avenumgrids(maxlv)
+    integer iregridcount(maxlv), tvoll(maxlv)
     integer lentot,lenmax,lendim
 
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

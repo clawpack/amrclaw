@@ -38,7 +38,7 @@ c     # this stuff the same for all gauges on this grid
 c       write(34,*) 'istart,ii,i:',istart,ii,i
         if (mptr .ne. mbestsrc(i)) go to 99  ! all done
         if (tgrid.lt.t1gauge(i) .or. tgrid.gt.t2gauge(i)) then
-c          # don't output at this time for gauge i
+c          # dont output at this time for gauge i
            go to 10
            endif
 c
@@ -90,7 +90,7 @@ c
 c  ## called every time grids change, to set the best source grid
 c  ## to find gauge data
 c
-c  ## lbase is grid level that didn't change but since fine
+c  ## lbase is grid level that didnt change but since fine
 c  ## grid may have disappeared, still have to look starting
 c  ## at coarsest level 1.
 c

@@ -115,11 +115,9 @@ c     ##  on to next cluster
       icl = icl + 1
       if (icl .le. nclust) go to 70
 c
- 71   continue   !DEBUG
-c
 c    ##  clean up. for all grids check final size.
-
       call birect(newstl(levnew))
+
  99   continue
 c    ## may have npts 0 but array was allocated due to initially flagged points
 c    ## that were not allowed for proper nesting or other reasons. in this case
@@ -130,3 +128,4 @@ c
 
       return
       end
+

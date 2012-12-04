@@ -49,7 +49,8 @@ c
      2          iregst,jregst,iregend,jregend, 
      3          numgrids,kcheck,nsteps,
      3          time,matlabu
-      write(chkunit) evol,rvol,rvoll,lentot,tmass0,cflmax
+      write(chkunit) avenumgrids, iregridcount,
+     1               evol,rvol,rvoll,lentot,tmass0,cflmax
 c
       close(chkunit)
       close(tchkunit)

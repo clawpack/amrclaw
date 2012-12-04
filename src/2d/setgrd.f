@@ -78,6 +78,9 @@ c
           end do
           numgrids(levnew) = ngrids
           numcells(levnew) = ncells
+          avenumgrids(levnew) = avenumgrids(levnew) + ngrids
+          iregridcount(levnew) = iregridcount(levnew) + 1
+          if (ngrids .gt. 1) call arrangeGrids(levnew,ngrids)
           if (verbosity_regrid .ge. levnew) then
              write(*,100) ngrids,ncells,levnew
  100         format("there are ",i4," grids with ",i8,
