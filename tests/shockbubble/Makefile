@@ -47,8 +47,8 @@ SOURCES = \
   ./qinit.f \
   ./setaux.f \
   ./setprob.f \
-  ./rpn2_euler_5wave.f90 \
-  ./rpt2_euler_5wave.f90 \
+  ../rp/rpn2_euler_5wave.f90 \
+  ../rp/rpt2_euler_5wave.f90 \
   $(AMRCLAW)/src/2d/amr2.f90 \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/b4step2.f \
