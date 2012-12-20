@@ -513,15 +513,15 @@ c        # looks at the gauge array but it is not yet built
          call   setgrd (nvar,cut,naux,dtinit,t0)
          mgauges = mgaugeSave
 
-
-         if (possk(1) .gt. dtinit*cflv1/cfl .and. vtime) then
-c        ## initial time step was too large. reset to dt from setgrd
-              write(6,*) "*** Initial time step reset for desired cfl"
-              possk(1) = dtinit
-              do i = 2, mxnest-1
-                 possk(i) = possk(i-1)*kratio(i-1)
-              end do
-         endif
+!  originally uncommented, changed to match 4-x
+!--         if (possk(1) .gt. dtinit*cflv1/cfl .and. vtime) then
+!--c        ## initial time step was too large. reset to dt from setgrd
+!--              write(6,*) "*** Initial time step reset for desired cfl"
+!--              possk(1) = dtinit
+!--              do i = 2, mxnest-1
+!--                 possk(i) = possk(i-1)*kratio(i-1)
+!--              end do
+!--         endif
 
          time = t0
          nstart = 0

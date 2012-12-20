@@ -473,14 +473,15 @@ program amr2
         call setgrd(nvar,cut,naux,dtinit,t0)
         num_gauges = num_gauge_SAVE
 
-        if (possk(1) .gt. dtinit*cflv1/cfl .and. vtime) then
-            ! initial time step was too large. reset to dt from setgrd
-            print *, "*** Initial time step reset for desired cfl"
-            possk(1) = dtinit
-            do i = 2, mxnest-1
-                possk(i) = possk(i-1)*kratio(i-1)
-            end do
-        endif
+! commented out to match 4-x version
+!!$        if (possk(1) .gt. dtinit*cflv1/cfl .and. vtime) then
+!!$            ! initial time step was too large. reset to dt from setgrd
+!!$            print *, "*** Initial time step reset for desired cfl"
+!!$            possk(1) = dtinit
+!!$            do i = 2, mxnest-1
+!!$                possk(i) = possk(i-1)*kratio(i-1)
+!!$            end do
+!!$        endif
 
         time = t0
         nstart = 0
@@ -549,7 +550,7 @@ program amr2
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
     ! --------------------------------------------------------
-    call tick(nvar,cut,nstart,vtime,time,naux,time,rest)
+    call tick(nvar,cut,nstart,vtime,time,naux,t0,rest)
     ! --------------------------------------------------------
 
     call system_clock(clock_finish,clock_rate)

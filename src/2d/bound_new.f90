@@ -32,7 +32,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     real(kind=8), intent(in out) :: aux(naux,mitot,mjtot)
 
     ! Locals
-    integer :: ilo, ihi, jlo, jhi, level, rect(4)
+    integer :: ilo, ihi, jlo, jhi, level, rect(4),i,j
     real(kind=8) :: xleft, xright, ybot, ytop, hx, hy, xl, xr, yb, yt
 
     xleft  = rnode(cornxlo, mptr)
