@@ -82,7 +82,7 @@ c
          numcells(levnew) = ncells
          avenumgrids(levnew) = avenumgrids(levnew) + ngrids
          iregridcount(levnew) = iregridcount(levnew) + 1
-c        if (ngrids .gt. 1) call arrangeGrids(levnew,ngrids)
+         if (ngrids .gt. 1) call arrangeGrids(levnew,ngrids)
 
          if (verbosity_regrid .ge. levnew) then
            write(*,100) ngrids,ncells,levnew

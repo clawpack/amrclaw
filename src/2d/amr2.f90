@@ -562,6 +562,8 @@ program amr2
 
     do level = 1, mxnest            
       format_string = "('Total advanc time on level ',i3,' = ',1f16.8,' s')"
+      write(outunit,format_string) level, &
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8)
       write(*,format_string) level, &
              real(tvoll(level),kind=8) / real(clock_rate,kind=8)
     end do
