@@ -589,7 +589,8 @@ program amr2
     do i = 1, mxnest
       if (iregridcount(i) > 0) then
         write(outunit,801) i,avenumgrids(i)/iregridcount(i),iregridcount(i)
- 801    format("for level ",i3, " average num. grids = ",f10.2," over ",i10," steps")
+ 801    format("for level ",i3, " average num. grids = ",f10.2," over ",i10,  &
+               " regridding steps")
       endif
     end do
 
