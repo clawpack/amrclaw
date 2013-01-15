@@ -34,7 +34,8 @@ c   NEW INDEXING, ORDER SWITCHED
       iadd(ivar,i,j)   = loc    + ivar-1 + nvar*((j-1)*mitot+i-1)
       iadnew(ivar,i,j) = locnew + ivar-1 + nvar*((j-1)*mitot+i-1)
       iadold(ivar,i,j) = locold + ivar-1 + nvar*((j-1)*mitot+i-1)
-      integer(kind=1) :: flaguse(ilo:ihi, jlo:jhi)
+!     integer(kind=1) :: flaguse(ilo:ihi, jlo:jhi)
+      integer*1  flaguse(ilo:ihi, jlo:jhi)
 c
       dt     = possk(level)
 c     teps   = dt / 10.d0

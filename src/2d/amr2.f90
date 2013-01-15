@@ -473,14 +473,15 @@ program amr2
         call setgrd(nvar,cut,naux,dtinit,t0)
         num_gauges = num_gauge_SAVE
 
-        if (possk(1) .gt. dtinit*cflv1/cfl .and. vtime) then
-            ! initial time step was too large. reset to dt from setgrd
-            print *, "*** Initial time step reset for desired cfl"
-            possk(1) = dtinit
-            do i = 2, mxnest-1
-                possk(i) = possk(i-1)*kratio(i-1)
-            end do
-        endif
+! commented out to match 4-x version
+!!$        if (possk(1) .gt. dtinit*cflv1/cfl .and. vtime) then
+!!$            ! initial time step was too large. reset to dt from setgrd
+!!$            print *, "*** Initial time step reset for desired cfl"
+!!$            possk(1) = dtinit
+!!$            do i = 2, mxnest-1
+!!$                possk(i) = possk(i-1)*kratio(i-1)
+!!$            end do
+!!$        endif
 
         time = t0
         nstart = 0
@@ -549,7 +550,7 @@ program amr2
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
     ! --------------------------------------------------------
-    call tick(nvar,cut,nstart,vtime,time,naux,time,rest)
+    call tick(nvar,cut,nstart,vtime,time,naux,t0,rest)
     ! --------------------------------------------------------
 
     call system_clock(clock_finish,clock_rate)
@@ -561,6 +562,8 @@ program amr2
 
     do level = 1, mxnest            
       format_string = "('Total advanc time on level ',i3,' = ',1f16.8,' s')"
+      write(outunit,format_string) level, &
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8)
       write(*,format_string) level, &
              real(tvoll(level),kind=8) / real(clock_rate,kind=8)
     end do
@@ -586,7 +589,8 @@ program amr2
     do i = 1, mxnest
       if (iregridcount(i) > 0) then
         write(outunit,801) i,avenumgrids(i)/iregridcount(i),iregridcount(i)
- 801    format("for level ",i3, " average num. grids = ",f10.2," over ",i10," steps")
+ 801    format("for level ",i3, " average num. grids = ",f10.2," over ",i10,  &
+               " regridding steps")
       endif
     end do
 

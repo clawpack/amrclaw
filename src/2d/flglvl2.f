@@ -49,7 +49,39 @@ c since there are duplicates, and proper nesting not yet checked
            call colate2(alloc(index),nxypts,lcheck,npts,lbase)
       else 
          npts = 0  !npts is number of unique flagged points after removing duplicates
+         call freeFlags(lcheck)   ! otherwise storage freed in colate2. perhaps always do it here
       endif
 
       return
       end
+c
+c ---------------------------------------------------------------------------------
+c
+       subroutine freeFlags(lcheck)
+
+       use amr_module
+       implicit double precision (a-h, o-z)
+
+       mptr = lstart(lcheck)
+ 10          continue
+             locamrflags = node(storeflags,mptr)
+             locdomflags = node(domflags_base,mptr)
+             locdom2 = node(domflags2,mptr)
+
+             nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+             ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+             mbuff = max(nghost,ibuff+1)
+             mibuff = nx + 2*mbuff
+             mjbuff = ny + 2*mbuff
+
+             ibytesPerDP = 8
+             nwords = (mibuff*mjbuff)/ibytesPerDP+1
+             call reclam(locdomflags, nwords)
+             call reclam(locdom2, nwords)
+             call reclam(locamrflags,mibuff*mjbuff)
+
+        mptr = node(levelptr, mptr)
+        if (mptr .ne. 0) go to 10
+
+       return
+       end
