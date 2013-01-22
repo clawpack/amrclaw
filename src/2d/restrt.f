@@ -46,7 +46,8 @@ c     # need to allocate for dynamic memory:
      2       iregst,jregst,iregend,jregend,
      3       numgrids,kcheck1,nsteps,time,
      3       matlabu
-      read(rstunit) evol,rvol,rvoll,lentot,tmass0,cflmax
+      read(rstunit) avenumgrids, iregridcount,
+     1              evol,rvol,rvoll,lentot,tmass0,cflmax
 
       close(rstunit) 
 

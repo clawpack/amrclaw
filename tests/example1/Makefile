@@ -31,18 +31,22 @@ FFLAGS ?= -O2
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
 
+FFLAGS += $(OMP_FLAGS)
+
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
 MODULES = \
   $(AMRCLAW)/src/2d/amr_module.f90 \
+  $(AMRCLAW)/src/2d/regions_module.f90 \
+  $(AMRCLAW)/src/2d/gauges_module.f90
 
 SOURCES = \
   qinit.f \
   setprob.f \
   $(RIEMANN)/src/rpn2_advection.f \
   $(RIEMANN)/src/rpt2_advection.f \
-  $(AMRCLAW)/src/2d/amr2.f \
+  $(AMRCLAW)/src/2d/amr2.f90 \
   $(AMRCLAW)/src/2d/setaux.f \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/b4step2.f \
@@ -50,7 +54,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/src2.f \
   $(AMRCLAW)/src/2d/src1d.f \
   $(AMRCLAW)/src/2d/advanc.f \
-  $(AMRCLAW)/src/2d/bound.f \
+  $(AMRCLAW)/src/2d/bound_new.f90 \
   $(AMRCLAW)/src/2d/stepgrid.f \
   $(AMRCLAW)/src/2d/auxcoarsen.f \
   $(AMRCLAW)/src/2d/fixcapaq.f \
@@ -66,15 +70,15 @@ SOURCES = \
   $(AMRCLAW)/src/2d/bufnst2.f \
   $(AMRCLAW)/src/2d/spest.f \
   $(AMRCLAW)/src/2d/spest2.f \
-  $(AMRCLAW)/src/2d/flag2refine.f \
-  $(AMRCLAW)/src/2d/flag2refine2.f \
+  $(AMRCLAW)/src/2d/flag2refine.f90 \
+  $(AMRCLAW)/src/2d/flag2refine2.f90 \
   $(AMRCLAW)/src/2d/allowflag.f \
   $(AMRCLAW)/src/2d/errest.f \
   $(AMRCLAW)/src/2d/errf1.f \
   $(AMRCLAW)/src/2d/gfixup.f \
-  $(AMRCLAW)/src/2d/filval.f \
-  $(AMRCLAW)/src/2d/filpatch.f \
-  $(AMRCLAW)/src/2d/prefilp.f \
+  $(AMRCLAW)/src/2d/filval_new.f90 \
+  $(AMRCLAW)/src/2d/filpatch_new.f90 \
+  $(AMRCLAW)/src/2d/prefilp_new.f90 \
   $(AMRCLAW)/src/2d/flglvl.f \
   $(AMRCLAW)/src/2d/flglvl2.f \
   $(AMRCLAW)/src/2d/fluxad.f \
@@ -99,7 +103,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/setuse.f \
   $(AMRCLAW)/src/2d/stst1.f \
   $(AMRCLAW)/src/2d/tick.f \
-  $(AMRCLAW)/src/2d/trimbd.f \
+  $(AMRCLAW)/src/2d/trimbd_new.f90 \
   $(AMRCLAW)/src/2d/update.f \
   $(AMRCLAW)/src/2d/nodget.f \
   $(AMRCLAW)/src/2d/upbnd.f  \
@@ -131,7 +135,6 @@ SOURCES = \
   $(AMRCLAW)/src/2d/valout.f \
   $(AMRCLAW)/src/2d/check.f \
   $(AMRCLAW)/src/2d/restrt.f \
-  $(AMRCLAW)/src/2d/setgauges.f \
   $(AMRCLAW)/src/2d/dumpgauge.f \
   $(AMRCLAW)/src/2d/quick_sort1.f \
   $(AMRCLAW)/src/2d/opendatafile.f \

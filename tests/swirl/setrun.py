@@ -228,15 +228,12 @@ def setrun(claw_pkg='amrclaw'):
 
     clawdata.bc_lower[1] = 'periodic'   # at ylower
     clawdata.bc_upper[1] = 'periodic'   # at yupper
-                         
 
     # ---------------
     # Gauges:
     # ---------------
-    clawdata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    #clawdata.gauges.append([1, 0.6, 0.6, 0, 1e9])
-
+    #rundata.gaugedata.add_gauge([gaugeno, x, y, t1, t2])
     
 
     # ---------------
@@ -288,9 +285,11 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     # Regions:
     # ---------------
-    clawdata.regions = []
+    rundata.regiondata.regions = []
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
+    rundata.regiondata.regions.append([3, 3, 0.0, 0.3, 0.2, 0.3, 0.2, 0.3])
+    rundata.regiondata.regions.append([3, 3, 1.8, 2.5, 0.2, 0.3, 0.2, 0.3])
 
 
     # --------------
@@ -332,6 +331,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.sprint = False      # space/memory output
     clawdata.tprint = False      # time step reporting each level
     clawdata.uprint = False      # update/upbnd reporting
+
     
     return rundata
 

@@ -29,16 +29,13 @@ c
 c
       dimension   val(nvar,mi,mj)
       logical     tinterp
-c
-c      iadd(i,j,ivar)   = loc    + i - 1 + mitot*((ivar-1)*mjtot+j-1) OLD INDEXING
-c      iadnew(i,j,ivar) = locnew + i - 1 + mitot*((ivar-1)*mjtot+j-1)
-c      iadold(i,j,ivar) = locold + i - 1 + mitot*((ivar-1)*mjtot+j-1)
 
 c   NEW INDEXING, ORDER SWITCHED
       iadd(ivar,i,j)   = loc    + ivar-1 + nvar*((j-1)*mitot+i-1)
       iadnew(ivar,i,j) = locnew + ivar-1 + nvar*((j-1)*mitot+i-1)
       iadold(ivar,i,j) = locold + ivar-1 + nvar*((j-1)*mitot+i-1)
-      dimension flaguse(ilo:ihi, jlo:jhi)
+!     integer(kind=1) :: flaguse(ilo:ihi, jlo:jhi)
+      integer*1  flaguse(ilo:ihi, jlo:jhi)
 c
       dt     = possk(level)
 c     teps   = dt / 10.d0
@@ -46,13 +43,8 @@ c     need non-dimensional epsilon for time. was a problem
 c     in large scaled tsunami tests
       teps   = 1.d-4
 
-
-
-      do i = ilo, ihi
-      do j = jlo, jhi
-        flaguse(i,j) = 0.0
-      end do
-      end do
+c     Initialize set array
+      flaguse = 0
 
       mptr   = lstart(level)
  10   if (mptr .eq. 0) go to 105
@@ -136,7 +128,7 @@ c     ::: no time interp. copy the solution values
          do 20 i = ixlo, ixhi
              val(ivar,i-ilo+nrowst,j-jlo+ncolst) =
      1            alloc(iadd(ivar,i-imlo+nghost+1,j-jmlo+nghost+1))
-             flaguse(i,j) = 1.d0
+             flaguse(i,j) = 1
  20      continue
  35      continue
  45      continue
@@ -148,7 +140,7 @@ c     ::: linear interpolation in time
            val(ivar,i-ilo+nrowst,j-jlo+ncolst) =
      1      alloc(iadnew(ivar,i-imlo+nghost+1,j-jmlo+nghost+1))*alphai +
      2      alloc(iadold(ivar,i-imlo+nghost+1,j-jmlo+nghost+1))*alphac
-            flaguse(i,j) = 1.d0
+            flaguse(i,j) = 1
  65      continue
  75      continue
  85      continue
@@ -165,7 +157,7 @@ c  they will be set elsewhere
       if (jhi .ge. jregsz(level)) then
         do 1000 j = max(jregsz(level),jlo), jhi
         do 1000 i = ilo, ihi
-           flaguse(i,j) = 1.d0
+           flaguse(i,j) = 1
 1000    continue
       endif
 
@@ -173,7 +165,7 @@ c  they will be set elsewhere
         ncolend = ncolst + jhi - jlo 
         do 1200 j = jlo, min(-1,ncolend)
         do 1200 i = ilo, ihi
-           flaguse(i,j) = 1.d0
+           flaguse(i,j) = 1
 1200    continue
       endif
 
@@ -181,14 +173,14 @@ c  they will be set elsewhere
         nrowend = nrowst + ihi - ilo
         do 1400 i = ilo, min(-1,nrowend)
         do 1400 j = jlo, jhi
-           flaguse(i,j) = 1.d0
+           flaguse(i,j) = 1
 1400    continue
       endif
 
       if (ihi .ge. iregsz(level)) then
         do 1600 i = max(iregsz(level),ilo), ihi
         do 1600 j = jlo, jhi
-           flaguse(i,j) = 1.d0
+           flaguse(i,j) = 1
 1600    continue
       endif
 c

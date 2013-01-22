@@ -296,7 +296,7 @@ c         # and we want to use 1d plotting routines
 c
 
       write(6,601) matlabu,time
-  601 format('AMRCLAW: Frame ',i4,
+ 601  format('AMRCLAW: Frame ',i4,
      &       ' output files done at time t = ', d12.6,/)
 
       matlabu = matlabu + 1

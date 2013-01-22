@@ -1,7 +1,7 @@
 c
 c ---------------------------------------------------------
 c
-      subroutine grdfit (lbase,lcheck,nvar,naux,cut,time,t0)
+      subroutine grdfit (lbase,lcheck,nvar,naux,cut,time,start_time)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -31,7 +31,7 @@ c     ## npts is number of points actually colated - some
 c     ## flagged points turned off due to proper nesting requirement.
 c     ## (storage based on nptmax calculation however).
 
-      call flglvl2(nvar,naux,lcheck,nptmax,index,lbase,npts,t0)
+      call flglvl2(nvar,naux,lcheck,nptmax,index,lbase,npts,start_time)
 
       if (npts .eq. 0) go to 99
 c
@@ -115,11 +115,9 @@ c     ##  on to next cluster
       icl = icl + 1
       if (icl .le. nclust) go to 70
 c
- 71   continue   !DEBUG
-c
 c    ##  clean up. for all grids check final size.
-
       call birect(newstl(levnew))
+
  99   continue
 c    ## may have npts 0 but array was allocated due to initially flagged points
 c    ## that were not allowed for proper nesting or other reasons. in this case
@@ -130,3 +128,4 @@ c
 
       return
       end
+

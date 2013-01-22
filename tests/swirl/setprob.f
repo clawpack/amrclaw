@@ -1,6 +1,6 @@
       subroutine setprob
       implicit double precision (a-h,o-z)
-      character*25 fname
+      character(len=25) fname
 
       common /compsi/ pi
       common /comvt/ tperiod,pi2
