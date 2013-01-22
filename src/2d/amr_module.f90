@@ -119,7 +119,7 @@ module amr_module
     integer, allocatable :: mthlim(:)
     real(kind=8) cfl,cflmax,cflv1,cfl_level
 
-    logical :: fwave
+    logical :: use_fwaves
     logical :: flag_richardson,flag_gradient
     integer :: verbosity_regrid
 

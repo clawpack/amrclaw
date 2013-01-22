@@ -66,7 +66,7 @@ program amr2
 
     use amr_module, only: max1d, maxvar, maxlv
 
-    use amr_module, only: method, mthlim, fwave
+    use amr_module, only: method, mthlim, use_fwaves
     use amr_module, only: nghost, mwaves, mcapa, auxtype
     use amr_module, only: tol, tolsp, flag_richardson, flag_gradient
 
@@ -233,7 +233,7 @@ program amr2
         read(inunit,*) (auxtype(iaux), iaux=1,naux)
     endif
 
-    read(inunit,*) fwave
+    read(inunit,*) use_fwaves
     allocate(mthlim(mwaves))
     read(inunit,*) (mthlim(mw), mw=1,mwaves)
 
