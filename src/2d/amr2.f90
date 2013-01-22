@@ -85,6 +85,8 @@ program amr2
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
     use amr_module, only: rprint, sprint, tprint, uprint
 
+    use amr_module, only: t0
+
     use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
 
@@ -95,7 +97,7 @@ program amr2
     integer :: ndim, nvar, naux, mcapa1, mindim, dimensional_split
     integer :: nstart, nsteps, nv1, nx, ny, lentotsave, num_gauge_SAVE
     integer :: omp_get_max_threads
-    real(kind=8) :: t0, time, ratmet, cut, dtinit, dtv2
+    real(kind=8) :: time, ratmet, cut, dtinit, dtv2
     logical :: vtime, rest, output_t0    
     character(len=25) :: fname
 
