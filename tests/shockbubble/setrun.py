@@ -205,7 +205,7 @@ def setrun(claw_pkg='amrclaw'):
     #   4 or 'vanleer'  ==> van Leer
     clawdata.limiter = ['vanleer', 'vanleer', 'vanleer', 'vanleer', 'superbee']
     
-    clawdata.fwave = False    # True ==> use f-wave version of algorithms
+    clawdata.use_fwaves = False    # True ==> use f-wave version of algorithms
     
     # Source terms splitting:
     #   src_split == 0 or 'none'    ==> no source term (src routine never called)
