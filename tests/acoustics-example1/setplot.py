@@ -50,6 +50,10 @@ def setplot(plotdata):
     plotitem.pcolor_cmap = colormaps.yellow_red_blue
     plotitem.add_colorbar = True
     plotitem.show = True       # show on plot?
+    plotitem.pcolor_cmin = 0.0
+    plotitem.pcolor_cmax = 2.0
+    plotitem.amr_patchedges_show = [1,1,1]
+    
     
 
     # Figure for scatter plot
@@ -73,7 +77,7 @@ def setplot(plotdata):
         y = current_data.y
         r = sqrt(x**2 + y**2)
         q = current_data.q
-        p = q[:,:,0]
+        p = q[0,:,:]
         return r,p
 
     plotitem.map_2d_to_1d = p_vs_r

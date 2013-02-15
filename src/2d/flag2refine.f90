@@ -84,9 +84,9 @@ subroutine flag2refine(mx,my,mbc,meqn,maux,xlower,ylower,dx,dy,t,level,tolsp, &
             x_hi = xlower + i * dx
 
             ! Check to see if refinement is forced in any other region:
-            print *,num_regions
-            print *,regions
-            stop
+!             print *,num_regions
+!             print *,regions
+!             stop
             do m=1,num_regions
                 if (level < regions(m)%min_level .and. &
                     t >= regions(m)%t_low .and. t <= regions(m)%t_hi) then
