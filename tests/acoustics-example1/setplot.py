@@ -53,6 +53,7 @@ def setplot(plotdata):
     plotitem.pcolor_cmin = 0.0
     plotitem.pcolor_cmax = 2.0
     plotitem.amr_patchedges_show = [1,1,1]
+    plotitem.amr_celledges_show = [1,0,0]
     
     
 

@@ -114,8 +114,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 30
-        clawdata.tfinal = 0.270000
+        clawdata.num_output_times = 10
+        clawdata.tfinal = 0.5
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -248,9 +248,9 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    clawdata.refinement_ratios_x = [2, 2, 2]
-    clawdata.refinement_ratios_y = [2, 2, 2]
-    clawdata.refinement_ratios_t = [2, 2, 2]
+    clawdata.refinement_ratios_x = [2, 2]
+    clawdata.refinement_ratios_y = [2, 2]
+    clawdata.refinement_ratios_t = [2, 2]
 
 
     # Specify type of each aux variable in clawdata.auxtype.
@@ -265,7 +265,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Flag for refinement using routine flag2refine:
     clawdata.flag2refine = True      # use this?
-    clawdata.flag2refine_tol = 5.000000e-02  # tolerance used in this routine
+    clawdata.flag2refine_tol = 0.2 # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
     # between a cell and each of its neighbors.
@@ -275,11 +275,11 @@ def setrun(claw_pkg='amrclaw'):
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
-    clawdata.regrid_buffer_width  = 3
+    clawdata.regrid_buffer_width  = 2
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)
-    clawdata.clustering_cutoff = 0.700000
+    clawdata.clustering_cutoff = 0.7
 
     # print info about each regridding up to this level:
     clawdata.verbosity_regrid = 0      
