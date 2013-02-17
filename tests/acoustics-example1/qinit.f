@@ -11,7 +11,7 @@ c     # Set initial conditions for q.
 c     # Acoustics with smooth radially symmetric profile to test accuracy
 c
        implicit double precision (a-h,o-z)
-       dimension q(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, meqn)
+       dimension q(meqn,1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
 c
        pi = 4.d0*datan(1.d0)
        width = 0.2d0
@@ -27,9 +27,10 @@ c
                else
                  pressure = 0.d0
                endif
-             q(i,j,1) = pressure
-             q(i,j,2) = 0.d0
-             q(i,j,3) = 0.d0
+             q(1,i,j) = pressure
+             q(2,i,j) = 0.d0
+             q(3,i,j) = 0.d0
   20         continue
+
        return
        end

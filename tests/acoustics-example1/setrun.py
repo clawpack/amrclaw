@@ -245,7 +245,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    clawdata.amr_levels_max = 1
+    clawdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
     clawdata.refinement_ratios_x = [2, 2, 2]
