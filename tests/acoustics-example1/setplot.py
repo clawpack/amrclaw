@@ -61,6 +61,7 @@ def setplot(plotdata):
     # -----------------------
 
     plotfigure = plotdata.new_plotfigure(name='scatter', figno=3)
+    plotfigure.show = (qref_dir is not None)
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
