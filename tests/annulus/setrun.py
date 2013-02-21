@@ -115,7 +115,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify at what times the results should be written to fort.q files.
     # Note that the time integration stops after the final output time.
  
-    clawdata.output_style = 3
+    clawdata.output_style = 1
  
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
@@ -142,6 +142,12 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.output_aux_components = 'none'  # could be list
     clawdata.output_aux_onlyonce = True    # output aux arrays only at t0
     
+    # ---------------
+    # Gauges:
+    # ---------------
+    # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
+    #rundata.gaugedata.add_gauge([])
+    
 
     # ---------------------------------------------------
     # Verbosity of messages to screen during integration:  
@@ -160,7 +166,7 @@ def setrun(claw_pkg='amrclaw'):
 
     # if dt_variable==True:  variable time steps used based on cfl_desired,
     # if dt_variable==False: fixed time steps dt = dt_initial always used.
-    clawdata.dt_variable = False
+    clawdata.dt_variable = True
     
     # Initial time step for variable dt.  
     # (If dt_variable==0 then dt=dt_initial for all steps)
@@ -208,7 +214,7 @@ def setrun(claw_pkg='amrclaw'):
     #   4 or 'vanleer'  ==> van Leer
     clawdata.limiter = ['mc']
     
-    clawdata.fwave = False    # True ==> use f-wave version of algorithms
+    clawdata.use_fwaves = False    # True ==> use f-wave version of algorithms
     
     # Source terms splitting:
     #   src_split == 0 or 'none'    ==> no source term (src routine never called)
@@ -235,15 +241,7 @@ def setrun(claw_pkg='amrclaw'):
 
     clawdata.bc_lower[1] = 'periodic'   # at ylower
     clawdata.bc_upper[1] = 'periodic'   # at yupper
-                         
 
-    # ---------------
-    # Gauges:
-    # ---------------
-    clawdata.gauges = []
-    # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-
-    
 
     # ---------------
     # AMR parameters:
@@ -292,12 +290,11 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # ---------------
-    # Regions:
+    # Refinement Regions:
     # ---------------
-    clawdata.regions = []
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
-
+    #rundata.regiondata.regions.append([])
 
     # --------------
     # Checkpointing:

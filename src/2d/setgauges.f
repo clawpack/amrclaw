@@ -3,12 +3,13 @@ c=========================================================================
 c=========================================================================
 
       use amr_module
+	  use gauges_module
       implicit double precision (a-h,o-z)
       character*25 fname
       logical foundFile
 
 
-      fname  = 'setgauges.data'
+      fname  = 'gauges.data'
       inquire(file=fname,exist=foundFile)
       if (.not. foundFile) then
         write(*,*) 'You must provide a file ', fname 
