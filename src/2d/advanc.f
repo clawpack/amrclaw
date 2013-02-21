@@ -11,6 +11,7 @@ c
       integer omp_get_thread_num, omp_get_max_threads
       integer mythread/0/, maxthreads/1/
       integer listgrids(numgrids(level))
+      integer clock_start, clock_finish, clock_rate
 
 c     maxgr is maximum number of grids  many things are
 c     dimensioned at, so this is overall. only 1d array
@@ -34,10 +35,12 @@ c
       delt = possk(level)
 c     this is linear alg.
       call prepgrids(listgrids,numgrids(level),level)
+c
+c get start time for more detailed timing by level
+       call system_clock(clock_start,clock_rate)
 
 c     maxthreads initialized to 1 above in case no openmp
 !$    maxthreads = omp_get_max_threads()
-
 
 c We want to do this regardless of the threading type
 !$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot
@@ -219,22 +222,19 @@ c         next way to reclaim was to minimize calls to
 c         reclam, due to critical section and openmp
 !--          call reclam(locfp, 2*mitot*mjtot*nvar)
 !--          call reclam(locgp, 2*mitot*mjtot*nvar)
-
 !$OMP CRITICAL (newdt)
-
           dtlevnew = dmin1(dtlevnew,dtnew)
-
 !$OMP END CRITICAL (newdt)    
-
 c
           rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
       end do
-
 !$OMP END PARALLEL DO
-
 c
 c     debug statement:
 c     write(*,*)" from advanc: level ",level," dtlevnew ",dtlevnew
+
+      call system_clock(clock_finish,clock_rate)
+      tvoll(level) = tvoll(level) + clock_finish - clock_start
 
 c new way to reclaim for safety with dynamic memory and openmp
       do j = 1, maxthreads

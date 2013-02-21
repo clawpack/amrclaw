@@ -1,7 +1,7 @@
 c
 c -----------------------------------------------------------
 c
-      subroutine regrid  (nvar,lbase,cut,naux,t0)
+      subroutine regrid  (nvar,lbase,cut,naux,start_time)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -37,7 +37,7 @@ c
       time      = rnode(timemult, lstart(lbase))
 c
  20   if (lcheck .lt. lbase) go to 50
-          call grdfit(lbase,lcheck,nvar,naux,cut,time,t0)
+          call grdfit(lbase,lcheck,nvar,naux,cut,time,start_time)
           if (newstl(lcheck+1) .eq. 0) go to 40
           lfnew = max0(lcheck + 1,lfnew)
  40       continue
@@ -80,6 +80,10 @@ c
          end do
          numgrids(levnew) = ngrids
          numcells(levnew) = ncells
+         avenumgrids(levnew) = avenumgrids(levnew) + ngrids
+         iregridcount(levnew) = iregridcount(levnew) + 1
+         if (ngrids .gt. 1) call arrangeGrids(levnew,ngrids)
+
          if (verbosity_regrid .ge. levnew) then
            write(*,100) ngrids,ncells,levnew
            write(outunit,100) ngrids,ncells,levnew
@@ -90,3 +94,44 @@ c
 
       return
       end
+c
+c -------------------------------------------------------------------
+c
+      subroutine arrangeGrids(level, numg)
+c
+      use amr_module
+      implicit double precision (a-h,o-z)
+      integer listgrids(numg), cost(numg), index(numg), prevptr
+c
+c   slow sort for now, putting most expensive grids first on lstart list
+c   measure cost by number of cells
+c
+       mptr = lstart(level)
+       do i = 1, numg
+         listgrids(i) = mptr
+         cost(i) =  (node(ndihi,mptr)-node(ndilo,mptr)+1) *
+     1              (node(ndjhi,mptr)-node(ndjlo,mptr)+1)
+         index(i) = i
+         mptr = node(levelptr, mptr)
+       end do
+c
+c        write(*,*)" before sorting"
+c       write(*,*) index
+c
+       call  qsorti(index, numg, cost)
+
+c       write(*,*)"after sorting"
+c       write(*,*) index
+
+c qsort returns in ascending order, repack in descending order
+c grids can stay in place, just their levelptrs need to change
+       lstart(level) = listgrids(index(numg))  ! last grid is most expensive
+       prevptr = listgrids(index(numg))
+       do i = 1, numg-1             
+          node(levelptr, prevptr) = listgrids(index(numg-i))
+          prevptr = listgrids(index(numg-i))
+       end do
+       node(levelptr,prevptr) = null  !signal the last grid
+
+       return
+       end

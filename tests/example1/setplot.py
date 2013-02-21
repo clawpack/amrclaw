@@ -82,7 +82,6 @@ def setplot(plotdata):
     plotitem.amr_patch_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
     plotitem.amr_celledges_show = [1,1,0]
     plotitem.amr_patchedges_show = [1]
-
     
     # Parameters used only when creating html and/or latex hardcopy
     # e.g., via visclaw.frametools.printframes:

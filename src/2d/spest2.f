@@ -1,11 +1,14 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine spest2 (nvar,naux,lcheck,t0)
+      subroutine spest2 (nvar,naux,lcheck,start_time)
 c
       use amr_module
       implicit double precision (a-h,o-z)
 
+      integer omp_get_thread_num, omp_get_max_threads
+      integer mythread/0/, maxthreads/1/
+      integer listgrids(numgrids(lcheck))
  
 c :::::::::::::::::::::::::: SPEST2 :::::::::::::::::::::::::::::::::::
 c For all grids at level lcheck:
@@ -13,9 +16,21 @@ c   Call user-supplied routine flag2refine to flag any points where
 c   refinement is desired based on user's criterion.  
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
+!$    maxthreads = omp_get_max_threads()
+      call prepgrids(listgrids,numgrids(lcheck),lcheck)
 
-       mptr = lstart(lcheck)
- 5     continue
+c       mptr = lstart(lcheck)
+c 5     continue
+!$OMP PARALLEL DO PRIVATE(jg,mptr,nx,ny,mitot,mjtot,locnew,locaux),
+!$OMP&            PRIVATE(time,dx,dy,xleft,ybot,xlow,ylow,locbig),
+!$OMP&            PRIVATE(locold,mbuff,mibuff,mjbuff,locamrflags,i),
+!$OMP&            SHARED(numgrids,listgrids,lcheck,nghost,nvar,naux),
+!$OMP&            SHARED(start_time,possk,flag_gradient,ibuff),
+!$OMP&            SHARED(tolsp,alloc,node,rnode,hxposs,hyposs),
+!$OMP&            DEFAULT(none),
+!$OMP&            SCHEDULE(DYNAMIC,1)
+       do  jg = 1, numgrids(lcheck)
+          mptr = listgrids(jg)
           nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
           ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
           mitot  = nx + 2*nghost
@@ -36,7 +51,7 @@ c         # straight copy into scratch array so don't mess up latest soln.
 
 c  ## at later times want to use newest soln for spatial error flagging
 c  ## at initial time want to use initial conditions (so retain symmetry for example)
-         if (t0+possk(lcheck) .ne. time) then  ! exact equality test here. counting on ieee arith.
+         if (start_time+possk(lcheck) .ne. time) then  ! exact equality test here. counting on ieee arith.
              do 10 i = 1, mitot*mjtot*nvar
  10             alloc(locbig+i-1) = alloc(locnew+i-1)
 
@@ -61,7 +76,7 @@ c                               !TO ALLOW ROOM FOR BUFFERING IN PLACE
          mjbuff = ny + 2*mbuff
          locamrflags = igetsp(mibuff*mjbuff)
          node(storeflags,mptr) = locamrflags
-c           do 20 i = 1, mitot*mjtot
+
             do 20 i = 1, mibuff*mjbuff
  20         alloc(locamrflags+i-1) = goodpt
 
@@ -69,23 +84,14 @@ c        # call user-supplied routine to flag any points where
 c        # refinement is desired based on user's criterion.  
 c        # Default version compares spatial gradient to tolsp.
 
-c         call flag2refine(nx,ny,nghost,nvar,naux,xleft,ybot,dx,dy,
           call flag2refine2(nx,ny,nghost,mbuff,nvar,naux,xleft,ybot,
      &        dx,dy,time,lcheck,tolsp,alloc(locbig),
      &        alloc(locaux),alloc(locamrflags),goodpt,badpt)
-
-c
-c dont reclam here - save for colating and buffering in situ
-c         call reclam(locamrflags, mitot*mjtot)
-c         call reclam(locamrflags, mibuff*mbuff)
       endif
 
-c   previously used to reclam locbig space here. now save to reuse in errest
-c   reclam locbig space afterwards.
-c     call reclam(locbig,mitot*mjtot*nvar)
-
-      mptr = node(levelptr,mptr)
-      if (mptr .ne. 0) go to 5
+      end do
+c      mptr = node(levelptr,mptr)
+c      if (mptr .ne. 0) go to 5
 c
       return
       end

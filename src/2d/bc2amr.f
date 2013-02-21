@@ -75,9 +75,11 @@ c     Don't overwrite ghost cells in periodic directions!
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
+      use amr_module, only: mthbc
+
       implicit double precision (a-h,o-z)
 
-      common /combc2/ mthbc(4)
+C      common /combc2/ mthbc(4)
 
       dimension val(meqn,nrow,ncol), aux(naux,nrow,ncol)
       logical xperiodic, yperiodic, spheredom
