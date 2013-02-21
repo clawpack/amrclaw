@@ -58,7 +58,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/src2.f \
   $(AMRCLAW)/src/2d/src1d.f \
   $(AMRCLAW)/src/2d/advanc.f \
-  $(AMRCLAW)/src/2d/bound_new.f90 \
+  $(AMRCLAW)/src/2d/bound.f90 \
   $(AMRCLAW)/src/2d/stepgrid.f \
   $(AMRCLAW)/src/2d/auxcoarsen.f \
   $(AMRCLAW)/src/2d/fixcapaq.f \
@@ -68,22 +68,17 @@ SOURCES = \
   $(AMRCLAW)/src/2d/reclam.f \
   $(AMRCLAW)/src/2d/birect.f \
   $(AMRCLAW)/src/2d/cleanup.f \
-  $(AMRCLAW)/src/2d/colate.f \
   $(AMRCLAW)/src/2d/colate2.f \
-  $(AMRCLAW)/src/2d/bufnst.f \
   $(AMRCLAW)/src/2d/bufnst2.f \
-  $(AMRCLAW)/src/2d/spest.f \
   $(AMRCLAW)/src/2d/spest2.f \
-  $(AMRCLAW)/src/2d/flag2refine.f90 \
   $(AMRCLAW)/src/2d/flag2refine2.f90 \
   $(AMRCLAW)/src/2d/allowflag.f \
   $(AMRCLAW)/src/2d/errest.f \
   $(AMRCLAW)/src/2d/errf1.f \
   $(AMRCLAW)/src/2d/gfixup.f \
-  $(AMRCLAW)/src/2d/filval_new.f90 \
-  $(AMRCLAW)/src/2d/filpatch_new.f90 \
-  $(AMRCLAW)/src/2d/prefilp_new.f90 \
-  $(AMRCLAW)/src/2d/flglvl.f \
+  $(AMRCLAW)/src/2d/filval.f90 \
+  $(AMRCLAW)/src/2d/filpatch.f90 \
+  $(AMRCLAW)/src/2d/prefilp.f90 \
   $(AMRCLAW)/src/2d/flglvl2.f \
   $(AMRCLAW)/src/2d/fluxad.f \
   $(AMRCLAW)/src/2d/fluxsv.f \
@@ -91,11 +86,9 @@ SOURCES = \
   $(AMRCLAW)/src/2d/grdfit2.f \
   $(AMRCLAW)/src/2d/intfil.f \
   $(AMRCLAW)/src/2d/moment.f \
-  $(AMRCLAW)/src/2d/nestck.f \
   $(AMRCLAW)/src/2d/nestck2.f \
   $(AMRCLAW)/src/2d/prepf.f \
   $(AMRCLAW)/src/2d/prepc.f \
-  $(AMRCLAW)/src/2d/projec.f \
   $(AMRCLAW)/src/2d/projec2.f \
   $(AMRCLAW)/src/2d/signs.f \
   $(AMRCLAW)/src/2d/findcut.f \
@@ -107,7 +100,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/setuse.f \
   $(AMRCLAW)/src/2d/stst1.f \
   $(AMRCLAW)/src/2d/tick.f \
-  $(AMRCLAW)/src/2d/trimbd_new.f90 \
+  $(AMRCLAW)/src/2d/trimbd.f90 \
   $(AMRCLAW)/src/2d/update.f \
   $(AMRCLAW)/src/2d/nodget.f \
   $(AMRCLAW)/src/2d/upbnd.f  \
@@ -119,7 +112,6 @@ SOURCES = \
   $(AMRCLAW)/src/2d/outtre.f \
   $(AMRCLAW)/src/2d/domain.f  \
   $(AMRCLAW)/src/2d/setflags.f \
-  $(AMRCLAW)/src/2d/shiftset.f \
   $(AMRCLAW)/src/2d/shiftset2.f \
   $(AMRCLAW)/src/2d/conck.f \
   $(AMRCLAW)/src/2d/domshrink.f \
