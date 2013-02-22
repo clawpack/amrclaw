@@ -16,6 +16,7 @@ c
 c     # set outaux = .true. to also output the aux arrays to fort.a<iframe>
 
       logical outaux
+      integer output_aux_num 
 
 c      iadd(i,j,ivar) = loc + i - 1 + mitot*((ivar-1)*mjtot+j-1)
 c      iaddaux(i,j,ivar) = locaux + i - 1 + mitot*((ivar-1)*mjtot+j-1)
@@ -23,7 +24,15 @@ c      iaddaux(i,j,ivar) = locaux + i - 1 + mitot*((ivar-1)*mjtot+j-1)
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
      .                                      naux*mitot*(j-1)
 c
-      outaux = .false.
+c     # how many aux components requested?
+      output_aux_num = 0
+	  do i=1,naux
+		 output_aux_num = output_aux_num + output_aux_components(i)
+		 enddo
+		
+c     # Currently outputs all aux components if any are requested!
+      outaux = ((output_aux_num > 0) .and. 
+     .         ((.not. output_aux_onlyonce) .or. (time==t0)))
 
 c     open(unit=77,file='fort.b',status='unknown',access='stream')
 
@@ -135,6 +144,10 @@ c            # NOTE: we are writing out ghost cell data also, unlike ascii
 
  90     continue
 
+c       -------------------
+c       # output aux arrays
+c       -------------------
+
         if (outaux) then
 c        # output aux array to fort.aXXXX
 
@@ -166,6 +179,10 @@ c                 # output in 1d format if ny=1:
      &              xlow,hxposs(level)
                 endif
 
+
+		  if (output_format == 1) then
+             open(unit=matunit3,file=fname3,status='unknown',
+     .            form='formatted')
              do j = nghost+1, mjtot-nghost
                 do i = nghost+1, mitot-nghost
                    do ivar=1,naux
@@ -177,6 +194,17 @@ c                 # output in 1d format if ny=1:
                 enddo
                 write(matunit3,*) ' '
              enddo
+			endif
+			
+         if (output_format == 3) then
+c            # binary output          
+             open(unit=matunit3,file=fname3,status='unknown',
+     &               access='stream')
+             i1 = iaddaux(1,1,1)
+             i2 = iaddaux(naux,mitot,mjtot)
+c            # NOTE: we are writing out ghost cell data also, unlike ascii
+             write(matunit3) alloc(i1:i2)
+             endif
 
 
             mptr = node(levelptr, mptr)
@@ -186,8 +214,12 @@ c                 # output in 1d format if ny=1:
 
  190    continue
         close(unit=matunit3)
-        if (output_format == 3) close(unit=matunit5)
         endif !# end outputting aux array
+
+
+c     --------------
+c     # fort.t file:
+c     --------------
 
       open(unit=matunit2,file=fname2,status='unknown',
      .       form='formatted')
