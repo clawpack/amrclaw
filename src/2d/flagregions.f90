@@ -29,12 +29,8 @@ subroutine flagregions(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
     external allowflag
 
     ! Locals
-    integer :: i,j,m
+    integer :: i,j,m,minlevel,maxlevel
     real(kind=8) :: x_low,y_low,x_hi,y_hi
-    real(kind=8) :: dqi(meqn), dqj(meqn), dq(meqn)
-
-    minlevel = 0
-    maxlevel = 0
 
     
     ! Loop over interior points on this grid
@@ -46,6 +42,9 @@ subroutine flagregions(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
         do i = 1,mx
             x_low = xlower + (i - 1) * dx
             x_hi = xlower + i * dx
+
+            minlevel = 0
+            maxlevel = 0
 
             do m=1,num_regions
                 if (t >= regions(m)%t_low .and. t <= regions(m)%t_hi .and. &
@@ -62,10 +61,10 @@ subroutine flagregions(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                   stop
              endif
 
-             if (maxlevel != 0) then
+             if (maxlevel /= 0) then
                  ! this point lies in at least one region, so may need
                  ! to modify the exisiting flag at this point...
-                 if (level <= minlevel) then
+                 if (level < minlevel) then
                      ! Require refinement of this cell:
                      amrflags(i,j) = DOFLAG
                  else if (level >= maxlevel) then
