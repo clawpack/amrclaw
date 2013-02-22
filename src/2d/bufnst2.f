@@ -33,6 +33,8 @@ c
       numpro = 0 
       numbad = 0 
       time = rnode(timemult,lstart(lcheck))
+      dx = hxposs(lcheck)
+      dy = hyposs(lcheck)
 
 c      mptr = lstart(lcheck)
 c41   continue
@@ -41,8 +43,8 @@ c41   continue
 !$OMP&            PRIVATE(loctmp,locbig,j,i,numpro2,numflagged),
 !$OMP&            PRIVATE(locdomflags,locdom2),
 !$OMP&            SHARED(numgrids, listgrids,nghost,flag_richardson),
-!$OMP&            SHARED(nvar,eprint,maxthreads,node,lbase,ibuff),
-!$OMP&            SHARED(alloc,lcheck,numpro,mxnest,numbad),
+!$OMP&            SHARED(nvar,eprint,maxthreads,node,rnode,lbase,ibuff),
+!$OMP&            SHARED(alloc,lcheck,numpro,mxnest,numbad,dx,dy,time),
 !$OMP&            DEFAULT(none),      
 !$OMP&            SCHEDULE (DYNAMIC,1)
       do  jg = 1, numgrids(lcheck)
@@ -80,6 +82,13 @@ c
      &              i=mbuff+1,mibuff-mbuff)
             enddo
          endif
+
+c      ##  new call to flag regions: check if cells must be refined, or exceed
+c      ##  maximum refinement level for that region.  used to be included with
+c      ## flag2refine. moved here to include flags from richardson too.
+       call flagregions(nx,ny,mbuff,rnode(cornxlo,mptr),
+     1                  rnode(cornylo,mptr),dx,dy,lcheck,time,
+     2                  alloc(locamrflags),goodpt,badpt)
 
 c     for this version project to each grid separately, no giant iflags
          if (lcheck+2 .le. mxnest) then
