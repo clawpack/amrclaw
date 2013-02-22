@@ -108,13 +108,15 @@ def setrun(claw_pkg='amrclaw'):
     # Specify at what times the results should be written to fort.q files.
     # Note that the time integration stops after the final output time.
  
-    clawdata.output_style = 1
+    clawdata.output_style = 3
  
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 25
-        clawdata.tfinal = 2.5
+        #clawdata.num_output_times = 25
+        clawdata.num_output_times = 1
+        #clawdata.tfinal = 2.5
+        clawdata.tfinal =  .2
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -125,7 +127,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
         clawdata.output_step_interval = 1
-        clawdata.total_steps = 10
+        clawdata.total_steps = 9
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
@@ -143,7 +145,7 @@ def setrun(claw_pkg='amrclaw'):
     # The current t, dt, and cfl will be printed every time step
     # at AMR levels <= verbosity.  Set verbosity = 0 for no printing.
     #   (E.g. verbosity == 2 means print only on levels 1 and 2.)
-    clawdata.verbosity = 0
+    clawdata.verbosity = 1
     
     
 
@@ -259,11 +261,13 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # Flag for refinement based on Richardson error estimater:
-    clawdata.flag_richardson = False    # use Richardson?
-    clawdata.flag_richardson_tol = 1.000000e+00  # Richardson tolerance
+    #clawdata.flag_richardson = False    # use Richardson?
+    clawdata.flag_richardson = True    # use Richardson?
+    clawdata.flag_richardson_tol = .0005000e+00  # Richardson tolerance
     
     # Flag for refinement using routine flag2refine:
-    clawdata.flag2refine = True      # use this?
+    #clawdata.flag2refine = True      # use this?
+    clawdata.flag2refine = False      # use this?
     clawdata.flag2refine_tol = 5.000000e-02  # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
@@ -292,7 +296,7 @@ def setrun(claw_pkg='amrclaw'):
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
 
     # Allow 2 levels anywhere, any time:
-    #rundata.regiondata.regions.append([1, 2, 0.2, 1e9, 0.0, 1.0, 0.0, 1.0])
+    #rundata.regiondata.regions.append([1, 2, 0.0, 1e9, 0.0, 1.0, 0.0, 1.0])
 
     # Allow 3 regions in lower half of domain up to t=0.7:
     #rundata.regiondata.regions.append([1, 3, 0.0, 0.7, 0.0, 1.0, 0.0, 0.5])
@@ -332,12 +336,12 @@ def setrun(claw_pkg='amrclaw'):
     #  ----- For developers ----- 
     # Toggle debugging print statements:
     clawdata.dprint = False      # print domain flags
-    clawdata.eprint = False      # print err est flags
-    clawdata.edebug = False      # even more err est flags
+    clawdata.eprint = True      # print err est flags
+    clawdata.edebug = True       # even more err est flags
     clawdata.gprint = False      # grid bisection/clustering
     clawdata.nprint = False      # proper nesting output
     clawdata.pprint = False      # proj. of tagged points
-    clawdata.rprint = False      # print regridding summary
+    clawdata.rprint = True      # print regridding summary
     clawdata.sprint = False      # space/memory output
     clawdata.tprint = False      # time step reporting each level
     clawdata.uprint = False      # update/upbnd reporting

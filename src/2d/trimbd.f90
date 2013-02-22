@@ -19,13 +19,19 @@ subroutine trimbd(used,nrow,ncol,set,unset_rect)
     integer, intent(out) :: unset_rect(4)
 
     ! Locals
-    integer :: i, j
+    integer :: i, j, utot
     integer(kind=1) :: check
 
-    if (sum(used) >= nrow * ncol ) then
-        set = .true.
-    else
-        set = .false.
+     utot = 0
+     do 100 j = 1,ncol
+     do 100 i = 1,nrow
+100     utot = utot + used(i,j)
+
+
+     if (utot .eq.  nrow * ncol ) then  ! all cells flagged
+         set = .true.
+     else
+        set = .false.                  ! find smallest enclosing rectangle
  
         check = 1
         do i = 1,nrow

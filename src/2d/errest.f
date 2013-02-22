@@ -1,7 +1,7 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine errest (nvar,naux,lcheck)
+      subroutine errest (nvar,naux,lcheck,mptr)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -28,7 +28,7 @@ c
        hy   = hyposs(lcheck)
        hx2  = 2.d0*hx
        hy2  = 2.d0*hy
-       mptr = lstart(lcheck)
+!       mptr = lstart(lcheck)
  5     continue
           nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
           ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
@@ -85,26 +85,8 @@ c         coarsen by 2 in every direction
           call reclam(locdub,midub*mjdub*(nvar+naux))
 c
 c
-c************************************************************************
-c        changed. now locbig filled from spest, always, even if no
-c        user estimation routine. reclaim space later tho.   
-
-c We now fill bndry values at time t = time, in preparation
-c for calculating the solution on the grid mptr for error estimation.
-c 
-c          locbig = igetsp(mitot*mjtot*nvar)
-c          node(tempptr,mptr) = locbig
-c         # straight copy into scratch array so don't mess up latest soln.
-c          do 10 i = 1, mitot*mjtot*nvar
-c 10          alloc(locbig+i-1) = alloc(locnew+i-1)
-c
-c          call bound(time,nvar,nghost,alloc(locbig),mitot,mjtot,mptr,
-c     1               alloc(locaux),naux)
-
-c************************************************************************
-c
-       mptr = node(levelptr,mptr)
-       if (mptr .ne. 0) go to 5
+!       mptr = node(levelptr,mptr)
+!       if (mptr .ne. 0) go to 5
 c
        hx   = hxposs(lcheck)
        hy   = hyposs(lcheck)
@@ -113,7 +95,7 @@ c
        dt   = possk(lcheck)
        dt2    = 2. * dt
 
-       mptr = lstart(lcheck)
+ !      mptr = lstart(lcheck)
  25    continue
           nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
           ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
@@ -153,18 +135,6 @@ c
       locbig = node(tempptr,mptr)
       loctmp = node(store2,mptr)
 c
-c **********************************************************************
-c ****** changed. spatial error now done from separate routine spest ******
-c
-c estimate spatial component of error - use old values before
-c integration to get accurate boundary gradients
-c
-c     locerrsp = igetsp(mitot*mjtot)
-c     call errsp(alloc(locbig), alloc(locerrsp), mitot,mjtot,
-c    &           nvar, mptr,nghost, eprint, outunit)
-
-c **********************************************************************
-
       call stepgrid(alloc(locbig),alloc(locfm),alloc(locfp),
      1            alloc(locgm),alloc(locgp),
      2            mitot,mjtot,nghost,
@@ -183,12 +153,9 @@ c
 
       call reclam(locbgc,mi2tot*mj2tot*(nvar+naux))
 
-c      reclaiming locbig is now done from bufnst, since this routine 
-c      will not be called if tol<0
-c      call reclam(locbig,mitot*mjtot*nvar)
 c
-      mptr = node(levelptr, mptr)
-      if (mptr .ne. 0) go to 25
+!      mptr = node(levelptr, mptr)
+!      if (mptr .ne. 0) go to 25
 c
       return
       end

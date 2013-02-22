@@ -58,8 +58,8 @@ c
 c zero out the exterior locations so they don't affect err.est.
 c
  20   continue
-      jfine = nghost+1
       do 35  j = nghost+1, mj2tot-nghost
+      jfine = nghost+1
       yofj  = ybot + (dble(jfine) - .5d0)*hy
       ifine = nghost+1
 c
@@ -75,7 +75,7 @@ c         # divide by (aval*order) for relative error
           est   =  dabs((aval-rctcrse(1,i,j))/ order)
           if (est .gt. errmax) errmax = est
           err2 = err2 + est*est
-c         write(outunit,102) i,j,est
+          if (mptr .eq. 66) write(outunit,102) i,j,est
  102      format(' i,j,est ',2i5,e12.5)
 c         rctcrse(2,i,j) = est
 c
@@ -106,7 +106,7 @@ c
      .          ' max. error = ',e15.7,' err2 = ',e15.7)
          if (edebug) then
            write(outunit,*) ' flagged points on coarsened grid ',
-     .                      'for grid ',mptr
+     .                      '(no ghost cells) for grid ',mptr
            do 45 jj = nghost+1, mj2tot-nghost
               j = mj2tot + 1 - jj
               write(outunit,106) (nint(rctcrse(1,i,j)),
@@ -130,44 +130,18 @@ c
         jfine   = jfine + 2
  70   continue
 c
-c CHANGED ************
-c **spatial error estimtaed in sperr.f now, using user routine flag2refine.f***
-c
-c     if (edebug) then
-c        write(outunit,*)" spatial error for grid ",mptr
-c        do 75 jjfine = nghost+1, mjtot-nghost
-c           jfine = mjtot + 1 - jjfine
-c           write(outunit,101)(sperr(ifine,jfine),
-c    .                         ifine=nghost+1,mitot-nghost)
-c75      continue
-c     endif
-c
-c      do 80 jfine = nghost+1, mjtot-nghost
-c      yofj  = ybot + (dble(jfine) - nghost - .5d0)*hy
-c      do 80 ifine = nghost+1, mitot-nghost
-c        xofi  = xleft + (dble(ifine) - nghost - .5d0)*hx
-c        if (sperr(ifine,jfine) .gt. tolsp .and. allowflag(xofi,yofj,levm))
-c     &     then
-c               rflag = rctflg(1,ifine,jfine)
-c               if (rflag .ne. badpt) then
-c                 rctflg(1,ifine,jfine) = badpt
-c                 numsp = numsp + 1
-c               endif
-c          endif
-c 80   continue
-c
-c      if (eprint) then
-c         write(outunit,118) numsp,mptr
-c 118     format( i5,' more pts. flagged for spatial error on grid',i4,/)
-c        if (edebug) then
-c          do 56 jj = nghost+1, mjtot-nghost
-c           j = mjtot + 1 - jj
-c           write(outunit,106)
-c     &      (nint(rctflg(1,i,j)),i=nghost+1,mitot-nghost)
-c 56       continue
-c        endif
-c      endif
-c END OF CHANGE *******************
+
+      if (eprint) then
+         write(outunit,118)
+ 118     format(' on fine grid (no ghost cells) flagged points are')
+        if (edebug) then
+          do 56 jj = nghost+1, mjtot-nghost
+           j = mjtot + 1 - jj
+           write(outunit,106)
+     &      (nint(rctflg(1,i,j)),i=nghost+1,mitot-nghost)
+ 56       continue
+        endif
+      endif
 
       return
       end
