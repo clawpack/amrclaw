@@ -24,8 +24,6 @@ c  buffer the tags, take care of level nesting, etc.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 c
-c copy flagged arrays in individual grids (now stored in loctmp)
-c into 1 big iflag array (iflags). NO MORE  only do if flag_richardson is true.
 c
 !$    maxthreads = omp_get_max_threads()
       call prepgrids(listgrids,numgrids(lcheck),lcheck)
@@ -65,11 +63,11 @@ c41   continue
 c        ### is richardson used, add those flags to flags computed by spatial gradients
 c        ### (or whatever user-defined criteria used). Even if nothing else used,
 c        ### put flags into locamrflag array.
-         if (flag_richardson) then   
-            loctmp = node(store2, mptr)
-            call addflags(alloc(locamrflags),mibuff,mjbuff,
-     .           alloc(loctmp),nvar,mitot,mjtot,mptr)
-         endif 
+!--         if (flag_richardson) then   
+!--            loctmp = node(store2, mptr)
+!--            call addflags(alloc(locamrflags),mibuff,mjbuff,
+!--     .           alloc(loctmp),nvar,mitot,mjtot,mptr)
+!--         endif 
 
 c     still need to reclaim error est space from spest.f 
 c     which was saved for possible errest reuse

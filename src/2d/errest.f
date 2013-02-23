@@ -146,10 +146,15 @@ c
       call reclam(locgp, mitot*mjtot*nvar)
       call reclam(locgm, mitot*mjtot*nvar)
 c
-      
+c     ## locamrflags allocated in flagger. may previously have been used by flag2refine
+c     ## so make sure not to overwrite
+      locamrflags = node(storeflags, mptr)    
+      mbuff = max(nghost,ibuff+1)  
+      mibuff = nx + 2*mbuff 
+      mjbuff = ny + 2*mbuff 
       call errf1(alloc(locbig),nvar,
      1          alloc(locbgc),mptr,mi2tot,mj2tot,
-     2          mitot,mjtot,alloc(loctmp))
+     2          mitot,mjtot,alloc(locamrflags),mibuff,mjbuff)
 
       call reclam(locbgc,mi2tot*mj2tot*(nvar+naux))
 

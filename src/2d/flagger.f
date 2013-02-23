@@ -50,8 +50,8 @@ c
           node(tempptr,mptr) = locbig
 c         # straight copy into scratch array so don't mess up latest soln.
 
-c  ## at later times want to use newest soln for spatial error flagging
-c  ## at initial time want to use initial conditions (so retain symmetry for example)
+c         ## at later times want to use newest soln for spatial error flagging
+c         ## at initial time want to use initial conditions (so retain symmetry for example)
          if (start_time+possk(lcheck) .ne. time) then !exact equality test-relying on ieee arith repeatability
              do 10 i = 1, mitot*mjtot*nvar
  10             alloc(locbig+i-1) = alloc(locnew+i-1)
@@ -64,37 +64,33 @@ c  ## at initial time want to use initial conditions (so retain symmetry for exa
  11             alloc(locbig+i-1) = alloc(locold+i-1)
          endif
 
-!     need at least as big as nghost to fit ghost cells. if ibuff is bigger make
-!     the flagged array bigger so can buffer in place
+!        # need at least as big as nghost to fit ghost cells. if ibuff is bigger make
+!        # the flagged array bigger so can buffer in place
          mbuff = max(nghost,ibuff+1)  
          mibuff = nx + 2*mbuff       ! NOTE THIS NEW DIMENSIONING 
          mjbuff = ny + 2*mbuff       ! TO ALLOW ROOM FOR BUFFERING IN PLACE
 
-! locamrflags used for flag storage. flag2refine flags directly into it.
-!  richardson flags added to it. Then colate finished the job
+!              ##  locamrflags used for flag storage. flag2refine flags directly into it.
+!              ## richardson flags added to it. Then colate finished the job
                 locamrflags = igetsp(mibuff*mjbuff)  
                 node(storeflags,mptr) = locamrflags
-
-
-!dont know if need to initialize here yet - turn off and see :::  flag2refine set both. check for richardon
-                do 20 i = 1, mibuff*mjbuff
+                do 20 i = 1, mibuff*mjbuff  ! initialize
  20                alloc(locamrflags+i-1) = goodpt
 
-             if (flag_gradient) then
+         if (flag_gradient) then
 
 c     # call user-supplied routine to flag any points where 
 c     # refinement is desired based on user's criterion.  
 c     # Default version compares spatial gradient to tolsp.
 
-                   call flag2refine2(nx,ny,nghost,mbuff,nvar,naux,
-     &                               xleft,ybot,dx,dy,time,lcheck,
-     &                               tolsp,alloc(locbig),
-     &                               alloc(locaux),alloc(locamrflags),
-     &                               goodpt,badpt)
+            call flag2refine2(nx,ny,nghost,mbuff,nvar,naux,
+     &                        xleft,ybot,dx,dy,time,lcheck,
+     &                        tolsp,alloc(locbig),
+     &                        alloc(locaux),alloc(locamrflags),
+     &                        goodpt,badpt)
              endif     
 c     
-c     
-             if (flag_richardson) call errest(nvar,naux,lcheck,mptr)
+         if (flag_richardson) call errest(nvar,naux,lcheck,mptr)
 
        end do
 
