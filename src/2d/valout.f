@@ -152,17 +152,19 @@ c       -------------------
 c        # output aux array to fort.aXXXX
 
          level = lst
-         ngrids = 0
  165     if (level .gt. lfine) go to 190
             mptr = lstart(level)
  170        if (mptr .eq. 0) go to 180
-              ngrids  = ngrids + 1
               nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
               ny      = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-              loc     = node(store1, mptr)
               locaux  = node(storeaux,mptr)
               mitot   = nx + 2*nghost
               mjtot   = ny + 2*nghost
+
+
+		  if (output_format == 1) then
+             open(unit=matunit3,file=fname3,status='unknown',
+     .            form='formatted')
               if (ny.gt.1) then
                   write(matunit3,1001) mptr, level, nx, ny
                 else
@@ -179,10 +181,6 @@ c                 # output in 1d format if ny=1:
      &              xlow,hxposs(level)
                 endif
 
-
-		  if (output_format == 1) then
-             open(unit=matunit3,file=fname3,status='unknown',
-     .            form='formatted')
              do j = nghost+1, mjtot-nghost
                 do i = nghost+1, mitot-nghost
                    do ivar=1,naux
