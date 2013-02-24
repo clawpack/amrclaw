@@ -74,7 +74,7 @@ c       do 60 i = ist, iend
                rectflags(i,j) = badpro
                numpro      = numpro + 1
                if (pprint) write(outunit,101) i,j,mkid
-101            format(' pt.',2i5,' of grid ',i5,' projected' )
+101            format(' pt.',2i10,' of grid ',i5,' projected' )
            endif
  60    continue
 c
@@ -119,7 +119,7 @@ c
 c
  90   if (pprint) then
          write(outunit,102) numpro,level
- 102     format(i7,' more pts. projected to level ',i5)
+ 102     format(i9,' more pts. projected to level ',i5)
 
          write(outunit,103) level
  103     format(/,'  from projec: flagged pts. (incl. buffer zone)',

@@ -53,11 +53,20 @@ c         # straight copy into scratch array so don't mess up latest soln.
 c         ## at later times want to use newest soln for spatial error flagging
 c         ## at initial time want to use initial conditions (so retain symmetry for example)
          if (start_time+possk(lcheck) .ne. time) then !exact equality test-relying on ieee arith repeatability
+c             do 10 i = 1, mitot*mjtot*nvar
+c 10             alloc(locbig+i-1) = alloc(locnew+i-1)
+
+c             call bound(time,nvar,nghost,alloc(locbig),mitot,mjtot,mptr,
+c     1                  alloc(locaux),naux)
+
+
+c            do in other order in case user messes up locbig in flag2refine, already have
+c            them in locnew
+             call bound(time,nvar,nghost,alloc(locnew),mitot,mjtot,mptr,
+     1                  alloc(locaux),naux)
              do 10 i = 1, mitot*mjtot*nvar
  10             alloc(locbig+i-1) = alloc(locnew+i-1)
 
-             call bound(time,nvar,nghost,alloc(locbig),mitot,mjtot,mptr,
-     1                  alloc(locaux),naux)
          else   ! boundary values already in locold
              locold = node(store2,mptr)
              do 11 i = 1, mitot*mjtot*nvar
@@ -90,7 +99,8 @@ c     # Default version compares spatial gradient to tolsp.
      &                        goodpt,badpt)
              endif     
 c     
-         if (flag_richardson) call errest(nvar,naux,lcheck,mptr)
+         if (flag_richardson) call errest(nvar,naux,lcheck,mptr,
+     .                                    nx,ny)
 
        end do
 

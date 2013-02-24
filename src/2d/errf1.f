@@ -10,8 +10,6 @@ c
       dimension  rctfine(nvar,mitot,mjtot)
       dimension  rctcrse(nvar,mi2tot,mj2tot)
       dimension  rctflg(mibuff,mjbuff)
-      logical    allowflag
-      external   allowflag
 c
 c
 c ::::::::::::::::::::::::::::: ERRF1 ::::::::::::::::::::::::::::::::
@@ -19,7 +17,8 @@ c
 c  Richardson error estimator:  Used when flag_richardson is .true.
 c  Compare error estimates in rctfine, rctcrse, 
 c  A point is flagged if the error estimate is greater than tol
-c  and if allowflag(x,y,t,level)=.true. at this point.
+c  later we check if its in a region where its allowed to be flagged
+c  or alternatively required.
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
@@ -75,13 +74,13 @@ c         # divide by (aval*order) for relative error
           est   =  dabs((aval-rctcrse(1,i,j))/ order)
           if (est .gt. errmax) errmax = est
           err2 = err2 + est*est
-          write(outunit,102) i,j,est,rctcrse(1,i,j)
+c          write(outunit,102) i,j,est,rctcrse(1,i,j)
  102      format(' i,j,est ',2i5,2e15.7)
           write(outunit,104) term1,term2,term3,term4
  104      format('   ',4e15.7)
 c         rctcrse(2,i,j) = est
 c
-          if (est .ge. tol .and. allowflag(xofi,yofj,time,levm)) then
+          if (est .ge. tol) then
              rflag  = badpt
           endif 
       rctcrse(1,i,j) = rflag
@@ -89,15 +88,6 @@ c
  30   continue
       jfine = jfine + 2
  35   continue
-c
-c  transfer flagged points on cell centered coarse grid
-c  to cell centered fine grid. count flagged points.
-c
-c  rctflg already initialized in rewrite in flagger
-c
-!--      do 40 j = 1, mjtot
-!--      do 40 i = 1, mitot
-!-- 40      rctflg(1,i,j) = goodpt
 c
 c  print out intermediate flagged rctcrse (for debugging)
 c

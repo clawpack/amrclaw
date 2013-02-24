@@ -25,9 +25,6 @@ c
       nxypts = 0
       numbad = 0
 
-c     for debugging output level2 grids. make sure the same
-      if (lcheck .eq. 2) call outtre(2,.true.,nvar,naux)
-      
 
 c     flag arrays- based on either spatial gradients (and/or user defined 
 c                  criteria),  or Richardson error estimation

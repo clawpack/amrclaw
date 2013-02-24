@@ -38,7 +38,7 @@ c
      1       13h, level ptr =,i4,14x,1h!)
       write(outunit,103) node(store1,mptr),node(store2,mptr),
      1                   node(cfluxptr,mptr),node(ffluxptr,mptr)
- 103  format(1x,'! storage locs =',2i8,'  bndry locs =',2i8,14x,1h!)
+ 103  format(1x,'! storage locs =',2i12,'  bndry locs =',2i8, 6x,1h!)
       write(outunit,104)
       write(outunit,111) rnode(cornxlo,mptr),rnode(cornyhi,mptr),
      1             rnode(cornxhi,mptr),rnode(cornyhi,mptr)
