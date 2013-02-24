@@ -162,7 +162,14 @@ c
 c
 c colate flagged points into single integer array for quicksorting
 c
-      call drivesort(npts,badpts,lcheck,nUniquePts,mbuff)
+      if (lcheck < 6) then
+          call drivesort(npts,badpts,lcheck,nUniquePts,mbuff)
+      else
+c         # assume points are unique
+c         # Cannot check for more than 6 levels due to integer overflow
+c         # bug that needs to be fixed!
+          nUniquePts = npts  
+      endif
    
 
  99   return
