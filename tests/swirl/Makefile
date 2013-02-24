@@ -14,7 +14,7 @@ CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
 
 CLAW_PKG = amrclaw                  # Clawpack package to use
 EXE = xamr                          # Executable to create
-SETRUN_FILE = setrun.py             # File containing function to make data
+SETRUN_FILE = setrun_testgauges.py             # File containing function to make data
 OUTDIR = _output      		        # Directory for output
 SETPLOT_FILE = setplot.py           # File containing function to set plots
 PLOTDIR = _plots	                # Directory for plots
@@ -22,18 +22,16 @@ PLOTDIR = _plots	                # Directory for plots
 OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
 RESTART ?= False                    # Should = clawdata.restart in setrun
 
+FC = ifort
+FFLAGS = -C -CB -CU -fpe1  -ftz -ftrapuv  -g -fp-model precise 
+#FFLAGS = -C -CB -CU -fpe1 -ftrapuv  -O2 -fp-model precise -openmp
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
-FC ?= gfortran   # default if not set as environment variable
-
+#FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?= -O2 
+#FFLAGS ?= -O2 
 #FFLAGS = -W -Wall -fbounds-check -ffpe-trap=zero,overflow,invalid -g
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
-MAKELEVEL ?= 0
-ifeq ($(MAKELEVEL),0)
-	FFLAGS += $(OMP_FLAG)
-endif
 
 # ---------------------------------
 # List of sources for this program:
@@ -81,6 +79,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/filpatch.f90 \
   $(AMRCLAW)/src/2d/prefilp.f90 \
   $(AMRCLAW)/src/2d/flglvl2.f \
+  $(AMRCLAW)/src/2d/flagger.f \
   $(AMRCLAW)/src/2d/fluxad.f \
   $(AMRCLAW)/src/2d/fluxsv.f \
   $(AMRCLAW)/src/2d/ginit.f \

@@ -2,16 +2,14 @@ c
 c --------------------------------------------------------------
 c
       subroutine errf1(rctfine,nvar,rctcrse,mptr,mi2tot,mj2tot,
-     2                 mitot,mjtot,rctflg)
+     2                 mitot,mjtot,rctflg,mibuff,mjbuff)
       use amr_module
       implicit double precision (a-h,o-z)
 
  
       dimension  rctfine(nvar,mitot,mjtot)
       dimension  rctcrse(nvar,mi2tot,mj2tot)
-      dimension  rctflg(nvar,mitot,mjtot)
-      logical    allowflag
-      external   allowflag
+      dimension  rctflg(mibuff,mjbuff)
 c
 c
 c ::::::::::::::::::::::::::::: ERRF1 ::::::::::::::::::::::::::::::::
@@ -19,7 +17,8 @@ c
 c  Richardson error estimator:  Used when flag_richardson is .true.
 c  Compare error estimates in rctfine, rctcrse, 
 c  A point is flagged if the error estimate is greater than tol
-c  and if allowflag(x,y,t,level)=.true. at this point.
+c  later we check if its in a region where its allowed to be flagged
+c  or alternatively required.
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
@@ -53,7 +52,7 @@ c
             j = mjtot + 1 - jj
             write(outunit,101) (rctfine(1,i,j),i=nghost+1,mitot-nghost)
 15       continue
-101      format(' ',13f6.3)
+101      format(' ',10e15.7)
 c
 c zero out the exterior locations so they don't affect err.est.
 c
@@ -75,11 +74,13 @@ c         # divide by (aval*order) for relative error
           est   =  dabs((aval-rctcrse(1,i,j))/ order)
           if (est .gt. errmax) errmax = est
           err2 = err2 + est*est
-c         write(outunit,102) i,j,est
- 102      format(' i,j,est ',2i5,e12.5)
+c          write(outunit,102) i,j,est,rctcrse(1,i,j)
+ 102      format(' i,j,est ',2i5,2e15.7)
+          write(outunit,104) term1,term2,term3,term4
+ 104      format('   ',4e15.7)
 c         rctcrse(2,i,j) = est
 c
-          if (est .ge. tol .and. allowflag(xofi,yofj,time,levm)) then
+          if (est .ge. tol) then
              rflag  = badpt
           endif 
       rctcrse(1,i,j) = rflag
@@ -87,15 +88,6 @@ c
  30   continue
       jfine = jfine + 2
  35   continue
-c
-c  transfer flagged points on cell centered coarse grid
-c  to cell centered fine grid. count flagged points.
-c
-c  initialize rctflg to 0.0 (no flags)  before flagging
-c
-      do 40 j = 1, mjtot
-      do 40 i = 1, mitot
- 40      rctflg(1,i,j) = goodpt
 c
 c  print out intermediate flagged rctcrse (for debugging)
 c
@@ -106,7 +98,7 @@ c
      .          ' max. error = ',e15.7,' err2 = ',e15.7)
          if (edebug) then
            write(outunit,*) ' flagged points on coarsened grid ',
-     .                      'for grid ',mptr
+     .                      '(no ghost cells) for grid ',mptr
            do 45 jj = nghost+1, mj2tot-nghost
               j = mj2tot + 1 - jj
               write(outunit,106) (nint(rctcrse(1,i,j)),
@@ -121,53 +113,30 @@ c
       ifine   = nghost+1
       do 60 i = nghost+1, mi2tot-nghost
          if (rctcrse(1,i,j) .eq. goodpt) go to 55
-            rctflg(1,ifine,jfine)    = badpt
-            rctflg(1,ifine+1,jfine)  = badpt
-            rctflg(1,ifine,jfine+1)  = badpt
-            rctflg(1,ifine+1,jfine+1)= badpt
+c           ## never set rctflg to good, since flag2refine may
+c           ## have previously set it to bad
+c           ## can only add bad pts in this routine
+            rctflg(ifine,jfine)    = badpt
+            rctflg(ifine+1,jfine)  = badpt
+            rctflg(ifine,jfine+1)  = badpt
+            rctflg(ifine+1,jfine+1)= badpt
  55       ifine   = ifine + 2
  60     continue
         jfine   = jfine + 2
  70   continue
 c
-c CHANGED ************
-c **spatial error estimtaed in sperr.f now, using user routine flag2refine.f***
-c
-c     if (edebug) then
-c        write(outunit,*)" spatial error for grid ",mptr
-c        do 75 jjfine = nghost+1, mjtot-nghost
-c           jfine = mjtot + 1 - jjfine
-c           write(outunit,101)(sperr(ifine,jfine),
-c    .                         ifine=nghost+1,mitot-nghost)
-c75      continue
-c     endif
-c
-c      do 80 jfine = nghost+1, mjtot-nghost
-c      yofj  = ybot + (dble(jfine) - nghost - .5d0)*hy
-c      do 80 ifine = nghost+1, mitot-nghost
-c        xofi  = xleft + (dble(ifine) - nghost - .5d0)*hx
-c        if (sperr(ifine,jfine) .gt. tolsp .and. allowflag(xofi,yofj,levm))
-c     &     then
-c               rflag = rctflg(1,ifine,jfine)
-c               if (rflag .ne. badpt) then
-c                 rctflg(1,ifine,jfine) = badpt
-c                 numsp = numsp + 1
-c               endif
-c          endif
-c 80   continue
-c
-c      if (eprint) then
-c         write(outunit,118) numsp,mptr
-c 118     format( i5,' more pts. flagged for spatial error on grid',i4,/)
-c        if (edebug) then
-c          do 56 jj = nghost+1, mjtot-nghost
-c           j = mjtot + 1 - jj
-c           write(outunit,106)
-c     &      (nint(rctflg(1,i,j)),i=nghost+1,mitot-nghost)
-c 56       continue
-c        endif
-c      endif
-c END OF CHANGE *******************
+
+      if (eprint) then
+         write(outunit,118)
+ 118     format(' on fine grid (no ghost cells) flagged points are')
+         if (edebug) then
+          do 56 jj = nghost+1, mjtot-nghost
+           j = mjtot + 1 - jj
+           write(outunit,106)
+     &      (nint(rctflg(i,j)),i=nghost+1,mitot-nghost)
+ 56       continue
+        endif
+      endif
 
       return
       end
