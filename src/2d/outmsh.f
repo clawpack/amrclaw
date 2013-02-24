@@ -34,11 +34,11 @@ c
 101   format(1x,10h! grid no:,i4,62x,1h!)
       write(outunit,102) node(nestlevel,mptr),rnode(timemult,mptr),
      .             node(levelptr,mptr)
-102   format(1x,1h!,11h nestlevel=,i3,12h, time mult=,f18.8,
-     1       13h, level ptr =,i4,14x,1h!)
+102   format(1x,1h!,11h nestlevel=,i3,12h, time mult=,e25.15,
+     1       13h, level ptr =,i4,7x,1h!)
       write(outunit,103) node(store1,mptr),node(store2,mptr),
      1                   node(cfluxptr,mptr),node(ffluxptr,mptr)
- 103  format(1x,'! storage locs =',2i12,'  bndry locs =',2i8, 6x,1h!)
+ 103  format(1x,'! storage locs =',2i11,'  bndry locs =',2i8,8x,1h!)
       write(outunit,104)
       write(outunit,111) rnode(cornxlo,mptr),rnode(cornyhi,mptr),
      1             rnode(cornxhi,mptr),rnode(cornyhi,mptr)
@@ -58,7 +58,7 @@ c     This is a replacement for line 45-46 format that used to be format 111
 c111   format(1x,2h! ,18x,2(1h(,d10.3,2h, ,d10.3,1h)),8x,1h!)
 
       write(outunit,105) hxposs(lev),hyposs(lev),possk(lev)
- 105  format(1x,7h! hrow=,f19.9,7h, hcol=,f16.9,8h, ktime=,f16.9,3x,1h!) 
+ 105  format(1x,7h! hrow=,f19.11,7h, hcol=,f19.11,8h, ktime=,f16.9,1h!) 
 c105   format(1x,7h! hrow=,D16.8,7h, hcol=,D16.8,30x,1h!)
 c114   format(1x,8h! ktime=,D16.8,52x,1h!)
 
