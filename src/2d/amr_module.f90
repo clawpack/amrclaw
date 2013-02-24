@@ -170,6 +170,6 @@ module amr_module
 
 
     ! Restart file name:
-    character(len=13) :: rstfile
+    character(len=200) :: rstfile
 
 end module amr_module
