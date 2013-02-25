@@ -85,7 +85,7 @@ program amr2
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
     use amr_module, only: rprint, sprint, tprint, uprint
 
-    use amr_module, only: t0
+    use amr_module, only: t0, tstart_thisrun
 
     use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
@@ -415,9 +415,6 @@ program amr2
     print *, 'Running amrclaw ...  '
     print *, ' '
 
-    ! Call user routine to set up problem parameters:
-    call setprob()
-
     hxposs(1) = (xupper - xlower) / nx
     hyposs(1) = (yupper - ylower) / ny
 
@@ -430,25 +427,31 @@ program amr2
     endif
 
     if (rest) then
-        ! arg added to restrt for compatibility with geoclaw, which
-        ! allows variable refinement in time (and thus intrat vector
-        ! is allowed to change upon restart). In geoclaw the calling
-        ! sequence involves the variable varRefTime.
 
         open(outunit, file=outfile, status='unknown', position='append', &
                       form='formatted')
 
-        call restrt(nsteps,time,nvar,.false.)
+        call restrt(nsteps,time,nvar)
         nstart  = nsteps
+        tstart_thisrun = time
         print *, ' '
         print *, 'Restarting from previous run'
         print *, '   at time = ',time
         print *, ' '
+        ! Call user routine to set up problem parameters:
+        call setprob()
+
     else
 
         open(outunit, file=outfile, status='unknown', form='formatted')
 
+        tstart_thisrun = t0
+
+        ! Call user routine to set up problem parameters:
+        call setprob()
+
         cflmax = 0.d0   ! otherwise use previously heckpointed val
+
         lentot = 0
         lenmax = 0
         lendim = 0

@@ -135,6 +135,7 @@ module amr_module
     integer :: output_style, nstop, nout, iout
     real(kind=8), allocatable :: tout(:)
     real(kind=8) :: t0, tfinal
+    real(kind=8) :: tstart_thisrun  ! /= t0 in case of restart
     integer :: nq_components, naux_components, output_format
     integer, allocatable :: output_q_components(:)
     integer, allocatable :: output_aux_components(:)
