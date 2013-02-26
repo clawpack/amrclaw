@@ -438,7 +438,7 @@ program amr2
         open(outunit, file=outfile, status='unknown', position='append', &
                       form='formatted')
 
-        call restrt(nsteps,time,nvar,.false.)
+        call restrt(nsteps,time,nvar)
         nstart  = nsteps
         print *, ' '
         print *, 'Restarting from previous run'

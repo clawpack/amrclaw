@@ -2,7 +2,7 @@
 c
 c ---------------------------------------------------------
 c
-      subroutine restrt(nsteps,time,nvar,varRefTime)
+      subroutine restrt(nsteps,time,nvar)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -65,8 +65,8 @@ c     ### when this routine is called from amrclaw.
 c
       do i = 1, mxnold-1
         if ( (intratx(i) .ne. intrtx(i)) .or.
-     .       (intraty(i) .ne. intrty(i)) .or.
-     .       (kratio(i) .ne.  intrtt(i) .and. .not. varRefTime) ) then
+     .       (intraty(i) .ne. intrty(i))) then
+c    .       (kratio(i) .ne.  intrtt(i) .and. .not. varRefTime) ) then
         write(outunit,*) 
      .  " not allowed to change existing refinement ratios on Restart"
         write(*,*)
@@ -84,7 +84,8 @@ c
        endif
       end do
 
-      if (varRefTime) then  ! reset intrat to previously saved ratios, not input ratios
+c     if (varRefTime) then  ! reset intrat to previously saved ratios, not input ratios
+      if (.true.) then  ! reset intrat to previously saved ratios, not input ratios
         do i = 1, mxnold-1
             kratio(i) = intrtt(i)
         end do

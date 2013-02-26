@@ -26,8 +26,8 @@ c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 !$OMP&            PRIVATE(time,dx,dy,xleft,ybot,xlow,ylow,locbig),
 !$OMP&            PRIVATE(locold,mbuff,mibuff,mjbuff,locamrflags,i),
 !$OMP&            SHARED(numgrids,listgrids,lcheck,nghost,nvar,naux),
-!$OMP&            SHARED(start_time,possk,flag_gradient,ibuff),
-!$OMP&            SHARED(tolsp,alloc,node,rnode,hxposs,hyposs),
+!$OMP&            SHARED(tolsp,alloc,node,rnode,hxposs,hyposs,ibuff),
+!$OMP&            SHARED(start_time,possk,flag_gradient,flag_richardson)
 !$OMP&            DEFAULT(none),
 !$OMP&            SCHEDULE(DYNAMIC,1)
        do  jg = 1, numgrids(lcheck)
