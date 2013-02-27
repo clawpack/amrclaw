@@ -56,7 +56,7 @@ module amr_module
 
     ! The max1d parameter should be changed if using OpenMP grid based 
     ! looping, usually set to max1d = 60
-    integer, parameter :: max1d = 600
+    integer, parameter :: max1d = 300
 
     integer, parameter :: maxvar = 10
     integer, parameter :: maxaux = 20
@@ -135,6 +135,7 @@ module amr_module
     integer :: output_style, nstop, nout, iout
     real(kind=8), allocatable :: tout(:)
     real(kind=8) :: t0, tfinal
+    real(kind=8) :: tstart_thisrun  ! /= t0 in case of restart
     integer :: nq_components, naux_components, output_format
     integer, allocatable :: output_q_components(:)
     integer, allocatable :: output_aux_components(:)
@@ -170,6 +171,6 @@ module amr_module
 
 
     ! Restart file name:
-    character(len=13) :: rstfile
+    character(len=200) :: rstfile
 
 end module amr_module

@@ -22,16 +22,15 @@ subroutine trimbd(used,nrow,ncol,set,unset_rect)
     integer :: i, j, utot
     integer(kind=1) :: check
 
-     utot = 0
-     do 100 j = 1,ncol
-     do 100 i = 1,nrow
-100     utot = utot + used(i,j)
+       utot = 0
+        do 100 j = 1,ncol
+        do 100 i = 1,nrow
+100        utot = utot + used(i,j)
 
-
-     if (utot .eq.  nrow * ncol ) then  ! all cells flagged
-         set = .true.
-     else
-        set = .false.                  ! find smallest enclosing rectangle
+    if (utot .eq. nrow * ncol ) then
+        set = .true.
+    else
+        set = .false.
  
         check = 1
         do i = 1,nrow

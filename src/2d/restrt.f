@@ -6,7 +6,7 @@ c
 c
       use amr_module
       implicit double precision (a-h,o-z)
-      logical   ee, varRefTime
+      logical   ee
  
  
       logical foundFile
@@ -60,16 +60,14 @@ c     error checking that refinement ratios have not changed
 c     ### new feature: when using variable refinement in time
 c     ### (varRefTime = T) the time ratios are allowed to be different
 c     ###  (since they are ignored and calc. on the fly)
-c     ### varRefTime is currently only used in GeoClaw, is set to .false.
-c     ### when this routine is called from amrclaw.
+c     ### This is not checked for here, since the same amr2.f is now
+c         used for geoclaw too, and varRefTime is only available in geoclaw.
 c
       do i = 1, mxnold-1
         if ( (intratx(i) .ne. intrtx(i)) .or.
      .       (intraty(i) .ne. intrty(i))) then
 c    .       (kratio(i) .ne.  intrtt(i) .and. .not. varRefTime) ) then
         write(outunit,*) 
-     .  " not allowed to change existing refinement ratios on Restart"
-        write(*,*)
      .  " not allowed to change existing refinement ratios on Restart"
         write(outunit,*)" Old ratios:"
         write(*,*)      " Old ratios:"

@@ -65,7 +65,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[1] = 1.000000e+00          # yupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 40      # mx
+    clawdata.num_cells[0] = 30      # mx
     clawdata.num_cells[1] = 40      # my
     
 
@@ -113,8 +113,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 25
-        clawdata.tfinal = 2.5
+        clawdata.num_output_times = 10
+        clawdata.tfinal = 1.0
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -129,11 +129,11 @@ def setrun(claw_pkg='amrclaw'):
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
-    clawdata.output_format == 'ascii'      # 'ascii' or 'netcdf' 
+    clawdata.output_format == 'ascii'      # 'ascii', 'netcdf', 'binary'
 
-    clawdata.output_q_components = 'all'   # could be list such as [True,True]
-    clawdata.output_aux_components = 'none'  # could be list
-    clawdata.output_aux_onlyonce = True    # output aux arrays only at t0
+    clawdata.output_q_components = 'all'    # only 'all' 
+    clawdata.output_aux_components = 'all'  # 'all' or 'none' 
+    clawdata.output_aux_onlyonce = False    # output aux arrays only at t0?
     
 
     # ---------------------------------------------------
@@ -232,8 +232,10 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     # Gauges:
     # ---------------
+    rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    #rundata.gaugedata.add_gauge([gaugeno, x, y, t1, t2])
+    rundata.gaugedata.gauges.append([1, 0.4, 0.3, 0., 10.])
+    rundata.gaugedata.gauges.append([2, 0.6, 0.3, 0., 10.])
     
 
     # ---------------
@@ -242,7 +244,7 @@ def setrun(claw_pkg='amrclaw'):
 
 
     # max number of refinement levels:
-    clawdata.amr_levels_max = 3
+    clawdata.amr_levels_max = 1
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
     clawdata.refinement_ratios_x = [2, 4, 2]
@@ -288,8 +290,16 @@ def setrun(claw_pkg='amrclaw'):
     rundata.regiondata.regions = []
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
-    #rundata.regiondata.regions.append([3, 3, 0.0, 0.3, 0.2, 0.3, 0.2, 0.3])
-    #rundata.regiondata.regions.append([3, 3, 1.8, 2.5, 0.2, 0.3, 0.2, 0.3])
+
+    # Allow 2 levels anywhere, any time:
+    rundata.regiondata.regions.append([1, 2, 0.0, 1e9, 0.0, 1.0, 0.0, 1.0])
+
+    # Allow 3 regions in lower half of domain up to t=0.7:
+    rundata.regiondata.regions.append([1, 3, 0.0, 0.7, 0.0, 1.0, 0.0, 0.5])
+
+    # Force 3 regions some places:
+    rundata.regiondata.regions.append([3, 3, 0.0, 0.3, 0.8, 1.0, 0.0, 0.3])
+    rundata.regiondata.regions.append([3, 3, 0.9, 1.5, 0.2, 0.7, 0.0, 0.3])
 
 
     # --------------
