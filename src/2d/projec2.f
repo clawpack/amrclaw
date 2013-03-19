@@ -74,7 +74,7 @@ c       do 60 i = ist, iend
                rectflags(i,j) = badpro
                numpro      = numpro + 1
                if (pprint) write(outunit,101) i,j,mkid
-101            format(' pt.',2i10,' of grid ',i5,' projected' )
+101            format(' pt.',2i5,' of grid ',i5,' projected' )
            endif
  60    continue
 c
