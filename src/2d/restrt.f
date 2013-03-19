@@ -65,10 +65,9 @@ c         used for geoclaw too, and varRefTime is only available in geoclaw.
 c
       do i = 1, mxnold-1
         if ( (intratx(i) .ne. intrtx(i)) .or.
-     .       (intraty(i) .ne. intrty(i))) then
+     .       (intraty(i) .ne. intrty(i)) ) then
+c    .       (kratio(i) .ne.  intrtt(i) .and. .not. varRefTime) ) then
         write(outunit,*) 
-     .  " not allowed to change existing refinement ratios on Restart"
-        write(*,*)
      .  " not allowed to change existing refinement ratios on Restart"
         write(outunit,*)" Old ratios:"
         write(*,*)      " Old ratios:"
@@ -76,13 +75,14 @@ c
         write(*,903)      (intrtx(j),j=1,mxnold-1)
         write(outunit,903)(intrty(j),j=1,mxnold-1)
         write(*,903)      (intrty(j),j=1,mxnold-1)
-        write(outunit,903)(intrtt(j),j=1,mxnold-1)
-        write(*,903)      (intrtt(j),j=1,mxnold-1)
+c       write(outunit,903)(intrtt(j),j=1,mxnold-1)
+c       write(*,903)      (intrtt(j),j=1,mxnold-1)
  903    format(6i3)
         stop
        endif
       end do
 
+c     if (varRefTime) then  ! reset intrat to previously saved ratios, not input ratios
       if (.true.) then  ! reset intrat to previously saved ratios, not input ratios
         do i = 1, mxnold-1
             kratio(i) = intrtt(i)
