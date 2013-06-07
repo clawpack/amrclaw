@@ -99,7 +99,6 @@ program amr2
     integer :: omp_get_max_threads
     real(kind=8) :: time, ratmet, cut, dtinit, dtv2
     logical :: vtime, rest, output_t0    
-    character(len=25) :: fname
 
     ! Timing variables
     integer :: clock_start, clock_finish, clock_rate
@@ -110,7 +109,8 @@ program amr2
     common /comfine/ dxmin,dymin
 
     character(len=364) :: format_string
-    character(len=*), parameter :: infile = 'amrclaw.data'
+    character(len=*), parameter :: clawfile = 'claw.data'
+    character(len=*), parameter :: amrfile = 'amr.data'
     character(len=*), parameter :: outfile = 'fort.amr'
     character(len=*), parameter :: dbugfile = 'fort.debug'
     character(len=*), parameter :: matfile = 'fort.nplot'
@@ -121,7 +121,7 @@ program amr2
     open(parmunit,file=parmfile,status='unknown',form='formatted')
 
     ! Open AMRClaw primary parameter file
-    call opendatafile(inunit,infile)
+    call opendatafile(inunit,clawfile)
 
     ! Number of space dimensions, not really a parameter but we read it in and
     ! check to make sure everyone is on the same page. 
@@ -301,8 +301,12 @@ program amr2
         read(inunit,*) checkpt_interval
     endif
 
+    close(inunit)
+
     ! ==========================================================================
     !  Refinement Control
+    call opendatafile(inunit, amrfile)
+
     read(inunit,*) mxnest
     if (mxnest <= 0) then
         stop 'Error ***   mxnest (amrlevels_max) <= 0 not allowed'

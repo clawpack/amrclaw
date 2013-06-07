@@ -2,9 +2,11 @@
 
 """Base AMRClaw data class for writing out data parameter files."""
 
+import os
+
 import clawpack.clawutil.clawdata
 
-class AmrclawInputData(clawpack.clawutil.clawdata.ClawInputData):
+class AmrclawInputData(clawpack.clawutil.clawdata.ClawData):
     r"""
     Data object containing AMRClaw input data.
 
@@ -13,8 +15,12 @@ class AmrclawInputData(clawpack.clawutil.clawdata.ClawInputData):
     def __init__(self, num_dim):
 
         # Some defaults are inherited from ClawInputData:
-        super(AmrclawInputData,self).__init__(num_dim)
+        super(AmrclawInputData,self).__init__()
+
+        # This is not read out but needed in the write routine
+        self.add_attribute('num_dim',num_dim)
         
+        # Refinement control
         self.add_attribute('amr_levels_max',1)
         self.add_attribute('refinement_ratios_x',[1])
         self.add_attribute('refinement_ratios_y',[1])
@@ -27,11 +33,7 @@ class AmrclawInputData(clawpack.clawutil.clawdata.ClawInputData):
         self.add_attribute('refinement_ratios_t',[1])
         self.add_attribute('aux_type',[])
 
-        self.add_attribute('checkpt_style',1)
-        self.add_attribute('checkpt_interval',1000)
-        self.add_attribute('checkpt_time_interval',1000.)
-        self.add_attribute('checkpt_times',[1000.])
-        
+        # Flagging control
         self.add_attribute('flag_richardson',False)
         self.add_attribute('flag_richardson_tol',1.0)
         self.add_attribute('flag2refine',True)
@@ -39,6 +41,7 @@ class AmrclawInputData(clawpack.clawutil.clawdata.ClawInputData):
         self.add_attribute('regrid_interval',2)
         self.add_attribute('regrid_buffer_width',3)
         self.add_attribute('clustering_cutoff',0.7)
+        self.add_attribute('verbosity_regrid',3)
 
         
         # debugging flags:
@@ -54,9 +57,9 @@ class AmrclawInputData(clawpack.clawutil.clawdata.ClawInputData):
         self.add_attribute('uprint',False)
 
 
-    def write(self, out_file='amrclaw.data', data_source='setrun.py'):
+    def write(self, out_file='amr.data', data_source='setrun.py'):
 
-        super(AmrclawInputData,self).write(out_file, data_source)
+        self.open_data_file(out_file, data_source)
     
         self.data_write('amr_levels_max')
 
@@ -105,10 +108,12 @@ class AmrclawInputData(clawpack.clawutil.clawdata.ClawInputData):
         self.data_write('uprint')
         self.data_write()
 
+        self.close_data_file()
+
 
 # ==============================================================================
 #  Region data object
-class RegionData(clawpack.clawutil.clawdata.ClawInputData):
+class RegionData(clawpack.clawutil.clawdata.ClawData):
     r""""""
 
     def __init__(self,regions=None):
@@ -134,7 +139,7 @@ class RegionData(clawpack.clawutil.clawdata.ClawInputData):
         
 # ==============================================================================
 #  Gauge data object
-class GaugeData(ClawData):
+class GaugeData(clawpack.clawutil.clawdata.ClawData):
     r""""""
 
     @property
@@ -142,7 +147,7 @@ class GaugeData(ClawData):
         if len(self.gauges) == 1:
             return [self.gauges[0][0]]
         else:
-            return self.gauges[:][0]
+            return [gauge[0] for gauge in self.gauges]
 
     def __init__(self):
         super(GaugeData,self).__init__()
@@ -203,5 +208,5 @@ class GaugeData(ClawData):
 
 
 if __name__ == '__main__':
-    print "Probably should have a unittest in here!"
+    raise Exception("Not unit tests have been defined for this module.")
 

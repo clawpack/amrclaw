@@ -231,59 +231,6 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_upper[1] = 'periodic'   # at yupper
                          
     
-
-    # ---------------
-    # AMR parameters:
-    # ---------------
-
-
-    # max number of refinement levels:
-    clawdata.amr_levels_max = 3
-
-    # List of refinement ratios at each level (length at least amr_level_max-1)
-    clawdata.refinement_ratios_x = [2,2]
-    clawdata.refinement_ratios_y = [2,2]
-    clawdata.refinement_ratios_t = [2,2]
-
-    # Instead of setting refinement ratios in t, these can be chosen
-    # automatically if this is implemented:
-    clawdata.variable_dt_refinement_ratios = True
-    # Currently only available in GeoClaw, where it's needed for special
-    # case of tsunami modeling.  Is it useful more generally??
-
-
-    # Specify type of each aux variable in clawdata.auxtype.
-    # This must be a list of length num_aux, each element of which is one of:
-    #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
-    clawdata.aux_type = []
-
-
-    # Flag for refinement based on Richardson error estimater:
-    clawdata.flag_richardson = False    # use Richardson?
-    clawdata.flag_richardson_tol = 0.1  # Richardson tolerance
-    
-    # Flag for refinement using routine flag2refine:
-    clawdata.flag2refine = True      # use this?
-    clawdata.flag2refine_tol = 0.05  # tolerance used in this routine
-    # User can modify flag2refine to change the criterion for flagging.
-    # Default: check maximum absolute difference of first component of q
-    # between a cell and each of its neighbors.
-
-    # steps to take on each level L between regriddings of level L+1:
-    clawdata.regrid_interval = 2       
-
-    # width of buffer zone around flagged points:
-    # (typically the same as regrid_interval so waves don't escape):
-    clawdata.regrid_buffer_width  = 3  
-
-    # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
-    # (closer to 1.0 => more small grids may be needed to cover flagged cells)
-    clawdata.clustering_cutoff = 0.7  
-
-    # print info about each regridding up to this level:
-    clawdata.verbosity_regrid = 3      
-
-
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
@@ -306,19 +253,71 @@ def setrun(claw_pkg='amrclaw'):
         # and at the final time.
         clawdata.checkpt_interval = 5
 
+    # ---------------
+    # AMR parameters:
+    # ---------------
+    amrdata = rundata.amrdata
+
+
+    # max number of refinement levels:
+    amrdata.amr_levels_max = 3
+
+    # List of refinement ratios at each level (length at least amr_level_max-1)
+    amrdata.refinement_ratios_x = [2,2]
+    amrdata.refinement_ratios_y = [2,2]
+    amrdata.refinement_ratios_t = [2,2]
+
+    # Instead of setting refinement ratios in t, these can be chosen
+    # automatically if this is implemented:
+    amrdata.variable_dt_refinement_ratios = True
+    # Currently only available in GeoClaw, where it's needed for special
+    # case of tsunami modeling.  Is it useful more generally??
+
+
+    # Specify type of each aux variable in amrdata.auxtype.
+    # This must be a list of length num_aux, each element of which is one of:
+    #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
+    amrdata.aux_type = []
+
+
+    # Flag for refinement based on Richardson error estimater:
+    amrdata.flag_richardson = False    # use Richardson?
+    amrdata.flag_richardson_tol = 0.1  # Richardson tolerance
+    
+    # Flag for refinement using routine flag2refine:
+    amrdata.flag2refine = True      # use this?
+    amrdata.flag2refine_tol = 0.05  # tolerance used in this routine
+    # User can modify flag2refine to change the criterion for flagging.
+    # Default: check maximum absolute difference of first component of q
+    # between a cell and each of its neighbors.
+
+    # steps to take on each level L between regriddings of level L+1:
+    amrdata.regrid_interval = 2       
+
+    # width of buffer zone around flagged points:
+    # (typically the same as regrid_interval so waves don't escape):
+    amrdata.regrid_buffer_width  = 3  
+
+    # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
+    # (closer to 1.0 => more small grids may be needed to cover flagged cells)
+    amrdata.clustering_cutoff = 0.7  
+
+    # print info about each regridding up to this level:
+    amrdata.verbosity_regrid = 3      
+
 
     #  ----- For developers ----- 
     # Toggle debugging print statements:
-    clawdata.dprint = True       # print domain flags
-    clawdata.eprint = True       # print err est flags
-    clawdata.edebug = True       # even more err est flags
-    clawdata.gprint = False      # grid bisection/clustering
-    clawdata.nprint = False      # proper nesting output
-    clawdata.pprint = False      # proj. of tagged points
-    clawdata.rprint = False      # print regridding summary
-    clawdata.sprint = False      # space/memory output
-    clawdata.tprint = True       # time step reporting each level
-    clawdata.uprint = False      # update/upbnd reporting
+    amrdata.dprint = True       # print domain flags
+    amrdata.eprint = True       # print err est flags
+    amrdata.edebug = True       # even more err est flags
+    amrdata.gprint = False      # grid bisection/clustering
+    amrdata.nprint = False      # proper nesting output
+    amrdata.pprint = False      # proj. of tagged points
+    amrdata.rprint = False      # print regridding summary
+    amrdata.sprint = False      # space/memory output
+    amrdata.tprint = True       # time step reporting each level
+    amrdata.uprint = False      # update/upbnd reporting
     
     return rundata
 
