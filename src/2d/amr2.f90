@@ -327,7 +327,7 @@ program amr2
             stop
         endif
     enddo
-    
+
     if (naux > 0) then
         allocate(auxtype(naux))
         read(inunit,*) (auxtype(iaux), iaux=1,naux)
