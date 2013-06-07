@@ -229,12 +229,7 @@ program amr2
     read(inunit,*) method(4)   ! verbosity
     read(inunit,*) method(5)   ! src_split
     read(inunit,*) mcapa1
-
-    if (naux > 0) then
-        allocate(auxtype(naux))
-        read(inunit,*) (auxtype(iaux), iaux=1,naux)
-    endif
-
+    
     read(inunit,*) use_fwaves
     allocate(mthlim(mwaves))
     read(inunit,*) (mthlim(mw), mw=1,mwaves)
@@ -320,6 +315,7 @@ program amr2
     read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
     read(inunit,*) (intraty(i),i=1,max(1,mxnest-1))
     read(inunit,*) (kratio(i), i=1,max(1,mxnest-1))
+    read(inunit,*)
 
     do i=1,mxnest-1
         if ((intratx(i) > max1d) .or. (intraty(i) > max1d)) then 
@@ -331,6 +327,12 @@ program amr2
             stop
         endif
     enddo
+    
+    if (naux > 0) then
+        allocate(auxtype(naux))
+        read(inunit,*) (auxtype(iaux), iaux=1,naux)
+    endif
+    read(inunit,*)
               
     read(inunit,*) flag_richardson
     read(inunit,*) tol            ! for richardson

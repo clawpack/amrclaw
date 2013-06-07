@@ -12,21 +12,21 @@ class AmrclawInputData(clawpack.clawutil.clawdata.ClawData):
 
     Extends ClawInputData adding necessary data for AMR.
     """
-    def __init__(self, num_dim):
+    def __init__(self, clawdata):
 
         # Some defaults are inherited from ClawInputData:
         super(AmrclawInputData,self).__init__()
 
-        # This is not read out but needed in the write routine
-        self.add_attribute('num_dim',num_dim)
+        # Need to have a pointer to this so we can get num_dim and num_aux
+        self._clawdata = clawdata
         
         # Refinement control
         self.add_attribute('amr_levels_max',1)
         self.add_attribute('refinement_ratios_x',[1])
         self.add_attribute('refinement_ratios_y',[1])
-        if num_dim == 3:
+        if self._clawdata.num_dim == 3:
             self.add_attribute('refinement_ratios_z',[1])
-        if num_dim == 1:
+        if self._clawdata.num_dim == 1:
             raise NotImplemented("1d AMR not yet supported")
         self.add_attribute('variable_dt_refinement_ratios',False)
 
@@ -72,7 +72,7 @@ class AmrclawInputData(clawpack.clawutil.clawdata.ClawData):
                   "require len(refinement_ratios_y) >= %s " % num_ratios)
         self.data_write('refinement_ratios_x')
         self.data_write('refinement_ratios_y')
-        if self.num_dim == 3:
+        if self._clawdata.num_dim == 3:
             if len(self.refinement_ratios_z) < num_ratios:
                     raise ValueError("*** Error in data parameter: " + \
                       "require len(refinement_ratios_z) >= %s " % num_ratios)
@@ -81,8 +81,11 @@ class AmrclawInputData(clawpack.clawutil.clawdata.ClawData):
             raise ValueError("*** Error in data parameter: " + \
                   "require len(refinement_ratios_t) >= %s " % num_ratios)
         self.data_write('refinement_ratios_t')
-
         self.data_write()  # writes blank line
+
+        if self._clawdata.num_aux > 0:
+            self.data_write(file, self.aux_type, 'aux_type')
+        self.data_write()
 
         self.data_write('flag_richardson')
         self.data_write('flag_richardson_tol')
