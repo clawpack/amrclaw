@@ -99,7 +99,6 @@ program amr2
     integer :: omp_get_max_threads
     real(kind=8) :: time, ratmet, cut, dtinit, dtv2
     logical :: vtime, rest, output_t0    
-    character(len=25) :: fname
 
     ! Timing variables
     integer :: clock_start, clock_finish, clock_rate
@@ -110,7 +109,8 @@ program amr2
     common /comfine/ dxmin,dymin
 
     character(len=364) :: format_string
-    character(len=*), parameter :: infile = 'amrclaw.data'
+    character(len=*), parameter :: clawfile = 'claw.data'
+    character(len=*), parameter :: amrfile = 'amr.data'
     character(len=*), parameter :: outfile = 'fort.amr'
     character(len=*), parameter :: dbugfile = 'fort.debug'
     character(len=*), parameter :: matfile = 'fort.nplot'
@@ -121,7 +121,7 @@ program amr2
     open(parmunit,file=parmfile,status='unknown',form='formatted')
 
     ! Open AMRClaw primary parameter file
-    call opendatafile(inunit,infile)
+    call opendatafile(inunit,clawfile)
 
     ! Number of space dimensions, not really a parameter but we read it in and
     ! check to make sure everyone is on the same page. 
@@ -229,12 +229,7 @@ program amr2
     read(inunit,*) method(4)   ! verbosity
     read(inunit,*) method(5)   ! src_split
     read(inunit,*) mcapa1
-
-    if (naux > 0) then
-        allocate(auxtype(naux))
-        read(inunit,*) (auxtype(iaux), iaux=1,naux)
-    endif
-
+    
     read(inunit,*) use_fwaves
     allocate(mthlim(mwaves))
     read(inunit,*) (mthlim(mw), mw=1,mwaves)
@@ -301,8 +296,12 @@ program amr2
         read(inunit,*) checkpt_interval
     endif
 
+    close(inunit)
+
     ! ==========================================================================
     !  Refinement Control
+    call opendatafile(inunit, amrfile)
+
     read(inunit,*) mxnest
     if (mxnest <= 0) then
         stop 'Error ***   mxnest (amrlevels_max) <= 0 not allowed'
@@ -316,6 +315,7 @@ program amr2
     read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
     read(inunit,*) (intraty(i),i=1,max(1,mxnest-1))
     read(inunit,*) (kratio(i), i=1,max(1,mxnest-1))
+    read(inunit,*)
 
     do i=1,mxnest-1
         if ((intratx(i) > max1d) .or. (intraty(i) > max1d)) then 
@@ -327,6 +327,12 @@ program amr2
             stop
         endif
     enddo
+
+    if (naux > 0) then
+        allocate(auxtype(naux))
+        read(inunit,*) (auxtype(iaux), iaux=1,naux)
+    endif
+    read(inunit,*)
               
     read(inunit,*) flag_richardson
     read(inunit,*) tol            ! for richardson
