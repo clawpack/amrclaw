@@ -238,70 +238,6 @@ def setrun(claw_pkg='amrclaw'):
     rundata.gaugedata.gauges.append([2, 0.6, 0.3, 0., 10.])
     
 
-    # ---------------
-    # AMR parameters:
-    # ---------------
-
-
-    # max number of refinement levels:
-    clawdata.amr_levels_max = 1
-
-    # List of refinement ratios at each level (length at least amr_level_max-1)
-    clawdata.refinement_ratios_x = [2, 4, 2]
-    clawdata.refinement_ratios_y = [2, 4, 2]
-    clawdata.refinement_ratios_t = [2, 4, 2]
-
-
-    # Specify type of each aux variable in clawdata.auxtype.
-    # This must be a list of length num_aux, each element of which is one of:
-    #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
-    clawdata.aux_type = ['xleft', 'yleft', 'center']
-
-
-    # Flag for refinement based on Richardson error estimater:
-    clawdata.flag_richardson = False    # use Richardson?
-    clawdata.flag_richardson_tol = 1.000000e+00  # Richardson tolerance
-    
-    # Flag for refinement using routine flag2refine:
-    clawdata.flag2refine = True      # use this?
-    clawdata.flag2refine_tol = 5.000000e-02  # tolerance used in this routine
-    # User can modify flag2refine to change the criterion for flagging.
-    # Default: check maximum absolute difference of first component of q
-    # between a cell and each of its neighbors.
-
-    # steps to take on each level L between regriddings of level L+1:
-    clawdata.regrid_interval = 2       
-
-    # width of buffer zone around flagged points:
-    # (typically the same as regrid_interval so waves don't escape):
-    clawdata.regrid_buffer_width  = 3
-
-    # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
-    # (closer to 1.0 => more small grids may be needed to cover flagged cells)
-    clawdata.clustering_cutoff = 0.700000
-
-    # print info about each regridding up to this level:
-    clawdata.verbosity_regrid = 0      
-
-
-    # ---------------
-    # Regions:
-    # ---------------
-    rundata.regiondata.regions = []
-    # to specify regions of refinement append lines of the form
-    #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
-
-    # Allow 2 levels anywhere, any time:
-    rundata.regiondata.regions.append([1, 2, 0.0, 1e9, 0.0, 1.0, 0.0, 1.0])
-
-    # Allow 3 regions in lower half of domain up to t=0.7:
-    rundata.regiondata.regions.append([1, 3, 0.0, 0.7, 0.0, 1.0, 0.0, 0.5])
-
-    # Force 3 regions some places:
-    rundata.regiondata.regions.append([3, 3, 0.0, 0.3, 0.8, 1.0, 0.0, 0.3])
-    rundata.regiondata.regions.append([3, 3, 0.9, 1.5, 0.2, 0.7, 0.0, 0.3])
-
-
     # --------------
     # Checkpointing:
     # --------------
@@ -328,20 +264,83 @@ def setrun(claw_pkg='amrclaw'):
         # and at the final time.
         clawdata.checkpt_interval = 5
 
+    # ---------------
+    # AMR parameters:
+    # ---------------
+    amrdata = rundata.amrdata
+
+    # max number of refinement levels:
+    amrdata.amr_levels_max = 3
+
+    # List of refinement ratios at each level (length at least amr_level_max-1)
+    amrdata.refinement_ratios_x = [2, 4, 2]
+    amrdata.refinement_ratios_y = [2, 4, 2]
+    amrdata.refinement_ratios_t = [2, 4, 2]
+
+
+    # Specify type of each aux variable in amrdata.auxtype.
+    # This must be a list of length num_aux, each element of which is one of:
+    #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
+    amrdata.aux_type = ['xleft', 'yleft', 'center']
+
+
+    # Flag for refinement based on Richardson error estimater:
+    amrdata.flag_richardson = False    # use Richardson?
+    amrdata.flag_richardson_tol = 1.000000e+00  # Richardson tolerance
+    
+    # Flag for refinement using routine flag2refine:
+    amrdata.flag2refine = True      # use this?
+    amrdata.flag2refine_tol = 5.000000e-02  # tolerance used in this routine
+    # User can modify flag2refine to change the criterion for flagging.
+    # Default: check maximum absolute difference of first component of q
+    # between a cell and each of its neighbors.
+
+    # steps to take on each level L between regriddings of level L+1:
+    amrdata.regrid_interval = 2       
+
+    # width of buffer zone around flagged points:
+    # (typically the same as regrid_interval so waves don't escape):
+    amrdata.regrid_buffer_width  = 3
+
+    # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
+    # (closer to 1.0 => more small grids may be needed to cover flagged cells)
+    amrdata.clustering_cutoff = 0.700000
+
+    # print info about each regridding up to this level:
+    amrdata.verbosity_regrid = 0      
+
 
     #  ----- For developers ----- 
     # Toggle debugging print statements:
-    clawdata.dprint = False      # print domain flags
-    clawdata.eprint = False      # print err est flags
-    clawdata.edebug = False      # even more err est flags
-    clawdata.gprint = False      # grid bisection/clustering
-    clawdata.nprint = False      # proper nesting output
-    clawdata.pprint = False      # proj. of tagged points
-    clawdata.rprint = False      # print regridding summary
-    clawdata.sprint = False      # space/memory output
-    clawdata.tprint = False      # time step reporting each level
-    clawdata.uprint = False      # update/upbnd reporting
+    amrdata.dprint = False      # print domain flags
+    amrdata.eprint = False      # print err est flags
+    amrdata.edebug = False      # even more err est flags
+    amrdata.gprint = False      # grid bisection/clustering
+    amrdata.nprint = False      # proper nesting output
+    amrdata.pprint = False      # proj. of tagged points
+    amrdata.rprint = False      # print regridding summary
+    amrdata.sprint = False      # space/memory output
+    amrdata.tprint = False      # time step reporting each level
+    amrdata.uprint = False      # update/upbnd reporting
 
+
+    # ---------------
+    # Regions:
+    # ---------------
+    rundata.regiondata.regions = []
+    # to specify regions of refinement append lines of the form
+    #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
+
+    # Allow 2 levels anywhere, any time:
+    rundata.regiondata.regions.append([1, 2, 0.0, 1e9, 0.0, 1.0, 0.0, 1.0])
+
+    # Allow 3 regions in lower half of domain up to t=0.7:
+    rundata.regiondata.regions.append([1, 3, 0.0, 0.7, 0.0, 1.0, 0.0, 0.5])
+
+    # Force 3 regions some places:
+    rundata.regiondata.regions.append([3, 3, 0.0, 0.3, 0.8, 1.0, 0.0, 0.3])
+    rundata.regiondata.regions.append([3, 3, 0.9, 1.5, 0.2, 0.7, 0.0, 0.3])
+    
     
     return rundata
 
