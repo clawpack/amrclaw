@@ -65,7 +65,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[1] = 1.000000e+00          # yupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 30      # mx
+    clawdata.num_cells[0] = 40      # mx
     clawdata.num_cells[1] = 40      # my
     
 
@@ -113,8 +113,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 10
-        clawdata.tfinal = 1.0
+        clawdata.num_output_times = 11
+        clawdata.tfinal = 1.1
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -310,20 +310,6 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.verbosity_regrid = 0      
 
 
-    #  ----- For developers ----- 
-    # Toggle debugging print statements:
-    amrdata.dprint = False      # print domain flags
-    amrdata.eprint = False      # print err est flags
-    amrdata.edebug = False      # even more err est flags
-    amrdata.gprint = False      # grid bisection/clustering
-    amrdata.nprint = False      # proper nesting output
-    amrdata.pprint = False      # proj. of tagged points
-    amrdata.rprint = False      # print regridding summary
-    amrdata.sprint = False      # space/memory output
-    amrdata.tprint = False      # time step reporting each level
-    amrdata.uprint = False      # update/upbnd reporting
-
-
     # ---------------
     # Regions:
     # ---------------
@@ -341,6 +327,20 @@ def setrun(claw_pkg='amrclaw'):
     rundata.regiondata.regions.append([3, 3, 0.0, 0.3, 0.8, 1.0, 0.0, 0.3])
     rundata.regiondata.regions.append([3, 3, 0.9, 1.5, 0.2, 0.7, 0.0, 0.3])
     
+
+    #  ----- For developers ----- 
+    # Toggle debugging print statements:
+    amrdata.dprint = False      # print domain flags
+    amrdata.eprint = False      # print err est flags
+    amrdata.edebug = False      # even more err est flags
+    amrdata.gprint = False      # grid bisection/clustering
+    amrdata.nprint = False      # proper nesting output
+    amrdata.pprint = False      # proj. of tagged points
+    amrdata.rprint = False      # print regridding summary
+    amrdata.sprint = False      # space/memory output
+    amrdata.tprint = False      # time step reporting each level
+    amrdata.uprint = False      # update/upbnd reporting
+
     
     return rundata
 
