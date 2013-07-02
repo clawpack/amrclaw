@@ -96,7 +96,7 @@ program amr2
     integer :: i, iaux, mw, level
     integer :: ndim, nvar, naux, mcapa1, mindim, dimensional_split
     integer :: nstart, nsteps, nv1, nx, ny, lentotsave, num_gauge_SAVE
-    integer :: omp_get_max_threads
+    integer :: omp_get_max_threads, maxthreads
     real(kind=8) :: time, ratmet, cut, dtinit, dtv2
     logical :: vtime, rest, output_t0    
 
@@ -119,6 +119,8 @@ program amr2
     ! Open parameter and debug files
     open(dbugunit,file=dbugfile,status='unknown',form='formatted')
     open(parmunit,file=parmfile,status='unknown',form='formatted')
+
+    maxthreads = 1    !! default, if no openmp
 
     ! Open AMRClaw primary parameter file
     call opendatafile(inunit,clawfile)
@@ -437,7 +439,7 @@ program amr2
         open(outunit, file=outfile, status='unknown', position='append', &
                       form='formatted')
 
-        call restrt(nsteps,time,nvar)
+        call restrt(nsteps,time,nvar,naux)
         nstart  = nsteps
         tstart_thisrun = time
         print *, ' '
@@ -506,8 +508,9 @@ program amr2
     write(parmunit,*) '   start time = ',time
     write(parmunit,*) ' '
 
-    !$ write(outunit,*)" max threads set to ",omp_get_max_threads()
-    !$ print *," max threads set to ",omp_get_max_threads()
+!$   maxthreads = omp_get_max_threads() 
+     write(outunit,*)" max threads set to ",maxthreads
+     print *," max threads set to ",maxthreads
     
     !
     !  print out program parameters for this run
