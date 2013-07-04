@@ -8,7 +8,8 @@ c
       implicit double precision (a-h,o-z)
 c     include  "call.i"
 
-      logical    vtime, dumpout, dumpchk, rest, dump_final
+      logical    vtime, dumpout/.false./, dumpchk/.false./
+      logical    rest, dump_final
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
 
 c

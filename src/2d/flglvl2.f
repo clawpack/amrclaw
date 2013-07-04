@@ -25,12 +25,15 @@ c
       nxypts = 0
       numbad = 0
 
-c     always call spest to set up stuff (initialize iflags, fill locbig)
-      call spest2(nvar,naux,lcheck,start_time)
-      if (flag_richardson) call errest(nvar,naux,lcheck)
-c     if (tol .gt. 0.) call errest(nvar,naux,lcheck)
 
-      call bufnst2(nvar,naux,numbad,lcheck,lbase) !NOW INCLUDES CALL TO DOMGRID INTERNALLY
+c     flag arrays- based on either spatial gradients (and/or user defined 
+c                  criteria),  or Richardson error estimation
+      call flagger(nvar,naux,lcheck,start_time)
+
+c     buffer the flagged cells (done for each grid patch of flags)
+c     also project flags from finer levels onto this level to ensure
+c     proper nesting. Finally compute proper domain for each patch
+      call bufnst2(nvar,naux,numbad,lcheck,lbase) 
 
       nxypts = nxypts + numbad
 c

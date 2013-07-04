@@ -85,7 +85,7 @@ program amr2
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
     use amr_module, only: rprint, sprint, tprint, uprint
 
-    use amr_module, only: t0
+    use amr_module, only: t0, tstart_thisrun
 
     use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
@@ -96,7 +96,7 @@ program amr2
     integer :: i, iaux, mw, level
     integer :: ndim, nvar, naux, mcapa1, mindim, dimensional_split
     integer :: nstart, nsteps, nv1, nx, ny, lentotsave, num_gauge_SAVE
-    integer :: omp_get_max_threads
+    integer :: omp_get_max_threads, maxthreads
     real(kind=8) :: time, ratmet, cut, dtinit, dtv2
     logical :: vtime, rest, output_t0    
 
@@ -119,6 +119,8 @@ program amr2
     ! Open parameter and debug files
     open(dbugunit,file=dbugfile,status='unknown',form='formatted')
     open(parmunit,file=parmfile,status='unknown',form='formatted')
+
+    maxthreads = 1    !! default, if no openmp
 
     ! Open AMRClaw primary parameter file
     call opendatafile(inunit,clawfile)
@@ -421,9 +423,6 @@ program amr2
     print *, 'Running amrclaw ...  '
     print *, ' '
 
-    ! Call user routine to set up problem parameters:
-    call setprob()
-
     hxposs(1) = (xupper - xlower) / nx
     hyposs(1) = (yupper - ylower) / ny
 
@@ -436,25 +435,31 @@ program amr2
     endif
 
     if (rest) then
-        ! arg added to restrt for compatibility with geoclaw, which
-        ! allows variable refinement in time (and thus intrat vector
-        ! is allowed to change upon restart). In geoclaw the calling
-        ! sequence involves the variable varRefTime.
 
         open(outunit, file=outfile, status='unknown', position='append', &
                       form='formatted')
 
-        call restrt(nsteps,time,nvar,.false.)
+        call restrt(nsteps,time,nvar,naux)
         nstart  = nsteps
+        tstart_thisrun = time
         print *, ' '
         print *, 'Restarting from previous run'
         print *, '   at time = ',time
         print *, ' '
+        ! Call user routine to set up problem parameters:
+        call setprob()
+
     else
 
         open(outunit, file=outfile, status='unknown', form='formatted')
 
+        tstart_thisrun = t0
+
+        ! Call user routine to set up problem parameters:
+        call setprob()
+
         cflmax = 0.d0   ! otherwise use previously heckpointed val
+
         lentot = 0
         lenmax = 0
         lendim = 0
@@ -503,8 +508,9 @@ program amr2
     write(parmunit,*) '   start time = ',time
     write(parmunit,*) ' '
 
-    !$ write(outunit,*)" max threads set to ",omp_get_max_threads()
-    !$ print *," max threads set to ",omp_get_max_threads()
+!$   maxthreads = omp_get_max_threads() 
+     write(outunit,*)" max threads set to ",maxthreads
+     print *," max threads set to ",maxthreads
     
     !
     !  print out program parameters for this run

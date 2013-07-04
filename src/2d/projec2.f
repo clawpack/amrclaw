@@ -119,7 +119,7 @@ c
 c
  90   if (pprint) then
          write(outunit,102) numpro,level
- 102     format(i7,' more pts. projected to level ',i5)
+ 102     format(i9,' more pts. projected to level ',i5)
 
          write(outunit,103) level
  103     format(/,'  from projec: flagged pts. (incl. buffer zone)',
