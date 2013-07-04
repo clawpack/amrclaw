@@ -69,7 +69,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.lower[0] = 2.000000e-01          # xlower
     clawdata.upper[0] = 1.000000e+00          # xupper
     clawdata.lower[1] = 0.000000e+00          # ylower
-    clawdata.upper[1] = 6.28318530718e+00          # yupper
+    clawdata.upper[1] = 2. * np.pi            # yupper
     
     # Number of grid cells:
     clawdata.num_cells[0] = 20      # mx
@@ -236,6 +236,15 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_lower[1] = 'periodic'   # at ylower
     clawdata.bc_upper[1] = 'periodic'   # at yupper
 
+    # ---------------
+    # Gauges:
+    # ---------------
+    rundata.gaugedata.gauges = []
+    # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
+    rundata.gaugedata.gauges.append([1, 0.5, 0.5*np.pi, 0., 10.])
+    rundata.gaugedata.gauges.append([2, 0.5, 1.5*np.pi, 0., 10.])
+    
+
     # --------------
     # Checkpointing:
     # --------------
@@ -282,11 +291,11 @@ def setrun(claw_pkg='amrclaw'):
 
     # Flag for refinement based on Richardson error estimater:
     amrdata.flag_richardson = False    # use Richardson?
-    amrdata.flag_richardson_tol = 1.000000e+00  # Richardson tolerance
+    amrdata.flag_richardson_tol = 0.000100e+00  # Richardson tolerance
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 5.000000e-02  # tolerance used in this routine
+    amrdata.flag2refine_tol = 0.02  # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
     # between a cell and each of its neighbors.
@@ -306,12 +315,15 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.verbosity_regrid = 0      
 
 
-    # ---------------
+    # -------------------
     # Refinement Regions:
-    # ---------------
+    # -------------------
+    rundata.regiondata.regions = []
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
-    #rundata.regiondata.regions.append([])
+    #rundata.regiondata.regions.append([1,2,0.,10., 0.2,1., 0.,2.*np.pi])
+    #rundata.regiondata.regions.append([3,3,0.,10., 0.5,1., 0.,0.5*np.pi])
+
 
 
     #  ----- For developers ----- 
