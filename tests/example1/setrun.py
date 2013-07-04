@@ -230,7 +230,19 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_lower[1] = 'periodic'   # at ylower
     clawdata.bc_upper[1] = 'periodic'   # at yupper
                          
+
+    # ---------------
+    # Gauges:
+    # ---------------
+    rundata.gaugedata.gauges = []
+    # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
+    rundata.gaugedata.gauges.append([1, 0.6, 0.4, 0., 10.])
     
+    
+    # --------------
+    # Checkpointing:
+    # --------------
+
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
@@ -306,17 +318,25 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.verbosity_regrid = 3      
 
 
+    # ---------------
+    # Regions:
+    # ---------------
+    rundata.regiondata.regions = []
+    # to specify regions of refinement append lines of the form
+    #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
+
+
     #  ----- For developers ----- 
     # Toggle debugging print statements:
-    amrdata.dprint = True       # print domain flags
-    amrdata.eprint = True       # print err est flags
-    amrdata.edebug = True       # even more err est flags
+    amrdata.dprint = False      # print domain flags
+    amrdata.eprint = False      # print err est flags
+    amrdata.edebug = False      # even more err est flags
     amrdata.gprint = False      # grid bisection/clustering
     amrdata.nprint = False      # proper nesting output
     amrdata.pprint = False      # proj. of tagged points
     amrdata.rprint = False      # print regridding summary
     amrdata.sprint = False      # space/memory output
-    amrdata.tprint = True       # time step reporting each level
+    amrdata.tprint = False      # time step reporting each level
     amrdata.uprint = False      # update/upbnd reporting
     
     return rundata

@@ -15,52 +15,50 @@ CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
 CLAW_PKG = amrclaw                  # Clawpack package to use
 EXE = xamr                          # Executable to create
 SETRUN_FILE = setrun.py             # File containing function to make data
-OUTDIR = _output                    # Directory for output
+OUTDIR = _output      		        # Directory for output
 SETPLOT_FILE = setplot.py           # File containing function to set plots
-PLOTDIR = _plots                    # Directory for plots
+PLOTDIR = _plots	                # Directory for plots
 
 OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
 RESTART ?= False                    # Should = clawdata.restart in setrun
 
+#FC = ifort
+#FFLAGS = -C -CB -CU -fpe1  -ftz -ftrapuv  -g -fp-model precise 
+#FFLAGS = -C -CB -CU -fpe1 -ftrapuv  -O2 -fp-model precise -openmp
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
-
 # Add any desired compiler flags such as -g here:
-FFLAGS ?= -O2 -fopenmp
+#FFLAGS ?= -O2 -fopenmp
+FFLAGS ?= -O2 
 #FFLAGS = -W -Wall -fbounds-check -ffpe-trap=zero,overflow,invalid -g
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
 
-FFLAGS += $(OMP_FLAG)
-
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
+
 MODULES = \
   $(AMRCLAW)/src/2d/amr_module.f90 \
   $(AMRCLAW)/src/2d/regions_module.f90 \
   $(AMRCLAW)/src/2d/gauges_module.f90
 
-# Local source for thread tests
 SOURCES = \
-  ./fdisc.f \
-  ./qinit.f \
-  ./setaux.f \
-  ./setprob.f \
-  ../rp/rpn2_euler_5wave.f90 \
-  ../rp/rpt2_euler_5wave.f90 \
+  setaux.f \
+  psi.f \
+  setprob.f \
+  b4step2.f \
+  qinit.f \
+  $(RIEMANN)/src/rpn2_vc_advection.f \
+  $(RIEMANN)/src/rpt2_vc_advection.f \
   $(AMRCLAW)/src/2d/amr2.f90 \
   $(AMRCLAW)/src/2d/bc2amr.f \
-  $(AMRCLAW)/src/2d/b4step2.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/src2.f \
   $(AMRCLAW)/src/2d/src1d.f \
   $(AMRCLAW)/src/2d/advanc.f \
   $(AMRCLAW)/src/2d/bound.f90 \
   $(AMRCLAW)/src/2d/stepgrid.f \
-  $(AMRCLAW)/src/2d/cellave.f \
-  $(AMRCLAW)/src/2d/fss.f \
-  $(AMRCLAW)/src/2d/zeroin.f \
   $(AMRCLAW)/src/2d/auxcoarsen.f \
   $(AMRCLAW)/src/2d/fixcapaq.f \
   $(AMRCLAW)/src/2d/estdt.f \

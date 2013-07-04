@@ -65,6 +65,8 @@ c       ## bilinear interpolation
      .             + xoff*(1.d0-yoff)*q(ivar,iindex+1,jindex)
      .             + (1.d0-xoff)*yoff*q(ivar,iindex,jindex+1) 
      .             + xoff*yoff*q(ivar,iindex+1,jindex+1)
+c          # for printing without underflow of exponent:
+           if (abs(var(ivar)) .lt. 1.d-90) var(ivar) = 0.d0
         end do
 
 c       # output values at gauge, along with gauge no, level, time:

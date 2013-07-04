@@ -23,7 +23,6 @@ def setplot(plotdata):
     from matplotlib import cm
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
-    
 
     # Figure for pressure
     # -------------------
@@ -56,7 +55,11 @@ def setplot(plotdata):
     plotaxes.ylimits = 'auto'
     plotaxes.title = 'Tracer'
     plotaxes.scaled = True      # so aspect ratio is 1
-    plotaxes.afteraxes = label_axes
+
+    def aa(current_data):
+        label_axes(current_data)
+        addgauges(current_data)
+    plotaxes.afteraxes = aa
 
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
@@ -90,6 +93,51 @@ def setplot(plotdata):
     plotitem.amr_patchedges_show = [1,1,1]
     
 
+    #-----------------------------------------
+    # Figures for gauges
+    #-----------------------------------------
+    plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
+                    type='each_gauge')
+    plotfigure.kwargs = {'figsize': (12,8)}
+    plotfigure.clf_each_gauge = True
+
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,2,1)'
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'Density'
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 0
+    plotitem.plotstyle = 'b-'
+
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,2,2)'
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'x-momentum'
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 1
+    plotitem.plotstyle = 'b-'
+
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,2,3)'
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'Energy'
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 3
+    plotitem.plotstyle = 'b-'
+
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,2,4)'
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'Tracer'
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 4
+    plotitem.plotstyle = 'b-'
+
+
 
 
     # Parameters used only when creating html and/or latex hardcopy
@@ -108,9 +156,18 @@ def setplot(plotdata):
 
     return plotdata
 
+
 def label_axes(current_data):
     import matplotlib.pyplot as plt
     plt.xlabel('z')
     plt.ylabel('r')
     #plt.draw()
     
+    
+# To plot gauge locations on pcolor or contour plot, use this as
+# an afteraxis function:
+
+def addgauges(current_data):
+    from clawpack.visclaw import gaugetools
+    gaugetools.plot_gauge_locations(current_data.plotdata, \
+         gaugenos='all', format_string='ko', add_labels=True)

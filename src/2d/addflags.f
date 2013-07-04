@@ -15,7 +15,7 @@ c :::::::::::::::::::::: ADDFLAGS ::::::::::::::::::::::::::::::::::
 c transfer flagged arrays from errest into the one from spatial
 c differencing 
 c NOTE: not dimensioned the same. rectflags is possibly larger to accomodate
-c inplace buffering.
+c in-place buffering.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 

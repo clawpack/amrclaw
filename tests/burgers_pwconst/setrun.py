@@ -1,5 +1,5 @@
 """ 
-Module to set up run time parameters for Clawpack.
+Module to set up run time parameters for Clawpack -- AMRClaw code.
 
 The values set in the function setrun are then written out to data files
 that will be read in by the Fortran code.
@@ -36,15 +36,8 @@ def setrun(claw_pkg='amrclaw'):
     # Problem-specific parameters to be written to setprob.data:
     #------------------------------------------------------------------
     # Sample setup to write one line to setprob.data ...
-    probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('A1',     1.0,  'amplitude on first Gaussian')
-    probdata.add_param('beta1', 40.0,  'decay')
-    probdata.add_param('x1',    -0.5,  'x-location')
-    probdata.add_param('y1',     0.0,  'y-location')
-    probdata.add_param('A2',    -1.0,  'amplitude on second Gaussian')
-    probdata.add_param('beta2', 40.0,  'decay')
-    probdata.add_param('x2',     0.5,  'x-location')
-    probdata.add_param('y2',     0.0,  'y-location')
+    #probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
+    #probdata.add_param('u',     0.5,  'ubar advection velocity')
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -66,14 +59,14 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_dim = num_dim
     
     # Lower and upper edge of computational domain:
-    clawdata.lower[0] = 2.000000e-01          # xlower
-    clawdata.upper[0] = 1.000000e+00          # xupper
-    clawdata.lower[1] = 0.000000e+00          # ylower
-    clawdata.upper[1] = 2. * np.pi            # yupper
+    clawdata.lower[0] = 0.          # xlower
+    clawdata.upper[0] = 1.          # xupper
+    clawdata.lower[1] = 0.          # ylower
+    clawdata.upper[1] = 1.          # yupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 20      # mx
-    clawdata.num_cells[1] = 120      # my
+    clawdata.num_cells[0] = 50      # mx
+    clawdata.num_cells[1] = 50      # my
     
 
     # ---------------
@@ -84,17 +77,17 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_eqn = 1
 
     # Number of auxiliary variables in the aux array (initialized in setaux)
-    clawdata.num_aux = 3
+    clawdata.num_aux = 0
     
     # Index of aux array corresponding to capacity function, if there is one:
-    clawdata.capa_index = 3
+    clawdata.capa_index = 0
     
     
     # -------------
     # Initial time:
     # -------------
 
-    clawdata.t0 = 0.000000
+    clawdata.t0 = 0.0                        
     
 
     # Restart from checkpoint file of a previous run?
@@ -120,8 +113,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 25
-        clawdata.tfinal = 2.500000
+        clawdata.num_output_times = 10
+        clawdata.tfinal = 1.000000
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -131,8 +124,8 @@ def setrun(claw_pkg='amrclaw'):
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 1
-        clawdata.total_steps = 10
+        clawdata.output_step_interval = 2
+        clawdata.total_steps = 4
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
@@ -150,7 +143,7 @@ def setrun(claw_pkg='amrclaw'):
     # The current t, dt, and cfl will be printed every time step
     # at AMR levels <= verbosity.  Set verbosity = 0 for no printing.
     #   (E.g. verbosity == 2 means print only on levels 1 and 2.)
-    clawdata.verbosity = 0
+    clawdata.verbosity = 1
     
     
 
@@ -164,18 +157,18 @@ def setrun(claw_pkg='amrclaw'):
     
     # Initial time step for variable dt.  
     # (If dt_variable==0 then dt=dt_initial for all steps)
-    clawdata.dt_initial = 0.005
+    clawdata.dt_initial = 1.000000e-01
     
     # Max time step to be allowed if variable dt used:
     clawdata.dt_max = 1.000000e+99
     
     # Desired Courant number if variable dt used 
-    clawdata.cfl_desired = 0.900000
+    clawdata.cfl_desired = 0.9
     # max Courant number to allow without retaking step with a smaller dt:
-    clawdata.cfl_max = 1.000000
+    clawdata.cfl_max = 1.0
     
     # Maximum number of time steps to allow between output times:
-    clawdata.steps_max = 1000
+    clawdata.steps_max = 100000
 
 
     # ------------------
@@ -192,7 +185,7 @@ def setrun(claw_pkg='amrclaw'):
     #  0 or 'none'      ==> donor cell (only normal solver used)
     #  1 or 'increment' ==> corner transport of waves
     #  2 or 'all'       ==> corner transport of 2nd order corrections too
-    clawdata.transverse_waves = 2
+    clawdata.transverse_waves = 'all'
     
     
     # Number of waves in the Riemann solution:
@@ -214,7 +207,7 @@ def setrun(claw_pkg='amrclaw'):
     #   src_split == 0 or 'none'    ==> no source term (src routine never called)
     #   src_split == 1 or 'godunov' ==> Godunov (1st order) splitting used, 
     #   src_split == 2 or 'strang'  ==> Strang (2nd order) splitting used,  not recommended.
-    clawdata.source_split = 0
+    clawdata.source_split = 'none'
     
     
     # --------------------
@@ -230,21 +223,20 @@ def setrun(claw_pkg='amrclaw'):
     #   2 or 'periodic' => periodic (must specify this at both boundaries)
     #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
     
-    clawdata.bc_lower[0] = 'extrap'   # at xlower
-    clawdata.bc_upper[0] = 'extrap'   # at xupper
+    clawdata.bc_lower[0] = 'periodic'   # at xlower
+    clawdata.bc_upper[0] = 'periodic'   # at xupper
 
     clawdata.bc_lower[1] = 'periodic'   # at ylower
     clawdata.bc_upper[1] = 'periodic'   # at yupper
+                         
 
     # ---------------
     # Gauges:
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    rundata.gaugedata.gauges.append([1, 0.5, 0.5*np.pi, 0., 10.])
-    rundata.gaugedata.gauges.append([2, 0.5, 1.5*np.pi, 0., 10.])
     
-
+    
     # --------------
     # Checkpointing:
     # --------------
@@ -252,7 +244,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
-    clawdata.checkpt_style = 0
+    clawdata.checkpt_style = 1
 
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all
@@ -271,6 +263,15 @@ def setrun(claw_pkg='amrclaw'):
         # and at the final time.
         clawdata.checkpt_interval = 5
 
+       
+    # ---------------
+    # Gauges:
+    # ---------------
+    rundata.gaugedata.gauges = []
+    # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
+
+    
+
     # ---------------
     # AMR parameters:
     # ---------------
@@ -283,19 +284,21 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.refinement_ratios_x = [2, 2, 2]
     amrdata.refinement_ratios_y = [2, 2, 2]
     amrdata.refinement_ratios_t = [2, 2, 2]
-    
+
+
     # Specify type of each aux variable in amrdata.auxtype.
     # This must be a list of length num_aux, each element of which is one of:
     #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
-    amrdata.aux_type = ['xleft', 'yleft', 'capacity']
+    amrdata.aux_type = []
+
 
     # Flag for refinement based on Richardson error estimater:
     amrdata.flag_richardson = False    # use Richardson?
-    amrdata.flag_richardson_tol = 0.000100e+00  # Richardson tolerance
+    amrdata.flag_richardson_tol = 0.1  # Richardson tolerance
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 0.02  # tolerance used in this routine
+    amrdata.flag2refine_tol = 0.05  # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
     # between a cell and each of its neighbors.
@@ -309,21 +312,18 @@ def setrun(claw_pkg='amrclaw'):
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)
-    amrdata.clustering_cutoff = 0.700000
+    amrdata.clustering_cutoff = 0.7  
 
     # print info about each regridding up to this level:
     amrdata.verbosity_regrid = 0      
 
 
-    # -------------------
-    # Refinement Regions:
-    # -------------------
+    # ---------------
+    # Regions:
+    # ---------------
     rundata.regiondata.regions = []
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
-    #rundata.regiondata.regions.append([1,2,0.,10., 0.2,1., 0.,2.*np.pi])
-    #rundata.regiondata.regions.append([3,3,0.,10., 0.5,1., 0.,0.5*np.pi])
-
 
 
     #  ----- For developers ----- 
