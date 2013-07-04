@@ -64,7 +64,6 @@ SOURCES = \
   $(AMRCLAW)/src/2d/spest2.f \
   $(AMRCLAW)/src/2d/flag2refine2.f90 \
   $(AMRCLAW)/src/2d/flagregions2.f90 \
-  $(AMRCLAW)/src/2d/allowflag.f \
   $(AMRCLAW)/src/2d/errest.f \
   $(AMRCLAW)/src/2d/errf1.f \
   $(AMRCLAW)/src/2d/gfixup.f \
