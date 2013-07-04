@@ -59,10 +59,10 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_dim = num_dim
     
     # Lower and upper edge of computational domain:
-    clawdata.lower[0] = 0.000000e+00          # xlower
-    clawdata.upper[0] = 1.000000e+00          # xupper
-    clawdata.lower[1] = 0.000000e+00          # ylower
-    clawdata.upper[1] = 1.000000e+00          # yupper
+    clawdata.lower[0] = 0.          # xlower
+    clawdata.upper[0] = 1.          # xupper
+    clawdata.lower[1] = 0.          # ylower
+    clawdata.upper[1] = 1.          # yupper
     
     # Number of grid cells:
     clawdata.num_cells[0] = 50      # mx
@@ -87,7 +87,7 @@ def setrun(claw_pkg='amrclaw'):
     # Initial time:
     # -------------
 
-    clawdata.t0 = 0.000000
+    clawdata.t0 = 0.0                        
     
 
     # Restart from checkpoint file of a previous run?
@@ -163,12 +163,12 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.dt_max = 1.000000e+99
     
     # Desired Courant number if variable dt used 
-    clawdata.cfl_desired = 0.900000
+    clawdata.cfl_desired = 0.9
     # max Courant number to allow without retaking step with a smaller dt:
-    clawdata.cfl_max = 1.000000
+    clawdata.cfl_max = 1.0
     
     # Maximum number of time steps to allow between output times:
-    clawdata.steps_max = 500
+    clawdata.steps_max = 100000
 
 
     # ------------------
@@ -185,7 +185,7 @@ def setrun(claw_pkg='amrclaw'):
     #  0 or 'none'      ==> donor cell (only normal solver used)
     #  1 or 'increment' ==> corner transport of waves
     #  2 or 'all'       ==> corner transport of 2nd order corrections too
-    clawdata.transverse_waves = 2
+    clawdata.transverse_waves = 'all'
     
     
     # Number of waves in the Riemann solution:
@@ -207,7 +207,7 @@ def setrun(claw_pkg='amrclaw'):
     #   src_split == 0 or 'none'    ==> no source term (src routine never called)
     #   src_split == 1 or 'godunov' ==> Godunov (1st order) splitting used, 
     #   src_split == 2 or 'strang'  ==> Strang (2nd order) splitting used,  not recommended.
-    clawdata.source_split = 0
+    clawdata.source_split = 'none'
     
     
     # --------------------
@@ -228,8 +228,15 @@ def setrun(claw_pkg='amrclaw'):
 
     clawdata.bc_lower[1] = 'periodic'   # at ylower
     clawdata.bc_upper[1] = 'periodic'   # at yupper
-                  
-                  
+                         
+
+    # ---------------
+    # Gauges:
+    # ---------------
+    rundata.gaugedata.gauges = []
+    # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
+    
+    
     # --------------
     # Checkpointing:
     # --------------
@@ -240,21 +247,21 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.checkpt_style = 1
 
     if clawdata.checkpt_style == 0:
-      # Do not checkpoint at all
-      pass
+        # Do not checkpoint at all
+        pass
 
     elif clawdata.checkpt_style == 1:
-      # Checkpoint only at tfinal.
-      pass
+        # Checkpoint only at tfinal.
+        pass
 
     elif clawdata.checkpt_style == 2:
-      # Specify a list of checkpoint times.  
-      clawdata.checkpt_times = [0.1,0.15]
+        # Specify a list of checkpoint times.  
+        clawdata.checkpt_times = [0.1,0.15]
 
     elif clawdata.checkpt_style == 3:
-      # Checkpoint every checkpt_interval timesteps (on Level 1)
-      # and at the final time.
-      clawdata.checkpt_interval = 5
+        # Checkpoint every checkpt_interval timesteps (on Level 1)
+        # and at the final time.
+        clawdata.checkpt_interval = 5
 
        
     # ---------------
@@ -287,11 +294,11 @@ def setrun(claw_pkg='amrclaw'):
 
     # Flag for refinement based on Richardson error estimater:
     amrdata.flag_richardson = False    # use Richardson?
-    amrdata.flag_richardson_tol = 1.000000e+00  # Richardson tolerance
+    amrdata.flag_richardson_tol = 0.1  # Richardson tolerance
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 5.000000e-02  # tolerance used in this routine
+    amrdata.flag2refine_tol = 0.05  # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
     # between a cell and each of its neighbors.
@@ -305,7 +312,7 @@ def setrun(claw_pkg='amrclaw'):
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)
-    amrdata.clustering_cutoff = 0.700000
+    amrdata.clustering_cutoff = 0.7  
 
     # print info about each regridding up to this level:
     amrdata.verbosity_regrid = 0      
