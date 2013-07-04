@@ -116,8 +116,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 10
-        clawdata.tfinal = 1.000000
+        clawdata.num_output_times = 11
+        clawdata.tfinal = 1.100000
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -232,7 +232,22 @@ def setrun(claw_pkg='amrclaw'):
 
     clawdata.bc_lower[1] = 'wall'   # at ylower
     clawdata.bc_upper[1] = 'extrap'   # at yupper
+
+    # ---------------
+    # Gauges:
+    # ---------------
+    rundata.gaugedata.gauges = []
+    # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
+    rundata.gaugedata.gauges.append([1, 0.25, 0.1, 0., 10.])
+    rundata.gaugedata.gauges.append([2, 0.5, 0.1, 0., 10.])
+    rundata.gaugedata.gauges.append([3, 1.0, 0.1, 0., 10.])
+    rundata.gaugedata.gauges.append([4, 1.5, 0.1, 0., 10.])
+    
                          
+
+    # --------------
+    # Checkpointing:
+    # --------------
 
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
@@ -301,6 +316,16 @@ def setrun(claw_pkg='amrclaw'):
 
     # print info about each regridding up to this level:
     amrdata.verbosity_regrid = 0      
+
+
+    # -------------------
+    # Refinement Regions:
+    # -------------------
+    rundata.regiondata.regions = []
+    # to specify regions of refinement append lines of the form
+    #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
+    #rundata.regiondata.regions.append([1,2,0.,10., 0.2,1., 0.,2.*np.pi])
+    #rundata.regiondata.regions.append([3,3,0.,10., 0.5,1., 0.,0.5*np.pi])
 
 
     #  ----- For developers ----- 

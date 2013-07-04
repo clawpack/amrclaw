@@ -26,7 +26,7 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 FC ?= gfortran   # default if not set as environment variable
 
 # Add any desired compiler flags such as -g here:
-FFLAGS ?= -O2 
+FFLAGS ?= -O2 -fopenmp
 #FFLAGS = -W -Wall -fbounds-check -ffpe-trap=zero,overflow,invalid -g
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
@@ -68,6 +68,7 @@ SOURCES = \
   $(AMRCLAW)/src/2d/bufnst2.f \
   $(AMRCLAW)/src/2d/spest2.f \
   $(AMRCLAW)/src/2d/flag2refine2.f90 \
+  $(AMRCLAW)/src/2d/flagregions2.f90 \
   $(AMRCLAW)/src/2d/allowflag.f \
   $(AMRCLAW)/src/2d/errest.f \
   $(AMRCLAW)/src/2d/errf1.f \
@@ -76,6 +77,9 @@ SOURCES = \
   $(AMRCLAW)/src/2d/filpatch.f90 \
   $(AMRCLAW)/src/2d/prefilp.f90 \
   $(AMRCLAW)/src/2d/flglvl2.f \
+  $(AMRCLAW)/src/2d/flagger.f \
+  $(AMRCLAW)/src/2d/prepregstep.f \
+  $(AMRCLAW)/src/2d/prepbigstep.f \
   $(AMRCLAW)/src/2d/fluxad.f \
   $(AMRCLAW)/src/2d/fluxsv.f \
   $(AMRCLAW)/src/2d/ginit.f \

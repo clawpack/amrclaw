@@ -24,8 +24,6 @@ c  buffer the tags, take care of level nesting, etc.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 c
-c copy flagged arrays in individual grids (now stored in loctmp)
-c into 1 big iflag array (iflags). NO MORE  only do if flag_richardson is true.
 c
 !$    maxthreads = omp_get_max_threads()
       call prepgrids(listgrids,numgrids(lcheck),lcheck)
@@ -33,6 +31,8 @@ c
       numpro = 0 
       numbad = 0 
       time = rnode(timemult,lstart(lcheck))
+      dx = hxposs(lcheck)
+      dy = hyposs(lcheck)
 
 c      mptr = lstart(lcheck)
 c41   continue
@@ -41,8 +41,8 @@ c41   continue
 !$OMP&            PRIVATE(loctmp,locbig,j,i,numpro2,numflagged),
 !$OMP&            PRIVATE(locdomflags,locdom2),
 !$OMP&            SHARED(numgrids, listgrids,nghost,flag_richardson),
-!$OMP&            SHARED(nvar,eprint,maxthreads,node,lbase,ibuff),
-!$OMP&            SHARED(alloc,lcheck,numpro,mxnest,numbad),
+!$OMP&            SHARED(nvar,eprint,maxthreads,node,rnode,lbase,ibuff),
+!$OMP&            SHARED(alloc,lcheck,numpro,mxnest,numbad,dx,dy,time),
 !$OMP&            DEFAULT(none),      
 !$OMP&            SCHEDULE (DYNAMIC,1)
       do  jg = 1, numgrids(lcheck)
@@ -60,13 +60,15 @@ c41   continue
          mjbuff = ny + 2*mbuff
          locamrflags = node(storeflags,mptr)
 
-         if (flag_richardson) then    
-            loctmp = node(store2, mptr)
-c     call setflags(iflags,isize,jsize,
-c     .           alloc(loctmp),nvar,mitot,mjtot,mptr)  
-            call addflags(alloc(locamrflags),mibuff,mjbuff,
-     .           alloc(loctmp),nvar,mitot,mjtot,mptr)
-         endif 
+c        ### is richardson used, add those flags to flags computed by spatial gradients
+c        ### (or whatever user-defined criteria used). Even if nothing else used,
+c        ### put flags into locamrflag array.
+!--         if (flag_richardson) then   
+!--            loctmp = node(store2, mptr)
+!--            call addflags(alloc(locamrflags),mibuff,mjbuff,
+!--     .           alloc(loctmp),nvar,mitot,mjtot,mptr)
+!--         endif 
+
 c     still need to reclaim error est space from spest.f 
 c     which was saved for possible errest reuse
          locbig = node(tempptr,mptr)
@@ -81,11 +83,16 @@ c
             enddo
          endif
 
+c      ##  new call to flag regions: check if cells must be refined, or exceed
+c      ##  maximum refinement level for that region.  used to be included with
+c      ## flag2refine. moved here to include flags from richardson too.
+       call flagregions2(nx,ny,mbuff,rnode(cornxlo,mptr),
+     1                  rnode(cornylo,mptr),dx,dy,lcheck,time,
+     2                  alloc(locamrflags),goodpt,badpt)
+
 c     for this version project to each grid separately, no giant iflags
          if (lcheck+2 .le. mxnest) then
             numpro2 = 0
-c     write(outunit,*)" calling projec at time ",time
-c     write(*,*)" calling projec at time ",time
             call projec2(lcheck,numpro2,alloc(locamrflags),
      .           ilo,ihi,jlo,jhi,mbuff)
 c            numpro = numpro + numpro2  not used for now. would need critical section for numpro

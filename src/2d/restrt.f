@@ -2,11 +2,11 @@
 c
 c ---------------------------------------------------------
 c
-      subroutine restrt(nsteps,time,nvar,varRefTime)
+      subroutine restrt(nsteps,time,nvar,naux)
 c
       use amr_module
       implicit double precision (a-h,o-z)
-      logical   ee, varRefTime
+      logical   ee
  
  
       logical foundFile
@@ -60,16 +60,14 @@ c     error checking that refinement ratios have not changed
 c     ### new feature: when using variable refinement in time
 c     ### (varRefTime = T) the time ratios are allowed to be different
 c     ###  (since they are ignored and calc. on the fly)
-c     ### varRefTime is currently only used in GeoClaw, is set to .false.
-c     ### when this routine is called from amrclaw.
+c     ### This is not checked for here, since the same amr2.f is now
+c         used for geoclaw too, and varRefTime is only available in geoclaw.
 c
-      do i = 1, mxnold-1
+      do i = 1, min(mxnold-1,mxnest-1)
         if ( (intratx(i) .ne. intrtx(i)) .or.
-     .       (intraty(i) .ne. intrty(i)) .or.
-     .       (kratio(i) .ne.  intrtt(i) .and. .not. varRefTime) ) then
+     .       (intraty(i) .ne. intrty(i)) ) then
+c    .       (kratio(i) .ne.  intrtt(i) .and. .not. varRefTime) ) then
         write(outunit,*) 
-     .  " not allowed to change existing refinement ratios on Restart"
-        write(*,*)
      .  " not allowed to change existing refinement ratios on Restart"
         write(outunit,*)" Old ratios:"
         write(*,*)      " Old ratios:"
@@ -77,14 +75,15 @@ c
         write(*,903)      (intrtx(j),j=1,mxnold-1)
         write(outunit,903)(intrty(j),j=1,mxnold-1)
         write(*,903)      (intrty(j),j=1,mxnold-1)
-        write(outunit,903)(intrtt(j),j=1,mxnold-1)
-        write(*,903)      (intrtt(j),j=1,mxnold-1)
+c       write(outunit,903)(intrtt(j),j=1,mxnold-1)
+c       write(*,903)      (intrtt(j),j=1,mxnold-1)
  903    format(6i3)
         stop
        endif
       end do
 
-      if (varRefTime) then  ! reset intrat to previously saved ratios, not input ratios
+c     if (varRefTime) then  ! reset intrat to previously saved ratios, not input ratios
+      if (.true.) then  ! reset intrat to previously saved ratios, not input ratios
         do i = 1, mxnold-1
             kratio(i) = intrtt(i)
         end do
@@ -115,23 +114,71 @@ c
          else
              write(outunit,901) mxnold, mxnest
              write(*,      901) mxnold, mxnest
-901          format(' only allow mxnest to increase: ',/,
+901          format('  mxnest reduced on restart: ',/,
      &            '  old mxnest ',i4, ' new mxnest ',i4)
-              stop
+             write(outunit,*)" reclaiming finer levels from",
+     .                mxnest+1," to ",mxnold
+             do 95 lev = mxnest,mxnold
+                mptr = lstart(lev)
+                if (lev .gt. mxnest) lstart(lev) = 0   
+ 85             if (mptr .eq. 0) go to 95
+                   if (lev .lt. mxnold) then
+                    call reclam(node(cfluxptr,mptr), 5*listsp(lev))
+                    node(cfluxptr,mptr) = 0
+                   endif
+                   nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
+                   ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+                   ikeep = nx/intrtx(lev-1)
+                   jkeep = ny/intrty(lev-1)
+                   lenbc = 2*(ikeep+jkeep)
+                   if (lev .gt. mxnest) then
+                       call reclam
+     .                  (node(ffluxptr,mptr),2*nvar*lenbc+naux*lenbc)
+                       node(ffluxptr,mptr) = 0
+                   endif
+                   mitot = nx + 2*nghost
+                   mjtot = ny + 2*nghost
+                   if (lev .gt. mxnest) then ! if level going away take away first storage
+                      call reclam(node(store1,mptr),mitot*mjtot*nvar)
+                      node(store1,mptr) = 0
+                      if (naux .gt. 0) then ! and aux arrays
+                       call reclam(node(storeaux,mptr),mitot*mjtot*naux)
+                       node(storeaux,mptr) = 0
+                      endif
+                   endif
+                   if (lev .ge. mxnest .and. lev .lt. mxnold) then  !reclam 2nd level storage too
+                      call reclam(node(store2, mptr), mitot*mjtot*nvar)
+                      node(store2,mptr) = 0
+                   endif
+                mold   = mptr
+                mptr   = node(levelptr,mptr)
+                if (lev .gt. mxnest) call putnod(mold)
+                go to 85
+ 95        end do
+c              stop
+c  reset lfine to new finest level
+             do lev = mxnest,1,-1
+                if (lstart(lev) .gt. 0) then
+                  lfine = lev
+                  write(*,*)" resetting finest level to ",lfine
+                  go to 199
+                endif 
+             end do
          endif
        endif
 
-c add second storage loc to grids at previous mxnest
+c if mxnest has increased, add second storage loc to grids at previous mxnest 
         ee = .false.
         do 10 level = 1, mxnold
            if (icheck(level) .ge. kcheck) then
               ee = .true.
            endif
+10      continue
+
            write(*,*)" increasing max num levels from ",mxnold,
      .                 ' to',mxnest
            write(outunit,*)" increasing max num levels from ",mxnold,
      .                 ' to',mxnest
-10      continue
 
         if (ee .and. flag_richardson) then
 c           ## if Richardson used, will delay error est. 1 step til have old soln. vals
@@ -166,5 +213,6 @@ c          # add new info. to spatial and counting arrays
 45         continue
 c
 c
+ 199   continue
       return
       end
