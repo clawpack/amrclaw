@@ -236,8 +236,7 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    rundata.gaugedata.gauges.append([1, 0.4, 0.3, 0., 10.])
-    rundata.gaugedata.gauges.append([2, 0.6, 0.3, 0., 10.])
+    rundata.gaugedata.gauges.append([1, 0.6, 0.4, 0., 10.])
     
     
     # --------------
@@ -329,15 +328,15 @@ def setrun(claw_pkg='amrclaw'):
 
     #  ----- For developers ----- 
     # Toggle debugging print statements:
-    amrdata.dprint = True       # print domain flags
-    amrdata.eprint = True       # print err est flags
-    amrdata.edebug = True       # even more err est flags
+    amrdata.dprint = False      # print domain flags
+    amrdata.eprint = False      # print err est flags
+    amrdata.edebug = False      # even more err est flags
     amrdata.gprint = False      # grid bisection/clustering
     amrdata.nprint = False      # proper nesting output
     amrdata.pprint = False      # proj. of tagged points
     amrdata.rprint = False      # print regridding summary
     amrdata.sprint = False      # space/memory output
-    amrdata.tprint = True       # time step reporting each level
+    amrdata.tprint = False      # time step reporting each level
     amrdata.uprint = False      # update/upbnd reporting
     
     return rundata
