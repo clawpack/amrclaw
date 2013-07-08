@@ -26,6 +26,7 @@ def setplot(plotdata):
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
     
+    plotdata.format = "ascii"
 
     # Figure for pcolor plot
     plotfigure = plotdata.new_plotfigure(name='q[0]', figno=0)
