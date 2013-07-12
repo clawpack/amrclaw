@@ -31,7 +31,6 @@ FFLAGS ?= -O2 -fopenmp
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
 
-FFLAGS += $(OMP_FLAG)
 
 # ---------------------------------
 # List of sources for this program:
