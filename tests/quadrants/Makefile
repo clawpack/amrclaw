@@ -20,13 +20,13 @@ SETPLOT_FILE = setplot.py           # File containing function to set plots
 PLOTDIR = _plots                    # Directory for plots
 
 OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
-RESTART ?= False                    # Should = clawdata.restart in setrun
+RESTART ?= True                     # Should = clawdata.restart in setrun
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 
 # Add any desired compiler flags such as -g here:
-FFLAGS ?= -O2 -fopenmp
+FFLAGS ?= -O2 
 #FFLAGS = -W -Wall -fbounds-check -ffpe-trap=zero,overflow,invalid -g
 # intel ifort flags
 # FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
@@ -42,24 +42,20 @@ MODULES = \
 
 # Local source for thread tests
 SOURCES = \
-  ./fdisc.f \
   ./qinit.f \
-  ./setaux.f \
   ./setprob.f \
-  ../rp/rpn2_euler_5wave.f90 \
-  ../rp/rpt2_euler_5wave.f90 \
+  $(RIEMANN)/src/rpn2_euler_4wave.f90 \
+  $(RIEMANN)/src/rpt2_euler.f90 \
   $(AMRCLAW)/src/2d/amr2.f90 \
   $(AMRCLAW)/src/2d/bc2amr.f \
   $(AMRCLAW)/src/2d/b4step2.f \
+  $(AMRCLAW)/src/2d/setaux.f \
   $(AMRCLAW)/src/2d/qad.f \
   $(AMRCLAW)/src/2d/src2.f \
   $(AMRCLAW)/src/2d/src1d.f \
   $(AMRCLAW)/src/2d/advanc.f \
   $(AMRCLAW)/src/2d/bound.f90 \
   $(AMRCLAW)/src/2d/stepgrid.f \
-  $(AMRCLAW)/src/2d/cellave.f \
-  $(AMRCLAW)/src/2d/fss.f \
-  $(AMRCLAW)/src/2d/zeroin.f \
   $(AMRCLAW)/src/2d/auxcoarsen.f \
   $(AMRCLAW)/src/2d/fixcapaq.f \
   $(AMRCLAW)/src/2d/estdt.f \

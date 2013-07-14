@@ -7,9 +7,6 @@ function setplot is called to set the plot parameters.
     
 """ 
 
-from mapc2p import mapc2p
-import numpy as np
-
 #--------------------------
 def setplot(plotdata):
 #--------------------------
@@ -26,9 +23,8 @@ def setplot(plotdata):
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
     
-    plotdata.format = "ascii"
 
-    # Figure for pcolor plot
+    # Figure for q[0]
     plotfigure = plotdata.new_plotfigure(name='q[0]', figno=0)
 
     # Set up for axes in this figure:
@@ -36,79 +32,77 @@ def setplot(plotdata):
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = 'auto'
     plotaxes.title = 'q[0]'
-    plotaxes.scaled = True
+    plotaxes.afteraxes = "pylab.axis('scaled')" 
 
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
     plotitem.plot_var = 0
-    plotitem.pcolor_cmap = colormaps.red_yellow_blue
+    plotitem.pcolor_cmap = colormaps.yellow_red_blue
+    plotitem.pcolor_cmin = 0.
+    plotitem.pcolor_cmax = 2.
+    plotitem.add_colorbar = True
+    plotitem.show = True       # show on plot?
+    
+
+    # Figure for q[1]
+    plotfigure = plotdata.new_plotfigure(name='q[1]', figno=1)
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'q[1]'
+    plotaxes.afteraxes = "pylab.axis('scaled')" 
+
+    # Set up for item on these axes:
+    plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
+    plotitem.plot_var = 1
+    plotitem.pcolor_cmap = colormaps.yellow_red_blue
     plotitem.pcolor_cmin = -1.
     plotitem.pcolor_cmax = 1.
-    plotitem.amr_celledges_show = [0,0]
-    plotitem.amr_patchedges_show = [1,1]
     plotitem.add_colorbar = True
-    plotitem.celledges_show = 0
-    plotitem.patchedges_show = 1
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
     plotitem.show = True       # show on plot?
     
-    # Figure for contour plot
-    plotfigure = plotdata.new_plotfigure(name='contour', figno=1)
+
+    # Figure for q[2]
+    plotfigure = plotdata.new_plotfigure(name='q[2]', figno=2)
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = 'auto'
-    plotaxes.title = 'q[0]'
-    plotaxes.scaled = True
+    plotaxes.title = 'q[2]'
+    plotaxes.afteraxes = "pylab.axis('scaled')" 
 
     # Set up for item on these axes:
-    plotitem = plotaxes.new_plotitem(plot_type='2d_contour')
-    plotitem.plot_var = 0
-    plotitem.contour_levels = np.linspace(-0.9, 0.9, 10)
-    plotitem.amr_contour_colors = ['k','b']
-    plotitem.patchedges_show = 1
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
+    plotitem.plot_var = 2
+    plotitem.pcolor_cmap = colormaps.yellow_red_blue
+    plotitem.pcolor_cmin = -1.
+    plotitem.pcolor_cmax = 1.
+    plotitem.add_colorbar = True
     plotitem.show = True       # show on plot?
     
-    # Figure for grids
-    plotfigure = plotdata.new_plotfigure(name='grids', figno=2)
-    plotfigure.show = True
+
+    # Figure for q[3]
+    plotfigure = plotdata.new_plotfigure(name='q[3]', figno=3)
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = 'auto'
-    plotaxes.title = 'grids'
-    plotaxes.scaled = True
+    plotaxes.title = 'q[3]'
+    plotaxes.afteraxes = "pylab.axis('scaled')" 
 
     # Set up for item on these axes:
-    plotitem = plotaxes.new_plotitem(plot_type='2d_patch')
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
-    plotitem.amr_celledges_show = [1,1,0]
-    plotitem.amr_patchedges_show = [1]
-
-    #-----------------------------------------
-    # Figures for gauges
-    #-----------------------------------------
-    plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
-                    type='each_gauge')
-    plotfigure.clf_each_gauge = True
-
-    # Set up for axes in this figure:
-    plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = 'auto'
-    plotaxes.title = 'q'
-
-    # Plot q as blue curve:
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = 0
-    plotitem.plotstyle = 'b-'
-
+    plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
+    plotitem.plot_var = 3
+    plotitem.pcolor_cmap = colormaps.yellow_red_blue
+    plotitem.pcolor_cmin = 0.
+    plotitem.pcolor_cmax = 5.
+    plotitem.add_colorbar = True
+    plotitem.show = True       # show on plot?
+    
 
     # Parameters used only when creating html and/or latex hardcopy
     # e.g., via clawpack.visclaw.frametools.printframes:
