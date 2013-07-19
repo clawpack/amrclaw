@@ -34,8 +34,6 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
      .        " base level ",i5)
 
        levnew = node(nestlevel,mnew)
-       hx = hxposs(levnew)
-       hy = hyposs(levnew)
 c
 c initialize for potential periodicity
 c each patch divided into 9 regions (some may be empty)
@@ -44,7 +42,6 @@ c except using enlarged grid (ilo-1 to ihi+1)
 c
        call setIndices(ist,iend,jst,jend,ilo-1,ihi+1,jlo-1,jhi+1,
      .                 ishift,jshift,levnew)
-c
 c
 c    on to initializing for the given grid and its nest checking
        levratx = 1
@@ -55,31 +52,10 @@ c    on to initializing for the given grid and its nest checking
  5     continue
 
 c widen by 1 cell (proper nesting), then project to lbase
-       iclo_old = ixproj(ilo-1,levratx)
-       ichi_old = ixproj(ihi+1,levratx)
-       jclo_old = ixproj(jlo-1,levraty)
-       jchi_old = ixproj(jhi+1,levraty)
-       if (debug) write(*,101) iclo_old,ichi_old,jclo_old,jchi_old
- 111   format("oldway: coarsened/enlarged grid from ",2i10," to ",2i10)
-
-c try new approach using real arithmetic. ixproj macro doesnt work for odd number refinements
-c which apparently is being used.
-c compute cell centroid of new fine grid, instead of grid edge, to avoid degeneracies
-        xst  = xlower + (dfloat(ilo)+.5d0) * hx    ! loc of 1st cell in new grid
-        yst  = ylower + (dfloat(jlo)+.5d0) * hy    ! loc of 1st cell in new grid
-        iclo = int((xst-xlower)/hxposs(lbase))     ! index of that cell centroid on an lbase grid
-        iclo = max(iclo-1,0)                       ! dont let it stick out of domain
-        jclo = int((yst-ylower)/hyposs(lbase))
-        jclo = max(jclo-1,0) 
-
-        xend = xlower+(dfloat(ihi)+.5d0)*hx        ! cell centroid of last point on new grid
-        yend = ylower+(dfloat(jhi)+.5d0)*hy
-        ichi = int((xend-xlower)/hxposs(lbase))
-        jchi = int((yend-ylower)/hyposs(lbase))
-        ichi = min(ichi+1,iregsz(lbase)-1)         ! not doing anything for periodicty???
-        jchi = min(jchi+1,jregsz(lbase)-1)
-
-
+       iclo = ixproj(ilo-1,levratx)
+       ichi = ixproj(ihi+1,levratx)
+       jclo = ixproj(jlo-1,levraty)
+       jchi = ixproj(jhi+1,levraty)
        if (debug) write(*,101) iclo,ichi,jclo,jchi
  101   format("coarsened (enlarged by 1)  grid from ",2i10," to ",2i10)
 
@@ -134,8 +110,8 @@ c  fix extra border, and first/last real edge
           jbhi = node(ndjhi, mptr)
 
           if (debug) then
-            write(*,*)
-            write(*,102) mptr,iblo,ibhi,jblo,jbhi
+              write(*,*)
+             write(*,102) mptr,iblo,ibhi,jblo,jbhi
  102        format("TESTING AGAINST GRID ",i5," from ",2i10," to ",2i10)
            endif
 
@@ -153,26 +129,13 @@ c          compare all regions of patch with one lbase grid at a time
  103          format("region ",2i10," from ",2i10," to ",2i10)
 c
 c             patch not empty. project coords to level lbase
-              iplo_old = ixproj(i1+ishift(i),levratx)
-              iphi_old = ixproj(i2+ishift(i),levratx)
-              jplo_old = ixproj(j1+jshift(j),levraty)
-              jphi_old = ixproj(j2+jshift(j),levraty)
-              if (debug) 
-     &           write(*,104) i,j,iplo_old,iphi_old,jplo_old,jphi_old
- 104          format("OLD:projected coords of region ",2i10," is ",2i10,
-     .               " by ",2i10)
-
-              xst = xlower + (dfloat(i1+ishift(i))+.5d0) * hx 
-              yst = ylower + (dfloat(j1+jshift(j))+.5d0) * hy
-              iplo = max(int((xst-xlower)/hxposs(lbase))-1,0)
-              jplo = max(int((yst-ylower)/hyposs(lbase))-1,0)
-
-              xend = xlower+(dfloat(i2+ishift(i))+.5d0)*hx  
-              yend = ylower+(dfloat(j2+jshift(j))+.5d0)*hy
-              iphi = int((xend-xlower)/hxposs(lbase))
-              jphi = int((yend-ylower)/hyposs(lbase))
-              iphi = min(iphi+1,iregsz(lbase)-1)     
-              jphi = min(jphi+1,jregsz(lbase)-1)
+              iplo = ixproj(i1+ishift(i),levratx)
+              iphi = ixproj(i2+ishift(i),levratx)
+              jplo = ixproj(j1+jshift(j),levraty)
+              jphi = ixproj(j2+jshift(j),levraty)
+              if (debug) write(*,104) i,j,iplo,iphi,jplo,jphi
+ 104          format("projected coords of region ",2i5," is ",2i5,
+     .               " by ",2i5)
 
               ixlo = max(iplo,iblo)
               ixhi = min(iphi,ibhi)
