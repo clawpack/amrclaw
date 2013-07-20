@@ -145,9 +145,9 @@ c
 c            # no capa array.  Standard flux differencing:
 
             q(m,i,j,k) = q(m,i,j,k)
-     &                 - dtdx * (fm(m,i+1,j,k) - fp(m,i,j,k)
-     &                 - dtdy * (gm(m,i,j+1,k) - gp(m,i,j,k)
-     &                 - dtdz * (hm(m,i,j,k+1) - hp(m,i,j,k)
+     &                 - dtdx * (fm(m,i+1,j,k) - fp(m,i,j,k))
+     &                 - dtdy * (gm(m,i,j+1,k) - gp(m,i,j,k))
+     &                 - dtdz * (hm(m,i,j,k+1) - hp(m,i,j,k))
  50       continue
        else
          do 51 k=mbc+1,mktot-mbc

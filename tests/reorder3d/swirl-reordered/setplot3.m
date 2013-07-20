@@ -20,7 +20,7 @@ MaxLevels = 6;               % max number of AMR levels
 
 PlotData =  [1 1 1 0 0 0];       % Data on refinement level k is plotted only
 			         % if k'th component is nonzero
-PlotGrid =  [0 0 0 0 0 0];       % Plot grid lines on each level?
+PlotGrid =  [1 1 0 0 0 0];       % Plot grid lines on each level?
 PlotGridEdges =  [1 0 0 0 0 0];  % Plot edges of patches of each grid at
                                  % this level on slices?
 PlotCubeEdges = [0 0 0 0 0 0];   % Plot edges of cube of refinement patch at
@@ -32,17 +32,8 @@ PlotCubeEdges = [0 0 0 0 0 0];   % Plot edges of cube of refinement patch at
   ContourValues = .1:.1:.9;
 
 % The next three parameters are vectors of x,y,z coordinates of 2d slices
-% to be displayed for PlotType = 1,2,3.   Empty ==> no slices in that direction.
+% to be displayed for PlotType = 1,2,3.
+
   xSliceCoords = 0.6;
   ySliceCoords = 0.6;
   zSliceCoords = 0.425;
-
-
-  IsosurfValues    =  [0.5];     % Plot surfaces at q = surfValue(i).
-
-  IsosurfAlphas    =  [0.6];     % Transparency of each surface
-                                          % (0=clear; 1=opaque)
-                                          % NOTE: Your system must be able to
-                                          % use the OpenGL Renderer.
-
-  IsosurfColors    = 'q';

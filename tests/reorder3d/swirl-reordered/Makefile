@@ -1,105 +1,134 @@
-#
-#               Makefile for the clawpack code:
-#
-#       To make an executable, type:              make xclaw
-#       (from the application sub-directory)
-#
-#       To make an executable that generates
-#       output in HDF (version 4) format, type:   make xclawhdf
-#       (from the application sub-directory)
-#
-#       To compile a single file.f type:          make file.o
-#       (from the application sub-directory)
-#
-#       To compile the lib library files type:    make lib
-#       (from the claw/clawpack/3d/lib sub-directory)
-#
-#       To combine all source files type:         make program
-#       (from the application sub-directory)
-#       (sometimes easier to debug all in one)
-#
-FFLAGS = -O
-LFLAGS = $(FFLAGS)
-F77    = gfortran
-LINK   = gfortran
-HDFLIBS = -L/usr/local/hdf/lib -lmfhdf -ldf -ljpeg -lz
 
-.f.o: ; $(F77) $(FFLAGS) -c $*.f -o $*.o
+# Makefile for Clawpack code in this directory.
+# This version only sets the local files and frequently changed
+# options, and then includes the standard makefile pointed to by CLAWMAKE.
+CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
 
-OBJECTS = \
-  driver.o \
-  qinit.o \
-  ../rp-reordered/rpn3adv.o \
-  ../rp-reordered/rpt3adv.o \
-  ../rp-reordered/rptt3adv.o \
-  setaux.o
+# See the above file for details and a list of make options, or type
+#   make .help
+# at the unix prompt.
 
-LIBOBJECTS = \
-  $(CLAW)/clawpack/3d/lib/claw3ez.o \
-  $(CLAW)/clawpack/3d/lib/setprob.o \
-  $(CLAW)/clawpack/3d/lib/bc3.o \
-  $(CLAW)/clawpack/3d/lib/b4step3.o \
-  $(CLAW)/clawpack/3d/lib/chkmth.o \
-  $(CLAW)/clawpack/3d/lib/claw3.o \
-  $(CLAW)/clawpack/3d/lib/step3.o \
-  $(CLAW)/clawpack/3d/lib/step3ds.o \
-  $(CLAW)/clawpack/3d/lib/dimsp3.o \
-  $(CLAW)/clawpack/3d/lib/flux3.o \
-  $(CLAW)/clawpack/3d/lib/copyq3.o \
-  $(CLAW)/clawpack/3d/lib/limiter.o \
-  $(CLAW)/clawpack/3d/lib/philim.o \
-  $(CLAW)/clawpack/3d/lib/src3.o
+
+# Adjust these variables if desired:
+# ----------------------------------
+
+CLAW_PKG = amrclaw                  # Clawpack package to use
+EXE = xamr                          # Executable to create
+# 3D setrun not set up yet
+#SETRUN_FILE = setrun.py             # File containing function to make data
+OUTDIR = _output                    # Directory for output
+SETPLOT_FILE = setplot.py           # File containing function to set plots
+PLOTDIR = _plots                    # Directory for plots
+
+OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
+RESTART ?= False                    # Should = clawdata.restart in setrun
+
+# Environment variable FC should be set to fortran compiler, e.g. gfortran
+FC ?= gfortran   # default if not set as environment variable
+# Add any desired compiler flags such as -g here:
+FFLAGS ?=  -O2 -fopenmp
+
+# ---------------------------------
+# List of sources for this program:
+# ---------------------------------
+# MODULES = \
+#   $(AMRCLAW)/src/2d/amr_module.f90 \
+#   $(AMRCLAW)/src/2d/gauges_module.f90 \
+#   $(AMRCLAW)/src/2d/regions_module.f90 \
+
+MODULES = $(AMRCLAW)/src/3d/init_alloc.f90
 
 SOURCES = \
-  $(CLAW)/clawpack/3d/example2/driver.f \
-  $(CLAW)/clawpack/3d/example2/qinit.f \
-  $(CLAW)/clawpack/3d/example2/rpn3.f \
-  $(CLAW)/clawpack/3d/example2/rpt3.f \
-  $(CLAW)/clawpack/3d/example2/rptt3.f \
-  $(CLAW)/clawpack/3d/example2/setaux.f\
-  $(CLAW)/clawpack/3d/lib/claw3ez.f \
-  $(CLAW)/clawpack/3d/lib/setprob.f \
-  $(CLAW)/clawpack/3d/lib/bc3.f \
-  $(CLAW)/clawpack/3d/lib/b4step3.f \
-  $(CLAW)/clawpack/3d/lib/chkmth.f \
-  $(CLAW)/clawpack/3d/lib/claw3.f \
-  $(CLAW)/clawpack/3d/lib/step3.f \
-  $(CLAW)/clawpack/3d/lib/step3ds.f \
-  $(CLAW)/clawpack/3d/lib/dimsp3.f \
-  $(CLAW)/clawpack/3d/lib/flux3.f \
-  $(CLAW)/clawpack/3d/lib/copyq3.f \
-  $(CLAW)/clawpack/3d/lib/limiter.f \
-  $(CLAW)/clawpack/3d/lib/philim.f \
-  $(CLAW)/clawpack/3d/lib/src3.f
+  qinit.f \
+  ../rp-reordered/rpn3adv.f \
+  ../rp-reordered/rpt3adv.f \
+  ../rp-reordered/rptt3adv.f \
+  setaux.f \
+  $(AMRCLAW)/src/3d/amr3ez.f \
+  $(AMRCLAW)/src/3d/bc3amr.f \
+  $(AMRCLAW)/src/3d/b4step3.f \
+  $(AMRCLAW)/src/3d/qad.f \
+  $(AMRCLAW)/src/3d/src3.f \
+  $(AMRCLAW)/src/3d/setprob.f \
+  $(AMRCLAW)/src/3d/src1d.f \
+  $(AMRCLAW)/src/3d/advanc.f \
+  $(AMRCLAW)/src/3d/bound.f \
+  $(AMRCLAW)/src/3d/stepgrid.f \
+  $(AMRCLAW)/src/3d/auxcoarsen.f \
+  $(AMRCLAW)/src/3d/fixcapaq.f \
+  $(AMRCLAW)/src/3d/estdt.f \
+  $(AMRCLAW)/src/3d/igetsp.f \
+  $(AMRCLAW)/src/3d/reclam.f \
+  $(AMRCLAW)/src/3d/birect.f \
+  $(AMRCLAW)/src/3d/cleanup.f \
+  $(AMRCLAW)/src/3d/colate.f \
+  $(AMRCLAW)/src/3d/errest.f \
+  $(AMRCLAW)/src/3d/flag2refine.f \
+  $(AMRCLAW)/src/3d/allowflag.f \
+  $(AMRCLAW)/src/3d/bufnst.f \
+  $(AMRCLAW)/src/3d/spest.f \
+  $(AMRCLAW)/src/3d/errf1.f \
+  $(AMRCLAW)/src/3d/gfixup.f \
+  $(AMRCLAW)/src/3d/filval.f \
+  $(AMRCLAW)/src/3d/filpatch.f \
+  $(AMRCLAW)/src/3d/prefilp.f \
+  $(AMRCLAW)/src/3d/flglvl.f \
+  $(AMRCLAW)/src/3d/fluxad.f \
+  $(AMRCLAW)/src/3d/fluxsv.f \
+  $(AMRCLAW)/src/3d/ginit.f \
+  $(AMRCLAW)/src/3d/grdfit.f \
+  $(AMRCLAW)/src/3d/intfil.f \
+  $(AMRCLAW)/src/3d/moment.f \
+  $(AMRCLAW)/src/3d/nestck.f \
+  $(AMRCLAW)/src/3d/prepc.f \
+  $(AMRCLAW)/src/3d/prepf.f \
+  $(AMRCLAW)/src/3d/projec.f \
+  $(AMRCLAW)/src/3d/signs.f \
+  $(AMRCLAW)/src/3d/findcut.f \
+  $(AMRCLAW)/src/3d/smartbis.f \
+  $(AMRCLAW)/src/3d/putnod.f \
+  $(AMRCLAW)/src/3d/putsp.f \
+  $(AMRCLAW)/src/3d/regrid.f \
+  $(AMRCLAW)/src/3d/setgrd.f \
+  $(AMRCLAW)/src/3d/setuse.f \
+  $(AMRCLAW)/src/3d/stst1.f \
+  $(AMRCLAW)/src/3d/tick.f \
+  $(AMRCLAW)/src/3d/trimbd.f \
+  $(AMRCLAW)/src/3d/update.f \
+  $(AMRCLAW)/src/3d/nodget.f \
+  $(AMRCLAW)/src/3d/upbnd.f  \
+  $(AMRCLAW)/src/3d/basic.f \
+  $(AMRCLAW)/src/3d/outval.f \
+  $(AMRCLAW)/src/3d/copysol.f \
+  $(AMRCLAW)/src/3d/outvar.f \
+  $(AMRCLAW)/src/3d/outmsh.f \
+  $(AMRCLAW)/src/3d/outtre.f \
+  $(AMRCLAW)/src/3d/domain.f  \
+  $(AMRCLAW)/src/3d/setflags.f \
+  $(AMRCLAW)/src/3d/shiftset.f \
+  $(AMRCLAW)/src/3d/conck.f \
+  $(AMRCLAW)/src/3d/domshrink.f \
+  $(AMRCLAW)/src/3d/domprep.f \
+  $(AMRCLAW)/src/3d/domup.f \
+  $(AMRCLAW)/src/3d/domcopy.f \
+  $(AMRCLAW)/src/3d/coarsen.f \
+  $(AMRCLAW)/src/3d/intcopy.f \
+  $(AMRCLAW)/src/3d/preintcopy.f \
+  $(AMRCLAW)/src/3d/icall.f \
+  $(AMRCLAW)/src/3d/preicall.f \
+  $(AMRCLAW)/src/3d/step3.f \
+  $(AMRCLAW)/src/3d/flux3.f \
+  $(AMRCLAW)/src/3d/limiter.f \
+  $(AMRCLAW)/src/3d/philim.f \
+  $(AMRCLAW)/src/3d/cstore.f \
+  $(AMRCLAW)/src/3d/saveqc.f \
+  $(AMRCLAW)/src/3d/valout.f \
+  $(AMRCLAW)/src/3d/check.f \
+  $(AMRCLAW)/src/3d/restrt.f \
+  $(AMRCLAW)/src/3d/resize_alloc.f90 \
+  $(AMRCLAW)/src/3d/restrt_alloc.f90
 
+#-------------------------------------------------------------------
+# Include Makefile containing standard definitions and make options:
+include $(CLAWMAKE)
 
-HDFOBJECTS = $(CLAW)/clawpack/3d/lib/out3_hdf.o
-HDFSOURCES = $(CLAW)/clawpack/3d/lib/out3_hdf.f
-
-OUTOBJECTS = $(CLAW)/clawpack/3d/lib/out3.o \
-	$(CLAW)/clawpack/3d/lib/restart3.o
-OUTSOURCES = $(CLAW)/clawpack/3d/lib/out3.f \
-	$(CLAW)/clawpack/3d/lib/restart3.f
-
-HDFOBJECTS = $(CLAW)/clawpack/3d/lib/out3_hdf.o \
-	$(CLAW)/clawpack/3d/lib/restart3_hdf.o
-HDFSOURCES = $(CLAW)/clawpack/3d/lib/out3_hdf.f \
-	$(CLAW)/clawpack/3d/lib/restart3_hdf.f
-
-xclaw: $(OBJECTS)
-	$(LINK) $(LFLAGS) $(OBJECTS) $(LIBOBJECTS) $(OUTOBJECTS) -o xclaw
-
-xclawhdf: $(OBJECTS)
-	$(LINK) $(LFLAGS) $(OBJECTS) $(LIBOBJECTS) $(HDFOBJECTS) $(HDFLIBS) \
-	-o xclawhdf
-
-program : $(SOURCES) $(OUTSOURCES)
-	cat $(SOURCES) $(OUTSOURCES) > claw3program.f
-
-programhdf : $(SOURCES) $(HDFSOURCES)
-	cat $(SOURCES) $(HDFSOURCES) > claw3program.f
-
-clean:
-	-rm -f $(OBJECTS)  xclaw xclawhdf
-
-### DO NOT remove this line - make depends on it ###\n

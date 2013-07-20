@@ -407,11 +407,11 @@ c     # between cells sharing interfaces, i.e. the 2D approach.
 c     # Yields BAu_{xy}.
 c     
             gadd(m,i-1,1,0) = gadd(m,i-1,1,0)
-     &           m,          - 0.5d0*dtdx1d(i-1)*bmamdq(m,i)
+     &                       - 0.5d0*dtdx1d(i-1)*bmamdq(m,i)
             gadd(m,i-1,2,0) = gadd(m,i-1,2,0)
-     &           m,          - 0.5d0*dtdx1d(i-1)*bpamdq(m,i)
+     &                       - 0.5d0*dtdx1d(i-1)*bpamdq(m,i)
             gadd(m,i,1,0)   = gadd(m,i,1,0)
-     &           m,          - 0.5d0*dtdx1d(i-1)*bmapdq(m,i)
+     &                       - 0.5d0*dtdx1d(i-1)*bmapdq(m,i)
             gadd(m,i,2,0)   = gadd(m,i,2,0)
      &                       - 0.5d0*dtdx1d(i-1)*bpapdq(m,i)
 c     
@@ -424,7 +424,7 @@ c
 c     
                 gadd(m,i,2,0) = gadd(m,i,2,0)
      &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &          gadd(m,i,1,0) = gadd(m,i,1,0)
+                gadd(m,i,1,0) = gadd(m,i,1,0)
      &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
      &                          * (bmcpapdq(m,i) - bmcmapdq(m,i))
                 gadd(m,i,2,1) = gadd(m,i,2,1)
@@ -567,7 +567,7 @@ c
              hadd(m,i-1,1,0)  = hadd(m,i-1,1,0)
      &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
      &                            * (bmcpamdq(m,i) - bmcmamdq(m,i))
-             hadd(mi-1,2,1)  = hadd(m,i-1,2,1)
+             hadd(m,i-1,2,1)  = hadd(m,i-1,2,1)
      &                            - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
      &                            * bpcpamdq(m,i)
              hadd(m,i-1,1,1)  = hadd(m,i-1,1,1)

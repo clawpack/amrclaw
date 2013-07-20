@@ -17,13 +17,13 @@ c
 !--     &                            +    (k-1)*mitot*mjtot
 !--     &                            +(mcapa-1)*mitot*mjtot*mktot
        iadd(ivar,i,j,k) = loc  + (ivar-1)
-     &                           (i-1)*nvar
-     &                           (j-1)*nvar*mitot
-     &                           (k-1)*nvar*mitot*mjtot
+     &                         + (i-1)*nvar
+     &                         + (j-1)*nvar*mitot
+     &                         + (k-1)*nvar*mitot*mjtot
        iaddaux(i,j,k) = locaux + (mcapa-1)
-     &                           (i-1)*naux
-     &                           (j-1)*naux*mitot
-     &                           (k-1)*naux*mitot*mjtot
+     &                         + (i-1)*naux
+     &                         + (j-1)*naux*mitot
+     &                         + (k-1)*naux*mitot*mjtot
          
 c
 c ******************************************************************
