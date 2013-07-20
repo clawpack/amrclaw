@@ -65,10 +65,10 @@ c
         rnode(cornxhi,mptr) = cxmid
 
         node(ndihi,mptrnx)  = node(ndihi,mptr)
-	node(ndihi,mptr)    = node(ndilo,mptr) + nxl - 1
-	node(ndilo,mptrnx)  = node(ndihi,mptr) + 1
-	node(ndjhi,mptrnx)  = node(ndjhi,mptr)
-	node(ndjlo,mptrnx)  = node(ndjlo,mptr)
+	      node(ndihi,mptr)    = node(ndilo,mptr) + nxl - 1
+        node(ndilo,mptrnx)  = node(ndihi,mptr) + 1
+        node(ndjhi,mptrnx)  = node(ndjhi,mptr)
+        node(ndjlo,mptrnx)  = node(ndjlo,mptr)
         node(ndkhi,mptrnx)  = node(ndkhi,mptr)
         node(ndklo,mptrnx)  = node(ndklo,mptr)
 
@@ -88,39 +88,39 @@ c plane down the middle
 c
       else if (ny + 2*nghost .gt. max1d) then
 
-        nyl    = ny/2
-        if (level .gt. 1) then
-	   lratio = intraty(level-1)
-	else
-	   lratio = 2
-	endif
-	nyl = (nyl/lratio)*lratio
-        nyr    = ny - nyl
-        cymid  =  cylo + nyl*hy
+         nyl    = ny/2
+         if (level .gt. 1) then
+            lratio = intraty(level-1)
+         else
+            lratio = 2
+         endif
+         nyl = (nyl/lratio)*lratio
+         nyr    = ny - nyl
+         cymid  =  cylo + nyl*hy
 
-        mptrnx = nodget(dummy)
-        node(levelptr,mptrnx) = node(levelptr,mptr)
-        node(levelptr,mptr)   = mptrnx
+         mptrnx = nodget(dummy)
+         node(levelptr,mptrnx) = node(levelptr,mptr)
+         node(levelptr,mptr)   = mptrnx
 
-        rnode(cornyhi,mptr)   = cymid
+         rnode(cornyhi,mptr)   = cymid
 
-        node(ndjhi,mptrnx) = node(ndjhi,mptr)
-        node(ndjhi,mptr)   = node(ndjlo,mptr) + nyl - 1
-        node(ndjlo,mptrnx) = node(ndjhi,mptr) + 1
-        node(ndkhi,mptrnx) = node(ndkhi,mptr)
-        node(ndklo,mptrnx) = node(ndklo,mptr)
-        node(ndihi,mptrnx) = node(ndihi,mptr)
-        node(ndilo,mptrnx) = node(ndilo,mptr)
+         node(ndjhi,mptrnx) = node(ndjhi,mptr)
+         node(ndjhi,mptr)   = node(ndjlo,mptr) + nyl - 1
+         node(ndjlo,mptrnx) = node(ndjhi,mptr) + 1
+         node(ndkhi,mptrnx) = node(ndkhi,mptr)
+         node(ndklo,mptrnx) = node(ndklo,mptr)
+         node(ndihi,mptrnx) = node(ndihi,mptr)
+         node(ndilo,mptrnx) = node(ndilo,mptr)
 
-        rnode(cornxlo,mptrnx)   = cxlo
-        rnode(cornylo,mptrnx)   = cymid
-        rnode(cornzlo,mptrnx)   = czlo
-        rnode(cornxhi,mptrnx)   = cxhi
-        rnode(cornyhi,mptrnx)   = cyhi
-        rnode(cornzhi,mptrnx)   = czhi
-        node(nestlevel,mptrnx)  = node(nestlevel,mptr)
-        rnode(timemult,mptrnx)  = rnode(timemult,mptr)
-        go to 10
+         rnode(cornxlo,mptrnx)   = cxlo
+         rnode(cornylo,mptrnx)   = cymid
+         rnode(cornzlo,mptrnx)   = czlo
+         rnode(cornxhi,mptrnx)   = cxhi
+         rnode(cornyhi,mptrnx)   = cyhi
+         rnode(cornzhi,mptrnx)   = czhi
+         node(nestlevel,mptrnx)  = node(nestlevel,mptr)
+         rnode(timemult,mptrnx)  = rnode(timemult,mptr)
+         go to 10
 c
 c check number of files next - if too many, bisect grid with constant z
 c plane down the middle

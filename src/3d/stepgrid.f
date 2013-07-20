@@ -34,11 +34,11 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       parameter (mwork=msize*(46*maxvar + (maxvar+1)*maxwave
      &                 + 9*maxaux + 3))
 
-      dimension q(mitot,mjtot,mktot,nvar)
-      dimension fm(mitot,mjtot,mktot,nvar),fp(mitot,mjtot,mktot,nvar)
-      dimension gm(mitot,mjtot,mktot,nvar),gp(mitot,mjtot,mktot,nvar)
-      dimension hm(mitot,mjtot,mktot,nvar),hp(mitot,mjtot,mktot,nvar)
-      dimension aux(mitot,mjtot,mktot,maux)
+      dimension q(nvar,mitot,mjtot,mktot)
+      dimension fm(nvar,mitot,mjtot,mktot),fp(nvar,mitot,mjtot,mktot)
+      dimension gm(nvar,mitot,mjtot,mktot),gp(nvar,mitot,mjtot,mktot)
+      dimension hm(nvar,mitot,mjtot,mktot),hp(nvar,mitot,mjtot,mktot)
+      dimension aux(maux,mitot,mjtot,mktot)
       dimension work(mwork)
 
       logical    debug,  dump
@@ -56,7 +56,7 @@ c
          do k = 1, mktot
          do j = 1, mjtot
          do i = 1, mitot
-           write(outunit,545) i,j,k,(q(i,j,k,ivar),ivar=1,nvar)
+           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
  545       format(3i3,3x,5e30.20)
          end do
          end do
@@ -137,30 +137,30 @@ c       # update q
       dtdy = dt/dy
       dtdz = dt/dz
         if (mcapa.eq.0) then
-         do 50 m=1,nvar
-         do 50 i=mbc+1,mitot-mbc
-         do 50 j=mbc+1,mjtot-mbc
          do 50 k=mbc+1,mktot-mbc
+         do 50 j=mbc+1,mjtot-mbc
+         do 50 i=mbc+1,mitot-mbc
+         do 50 m=1,nvar
 c
 c            # no capa array.  Standard flux differencing:
 
-            q(i,j,k,m) = q(i,j,k,m)
-     &                 - dtdx * (fm(i+1,j,k,m) - fp(i,j,k,m))
-     &                 - dtdy * (gm(i,j+1,k,m) - gp(i,j,k,m))
-     &                 - dtdz * (hm(i,j,k+1,m) - hp(i,j,k,m))
+            q(m,i,j,k) = q(m,i,j,k)
+     &                 - dtdx * (fm(m,i+1,j,k) - fp(m,i,j,k)
+     &                 - dtdy * (gm(m,i,j+1,k) - gp(m,i,j,k)
+     &                 - dtdz * (hm(m,i,j,k+1) - hp(m,i,j,k)
  50       continue
        else
-         do 51 m=1,nvar
-         do 51 i=mbc+1,mitot-mbc
-         do 51 j=mbc+1,mjtot-mbc
          do 51 k=mbc+1,mktot-mbc
+         do 51 j=mbc+1,mjtot-mbc
+         do 51 i=mbc+1,mitot-mbc
+         do 51 m=1,nvar
 
 c            # with capa array.
 
-          q(i,j,k,m) = q(i,j,k,m)
-     &              - (dtdx * (fm(i+1,j,k,m) - fp(i,j,k,m))
-     &              +  dtdy * (gm(i,j+1,k,m) - gp(i,j,k,m))
-     &              +  dtdz * (hm(i,j,k+1,m) - hp(i,j,k,m)))
+          q(m,i,j,k) = q(m,i,j,k)
+     &              - (dtdx * (fm(m,i+1,j,k) - fp(m,i,j,k))
+     &              +  dtdy * (gm(m,i,j+1,k) - gp(m,i,j,k))
+     &              +  dtdz * (hm(m,i,j,k+1) - hp(m,i,j,k)))
      &         / aux(i,j,k,mcapa)
  51       continue
        endif
@@ -182,13 +182,13 @@ c     # output fluxes for debugging purposes:
          do 830 i = mbc+1, mitot-1
             do 830 j = mbc+1, mjtot-1
             do 830 k = mbc+1, mktot-1
-               write(dbugunit,831) i,j,k,fm(i,j,k,1),fp(i,j,k,1),
-     .                           gm(i,j,k,1),gp(i,j,k,1),
-     .                           hm(i,j,k,1),hp(i,j,k,1)
+               write(dbugunit,831) i,j,k,fm(1,i,j,k),fp(1,i,j,k),
+     .                           gm(1,i,j,k),gp(1,i,j,k),
+     .                           hm(1,i,j,k),hp(1,i,j,k)
              do 830 m = 2, meqn
-              write(dbugunit,832) fm(i,j,k,m),fp(i,j,k,m),
-     .              gm(i,j,k,m),gp(i,j,k,m),
-     .              hm(i,j,k,m),hp(i,j,k,m)
+              write(dbugunit,832) fm(m,i,j,k),fp(m,i,j,k),
+     .              gm(m,i,j,k),gp(m,i,j,k),
+     .              hm(m,i,j,k),hp(m,i,j,k)
   831          format(3i4,6d16.6)
   832          format(8x,6d16.6)
   830    continue
@@ -221,7 +221,7 @@ c
          do k = 1, mktot
          do j = 1, mjtot
          do i = 1, mitot
-           write(outunit,545) i,j,k,(q(i,j,k,ivar),ivar=1,nvar)
+           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
          end do
          end do
          end do

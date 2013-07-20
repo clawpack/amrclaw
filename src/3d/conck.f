@@ -1,21 +1,30 @@
 c
 c -----------------------------------------------------------
 c
-      subroutine conck(level, nvar, time, rest)
+      subroutine conck(level, nvar, naux, time, rest)
 c
       implicit double precision (a-h,o-z)
       logical  rest
 
       include  "call.i"
 
-      iadd(i,j,k,ivar)   = loc    +    (i-1)
-     &                            +    (j-1)*mitot
-     &                            +    (k-1)*mitot*mjtot
-     &                            + (ivar-1)*mitot*mjtot*mktot
-      iaddaux(i,j,k)     = locaux +    (i-1)
-     &                            +    (j-1)*mitot
-     &                            +    (k-1)*mitot*mjtot
-     &                            +(mcapa-1)*mitot*mjtot*mktot
+!--      iadd(i,j,k,ivar)   = loc    +    (i-1)
+!--     &                            +    (j-1)*mitot
+!--     &                            +    (k-1)*mitot*mjtot
+!--     &                            + (ivar-1)*mitot*mjtot*mktot
+!--      iaddaux(i,j,k)     = locaux +    (i-1)
+!--     &                            +    (j-1)*mitot
+!--     &                            +    (k-1)*mitot*mjtot
+!--     &                            +(mcapa-1)*mitot*mjtot*mktot
+       iadd(ivar,i,j,k) = loc  + (ivar-1)
+     &                           (i-1)*nvar
+     &                           (j-1)*nvar*mitot
+     &                           (k-1)*nvar*mitot*mjtot
+       iaddaux(i,j,k) = locaux + (mcapa-1)
+     &                           (i-1)*naux
+     &                           (j-1)*naux*mitot
+     &                           (k-1)*naux*mitot*mjtot
+         
 c
 c ******************************************************************
 c conck - conservation check  for specified level
@@ -47,8 +56,8 @@ c
            do 50 k  = nghost+1, mktot-nghost
            do 50 j  = nghost+1, mjtot-nghost
            do 50 i  = nghost+1, mitot-nghost
-              totmass = totmass + alloc(iadd(i,j,k,1)) 
-c             write(66,999) i,j,k,alloc(iadd(i,j,k,1))
+              totmass = totmass + alloc(iadd(1,i,j,k)) 
+c             write(66,999) i,j,k,alloc(iadd(1,i,j,k))
 c999          format(3i5,e30.20)
  50           continue
          else
@@ -56,7 +65,7 @@ c          # with capa array:
            do 60 k  = nghost+1, mktot-nghost
            do 60 j  = nghost+1, mjtot-nghost
            do 60 i  = nghost+1, mitot-nghost
-              totmass = totmass + alloc(iadd(i,j,k,1))
+              totmass = totmass + alloc(iadd(1,i,j,k))
      &                          * alloc(iaddaux(i,j,k)) 
  60           continue
          endif

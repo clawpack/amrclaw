@@ -17,14 +17,14 @@ c     # set outaux = .true. to also output the aux arrays to fort.a<iframe>
 
       include  "call.i"
 
-      iadd(i,j,k,ivar)   = loc     +     (i-1)
-     &                             +     (j-1)*mitot
-     &                             +     (k-1)*mitot*mjtot
-     &                             +  (ivar-1)*mitot*mjtot*mktot
-      iaddaux(i,j,k,ivar) = locaux +     (i-1)
-     &                             +     (j-1)*mitot
-     &                             +     (k-1)*mitot*mjtot
-     &                             +  (ivar-1)*mitot*mjtot*mktot
+      iadd(ivar,i,j,k)   = loc     +     (ivar-1)
+     &                             +     (i-1)*nvar
+     &                             +     (j-1)*nvar*mitot
+     &                             +     (k-1)*nvar*mitot*mjtot
+      iaddaux(iaux,i,j,k) = locaux +     (iaux-1)
+     &                             +     (i-1)*naux
+     &                             +     (j-1)*naux*mitot
+     &                             +     (k-1)*naux*mitot*mjtot
 
       outaux = .false.
 c
@@ -123,12 +123,12 @@ c65      if (level .gt. lfine) go to 90
          do 76 j = nghost+1, mjtot-nghost
             do 77 i = nghost+1, mitot-nghost
                do ivar=1,nvar
-                  if (dabs(alloc(iadd(i,j,k,ivar))) .lt. 1d-90) then
-                     alloc(iadd(i,j,k,ivar)) = 0.d0
+                  if (dabs(alloc(iadd(ivar,i,j,k))) .lt. 1d-90) then
+                     alloc(iadd(ivar,i,j,k)) = 0.d0
                   endif
                enddo
                write(matunit1,109)
-     &               (alloc(iadd(i,j,k,ivar)), ivar=1,nvar)
+     &               (alloc(iadd(ivar,i,j,k)), ivar=1,nvar)
   109          format(10e26.16)
    77       continue
             write(matunit1,*) ' '
@@ -174,12 +174,12 @@ c        # also output aux array to fort.aXXXX
          do 176 j = nghost+1, mjtot-nghost
             do 177 i = nghost+1, mitot-nghost
                do ivar=1,naux
-                  if (dabs(alloc(iaddaux(i,j,k,ivar))) .lt. 1d-90) then
-                     alloc(iaddaux(i,j,k,ivar)) = 0.d0
+                  if (dabs(alloc(iaddaux(ivar,i,j,k))) .lt. 1d-90) then
+                     alloc(iaddaux(ivar,i,j,k)) = 0.d0
                   endif
                enddo
                write(matunit3,109)
-     &               (alloc(iaddaux(i,j,k,ivar)), ivar=1,naux)
+     &               (alloc(iaddaux(ivar,i,j,k)), ivar=1,naux)
   177       continue
             write(matunit3,*) ' '
   176    continue

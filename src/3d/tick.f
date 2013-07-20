@@ -126,7 +126,7 @@ c
           if (rprint) write(outunit,101) lbase
 101       format(8h  level ,i5,32h  stays fixed during regridding )
           call regrid(nvar,lbase,cut,naux)
-c	  call conck(1,nvar,time,rest)
+c	  call conck(1,nvar,naux,time,rest)
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
 c         call valout(lbase,lfine,tlevel(lbase),nvar,naux)
 c
@@ -214,7 +214,7 @@ c
  110      continue
           time    = time   + possk(1)
           ncycle  = ncycle + 1
-	  call conck(1,nvar,time,rest)
+	  call conck(1,nvar,naux,time,rest)
 
        if (mod(ncycle,ichkpt).eq.0) then
 	  call check(ncycle,time,nvar,naux)

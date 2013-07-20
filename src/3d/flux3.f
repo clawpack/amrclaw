@@ -120,55 +120,55 @@ c
 
       include "call.i"
 
-      dimension     q1d(1-mbc:maxm+mbc, meqn)
-      dimension    amdq(1-mbc:maxm+mbc, meqn)
-      dimension    apdq(1-mbc:maxm+mbc, meqn)
-      dimension  bmamdq(1-mbc:maxm+mbc, meqn)
-      dimension  bmapdq(1-mbc:maxm+mbc, meqn)
-      dimension  bpamdq(1-mbc:maxm+mbc, meqn)
-      dimension  bpapdq(1-mbc:maxm+mbc, meqn)
-      dimension   cqxx(1-mbc:maxm+mbc, meqn)
-      dimension   faddm(1-mbc:maxm+mbc, meqn)
-      dimension   faddp(1-mbc:maxm+mbc, meqn)
-      dimension   gadd(1-mbc:maxm+mbc, meqn, 2, -1:1)
-      dimension   hadd(1-mbc:maxm+mbc, meqn, 2, -1:1)
+      dimension     q1d(meqn,1-mbc:maxm+mbc)
+      dimension    amdq(meqn,1-mbc:maxm+mbc)
+      dimension    apdq(meqn,1-mbc:maxm+mbc)
+      dimension  bmamdq(meqn,1-mbc:maxm+mbc)
+      dimension  bmapdq(meqn,1-mbc:maxm+mbc)
+      dimension  bpamdq(meqn,1-mbc:maxm+mbc)
+      dimension  bpapdq(meqn,1-mbc:maxm+mbc)
+      dimension    cqxx(meqn,1-mbc:maxm+mbc)
+      dimension   faddm(meqn,1-mbc:maxm+mbc)
+      dimension   faddp(meqn,1-mbc:maxm+mbc)
+      dimension    gadd(meqn,1-mbc:maxm+mbc, 2, -1:1)
+      dimension    hadd(meqn,1-mbc:maxm+mbc, 2, -1:1)
 c
-      dimension  cmamdq(1-mbc:maxm+mbc, meqn)
-      dimension  cmapdq(1-mbc:maxm+mbc, meqn)
-      dimension  cpamdq(1-mbc:maxm+mbc, meqn)
-      dimension  cpapdq(1-mbc:maxm+mbc, meqn)
+      dimension  cmamdq(meqn,1-mbc:maxm+mbc)
+      dimension  cmapdq(meqn,1-mbc:maxm+mbc)
+      dimension  cpamdq(meqn,1-mbc:maxm+mbc)
+      dimension  cpapdq(meqn,1-mbc:maxm+mbc)
 c
-      dimension  cmamdq2(1-mbc:maxm+mbc, meqn)
-      dimension  cmapdq2(1-mbc:maxm+mbc, meqn)
-      dimension  cpamdq2(1-mbc:maxm+mbc, meqn)
-      dimension  cpapdq2(1-mbc:maxm+mbc, meqn)
+      dimension  cmamdq2(meqn,1-mbc:maxm+mbc)
+      dimension  cmapdq2(meqn,1-mbc:maxm+mbc)
+      dimension  cpamdq2(meqn,1-mbc:maxm+mbc)
+      dimension  cpapdq2(meqn,1-mbc:maxm+mbc)
 c
-      dimension  bmcqxxm(1-mbc:maxm+mbc, meqn)
-      dimension  bpcqxxm(1-mbc:maxm+mbc, meqn)
-      dimension  bmcqxxp(1-mbc:maxm+mbc, meqn)
-      dimension  bpcqxxp(1-mbc:maxm+mbc, meqn)
+      dimension  bmcqxxm(meqn,1-mbc:maxm+mbc)
+      dimension  bpcqxxm(meqn,1-mbc:maxm+mbc)
+      dimension  bmcqxxp(meqn,1-mbc:maxm+mbc)
+      dimension  bpcqxxp(meqn,1-mbc:maxm+mbc)
 c
-      dimension  cmcqxxm(1-mbc:maxm+mbc, meqn)
-      dimension  cpcqxxm(1-mbc:maxm+mbc, meqn)
-      dimension  cmcqxxp(1-mbc:maxm+mbc, meqn)
-      dimension  cpcqxxp(1-mbc:maxm+mbc, meqn)
+      dimension  cmcqxxm(meqn,1-mbc:maxm+mbc)
+      dimension  cpcqxxm(meqn,1-mbc:maxm+mbc)
+      dimension  cmcqxxp(meqn,1-mbc:maxm+mbc)
+      dimension  cpcqxxp(meqn,1-mbc:maxm+mbc)
 
-      dimension  bpcmamdq(1-mbc:maxm+mbc, meqn)
-      dimension  bpcmapdq(1-mbc:maxm+mbc, meqn)
-      dimension  bpcpamdq(1-mbc:maxm+mbc, meqn)
-      dimension  bpcpapdq(1-mbc:maxm+mbc, meqn)
-      dimension  bmcmamdq(1-mbc:maxm+mbc, meqn)
-      dimension  bmcmapdq(1-mbc:maxm+mbc, meqn)
-      dimension  bmcpamdq(1-mbc:maxm+mbc, meqn)
-      dimension  bmcpapdq(1-mbc:maxm+mbc, meqn)
+      dimension  bpcmamdq(meqn,1-mbc:maxm+mbc)
+      dimension  bpcmapdq(meqn,1-mbc:maxm+mbc)
+      dimension  bpcpamdq(meqn,1-mbc:maxm+mbc)
+      dimension  bpcpapdq(meqn,1-mbc:maxm+mbc)
+      dimension  bmcmamdq(meqn,1-mbc:maxm+mbc)
+      dimension  bmcmapdq(meqn,1-mbc:maxm+mbc)
+      dimension  bmcpamdq(meqn,1-mbc:maxm+mbc)
+      dimension  bmcpapdq(meqn,1-mbc:maxm+mbc)
 c
       dimension dtdx1d(1-mbc:maxm+mbc)
-      dimension aux1(1-mbc:maxm+mbc, maux, 3)
-      dimension aux2(1-mbc:maxm+mbc, maux, 3)
-      dimension aux3(1-mbc:maxm+mbc, maux, 3)
+      dimension aux1(maux,1-mbc:maxm+mbc, 3)
+      dimension aux2(maux,1-mbc:maxm+mbc, 3)
+      dimension aux3(maux,1-mbc:maxm+mbc, 3)
 c
-      dimension    s(1-mbc:maxm+mbc, mwaves)
-      dimension  wave(1-mbc:maxm+mbc, meqn, mwaves)
+      dimension    s(mwaves,1-mbc:maxm+mbc)
+      dimension  wave(meqn,mwaves,1-mbc:maxm+mbc)
 c
       logical limit
       common/comxyzt/dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
@@ -177,426 +177,425 @@ c
 
       limit = .false.
       do 5 mw=1,mwaves
-	 if (mthlim(mw) .gt. 0) limit = .true.
-   5     continue
-c
+         if (mthlim(mw) .gt. 0) limit = .true.
+ 5    continue
+c     
 c     # initialize flux increments:
 c     -----------------------------
-c
+c     
       do 10 m=1,meqn
-	 do 10 i = 1-mbc, mx+mbc
-	    faddm(i,m) = 0.d0
-	    faddp(i,m) = 0.d0
-	    gadd(i,m,1,-1) = 0.d0
-            gadd(i,m,1, 0) = 0.d0
-	    gadd(i,m,1, 1) = 0.d0
-	    hadd(i,m,1,-1) = 0.d0
-	    hadd(i,m,1, 0) = 0.d0
-	    hadd(i,m,1, 1) = 0.d0
-            gadd(i,m,2,-1) = 0.d0
-	    gadd(i,m,2, 0) = 0.d0
-	    gadd(i,m,2, 1) = 0.d0
-	    hadd(i,m,2,-1) = 0.d0
-	    hadd(i,m,2, 0) = 0.d0
-	    hadd(i,m,2, 1) = 0.d0
-   10    continue
-c
+         do 10 i = 1-mbc, mx+mbc
+            faddm(m,i) = 0.d0
+            faddp(m,i) = 0.d0
+            gadd(m,i,1,-1) = 0.d0
+            gadd(m,i,1, 0) = 0.d0
+            gadd(m,i,1, 1) = 0.d0
+            hadd(m,i,1,-1) = 0.d0
+            hadd(m,i,1, 0) = 0.d0
+            hadd(m,i,1, 1) = 0.d0
+            gadd(m,i,2,-1) = 0.d0
+            gadd(m,i,2, 0) = 0.d0
+            gadd(m,i,2, 1) = 0.d0
+            hadd(m,i,2,-1) = 0.d0
+            hadd(m,i,2, 0) = 0.d0
+            hadd(m,i,2, 1) = 0.d0
+ 10      continue
+c     
 c     # local method parameters
-      if (method(3) .lt. 0) then
-         m3 = -1
-         m4 = 0
-      else
-         m3 = method(3)/10
-         m4 = method(3) - 10*m3
-      endif
-c
+         if (method(3) .lt. 0) then
+            m3 = -1
+            m4 = 0
+         else
+            m3 = method(3)/10
+            m4 = method(3) - 10*m3
+         endif
+c     
 c     -----------------------------------------------------------
 c     # solve normal Riemann problem and compute Godunov updates
 c     -----------------------------------------------------------
-c
+c     
 c     # aux2(1-mbc,1,2) is the start of a 1d array now used by rpn3
-c
-      if (maux > 0) then
-        call rpn3(ixyz,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &          aux2(1-mbc,1,2),aux2(1-mbc,1,2),
-     &          maux,wave,s,amdq,apdq)
-      else
-        call rpn3(ixyz,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &          aux2,aux2,
-     &          maux,wave,s,amdq,apdq)
-      endif
-c
+c     
+         if (maux > 0) then
+            call rpn3(ixyz,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+     &           aux2(1,1-mbc,2),aux2(1,1-mbc,2),
+     &           maux,wave,s,amdq,apdq)
+         else
+            call rpn3(ixyz,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+     &           aux2,aux2,
+     &           maux,wave,s,amdq,apdq)
+         endif
+c     
 c     # Set fadd for the donor-cell upwind method (Godunov)
-      do 40 i=1,mx+1
+         do 40 i=1,mx+1
          do 40 m=1,meqn
-            faddp(i,m) = faddp(i,m) - apdq(i,m)
-            faddm(i,m) = faddm(i,m) + amdq(i,m)
-   40    continue
-c
+            faddp(m,i) = faddp(m,i) - apdq(m,i)
+            faddm(m,i) = faddm(m,i) + amdq(m,i)
+ 40      continue
+c     
 c     # compute maximum wave speed for checking Courant number:
-      cfl1d = 0.d0
-      do 50 mw=1,mwaves
-	 do 50 i=1,mx+1
-	    cfl1d = dmax1(cfl1d,dtdx1d(i)*dabs(s(i,mw)))
-   50       continue
-c
-      if (method(2).eq.1) go to 130
-c
+         cfl1d = 0.d0
+         do 50 mw=1,mwaves
+         do 50 i=1,mx+1
+            cfl1d = dmax1(cfl1d,dtdx1d(i)*dabs(s(mw,i)))
+ 50      continue
+c     
+         if (method(2).eq.1) go to 130
+c    
 c     # modify F fluxes for second order q_{xx} correction terms:
 c     -----------------------------------------------------------
-c
+c     
 c     # apply limiter to waves:
-      if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
-c
-      do 120 i = 1, mx+1
-c
-c        # For correction terms below, need average of dtdx in cell
-c        # i-1 and i.  Compute these and overwrite dtdx1d:
-c
- 	 dtdx1d(i-1) = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i))
-c
-	 do 120 m=1,meqn
-	    cqxx(i,m) = 0.d0
-	    do 119 mw=1,mwaves
-	       cqxx(i,m) = cqxx(i,m) + 0.5d0 * dabs(s(i,mw))
-     &		   * (1.d0 - dabs(s(i,mw))*dtdx1d(i-1)) * wave(i,m,mw)
-  119          continue
-            faddm(i,m) = faddm(i,m) + cqxx(i,m)
-            faddp(i,m) = faddp(i,m) + cqxx(i,m)
-  120       continue
-c
-  130 continue
-c
-      if( m3 .le. 0) return
-c
+         if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
+c     
+         do 120 i = 1, mx+1
+c     
+c     # For correction terms below, need average of dtdx in cell
+c     # i-1 and i.  Compute these and overwrite dtdx1d:
+c     
+         dtdx1d(i-1) = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i))
+c     
+         do 120 m=1,meqn
+            cqxx(m,i) = 0.d0
+            do 119 mw=1,mwaves
+               cqxx(m,i) = cqxx(m,i) + 0.5d0 * dabs(s(mw,i))
+     &          * (1.d0 - dabs(s(mw,i))*dtdx1d(i-1)) * wave(m,mw,i)
+ 119        continue
+            faddm(m,i) = faddm(m,i) + cqxx(m,i)
+            faddp(m,i) = faddp(m,i) + cqxx(m,i)
+ 120     continue
+c     
+ 130     continue
+c     
+         if( m3 .le. 0) return
+c     
 c     --------------------------------------------
 c     # TRANSVERSE PROPAGATION
 c     --------------------------------------------
-c
+c     
 c     # split the left-going flux difference into down-going and up-going
 c     # flux differences (in the y-direction).
-c
-      call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &          aux3,maux,1,amdq,bmamdq,bpamdq)
-c
+c     
+         call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &             aux3,maux,1,amdq,bmamdq,bpamdq)
+c     
 c     # split the right-going flux difference into down-going and up-going
 c     # flux differences (in the y-direction).
-c
-      call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &          aux3,maux,2,apdq,bmapdq,bpapdq)
-c
+c     
+         call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &             aux3,maux,2,apdq,bmapdq,bpapdq)
+c     
 c     # split the left-going flux difference into down-going and up-going
 c     # flux differences (in the z-direction).
-c
-      call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &          aux3,maux,1,amdq,cmamdq,cpamdq)
-c
+c     
+         call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &             aux3,maux,1,amdq,cmamdq,cpamdq)
+c     
 c     # split the right-going flux difference into down-going and up-going
 c     # flux differences (in the y-direction).
-c
-      call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &          aux3,maux,2,apdq,cmapdq,cpapdq)
-c
+c     
+         call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &             aux3,maux,2,apdq,cmapdq,cpapdq)
+c     
 c     # Split the correction wave into transverse propagating waves
 c     # in the y-direction and z-direction.
-c
-      if (m3.eq.2) then
-         if (maux .gt. 0) then
-c            # The corrections cqxx affect both cell i-1 to left and cell i
-c            # to right of interface.  Transverse splitting will affect
-c            # fluxes on both sides.
-c            # If there are aux arrays, then we must split cqxx twice in
-c            # each transverse direction, once with imp=1 and once with imp=2:
+c     
+          if (m3.eq.2) then
+             if (maux .gt. 0) then
+c     # The corrections cqxx affect both cell i-1 to left and cell i
+c     # to right of interface.  Transverse splitting will affect
+c     # fluxes on both sides.
+c     # If there are aux arrays, then we must split cqxx twice in
+c     # each transverse direction, once with imp=1 and once with imp=2:
 
-c            # imp = 1 or 2 is used to indicate whether we are propagating
-c            # amdq or apdq, i.e. cqxxm or cqxxp
+c     # imp = 1 or 2 is used to indicate whether we are propagating
+c     # amdq or apdq, i.e. cqxxm or cqxxp
 
 
-c            # in the y-like direction with imp=1
-             call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &            aux1,aux2,aux3,maux,1,cqxx,bmcqxxm,bpcqxxm)
+c     # in the y-like direction with imp=1
+               call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+     &                   aux1,aux2,aux3,maux,1,cqxx,bmcqxxm,bpcqxxm)
 
-c            # in the y-like direction with imp=2
-              call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &             aux1,aux2,aux3,maux,2,cqxx,bmcqxxp,bpcqxxp)
+c     # in the y-like direction with imp=2
+               call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+     &                   aux1,aux2,aux3,maux,2,cqxx,bmcqxxp,bpcqxxp)
 
-c            # in the z-like direction with imp=1
-              call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &              aux1,aux2,aux3,maux,1,cqxx,cmcqxxm,cpcqxxm)
+c     # in the z-like direction with imp=1
+               call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+     &                   aux1,aux2,aux3,maux,1,cqxx,cmcqxxm,cpcqxxm)
 
-c            # in the z-like direction with imp=2
-              call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &              aux1,aux2,aux3,maux,2,cqxx,cmcqxxp,cpcqxxp)
-           else
-c            # aux arrays aren't being used, so we only need to split
-c            # cqxx once in each transverse direction and the same result can
-c            # presumably be used to left and right.
-c            # Set imp = 0 since this shouldn't be needed in rpt3 in this case.
+c     # in the z-like direction with imp=2
+               call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+     &                   aux1,aux2,aux3,maux,2,cqxx,cmcqxxp,cpcqxxp)
+            else
+c     # aux arrays aren't being used, so we only need to split
+c     # cqxx once in each transverse direction and the same result can
+c     # presumably be used to left and right.
+c     # Set imp = 0 since this shouldn't be needed in rpt3 in this case.
 
-c            # in the y-like direction
-              call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &              aux1,aux2,aux3,maux,0,cqxx,bmcqxxm,bpcqxxm)
+c     # in the y-like direction
+               call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+     &                   aux1,aux2,aux3,maux,0,cqxx,bmcqxxm,bpcqxxm)
 
-c            # in the z-like direction
-              call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &              aux1,aux2,aux3,maux,0,cqxx,cmcqxxm,cpcqxxm)
+c     # in the z-like direction
+               call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+     &                   aux1,aux2,aux3,maux,0,cqxx,cmcqxxm,cpcqxxm)
 
-c             # use the same splitting to left and right:
-              do m = 1,meqn
-                 do i = 0,mx+2
-                    bmcqxxp(i,m) = bmcqxxm(i,m)
-                    bpcqxxp(i,m) = bpcqxxm(i,m)
-                    cmcqxxp(i,m) = cmcqxxm(i,m)
-                    cpcqxxp(i,m) = cpcqxxm(i,m)
-                 enddo
-              enddo
-           endif
-        endif
+c     # use the same splitting to left and right:
+               do i = 0,mx+2
+               do m = 1,meqn
+                   bmcqxxp(m,i) = bmcqxxm(m,i)
+                   bpcqxxp(m,i) = bpcqxxm(m,i)
+                   cmcqxxp(m,i) = cmcqxxm(m,i)
+                   cpcqxxp(m,i) = cpcqxxm(m,i)
+               enddo
+               enddo
+             endif
+          endif
 
-c      --------------------------------------------
-c      # modify G fluxes in the y-like direction
-c      --------------------------------------------
-c
+c     --------------------------------------------
+c     # modify G fluxes in the y-like direction
+c     --------------------------------------------
+c     
 c     # If the correction wave also propagates in a 3D sense, incorporate
 c     # cpcqxx,... into cmamdq, cpamdq, ... so that it is split also.
-c
-      if(m4 .eq. 1)then
-         do 145 m = 1, meqn
-            do 145 i = 0, mx+2
-               cpapdq2(i,m) = cpapdq(i,m)
-               cpamdq2(i,m) = cpamdq(i,m)
-               cmapdq2(i,m) = cmapdq(i,m)
-               cmamdq2(i,m) = cmamdq(i,m)
+c     
+          if(m4 .eq. 1)then
+             do 145 i = 0, mx+2
+             do 145 m = 1, meqn
+                cpapdq2(m,i) = cpapdq(m,i)
+                cpamdq2(m,i) = cpamdq(m,i)
+                cmapdq2(m,i) = cmapdq(m,i)
+                cmamdq2(m,i) = cmamdq(m,i)
  145         continue
-      else if(m4 .eq. 2)then
-         do 146 m = 1, meqn
-            do 146 i = 0, mx+2
-               cpapdq2(i,m) = cpapdq(i,m) - 3.d0*cpcqxxp(i,m)
-               cpamdq2(i,m) = cpamdq(i,m) + 3.d0*cpcqxxm(i,m)
-               cmapdq2(i,m) = cmapdq(i,m) - 3.d0*cmcqxxp(i,m)
-               cmamdq2(i,m) = cmamdq(i,m) + 3.d0*cmcqxxm(i,m)
- 146        continue
-      endif
-c
+          else if(m4 .eq. 2)then
+             do 146 i = 0, mx+2
+             do 146 m = 1, meqn
+                cpapdq2(m,i) = cpapdq(m,i) - 3.d0*cpcqxxp(m,i)
+                cpamdq2(m,i) = cpamdq(m,i) + 3.d0*cpcqxxm(m,i)
+                cmapdq2(m,i) = cmapdq(m,i) - 3.d0*cmcqxxp(m,i)
+                cmamdq2(m,i) = cmamdq(m,i) + 3.d0*cmcqxxm(m,i)
+ 146         continue
+          endif
+c     
 c     # The transverse flux differences in the z-direction are split
 c     # into waves propagating in the y-direction. If m4 = 2,
 c     # then the transverse propagating correction waves in the z-direction
 c     # are also split. This yields terms of the form BCAu_{xzy} and
 c     # BCAAu_{xxzy}.
-c
-      if( m4.gt.0 )then
-          call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &              aux3,maux,2,2,cpapdq2,bmcpapdq,bpcpapdq)
-          call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &              aux3,maux,1,2,cpamdq2,bmcpamdq,bpcpamdq)
-          call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &              aux3,maux,2,1,cmapdq2,bmcmapdq,bpcmapdq)
-          call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &              aux3,maux,1,1,cmamdq2,bmcmamdq,bpcmamdq)
-      endif
-c
+c     
+         if( m4.gt.0 )then
+           call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &                aux3,maux,2,2,cpapdq2,bmcpapdq,bpcpapdq)
+           call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &                aux3,maux,1,2,cpamdq2,bmcpamdq,bpcpamdq)
+           call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &                aux3,maux,2,1,cmapdq2,bmcmapdq,bpcmapdq)
+           call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &                aux3,maux,1,1,cmamdq2,bmcmamdq,bpcmamdq)
+         endif
+c     
 c     -----------------------------
 c     # The updates for G fluxes :
 c     -----------------------------
-c
-      do 180 m=1,meqn
+c     
          do 180 i = 1, mx+1
-c
-c           # Transverse propagation of the increment waves
-c           # between cells sharing interfaces, i.e. the 2D approach.
-c           # Yields BAu_{xy}.
-c
-            gadd(i-1,m,1,0) = gadd(i-1,m,1,0)
-     &		            - 0.5d0*dtdx1d(i-1)*bmamdq(i,m)
-            gadd(i-1,m,2,0) = gadd(i-1,m,2,0)
-     &		            - 0.5d0*dtdx1d(i-1)*bpamdq(i,m)
-            gadd(i,m,1,0)   = gadd(i,m,1,0)
-     &		            - 0.5d0*dtdx1d(i-1)*bmapdq(i,m)
-            gadd(i,m,2,0)   = gadd(i,m,2,0)
-     &		            - 0.5d0*dtdx1d(i-1)*bpapdq(i,m)
-c
-c           # Transverse propagation of the increment wave (and the
-c           # correction wave if m4=2) between cells
-c           # only having a corner or edge in common. Yields terms of the
-c           # BCAu_{xzy} and BCAAu_{xxzy}.
-c
-            if( m4.gt.0 )then
-c
-                gadd(i,m,2,0) = gadd(i,m,2,0)
+         do 180 m=1,meqn
+c     
+c     # Transverse propagation of the increment waves
+c     # between cells sharing interfaces, i.e. the 2D approach.
+c     # Yields BAu_{xy}.
+c     
+            gadd(m,i-1,1,0) = gadd(m,i-1,1,0)
+     &           m,          - 0.5d0*dtdx1d(i-1)*bmamdq(m,i)
+            gadd(m,i-1,2,0) = gadd(m,i-1,2,0)
+     &           m,          - 0.5d0*dtdx1d(i-1)*bpamdq(m,i)
+            gadd(m,i,1,0)   = gadd(m,i,1,0)
+     &           m,          - 0.5d0*dtdx1d(i-1)*bmapdq(m,i)
+            gadd(m,i,2,0)   = gadd(m,i,2,0)
+     &                       - 0.5d0*dtdx1d(i-1)*bpapdq(m,i)
+c     
+c     # Transverse propagation of the increment wave (and the
+c     # correction wave if m4=2) between cells
+c     # only having a corner or edge in common. Yields terms of the
+c     # BCAu_{xzy} and BCAAu_{xxzy}.
+c     
+             if( m4.gt.0 )then
+c     
+                gadd(m,i,2,0) = gadd(m,i,2,0)
      &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * (bpcpapdq(i,m) - bpcmapdq(i,m))
-                gadd(i,m,1,0) = gadd(i,m,1,0)
+     &          gadd(m,i,1,0) = gadd(m,i,1,0)
      &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * (bmcpapdq(i,m) - bmcmapdq(i,m))
-                gadd(i,m,2,1) = gadd(i,m,2,1)
+     &                          * (bmcpapdq(m,i) - bmcmapdq(m,i))
+                gadd(m,i,2,1) = gadd(m,i,2,1)
      &                          - (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * bpcpapdq(i,m)
-                gadd(i,m,1,1) = gadd(i,m,1,1)
-     &                          - (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * bmcpapdq(i,m)
-                gadd(i,m,2,-1) = gadd(i,m,2,-1)
-     &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * bpcmapdq(i,m)
-                gadd(i,m,1,-1) = gadd(i,m,1,-1)
-     &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * bmcmapdq(i,m)
-c
-                gadd(i-1,m,2,0) = gadd(i-1,m,2,0)
-     &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * (bpcpamdq(i,m) - bpcmamdq(i,m))
-                gadd(i-1,m,1,0) = gadd(i-1,m,1,0)
-     &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * (bmcpamdq(i,m) - bmcmamdq(i,m))
-                gadd(i-1,m,2,1) = gadd(i-1,m,2,1)
-     &                          - (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * bpcpamdq(i,m)
-                gadd(i-1,m,1,1) = gadd(i-1,m,1,1)
-     &                          - (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * bmcpamdq(i,m)
-                gadd(i-1,m,2,-1) = gadd(i-1,m,2,-1)
-     &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * bpcmamdq(i,m)
-                gadd(i-1,m,1,-1) = gadd(i-1,m,1,-1)
-     &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
-     &                          * bmcmamdq(i,m)
-c
-            endif
-c
-c           # Transverse propagation of the correction wave between
-c           # cells sharing faces. This gives BAAu_{xxy}.
-c
-            if(m3.lt.2) go to 180
-               gadd(i,m,2,0)   = gadd(i,m,2,0)
-     &                         + dtdx1d(i-1)*bpcqxxp(i,m)
-               gadd(i,m,1,0)   = gadd(i,m,1,0)
-     &                         + dtdx1d(i-1)*bmcqxxp(i,m)
-               gadd(i-1,m,2,0) = gadd(i-1,m,2,0)
-     &                         - dtdx1d(i-1)*bpcqxxm(i,m)
-               gadd(i-1,m,1,0) = gadd(i-1,m,1,0)
-     &                         - dtdx1d(i-1)*bmcqxxm(i,m)
-c
-  180       continue
-c
-c
-c      --------------------------------------------
-c      # modify H fluxes in the z-like direction
-c      --------------------------------------------
-c
+     &                          * bpcpapdq(m,i)
+                gadd(m,i,1,1) = gadd(m,i,1,1)
+     &                           - (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           * bmcpapdq(m,i)
+                gadd(m,i,2,-1) = gadd(m,i,2,-1)
+     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           * bpcmapdq(m,i)
+                gadd(m,i,1,-1) = gadd(m,i,1,-1)
+     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           * bmcmapdq(m,i)
+c     
+                gadd(m,i-1,2,0) = gadd(m,i-1,2,0)
+     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           * (bpcpamdq(m,i) - bpcmamdq(m,i))
+                gadd(m,i-1,1,0) = gadd(m,i-1,1,0)
+     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           * (bmcpamdq(m,i) - bmcmamdq(m,i))
+                gadd(m,i-1,2,1) = gadd(m,i-1,2,1)
+     &                           - (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           * bpcpamdq(m,i)
+                gadd(m,i-1,1,1) = gadd(m,i-1,1,1)
+     &                           - (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           * bmcpamdq(m,i)
+                gadd(m,i-1,2,-1) = gadd(m,i-1,2,-1)
+     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           * bpcmamdq(m,i)
+                gadd(m,i-1,1,-1) = gadd(m,i-1,1,-1)
+     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           * bmcmamdq(m,i)
+c     
+             endif
+c     
+c     # Transverse propagation of the correction wave between
+c     # cells sharing faces. This gives BAAu_{xxy}.
+c     
+             if(m3.lt.2) go to 180
+                 gadd(m,i,2,0)   = gadd(m,i,2,0)
+     &                             + dtdx1d(i-1)*bpcqxxp(m,i)
+                 gadd(m,i,1,0)   = gadd(m,i,1,0)
+     &                             + dtdx1d(i-1)*bmcqxxp(m,i)
+                 gadd(m,i-1,2,0) = gadd(m,i-1,2,0)
+     &                             - dtdx1d(i-1)*bpcqxxm(m,i)
+                 gadd(m,i-1,1,0) = gadd(m,i-1,1,0)
+     &                             - dtdx1d(i-1)*bmcqxxm(m,i)
+c     
+ 180                       continue
+c     
+c     
+c     --------------------------------------------
+c     # modify H fluxes in the z-like direction
+c     --------------------------------------------
+c     
 c     # If the correction wave also propagates in a 3D sense, incorporate
 c     # cqxx into bmamdq, bpamdq, ... so that is is split also.
-c
-      if(m4 .eq. 2)then
-         do 155 m = 1, meqn
-            do 155 i = 0, mx+2
-               bpapdq(i,m) = bpapdq(i,m) - 3.d0*bpcqxxp(i,m)
-               bpamdq(i,m) = bpamdq(i,m) + 3.d0*bpcqxxm(i,m)
-               bmapdq(i,m) = bmapdq(i,m) - 3.d0*bmcqxxp(i,m)
-               bmamdq(i,m) = bmamdq(i,m) + 3.d0*bmcqxxm(i,m)
-155         continue
-      endif
-c
+c     
+             if (m4 .eq. 2) then
+                do 155 i = 0, mx+2
+                do 155 m = 1, meqn
+                  bpapdq(m,i) = bpapdq(m,i) - 3.d0*bpcqxxp(m,i)
+                  bpamdq(m,i) = bpamdq(m,i) + 3.d0*bpcqxxm(m,i)
+                  bmapdq(m,i) = bmapdq(m,i) - 3.d0*bmcqxxp(m,i)
+                  bmamdq(m,i) = bmamdq(m,i) + 3.d0*bmcqxxm(m,i)
+ 155            continue
+              endif
+c     
 c     # The transverse flux differences in the y-direction are split
 c     # into waves propagating in the z-direction. If m4 = 2,
 c     # then the transverse propagating correction waves in the y-direction
 c     # are also split. This yields terms of the form BCAu_{xzy} and
 c     # BCAAu_{xxzy}.
-c
+c     
 c     # Note that the output to rptt3 below should logically be named
 c     # cmbsasdq and cpbsasdq rather than bmcsasdq and bpcsasdq, but
 c     # we are re-using the previous storage rather than requiring new arrays.
-c
-      if( m4.gt.0 )then
-          call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &              aux3,maux,2,2,bpapdq,bmcpapdq,bpcpapdq)
-          call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &              aux3,maux,1,2,bpamdq,bmcpamdq,bpcpamdq)
-          call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &              aux3,maux,2,1,bmapdq,bmcmapdq,bpcmapdq)
-          call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &              aux3,maux,1,1,bmamdq,bmcmamdq,bpcmamdq)
-      endif
-c
+c     
+          if (m4.gt.0) then
+           call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &                aux3,maux,2,2,bpapdq,bmcpapdq,bpcpapdq)
+           call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &                aux3,maux,1,2,bpamdq,bmcpamdq,bpcpamdq)
+           call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &                aux3,maux,2,1,bmapdq,bmcmapdq,bpcmapdq)
+           call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
+     &                aux3,maux,1,1,bmamdq,bmcmamdq,bpcmamdq)
+          endif
+c     
 c     -----------------------------
 c     # The updates for H fluxes :
 c     -----------------------------
-c
-      do 200 m=1,meqn
-         do 200 i = 1, mx+1
-c
-c           # Transverse propagation of the increment waves
-c           # between cells sharing interfaces, i.e. the 2D approach.
-c           # Yields CAu_{xy}.
-c
-            hadd(i-1,m,1,0) = hadd(i-1,m,1,0)
-     &		            - 0.5d0*dtdx1d(i-1)*cmamdq(i,m)
-            hadd(i-1,m,2,0) = hadd(i-1,m,2,0)
-     &		            - 0.5d0*dtdx1d(i-1)*cpamdq(i,m)
-            hadd(i,m,1,0)   = hadd(i,m,1,0)
-     &		            - 0.5d0*dtdx1d(i-1)*cmapdq(i,m)
-            hadd(i,m,2,0)   = hadd(i,m,2,0)
-     &		            - 0.5d0*dtdx1d(i-1)*cpapdq(i,m)
-c
-c           # Transverse propagation of the increment wave (and the
-c           # correction wave if m4=2) between cells
-c           # only having a corner or edge in common. Yields terms of the
-c           # CBAu_{xzy} and CBAAu_{xxzy}.
-c
-            if( m4.gt.0 )then
-c
-                hadd(i,m,2,0)  = hadd(i,m,2,0)
-     &                         + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                         * (bpcpapdq(i,m) - bpcmapdq(i,m))
-                hadd(i,m,1,0)  = hadd(i,m,1,0)
-     &                         + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                         * (bmcpapdq(i,m) - bmcmapdq(i,m))
-                hadd(i,m,2,1)  = hadd(i,m,2,1)
-     &                         - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                         * bpcpapdq(i,m)
-                hadd(i,m,1,1)  = hadd(i,m,1,1)
-     &                         - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                         * bmcpapdq(i,m)
-                hadd(i,m,2,-1) = hadd(i,m,2,-1)
-     &                         + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                         * bpcmapdq(i,m)
-                hadd(i,m,1,-1) = hadd(i,m,1,-1)
-     &                         + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                         * bmcmapdq(i,m)
-c
-                hadd(i-1,m,2,0)  = hadd(i-1,m,2,0)
-     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                           * (bpcpamdq(i,m) - bpcmamdq(i,m))
-                hadd(i-1,m,1,0)  = hadd(i-1,m,1,0)
-     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                           * (bmcpamdq(i,m) - bmcmamdq(i,m))
-                hadd(i-1,m,2,1)  = hadd(i-1,m,2,1)
-     &                           - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                           * bpcpamdq(i,m)
-                hadd(i-1,m,1,1)  = hadd(i-1,m,1,1)
-     &                           - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                           * bmcpamdq(i,m)
-                hadd(i-1,m,2,-1) = hadd(i-1,m,2,-1)
-     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                           * bpcmamdq(i,m)
-                hadd(i-1,m,1,-1) = hadd(i-1,m,1,-1)
-     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
-     &                           * bmcmamdq(i,m)
-c
-            endif
-c
-c           # Transverse propagation of the correction wave between
-c           # cells sharing faces. This gives CAAu_{xxy}.
-c
-            if(m3.lt.2) go to 200
-               hadd(i,m,2,0)   = hadd(i,m,2,0)
-     &                         + dtdx1d(i-1)*cpcqxxp(i,m)
-               hadd(i,m,1,0)   = hadd(i,m,1,0)
-     &                         + dtdx1d(i-1)*cmcqxxp(i,m)
-               hadd(i-1,m,2,0) = hadd(i-1,m,2,0)
-     &                         - dtdx1d(i-1)*cpcqxxm(i,m)
-               hadd(i-1,m,1,0) = hadd(i-1,m,1,0)
-     &                         - dtdx1d(i-1)*cmcqxxm(i,m)
-c
-  200    continue
-c
-      return
-      end
+c     
+        do 200 i = 1, mx+1
+        do 200 m = 1,meqn
+c     
+c     # Transverse propagation of the increment waves
+c     # between cells sharing interfaces, i.e. the 2D approach.
+c     # Yields CAu_{xy}.
+c     
+           hadd(m,i-1,1,0) = hadd(m,i-1,1,0)
+     &                      - 0.5d0*dtdx1d(i-1)*cmamdq(m,i)
+           hadd(m,i-1,2,0) = hadd(m,i-1,2,0)
+     &                      - 0.5d0*dtdx1d(i-1)*cpamdq(m,i)
+           hadd(m,i,1,0)   = hadd(m,i,1,0)
+     &                      - 0.5d0*dtdx1d(i-1)*cmapdq(m,i)
+           hadd(m,i,2,0)   = hadd(m,i,2,0)
+     &                      - 0.5d0*dtdx1d(i-1)*cpapdq(m,i)
+c     
+c     # Transverse propagation of the increment wave (and the
+c     # correction wave if m4=2) between cells
+c     # only having a corner or edge in common. Yields terms of the
+c     # CBAu_{xzy} and CBAAu_{xxzy}.
+c     
+          if( m4.gt.0 )then
+c     
+             hadd(m,i,2,0)  = hadd(m,i,2,0)
+     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * (bpcpapdq(m,i) - bpcmapdq(m,i))
+             hadd(m,i,1,0)  = hadd(m,i,1,0)
+     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * (bmcpapdq(m,i) - bmcmapdq(m,i))
+             hadd(m,i,2,1)  = hadd(m,i,2,1)
+     &                            - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * bpcpapdq(m,i)
+             hadd(m,i,1,1)  = hadd(m,i,1,1)
+     &                            - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * bmcpapdq(m,i)
+             hadd(m,i,2,-1) = hadd(m,i,2,-1)
+     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * bpcmapdq(m,i)
+             hadd(m,i,1,-1) = hadd(m,i,1,-1)
+     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * bmcmapdq(m,i)
+c     
+             hadd(m,i-1,2,0)  = hadd(m,i-1,2,0)
+     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * (bpcpamdq(m,i) - bpcmamdq(m,i))
+             hadd(m,i-1,1,0)  = hadd(m,i-1,1,0)
+     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * (bmcpamdq(m,i) - bmcmamdq(m,i))
+             hadd(mi-1,2,1)  = hadd(m,i-1,2,1)
+     &                            - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * bpcpamdq(m,i)
+             hadd(m,i-1,1,1)  = hadd(m,i-1,1,1)
+     &                            - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * bmcpamdq(m,i)
+             hadd(m,i-1,2,-1) = hadd(m,i-1,2,-1)
+     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * bpcmamdq(m,i)
+             hadd(m,i-1,1,-1) = hadd(m,i-1,1,-1)
+     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            * bmcmamdq(m,i)
+c     
+           endif
+c     
+c     # Transverse propagation of the correction wave between
+c     # cells sharing faces. This gives CAAu_{xxy}.
+c     
+           if(m3.lt.2) go to 200
+           hadd(m,i,2,0)   = hadd(m,i,2,0)
+     &                        + dtdx1d(i-1)*cpcqxxp(m,i)
+           hadd(m,i,1,0)   = hadd(m,i,1,0)
+     &                        + dtdx1d(i-1)*cmcqxxp(m,i)
+           hadd(m,i-1,2,0) = hadd(m,i-1,2,0)
+     &                        - dtdx1d(i-1)*cpcqxxm(m,i)
+           hadd(m,i-1,1,0) = hadd(m,i-1,1,0)
+     &                        - dtdx1d(i-1)*cmcqxxm(m,i)
+c     
+ 200    continue
+c     
+       return
+       end
