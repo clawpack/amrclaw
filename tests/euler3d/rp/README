@@ -1,0 +1,8 @@
+
+Riemann solvers for the 3d Euler equations:
+
+  rpn3eu.f        Roe solver in the normal direction, 
+                    using mwaves=3 (entropy and shear waves are lumped).
+  rpt3eu.f        Transverse
+  rptt3eu.f       Double transverse
+
