@@ -27,7 +27,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       external rpn3,rpt3, rptt3
 
       include  "call.i"
-      common/comxyzt/dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
+c#### common/comxyzt/dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
 
       parameter (msize=max1d+4)
 

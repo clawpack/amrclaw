@@ -203,7 +203,7 @@ c                   adjust time steps for this and finer levels
                  go to 60
               else
                  level = level - 1
-                 call update(level,nvar)
+                 call update(level,nvar,naux)
               endif
           go to 105
 c

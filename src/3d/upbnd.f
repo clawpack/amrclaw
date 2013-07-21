@@ -1,7 +1,7 @@
 c
 c ------------------------------------------------------------
 c
-       subroutine upbnd(listbc,val,nvar,mitot,mjtot,mktot,
+       subroutine upbnd(listbc,val,nvar,maux,mitot,mjtot,mktot,
      1                  maxsp,mptr)
 
       implicit double precision (a-h,o-z)
@@ -9,15 +9,15 @@ c
       parameter(numbcs=6)
       include  "call.i"
 
-       dimension val(mitot,mjtot,mktot,nvar),listbc(numbcs,maxsp),
+       dimension val(nvar,mitot,mjtot,mktot),listbc(numbcs,maxsp),
      1           iused(mitot,mjtot,mktot)
        dimension chsign(numbcs)
        data      chsign/ 1.,-1.,-1., 1., 1.,-1./
 
-       iaddaux(i,j,k) = locaux +     (i-1)
-     &                         +     (j-1)*mitot
-     &                         +     (k-1)*mitot*mjtot
-     &                         + (mcapa-1)*mitot*mjtot*mktot
+       iaddaux(i,j,k) = locaux +     (mcapa-1)
+     &                         +     (i-1)*maux
+     &                         +     (j-1)*maux*mitot
+     &                         +     (k-1)*maux*mitot*mjtot
 
 c
 c :::::::::::::::::::::::::::: UPBND :::::::::::::::::::::::::::::
@@ -64,7 +64,7 @@ c
 c        ## debugging output
          if (uprint) then
            write(outunit,101) icrse,jcrse,kcrse,
-     .            (val(icrse,jcrse,kcrse,ivar),ivar=1,nvar)
+     .            (val(ivar,icrse,jcrse,kcrse),ivar=1,nvar)
  101       format(" old ",1x,3i4,5e15.7)
          endif
 
@@ -84,7 +84,7 @@ c            # Note capa is stored in aux(icrse,jcrse,kcrse,mcapa)
 c        ## debugging output
          if (uprint) then
            write(outunit,102) mkid,
-     .         (val(icrse,jcrse,kcrse,ivar),ivar=1,nvar)
+     .         (val(ivar,icrse,jcrse,kcrse),ivar=1,nvar)
  102       format(" new ","(grid",i3,")",5e15.7)
          endif
 

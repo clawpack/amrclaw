@@ -218,6 +218,8 @@ c
             do 25 i=1,mx+1
                do 25 m=1,meqn
                fm(m,i,j,k) = fm(m,i,j,k) + faddm(m,i)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .            write(6,*) m,i,j,k,fm(1,i,j,k),faddm(m,i)
                fp(m,i,j,k) = fp(m,i,j,k) + faddp(m,i)
 c
                gm(m,i,j  ,k-1) = gm(m,i,j  ,k-1) + gadd(m,i,1,-1)
@@ -348,17 +350,29 @@ c
                hp(m,i+1,j,k+1) = hp(m,i+1,j,k+1) + gadd(m,j,2, 1)
 c
                fm(m,i  ,j,k-1) = fm(m,i  ,j,k-1) + hadd(m,j,1,-1)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .       write(6,*) "adding hadd",m,i,j,k,fm(1,i,j,k),hadd(m,j,1,-1)
                fp(m,i  ,j,k-1) = fp(m,i  ,j,k-1) + hadd(m,j,1,-1)
                fm(m,i  ,j,k  ) = fm(m,i  ,j,k  ) + hadd(m,j,1, 0)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .       write(6,*) "adding hadd",m,i,j,k,fm(1,i,j,k),hadd(m,j,1,0)
                fp(m,i  ,j,k  ) = fp(m,i  ,j,k  ) + hadd(m,j,1, 0)
                fm(m,i  ,j,k+1) = fm(m,i  ,j,k+1) + hadd(m,j,1, 1)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .   write(6,*) "adding hadd",m,i,j,k,fm(1,i,j,k+1),hadd(m,j,1,1)
                fp(m,i  ,j,k+1) = fp(m,i  ,j,k+1) + hadd(m,j,1, 1)
 c
                fm(m,i+1,j,k-1) = fm(m,i+1,j,k-1) + hadd(m,j,2,-1)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     . write(6,*) "adding hadd",m,i,j,k,fm(1,i+1,j,k-1),hadd(m,j,2,-1)
                fp(m,i+1,j,k-1) = fp(m,i+1,j,k-1) + hadd(m,j,2,-1)
                fm(m,i+1,j,k  ) = fm(m,i+1,j,k  ) + hadd(m,j,2, 0)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .  write(6,*) "adding hadd",m,i,j,k,fm(1,i+1,j,k-1),hadd(m,j,2,0)
                fp(m,i+1,j,k  ) = fp(m,i+1,j,k  ) + hadd(m,j,2, 0)
                fm(m,i+1,j,k+1) = fm(m,i+1,j,k+1) + hadd(m,j,2, 1)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .  write(6,*) "adding hadd",m,i,j,k,fm(1,i+1,j,k+1),hadd(m,j,2,1)
                fp(m,i+1,j,k+1) = fp(m,i+1,j,k+1) + hadd(m,j,2, 1)
 c
 
@@ -450,17 +464,29 @@ c
                hp(m,i,j,k) = hp(m,i,j,k) + faddp(m,k)
 c
                fm(m,i  ,j-1,k) = fm(m,i  ,j-1,k) + gadd(m,k,1,-1)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .  write(6,*) "adding gadd",m,i,j,k,fm(1,i,j-1,k),gadd(m,k,1,-1)
                fp(m,i  ,j-1,k) = fp(m,i  ,j-1,k) + gadd(m,k,1,-1)
                fm(m,i  ,j  ,k) = fm(m,i  ,j  ,k) + gadd(m,k,1, 0)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .  write(6,*) "adding gadd",m,i,j,k,fm(1,i,j,k),gadd(m,k,1,0)
                fp(m,i  ,j  ,k) = fp(m,i  ,j  ,k) + gadd(m,k,1, 0)
                fm(m,i  ,j+1,k) = fm(m,i  ,j+1,k) + gadd(m,k,1, 1)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .  write(6,*) "adding gadd",m,i,j,k,fm(1,i,j+1,k),gadd(m,k,1,1)
                fp(m,i  ,j+1,k) = fp(m,i  ,j+1,k) + gadd(m,k,1, 1)
 c
                fm(m,i+1,j-1,k) = fm(m,i+1,j-1,k) + gadd(m,k,2,-1)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .  write(6,*) "adding gadd",m,i,j,k,fm(1,i+1,j-1,k),gadd(m,k,2,-1)
                fp(m,i+1,j-1,k) = fp(m,i+1,j-1,k) + gadd(m,k,2,-1)
                fm(m,i+1,j  ,k) = fm(m,i+1,j  ,k) + gadd(m,k,2, 0)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .  write(6,*) "adding gadd",m,i,j,k,fm(1,i+1,j,k),gadd(m,k,2,0)
                fp(m,i+1,j  ,k) = fp(m,i+1,j  ,k) + gadd(m,k,2, 0)
                fm(m,i+1,j+1,k) = fm(m,i+1,j+1,k) + gadd(m,k,2, 1)
+               if (i .eq. 6 .and. j .eq.3 .and. k .eq. 3)
+     .  write(6,*) "adding gadd",m,i,j,k,fm(1,i+1,j+1,k),gadd(m,k,2,1)
                fp(m,i+1,j+1,k) = fp(m,i+1,j+1,k) + gadd(m,k,2, 1)
 c
                gm(m,i-1,j  ,k) = gm(m,i-1,j  ,k) + hadd(m,k,1,-1)

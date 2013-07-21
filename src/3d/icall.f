@@ -7,21 +7,19 @@ c
 
        implicit double precision (a-h, o-z)
 
-       dimension val(nrow,ncol,nfil,nvar)
-       dimension aux(nrow,ncol,nfil,naux)
+       dimension val(nvar,nrow,ncol,nfil)
+       dimension aux(naux,nrow,ncol,nfil)
 
        include "call.i"
 
-c2D    iadd   (i,j,ivar) = loc    + i - 1 + mitot*((ivar-1)*mjtot+j-1)
-c2D    iaddaux(i,j,ivar) = locaux + i - 1 + mitot*((ivar-1)*mjtot+j-1)
-       iadd   (i,j,k,ivar) = loc    +    (i-1)
-     &                              +    (j-1)*mitot
-     &                              +    (k-1)*mitot*mjtot
-     &                              + (ivar-1)*mitot*mjtot*mktot
-       iaddaux(i,j,k,ivar) = locaux +    (i-1)
-     &                              +    (j-1)*mitot
-     &                              +    (k-1)*mitot*mjtot
-     &                              + (ivar-1)*mitot*mjtot*mktot
+       iadd   (ivar,i,j,k) = loc    +    (ivar-1)
+     &                              +    (i-1)*nvar
+     &                              +    (j-1)*nvar*mitot
+     &                              +    (k-1)*nvar*mitot*mjtot
+       iaddaux(ivar,i,j,k) = locaux +    (ivar-1)
+     &                              +    (i-1)*nvar
+     &                              +    (j-1)*nvar*mitot
+     &                              +    (k-1)*nvar*mitot*mjtot
 
 c ::::::::::::::::::::::::::: ICALL :::::::::::::::::::::::::::::::
 c
@@ -71,16 +69,16 @@ c         # does it intersect?
 	      do 30 j    = jxlo, jxhi
 	      do 30 i    = ixlo, ixhi
 	      do 20 ivar = 1, nvar
-		  ialloc  =  iadd(i-iglo+nghost+1,j-jglo+nghost+1,
-     &                                            k-kglo+nghost+1,ivar)
-		  val(i-ilo+iputst,j-jlo+jputst,
-     &                             k-klo+kputst,ivar)  =  alloc(ialloc)
+		  ialloc  =  iadd(ivar,i-iglo+nghost+1,j-jglo+nghost+1,
+     &                                            k-kglo+nghost+1)
+		  val(ivar,i-ilo+iputst,j-jlo+jputst,
+     &                                  k-klo+kputst) = alloc(ialloc)
  20           continue
               do 25 iaux = 1, naux
-                  ialloc = iaddaux(i-iglo+nghost+1,j-jglo+nghost+1,
-     &                                             k-kglo+nghost+1,iaux)
-		  aux(i-ilo+iputst,j-jlo+jputst,
-     &                             k-klo+kputst,iaux)  =  alloc(ialloc)
+                  ialloc = iaddaux(iaux,i-iglo+nghost+1,j-jglo+nghost+1,
+     &                                             k-kglo+nghost+1)
+		  aux(iaux,i-ilo+iputst,j-jlo+jputst,
+     &                                  k-klo+kputst) = alloc(ialloc)
  25           continue
  30           continue
 	  endif

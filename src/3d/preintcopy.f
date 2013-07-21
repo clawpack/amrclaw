@@ -8,7 +8,7 @@ c
 
       include  "call.i"
 
-      dimension val(mitot,mjtot,mktot,nvar)
+      dimension val(nvar,mitot,mjtot,mktot)
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
       dimension kst(3), kend(3),                  kshift(3)
 

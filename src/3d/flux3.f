@@ -171,7 +171,7 @@ c
       dimension  wave(meqn,mwaves,1-mbc:maxm+mbc)
 c
       logical limit
-      common/comxyzt/dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
+c#### common/comxyzt/dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
 
 
 

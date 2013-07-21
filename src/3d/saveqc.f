@@ -75,13 +75,7 @@ c         make coarsened enlarged patch for conservative fixup
      .                 nvar,naux,
      .                   iclo,ichi,jclo,jchi,kclo,kchi,level-1,1,1,1)
           endif
-c       call physbd(alloc(loctmp),alloc(loctx),nrow,ncol,nfil,
-c     .                nvar,naux,
-c     .                hxc,hyc,hzc,level,time,
-c     .                   xl,xr,yf,yr,zb,zt,
-c     .                xlower,ylower,zlower,xupper,yupper,zupper,
-c     .                xperdom,yperdom,zperdom)
-c 2/28/02 : Added call to bc2amr.
+c
           call bc3amr(alloc(loctmp),alloc(loctx),nrow,ncol,nfil,
      &          nvar,naux,hxc,hyc,hzc,level,time,
      .                xl,xr,yf,yr,zb,zt,

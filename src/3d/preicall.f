@@ -8,8 +8,8 @@ c
 
       include  "call.i"
 
-      dimension val(nrow,ncol,nfil,nvar)
-      dimension aux(nrow,ncol,nfil,nvar)
+      dimension val(nvar,nrow,ncol,nfil)
+      dimension aux(naux,nrow,ncol,nfil)
 
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
       dimension kst(3), kend(3),                  kshift(3)
