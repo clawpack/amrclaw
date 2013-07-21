@@ -36,7 +36,7 @@ FFLAGS ?=  -g
 #   $(AMRCLAW)/src/2d/gauges_module.f90 \
 #   $(AMRCLAW)/src/2d/regions_module.f90 \
 
-MODULES = $(AMRCLAW)/src/3d/init_alloc.f90
+MODULES = $(AMRCLAW)/src/3d/init_alloc.f
 
 SOURCES = \
   qinit.f \
@@ -125,8 +125,8 @@ SOURCES = \
   $(AMRCLAW)/src/3d/valout.f \
   $(AMRCLAW)/src/3d/check.f \
   $(AMRCLAW)/src/3d/restrt.f \
-  $(AMRCLAW)/src/3d/resize_alloc.f90 \
-  $(AMRCLAW)/src/3d/restrt_alloc.f90
+  $(AMRCLAW)/src/3d/resize_alloc.f \
+  $(AMRCLAW)/src/3d/restrt_alloc.f
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:

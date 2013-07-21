@@ -49,7 +49,7 @@ c      side 2
 	 do 15 ivar = 1, nvar
  15	   qc1d(ivar,index) = qc(ivar,i,ncol,k)
 	 do 16 iaux = 1, naux
- 16	   auxc1d(iaux,index) = auxc(iaux,i,ncol,k,
+ 16	   auxc1d(iaux,index) = auxc(iaux,i,ncol,k)
  20    continue
 
 c      side 3

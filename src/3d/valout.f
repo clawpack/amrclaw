@@ -58,7 +58,8 @@ c
             level = level + 1
         go to 10
 c
-60    endif
+60    continue
+      endif
 
 
 c     ### MATLAB graphics output

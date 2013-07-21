@@ -27,14 +27,14 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 	       do 20 i = 1, mi2tot
 	          ifine = 2*(i-1) + 1
 	          auxbgc(iaux,i,j,k) =
-     &                      ( auxdub(iaux, ifine  ,jfine  ,kfine  )
-     &                       +auxdub(iaux, ifine+1,jfine  ,kfine  )
-     &                       +auxdub(iaux, ifine  ,jfine+1,kfine  )
-     &                       +auxdub(iaux, ifine+1,jfine+1,kfine  )
-     &                       +auxdub(iaux, ifine  ,jfine  ,kfine+1)
-     &                       +auxdub(iaux, ifine+1,jfine  ,kfine+1)
-     &                       +auxdub(iaux, ifine  ,jfine+1,kfine+1)
-     &                       +auxdub(iaux, ifine+1,jfine+1,kfine+1))/8.d0
+     &                      ( auxdub(iaux,ifine  ,jfine  ,kfine  )
+     &                       +auxdub(iaux,ifine+1,jfine  ,kfine  )
+     &                       +auxdub(iaux,ifine  ,jfine+1,kfine  )
+     &                       +auxdub(iaux,ifine+1,jfine+1,kfine  )
+     &                       +auxdub(iaux,ifine  ,jfine  ,kfine+1)
+     &                       +auxdub(iaux,ifine+1,jfine  ,kfine+1)
+     &                       +auxdub(iaux,ifine  ,jfine+1,kfine+1)
+     &                       +auxdub(iaux,ifine+1,jfine+1,kfine+1))/8.d0
 20       continue
 
        elseif (auxtype(iaux) .eq. "xleft") then
@@ -59,10 +59,10 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 	       do 15 i = 1, mi2tot
 	          ifine = 2*(i-1) + 1
 	          auxbgc(iaux,i,j,k) =
-     &                         (auxdub(ifine  ,jfine,kfine  )
-     &                         +auxdub(ifine+1,jfine,kfine  )
-     &                         +auxdub(ifine  ,jfine,kfine+1)
-     &                         +auxdub(ifine+1,jfine,kfine+1))/4.d0
+     &                         (auxdub(iaux,ifine  ,jfine,kfine  )
+     &                         +auxdub(iaux,ifine+1,jfine,kfine  )
+     &                         +auxdub(iaux,ifine  ,jfine,kfine+1)
+     &                         +auxdub(iaux,ifine+1,jfine,kfine+1))/4.d0
 15       continue
 
        elseif (auxtype(iaux) .eq. "zleft") then
