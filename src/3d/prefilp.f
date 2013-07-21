@@ -11,18 +11,18 @@ c
 
       include  "call.i"
 
-      dimension valbig(mitot,mjtot,mktot,nvar)
-      dimension    aux(mitot,mjtot,mktot,naux)
+      dimension valbig(nvar,mitot,mjtot,mktot)
+      dimension    aux(naux,mitot,mjtot,mktot)
       dimension ist(3), iend(3), jst(3), jend(3), kst(3), kend(3)
       dimension ishift(3), jshift(3), kshift(3)
 
       dimension scratch(max(mitot,mjtot,mktot)*nghost*nvar)
       dimension scratchaux(max(mitot,mjtot,mktot)*nghost*naux)
 
-      iadd(i,j,k,ivar)  = locflip + i - 1 + nr*(j-1) + nc*nr*(k-1)
-     &                            + nf*nc*nr*(ivar-1)
-      iaddscratch(i,j,k,ivar)  = i + nr*(j-1) + nc*nr*(k-1)
-     &                             + nf*nc*nr*(ivar-1)
+      iadd(ivar,i,j,k) = locflip + ivar - 1 + nvar*(i-1) + nvar*nr*(j-1)
+     &                           + nvar*nr*nc*(k-1)
+      iaddscratch(ivar,i,j,k) = ivar + nvar*(i-1) + nvar*nr*(j-1)
+     &                               + nvar*nr*nc*(k-1)
 
 c
 c  :::::::::::::: PREFILRECUR :::::::::::::::::::::::::::::::::::::::::::

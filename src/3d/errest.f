@@ -34,11 +34,11 @@ c
        hz2  = 2.d0*hz
        mptr = lstart(lcheck)
  5     continue
-	        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
        	  ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
           nz     = node(ndkhi,mptr) - node(ndklo,mptr) + 1
-	        mitot  = nx + 2*nghost
-	        mjtot  = ny + 2*nghost
+          mitot  = nx + 2*nghost
+          mjtot  = ny + 2*nghost
           mktot  = nz + 2*nghost
           locnew = node(store1,mptr)
           locold = node(store2,mptr)
@@ -47,29 +47,29 @@ c
           mj2tot = ny/2  + 2*nghost
           mk2tot = nz/2  + 2*nghost
           time   = rnode(timemult,mptr)
- 	        dt     = possk(lcheck)
+          dt     = possk(lcheck)
           tpre   = time - dt
 c
 c     prepare double the stencil size worth of boundary values,
 c            then coarsen them for the giant step integration.
 c
-	        midub = nx+4*nghost
-	        mjdub = ny+4*nghost
+          midub = nx+4*nghost
+          mjdub = ny+4*nghost
           mkdub = nz+4*nghost
           locdub = igetsp(midub *mjdub *mkdub *(nvar+naux))
-	        locbgc = igetsp(mi2tot*mj2tot*mk2tot*(nvar+naux))
-	        node(errptr,mptr) = locbgc
+          locbgc = igetsp(mi2tot*mj2tot*mk2tot*(nvar+naux))
+          node(errptr,mptr) = locbgc
           ngbig = 2*nghost
 
 c         # transfer soln. into grid with twice the ghost cells
- 	        call copysol(alloc(locdub),alloc(locold),nvar,
+          call copysol(alloc(locdub),alloc(locold),nvar,
      &                 mitot,mjtot,mktot,
      1                 nghost,midub,mjdub,mkdub,ngbig)
 
 c
-	        if (naux .gt. 0) then
-	            locaxb = locdub + midub *mjdub *mkdub *nvar
-	            locaxc = locbgc + mi2tot*mj2tot*mk2tot*nvar
+          if (naux .gt. 0) then
+              locaxb = locdub + midub *mjdub *mkdub *nvar
+              locaxc = locbgc + mi2tot*mj2tot*mk2tot*nvar
               xlowmbc = rnode(cornxlo, mptr)
               ylowmbc = rnode(cornylo, mptr)
               zlowmbc = rnode(cornzlo, mptr)
@@ -134,11 +134,11 @@ c
 
        mptr = lstart(lcheck)
  25    continue
-	        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-	        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
           nz     = node(ndkhi,mptr) - node(ndklo,mptr) + 1
-	        mitot  = nx+ 2*nghost
-	        mjtot  = ny+ 2*nghost
+          mitot  = nx+ 2*nghost
+          mjtot  = ny+ 2*nghost
           mktot  = nz+ 2*nghost
           mi2tot = nx/2 + 2*nghost
           mj2tot = ny/2 + 2*nghost
@@ -146,17 +146,17 @@ c
 c
 c         # this scratch storage will be used both for regular and half
 c         # sized grid. different dimensions in stepgrid - do not reuse.
-	        locfp = igetsp(mitot*mjtot*mktot*nvar)
-	        locfm = igetsp(mitot*mjtot*mktot*nvar)
-	        locgp = igetsp(mitot*mjtot*mktot*nvar)
-	        locgm = igetsp(mitot*mjtot*mktot*nvar)
-	        lochp = igetsp(mitot*mjtot*mktot*nvar)
-	        lochm = igetsp(mitot*mjtot*mktot*nvar)
+          locfp = igetsp(mitot*mjtot*mktot*nvar)
+          locfm = igetsp(mitot*mjtot*mktot*nvar)
+          locgp = igetsp(mitot*mjtot*mktot*nvar)
+          locgm = igetsp(mitot*mjtot*mktot*nvar)
+          lochp = igetsp(mitot*mjtot*mktot*nvar)
+          lochm = igetsp(mitot*mjtot*mktot*nvar)
           locaux = node(storeaux,mptr)
 c
-	        locbgc = node(errptr,mptr)
+          locbgc = node(errptr,mptr)
 c
-      	  locaxc = locbgc+nvar*mi2tot*mj2tot*mk2tot
+          locaxc = locbgc+nvar*mi2tot*mj2tot*mk2tot
 c should we set to 1 if naux=0?
 c
           evol = evol + (nx/2)*(ny/2)*(nz/2)

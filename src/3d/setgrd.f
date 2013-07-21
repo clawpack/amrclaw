@@ -109,7 +109,7 @@ c initial updating so can do conservation check. can do before
 c bndry flux arrays set, since don't need them for this
 c
       do 65 level = 1, lfine-1
- 	 call update(lfine-level,nvar)
+         call update(lfine-level,nvar)
  65   continue
 c
 c set up boundary flux conservation arrays

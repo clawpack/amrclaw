@@ -29,8 +29,8 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       include  "call.i"
 
       logical   set, sticksout
-      dimension valbig(mitot,mjtot,mktot,nvar)
-      dimension    aux(mitot,mjtot,mktot,naux)
+      dimension valbig(nvar,mitot,mjtot,mktot)
+      dimension    aux(naux,mitot,mjtot,mktot)
 
 
 c     Use stack-based scratch arrays instead of alloc for better
@@ -46,8 +46,9 @@ c     grid to enclose the fine, including an offset of 1.
       dimension flaguse(ihi-ilo+1, jhi-jlo+1, khi-klo+1)
 
 c     Some helper functions
-      ivalc(i, j, k, ivar) = i + nrowc*(j-1) + nrowc*ncolc*(k-1)
-     &                         + nrowc*ncolc*nfilc*(ivar-1)
+      ivalc(ivar, i, j, k) = ivar + nvar*(i-1) + nvar*nrowc*(j-1)
+     &                            + nvar*nrowc*ncolc*(k-1)
+
       sticksout(iplo, iphi, jplo, jphi, kplo, kphi) =
      &     (iplo < 0 .or. jplo < 0 .or. kplo < 0 .or.
      &      iphi > iregsz(levc) .or. jphi > jregsz(levc)
@@ -196,13 +197,13 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
 
             do 101 ivar = 1,nvar
 
-               valp100 = valcrse(ivalc(ic+1,jc  ,kc  ,ivar))
-               valm100 = valcrse(ivalc(ic-1,jc  ,kc  ,ivar))
-               valc    = valcrse(ivalc(ic  ,jc  ,kc  ,ivar))
-               valp010 = valcrse(ivalc(ic  ,jc+1,kc  ,ivar))
-               valm010 = valcrse(ivalc(ic  ,jc-1,kc  ,ivar))
-               valp001 = valcrse(ivalc(ic  ,jc  ,kc+1,ivar))
-               valm001 = valcrse(ivalc(ic  ,jc  ,kc-1,ivar))
+               valp100 = valcrse(ivalc(ivar,ic+1,jc  ,kc   ))
+               valm100 = valcrse(ivalc(ivar,ic-1,jc  ,kc   ))
+               valc    = valcrse(ivalc(ivar,ic  ,jc  ,kc   ))
+               valp010 = valcrse(ivalc(ivar,ic  ,jc+1,kc   ))
+               valm010 = valcrse(ivalc(ivar,ic  ,jc-1,kc   ))
+               valp001 = valcrse(ivalc(ivar,ic  ,jc  ,kc+1 ))
+               valm001 = valcrse(ivalc(ivar,ic  ,jc  ,kc-1 ))
 
                ! Use monotonized centered limiter to reconstruct in all axes
                dupc = valp100 - valc
@@ -231,7 +232,7 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
      &                       + eta2*dv*dsign(1.d0,dvcc)*fv
      &                       + eta3*dw*dsign(1.d0,dwcc)*fw
 
-               valbig(iff+nrowst-1,jf+ncolst-1,kf+nfilst-1,ivar)
+               valbig(ivar,iff+nrowst-1,jf+ncolst-1,kf+nfilst-1)
      &                = valint
 
  101        continue
@@ -239,8 +240,6 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
          endif
 
  100  continue
-
-c     call reclam(loccrse,ntot)
 
  90   continue
 c     
