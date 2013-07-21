@@ -40,7 +40,7 @@ c
       implicit real*8(a-h,o-z)
 c
       dimension wave(meqn,mwaves,1-mbc:maxm+mbc)
-      dimension    s(1-mbc:maxm+mbc, mwaves)
+      dimension    s(mwaves,1-mbc:maxm+mbc)
       dimension   ql(meqn,1-mbc:maxm+mbc)
       dimension   qr(meqn,1-mbc:maxm+mbc)
       dimension amdq(meqn,1-mbc:maxm+mbc)
@@ -54,7 +54,7 @@ c     ------------------------------------------
 c
       do 30 i = 2-mbc, mx+mbc
          wave(1,1,i) = ql(1,i) - qr(1,i-1)
-         s(i,1) = auxl(ixyz,i)
+         s(1,i) = auxl(ixyz,i)
 c        # The flux difference df = s*wave all goes in the downwind direction:
          amdq(1,i) = dmin1(auxl(ixyz,i), 0.d0) * wave(1,1,i)
          apdq(1,i) = dmax1(auxl(ixyz,i), 0.d0) * wave(1,1,i)

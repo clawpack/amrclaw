@@ -1,12 +1,12 @@
- 20                mx          = cells in x direction
- 20                my          = cells in y direction
- 20                mz          = cells in z direction
+ 6                mx          = cells in x direction
+ 6                my          = cells in y direction
+ 6                mz          = cells in z direction
  1                 mxnest      = max number of grid levels
  2 2             inrat       = refinement ratios (1..mxnest)
 
 5                nout        = number of output times to print results
-1                outstyle    = style of specifying output times
-0.5              tfinal = final time
+3                outstyle    = style of specifying output times
+1 1              tfinal = final time
 
 
 0.01d0              dtv(1)      = initial dt (used in all steps if method(1)=0)
@@ -30,7 +30,7 @@
 
 1                  meqn        = number of equations in hyperbolic system
 1                  mwaves      = number of waves in each Riemann solution
-3                  mthlim(mw)  = limiter for each wave  (mw=1,mwaves)
+0                  mthlim(mw)  = limiter for each wave  (mw=1,mwaves)
 
 
 0.d0               t0          = initial time

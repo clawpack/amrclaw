@@ -25,33 +25,27 @@ c
       external rpn3,rpt3,rptt3
       include  "call.i"
 
-      dimension qold(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc,
-     &               1-mbc:maxmz+mbc, meqn)
-      dimension  q1d(1-mbc:maxm+mbc, meqn)
+      dimension
+     & qold(meqn, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc)
+      dimension q1d(meqn, 1-mbc:maxm+mbc)
 c
-      dimension   fm(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
-      dimension   fp(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
-      dimension   gm(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
-      dimension   gp(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
-      dimension   hm(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
-      dimension   hp(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
+      dimension fm(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
+      dimension fp(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
+      dimension gm(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
+      dimension gp(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
+      dimension hm(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
+      dimension hp(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
 c
-      dimension faddm(1-mbc:maxm+mbc, meqn)
-      dimension faddp(1-mbc:maxm+mbc, meqn)
-      dimension  gadd(1-mbc:maxm+mbc, meqn, 2, -1:1)
-      dimension  hadd(1-mbc:maxm+mbc, meqn, 2, -1:1)
+      dimension faddm(meqn, 1-mbc:maxm+mbc)
+      dimension faddp(meqn, 1-mbc:maxm+mbc)
+      dimension  gadd(meqn, 1-mbc:maxm+mbc, 2, -1:1)
+      dimension  hadd(meqn, 1-mbc:maxm+mbc, 2, -1:1)
 c
-      dimension aux(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc,
-     &              1-mbc:maxmz+mbc, *)
-      dimension aux1(1-mbc:maxm+mbc, maux, 3)
-      dimension aux2(1-mbc:maxm+mbc, maux, 3)
-      dimension aux3(1-mbc:maxm+mbc, maux, 3)
+      dimension
+     & aux(maux, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc)
+      dimension aux1(maux, 1-mbc:maxm+mbc, 3)
+      dimension aux2(maux, 1-mbc:maxm+mbc, 3)
+      dimension aux3(maux, 1-mbc:maxm+mbc, 3)
       dimension dtdx1d(1-mbc:maxm+mbc)
       dimension dtdy1d(1-mbc:maxm+mbc)
       dimension dtdz1d(1-mbc:maxm+mbc)

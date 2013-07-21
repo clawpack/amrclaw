@@ -388,11 +388,11 @@ c     # user-specified boundary conditions go here in place of error output
 
   610 continue
 c     # zero-order extrapolation:
-      do 615 m = 1,meqn
-         do 615 k = kbeg,nfil
+      do 615 k = kbeg,nfil
+         do 615 j = 1,ncol
             do 615 i = 1,nrow
-               do 615 j = 1,ncol
-                  val(i,j,k,m) =  val(i,j,kbeg-1,m)
+               do 615 m = 1,meqn
+                  val(m,i,j,k) =  val(m,i,j,kbeg-1)
   615          continue
       go to 699
 
