@@ -26,7 +26,7 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -g
+FFLAGS ?=  -g -fbounds-check -ffpe-trap=zero,overflow,invalid
 
 # ---------------------------------
 # List of sources for this program:
