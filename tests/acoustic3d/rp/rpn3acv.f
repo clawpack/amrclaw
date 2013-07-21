@@ -77,8 +77,12 @@ c     # find a1 and a2, the coefficients of the 2 eigenvectors:
          delta(2) = ql(mu,i) - qr(mu,i-1)
 c        # impedances:
          zi = auxl(1,i)
-         zim = auxl(1,i-1)
+         zim = auxr(1,i-1)    ! Changed from auxl
 
+         if (zi == 0.d0 .or. zim == 0.d0) then
+            print *, 'Zero impedance, stopping'
+            stop
+         end if
          a1 = (-delta(1) + zi*delta(2)) / (zim + zi)
          a2 =  (delta(1) + zim*delta(2)) / (zim + zi)
 
