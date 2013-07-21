@@ -31,7 +31,7 @@ c     # note that this results in flags of 1,  not 2 of 3.
          write(outunit,*)" from colate: iflags"
          do 48 kk = 1, ksize
            k = ksize + 1 - kk
-           write(6,*) 'plane k = ',k
+           write(outunit,*) 'plane k = ',k
          do 48 jj = 1, jsize
            j = jsize + 1 - jj
            write(outunit,101)(iflags(i,j,k),i=1,isize)
@@ -39,7 +39,7 @@ c     # note that this results in flags of 1,  not 2 of 3.
          write(outunit,*)" from colate: domflags"
          do 49 kk = 1, ksize
            k = ksize + 1 - kk
-           write(6,*) 'plane k = ',k
+           write(outunit,*) 'plane k = ',k
          do 49 jj = 1, jsize
            j = jsize + 1 - jj
            write(outunit,101)(domflags(i,j,k),i=1,isize)
