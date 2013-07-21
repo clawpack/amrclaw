@@ -17,9 +17,9 @@ c
      &                              +    (j-1)*nvar*mitot
      &                              +    (k-1)*nvar*mitot*mjtot
        iaddaux(ivar,i,j,k) = locaux +    (ivar-1)
-     &                              +    (i-1)*nvar
-     &                              +    (j-1)*nvar*mitot
-     &                              +    (k-1)*nvar*mitot*mjtot
+     &                              +    (i-1)*naux
+     &                              +    (j-1)*naux*mitot
+     &                              +    (k-1)*naux*mitot*mjtot
 
 c ::::::::::::::::::::::::::: ICALL :::::::::::::::::::::::::::::::
 c
@@ -40,50 +40,50 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
        mptr = lstart(level)
 
  10    if (mptr .eq. 0) go to 99
-	  iglo = node(ndilo,mptr) 
-	  ighi = node(ndihi,mptr) 
-	  jglo = node(ndjlo,mptr) 
-	  jghi = node(ndjhi,mptr) 
-	  kglo = node(ndklo,mptr) 
-	  kghi = node(ndkhi,mptr) 
+         iglo = node(ndilo,mptr) 
+         ighi = node(ndihi,mptr) 
+         jglo = node(ndjlo,mptr) 
+         jghi = node(ndjhi,mptr) 
+         kglo = node(ndklo,mptr) 
+         kghi = node(ndkhi,mptr) 
 
 c         # does it intersect?
-	  ixlo = max(iglo-nghost,ilo)
-	  ixhi = min(ighi+nghost,ihi)
-	  jxlo = max(jglo-nghost,jlo)
-	  jxhi = min(jghi+nghost,jhi)
-	  kxlo = max(kglo-nghost,klo)
-	  kxhi = min(kghi+nghost,khi)
+         ixlo = max(iglo-nghost,ilo)
+         ixhi = min(ighi+nghost,ihi)
+         jxlo = max(jglo-nghost,jlo)
+         jxhi = min(jghi+nghost,jhi)
+         kxlo = max(kglo-nghost,klo)
+         kxhi = min(kghi+nghost,khi)
 
-	  if ((ixlo .le. ixhi .and. jxlo .le. jxhi) .and.
-     &        (                     kxlo .le. kxhi)) then
-	      loc  = node(store1,mptr)
-	      locaux = node(storeaux,mptr)
-	      nx   = ighi - iglo + 1
-	      ny   = jghi - jglo + 1
-	      nz   = kghi - kglo + 1
-	      mitot = nx + 2*nghost
-	      mjtot = ny + 2*nghost
-	      mktot = nz + 2*nghost
-	      do 30 k    = kxlo, kxhi
-	      do 30 j    = jxlo, jxhi
-	      do 30 i    = ixlo, ixhi
-	      do 20 ivar = 1, nvar
-		  ialloc  =  iadd(ivar,i-iglo+nghost+1,j-jglo+nghost+1,
-     &                                            k-kglo+nghost+1)
-		  val(ivar,i-ilo+iputst,j-jlo+jputst,
-     &                                  k-klo+kputst) = alloc(ialloc)
- 20           continue
-              do 25 iaux = 1, naux
-                  ialloc = iaddaux(iaux,i-iglo+nghost+1,j-jglo+nghost+1,
+         if ((ixlo .le. ixhi .and. jxlo .le. jxhi) .and.
+     &       (                     kxlo .le. kxhi)) then
+	         loc  = node(store1,mptr)
+           locaux = node(storeaux,mptr)
+           nx   = ighi - iglo + 1
+           ny   = jghi - jglo + 1
+           nz   = kghi - kglo + 1
+           mitot = nx + 2*nghost
+           mjtot = ny + 2*nghost
+           mktot = nz + 2*nghost
+           do 30 k    = kxlo, kxhi
+           do 30 j    = jxlo, jxhi
+           do 30 i    = ixlo, ixhi
+           do 20 ivar = 1, nvar
+              ialloc  =  iadd(ivar,i-iglo+nghost+1,j-jglo+nghost+1,
      &                                             k-kglo+nghost+1)
-		  aux(iaux,i-ilo+iputst,j-jlo+jputst,
-     &                                  k-klo+kputst) = alloc(ialloc)
- 25           continue
- 30           continue
-	  endif
-	  mptr = node(levelptr, mptr)
-	  go to 10
+              val(ivar,i-ilo+iputst,j-jlo+jputst,
+     &                              k-klo+kputst) = alloc(ialloc)
+ 20     continue
+           do 25 iaux = 1, naux
+             ialloc = iaddaux(iaux,i-iglo+nghost+1,j-jglo+nghost+1,
+     &                                             k-kglo+nghost+1)
+		         aux(iaux,i-ilo+iputst,j-jlo+jputst,
+     &                             k-klo+kputst) = alloc(ialloc)
+ 25        continue
+ 30       continue
+       endif
+       mptr = node(levelptr, mptr)
+       go to 10
 
  99   return
       end
