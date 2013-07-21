@@ -140,7 +140,7 @@ c
       do 70 j = nghost+1, mj2tot-nghost
       ifine   = nghost+1
       do 60 i = nghost+1, mi2tot-nghost
-	 if (rctcrse(i,j,k,1) .eq. goodpt) go to 55
+	 if (rctcrse(1,i,j,k) .eq. goodpt) go to 55
 	    rctflg(1,ifine  ,jfine  ,kfine  ) = badpt
 	    rctflg(1,ifine+1,jfine  ,kfine  ) = badpt
 	    rctflg(1,ifine  ,jfine+1,kfine  ) = badpt

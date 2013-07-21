@@ -18,7 +18,7 @@
       include "call.i"
 
        if (.not.allocated(storage)) then
-          memsize = 1000000
+          memsize = 2000000
           allocate(storage(memsize))
           alloc => storage
           print *, "Storage allocated..."

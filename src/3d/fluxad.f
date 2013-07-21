@@ -103,7 +103,7 @@ c ::::: front side
                do 430 kl=1,lratioz
                do 430 il=1,lratiox
                   svdflx(ivar,lind) = svdflx(ivar,lind) +
-     1                    yfluxm(ifine+il,ng+1,kfine+kl,ivar)*dtf*dx*dz
+     1                    yfluxm(ivar,ifine+il,ng+1,kfine+kl)*dtf*dx*dz
 c                  write(dbugunit,900)lind,
 c     .                             yfluxm(ivar,ifine+il,ng+1,kfine+kl),
 c     .                             yfluxp(ivar,ifine+il,ng+1,kfine+kl)

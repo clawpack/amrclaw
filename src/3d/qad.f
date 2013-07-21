@@ -44,7 +44,7 @@ c      parameter (max1dp1 = (max1d+1)**2+1)
        dimension ql(nvar,max1dp1),    qr(nvar,max1dp1)
        dimension wave(nvar,maxvar,max1dp1),  s(nvar,max1dp1)
        dimension amdq(nvar,max1dp1),  apdq(nvar,max1dp1)
-       dimension auxl(max1dp1,maxaux),  auxr(max1dp1,maxaux)
+       dimension auxl(maux,max1dp1),  auxr(maux,max1dp1)
 
        data qprint/.false./
 c

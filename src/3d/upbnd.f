@@ -76,7 +76,7 @@ c            # Note capa is stored in aux(icrse,jcrse,kcrse,mcapa)
          endif
 
          do 20 ivar = 1,nvar
-            val(icrse,jcrse,kcrse,ivar) = val(icrse,jcrse,kcrse,ivar) +
+            val(ivar,icrse,jcrse,kcrse) = val(ivar,icrse,jcrse,kcrse) +
      1      sgnm*alloc(kidlst+nvar*(lkid-1)+ivar-1)/volume
  20      continue
          iused(icrse,jcrse,kcrse) = iused(icrse,jcrse,kcrse) + norm
