@@ -1,7 +1,7 @@
  6                mx          = cells in x direction
  6                my          = cells in y direction
  6                mz          = cells in z direction
- 1                 mxnest      = max number of grid levels
+ 2               mxnest      = max number of grid levels
  2 2             inrat       = refinement ratios (1..mxnest)
 
 5                nout        = number of output times to print results
@@ -16,8 +16,8 @@
 500                nv(1)       = max number of time steps per call to claw3
 
 1                  method(1)   = 1 for variable dt,   = 0 for fixed dt
-2                  method(2)   = order
-22                 method(3)   = transverse order
+1                  method(2)   = order
+10                 method(3)   = transverse order
 0                  method(4)   = verbosity of output
 0                  method(5)   = source term splitting
 0                  method(6)   = mcapa
@@ -54,7 +54,7 @@ F               do a restart (input from restart.data)
 1000            ichkpt       (how often to checkpoint in fort.chk****)
 
 0.5 	        tol 	 (tolerance for Richardson estimator)
-0.5             tolsp	 (spatial tolerance for refinement)
+0.00005             tolsp	 (spatial tolerance for refinement)
 2               kcheck   (how often to est. error - related to buffer size)
 3               ibuff    (buffer zone size - add # of flagged pts to add)
 .70             cutoff   (efficiency cutoff for grid generator)
