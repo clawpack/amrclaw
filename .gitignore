@@ -11,3 +11,5 @@ xgeoclaw
 _output/
 _plots/
 *~
+fort.*
+.output
