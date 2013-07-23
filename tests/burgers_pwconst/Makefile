@@ -41,8 +41,8 @@ MODULES = \
 
 SOURCES = \
   qinit.f \
-  $(RIEMANN)/src/rpn2_burgers.f \
-  $(RIEMANN)/src/rpt2_burgers.f \
+  $(RIEMANN)/src/rpn2_burgers.f90 \
+  $(RIEMANN)/src/rpt2_burgers.f90 \
   $(AMRCLAW)/src/2d/amr2.f \
   $(AMRCLAW)/src/2d/setprob.f \
   $(AMRCLAW)/src/2d/setaux.f \
