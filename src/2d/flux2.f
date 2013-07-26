@@ -138,12 +138,19 @@ c        # modified in Version 4.3 to use average only in cqxx, not transverse
          dtdxave = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i))
 
 c
+c        # second order corrections:
+
          do 120 m=1,meqn
             cqxx(m,i) = 0.d0
             do 119 mw=1,mwaves
 c
-c              # second order corrections:
-               cqxx(m,i) = cqxx(m,i) + dabs(s(mw,i))
+               if (use_fwaves) then
+                   abbsign = dsign(1.d0,s(mw,i))
+                 else
+                   abbsign = dabs(s(mw,i))
+                 endif
+
+               cqxx(m,i) = cqxx(m,i) + abssign
      &             * (1.d0 - dabs(s(mw,i))*dtdxave) * wave(m,mw,i)
 c
   119          continue
