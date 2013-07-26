@@ -145,12 +145,12 @@ c        # second order corrections:
             do 119 mw=1,mwaves
 c
                if (use_fwaves) then
-                   abbsign = dsign(1.d0,s(mw,i))
+                   abs_sign = dsign(1.d0,s(mw,i))
                  else
-                   abbsign = dabs(s(mw,i))
+                   abs_sign = dabs(s(mw,i))
                  endif
 
-               cqxx(m,i) = cqxx(m,i) + abssign
+               cqxx(m,i) = cqxx(m,i) + abs_sign
      &             * (1.d0 - dabs(s(mw,i))*dtdxave) * wave(m,mw,i)
 c
   119          continue
