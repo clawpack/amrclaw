@@ -78,6 +78,8 @@ c
       dimension          tout(maxout)
 
       integer oldmode,omp_get_max_threads
+      integer clock_start, clock_finish, clock_rate
+      
 c
 c
 c  you may want to turn this on for SUN workstation, or replace
@@ -433,6 +435,9 @@ c
       write(outunit,*) "  original total mass ..."
       call conck(1,nvar,naux,time,rest)
       call valout(1,lfine,time,nvar,naux)
+
+      ! Timing 
+      call system_clock(clock_start,clock_rate)
 c
 c     --------------------------------------------------------
 c     # tick is the main routine which drives the computation:
@@ -441,8 +446,18 @@ c     --------------------------------------------------------
      &          nout,tout,rest)
 c     --------------------------------------------------------
 
-c     # Done with computation, cleanup:
+      call system_clock(clock_finish,clock_rate)
+      write(outunit,800) dfloat(clock_finish-clock_start)
+     &                  /dfloat(clock_rate)
+ 800  format("Total time to solution = ",f16.8," s")
 
+      do level = 1, mxnest
+         write(outunit,801) level,tvoll(level)/clock_rate
+         write(*,801) level,tvoll(level)/clock_rate
+ 801     format("Total advanc time on level ",i3," = ",f16.8," s")
+      end do
+
+c     # Done with computation, cleanup:
 
       lentotsave = lentot
       call cleanup(nvar,naux)
@@ -464,9 +479,9 @@ c
       write(outunit,*)
       do i = 1, mxnest
         if (iregridcount(i) > 0) then
-          write(outunit,801) i,avenumgrids(i)/iregridcount(i),
+          write(outunit,802) i,avenumgrids(i)/iregridcount(i),
      1                       iregridcount(i)
- 801      format("for level ",i3, " average num. grids = ",f10.2,
+ 802      format("for level ",i3, " average num. grids = ",f10.2,
      1           " over ",i10," steps")
         endif
       end do
