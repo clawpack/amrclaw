@@ -246,7 +246,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
-    clawdata.checkpt_style = 1
+    clawdata.checkpt_style = 0
 
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all
@@ -279,12 +279,6 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.refinement_ratios_y = [2,2]
     amrdata.refinement_ratios_t = [2,2]
 
-    # Instead of setting refinement ratios in t, these can be chosen
-    # automatically if this is implemented:
-    amrdata.variable_dt_refinement_ratios = True
-    # Currently only available in GeoClaw, where it's needed for special
-    # case of tsunami modeling.  Is it useful more generally??
-
 
     # Specify type of each aux variable in amrdata.auxtype.
     # This must be a list of length num_aux, each element of which is one of:
@@ -300,8 +294,8 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.flag2refine = True      # use this?
     amrdata.flag2refine_tol = 0.05  # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
-    # Default: check maximum absolute difference of first component of q
-    # between a cell and each of its neighbors.
+    # Default: check max-norm of difference between q in a cell and 
+    # each of its neighbors.
 
     # steps to take on each level L between regriddings of level L+1:
     amrdata.regrid_interval = 2       
