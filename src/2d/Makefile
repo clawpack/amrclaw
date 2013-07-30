@@ -7,7 +7,7 @@
 # Makefile for Clawpack code in this directory.
 # This version only sets the local files and frequently changed
 # options, and then includes the standard makefile pointed to by CLAWMAKE.
-CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
+CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
 
 # See the above file for details and a list of make options, or type
 #   make .help
@@ -17,13 +17,8 @@ CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
 # an f90 compiler such as gfortran.
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
-FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-# INTEL ifort flags
-#FFLAGS ?=  -g -C -CB -CU -fpe0 -ftrapuv
-# gfortran flags
-# #FFLAGS = -g -fbounds-check -ffpe-trap=invalid,overflow,zero
-
+FFLAGS ?=  
 
 CLAW_LIB = $(shell pwd)
 
