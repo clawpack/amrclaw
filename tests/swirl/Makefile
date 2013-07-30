@@ -2,7 +2,7 @@
 # Makefile for Clawpack code in this directory.
 # This version only sets the local files and frequently changed
 # options, and then includes the standard makefile pointed to by CLAWMAKE.
-CLAWMAKE = $(CLAWUTIL)/src/Makefile.common
+CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
 
 # See the above file for details and a list of make options, or type
 #   make .help
@@ -22,16 +22,11 @@ PLOTDIR = _plots	                # Directory for plots
 OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
 RESTART ?= False                    # Should = clawdata.restart in setrun
 
-#FC = ifort
-#FFLAGS = -C -CB -CU -fpe1  -ftz -ftrapuv  -g -fp-model precise 
-#FFLAGS = -C -CB -CU -fpe1 -ftrapuv  -O2 -fp-model precise -openmp
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
-FC ?= gfortran   # default if not set as environment variable
-# Add any desired compiler flags such as -g here:
-FFLAGS ?= -O2 -fopenmp
-#FFLAGS = -W -Wall -fbounds-check -ffpe-trap=zero,overflow,invalid -g
-# intel ifort flags
-# FFLAGS =  -g -C -CB -CU -fpe0 -ftrapuv
+
+# Compiler flags can be specified here or set as an environment variable
+FFLAGS ?=  
+
 
 # ---------------------------------
 # List of sources for this program:
