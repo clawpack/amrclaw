@@ -113,8 +113,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 11
-        clawdata.tfinal = 1.1
+        clawdata.num_output_times = 25
+        clawdata.tfinal = 2.5
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -245,7 +245,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
-    clawdata.checkpt_style = 1
+    clawdata.checkpt_style = 0
 
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all
@@ -292,15 +292,15 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.flag2refine = True      # use this?
     amrdata.flag2refine_tol = 5.000000e-02  # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
-    # Default: check maximum absolute difference of first component of q
-    # between a cell and each of its neighbors.
+    # Default: check max-norm of difference between q in a cell and 
+    # each of its neighbors.
 
     # steps to take on each level L between regriddings of level L+1:
     amrdata.regrid_interval = 2       
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
-    amrdata.regrid_buffer_width  = 3
+    amrdata.regrid_buffer_width  = 2
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)
@@ -317,16 +317,6 @@ def setrun(claw_pkg='amrclaw'):
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
 
-    # Allow 2 levels anywhere, any time:
-    rundata.regiondata.regions.append([1, 2, 0.0, 1e9, 0.0, 1.0, 0.0, 1.0])
-
-    # Allow 3 regions in lower half of domain up to t=0.7:
-    rundata.regiondata.regions.append([1, 3, 0.0, 0.7, 0.0, 1.0, 0.0, 0.5])
-
-    # Force 3 regions some places:
-    rundata.regiondata.regions.append([3, 3, 0.0, 0.3, 0.8, 1.0, 0.0, 0.3])
-    rundata.regiondata.regions.append([3, 3, 0.9, 1.5, 0.2, 0.7, 0.0, 0.3])
-    
 
     #  ----- For developers ----- 
     # Toggle debugging print statements:
