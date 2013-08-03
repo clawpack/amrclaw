@@ -8,18 +8,53 @@ To modify for a different app or set of tests, see the code labelled "Test 1",
 "Test 2", etc.
 """
 
-from setrun_regression import setrun
-from setplot import setplot
-from clawpack.clawutil.runclaw import runclaw
-from clawpack.visclaw.plotclaw import plotclaw
-from clawpack.clawutil.compare_regression_tests import compare_regression_tests
-import os,sys
+import clawpack.clawutil.batch as batch
+
+# from setrun_regression import setrun
+# from setplot import setplot
+# from clawpack.clawutil.runclaw import runclaw
+# from clawpack.visclaw.plotclaw import plotclaw
+# from clawpack.clawutil.compare_regression_tests import compare_regression_tests
+# import os,sys
+
+class SwirlTest(batch.Test):
+
+    @property
+    def prefix(self):
+        return "swirl_level%s" % self.rundata.amrdata.amr_levels_max
+
+    def __init__(self, levels=3):
+        super(SwirlTest, self).__init__()
+
+        self.type = "AMRClaw"
+        self.name = "swirl"
+        self.setplot = "setplot"
+
+        # Data objects
+        import setrun
+        self.rundata = setrun.setrun()
+
+        self.rundata.amrdata.amr_levels_max = levels
+
+
+    def __str__(self):
+        output = super(SwirlTest, self).__str__()
+        output += "\n  AMR Levels = %s" % self.rundata.amrdata.amr_levels_max
+        return output
+
+
+    def write_data_objects(self):
+        """"""
+        super(SwirlTest, self).write_data_objects()
+        self.rundata.clawdata.write()
+        self.rundata.amrdata.write()
 
 
 def run_regression_tests(regression_dir="_regression_tests", \
             regression_output_files="all", \
             regression_plot_files="all", \
-            make_new=True, run_tests=True, compare_results=True):
+            make_new=True, run_tests=True, compare_results=True, \
+            relocatable=False):
 
     if make_new:
         # Compile code from scratch to make sure up to date:
@@ -94,10 +129,12 @@ def run_regression_tests(regression_dir="_regression_tests", \
 
         print "Output and plots are in ", regression_dir
 
+    regression_ok = None
 
     if compare_results:
         regression_ok = compare_regression_tests(regression_dir,\
-                        regression_output_files, regression_plot_files)
+                        regression_output_files, regression_plot_files, \
+                        relocatable=relocatable)
         if regression_ok:
             print "The specified regression files are identical in all"
             print "    directories checked"
@@ -106,21 +143,36 @@ def run_regression_tests(regression_dir="_regression_tests", \
 
     return regression_ok
 
+
 if __name__=="__main__":
 
-    # Location for regression results:
-    regression_dir = "_regression_tests"
+    tests = []
+    for levels in [1,2,3]:
+        tests.append(SwirlTest(levels))
 
-    # Which output files to check in order to "pass" this test:
-    # If these are identical for each test then run_regression_tests returns True.
-    regression_output_files = ['fort.q0002','fort.gauge']
-    regression_plot_files = ['frame0002fig0.png','gauge0001fig300.png']
+    batch.print_tests(tests)
 
-    # Specify what to do:
-    make_new = True         # run 'make new' to recompile everything?
-    run_tests = True        # run all the tests?
-    compare_results = True  # download archived results and compare?
+    # Need to have option to make binary and run regression tests themselves
+    paths = batch.run_tests(tests)
 
-    run_regression_tests(regression_dir, regression_output_files, \
-                regression_plot_files, \
-                make_new, run_tests, compare_results)
+    run_regression(tests)
+
+    # # Location for regression results:
+    # regression_dir = "_regression_tests"
+
+    # # Which output files to check in order to "pass" this test:
+    # # If these are identical for each test then run_regression_tests returns True.
+    # regression_output_files = ['fort.q0002','fort.gauge']
+    # regression_plot_files = ['frame0002fig0.png','gauge0001fig300.png']
+
+    # # Specify what to do:
+    # make_new = False        # run 'make new' to recompile everything?
+    # run_tests = False       # run all the tests?
+    # compare_results = True  # download archived results and compare?
+    # relocatable = True      # copy all image files so regression_dir can
+    #                         #      be moved, e.g. posted for discussion
+
+    # run_regression_tests(regression_dir, regression_output_files, \
+    #             regression_plot_files, \
+    #             make_new, run_tests, compare_results, \
+    #             relocatable=relocatable)
