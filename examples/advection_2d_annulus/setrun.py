@@ -24,13 +24,13 @@ def setrun(claw_pkg='amrclaw'):
     
     """ 
     
-    from clawpack.clawutil import clawdata 
+    from clawpack.clawutil import data 
     
     
     assert claw_pkg.lower() == 'amrclaw',  "Expected claw_pkg = 'amrclaw'"
 
     num_dim = 2
-    rundata = clawdata.ClawRunData(claw_pkg, num_dim)
+    rundata = data.ClawRunData(claw_pkg, num_dim)
 
     #------------------------------------------------------------------
     # Problem-specific parameters to be written to setprob.data:
