@@ -4,9 +4,9 @@
 
 import os
 
-import clawpack.clawutil.clawdata
+import clawpack.clawutil.data
 
-class AmrclawInputData(clawpack.clawutil.clawdata.ClawData):
+class AmrclawInputData(clawpack.clawutil.data.ClawData):
     r"""
     Data object containing AMRClaw input data.
 
@@ -116,7 +116,7 @@ class AmrclawInputData(clawpack.clawutil.clawdata.ClawData):
 
 # ==============================================================================
 #  Region data object
-class RegionData(clawpack.clawutil.clawdata.ClawData):
+class RegionData(clawpack.clawutil.data.ClawData):
     r""""""
 
     def __init__(self,regions=None):
@@ -142,7 +142,7 @@ class RegionData(clawpack.clawutil.clawdata.ClawData):
         
 # ==============================================================================
 #  Gauge data object
-class GaugeData(clawpack.clawutil.clawdata.ClawData):
+class GaugeData(clawpack.clawutil.data.ClawData):
     r""""""
 
     @property
