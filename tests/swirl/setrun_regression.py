@@ -113,9 +113,9 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 11
-        clawdata.tfinal = 1.1
-        clawdata.output_t0 = True  # output at initial (or restart) time?
+        clawdata.num_output_times = 2
+        clawdata.tfinal = 0.5 
+        clawdata.output_t0 = False
         
     elif clawdata.output_style == 2:
         # Specify a list or numpy array of output times:
@@ -235,7 +235,7 @@ def setrun(claw_pkg='amrclaw'):
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
     rundata.gaugedata.gauges.append([1, 0.4, 0.3, 0., 10.])
-    rundata.gaugedata.gauges.append([2, 0.6, 0.3, 0., 10.])
+    rundata.gaugedata.gauges.append([2, 0.6, 0.6, 0., 10.])
     
 
     # --------------
@@ -320,13 +320,9 @@ def setrun(claw_pkg='amrclaw'):
     # Allow 2 levels anywhere, any time:
     rundata.regiondata.regions.append([1, 2, 0.0, 1e9, 0.0, 1.0, 0.0, 1.0])
 
-    # Allow 3 regions in lower half of domain up to t=0.7:
-    rundata.regiondata.regions.append([1, 3, 0.0, 0.7, 0.0, 1.0, 0.0, 0.5])
+    # Allow 3 regions in lower half of domain up to t=0.3:
+    rundata.regiondata.regions.append([1, 3, 0.0, 0.3, 0.0, 1.0, 0.0, 0.5])
 
-    # Force 3 regions some places:
-    rundata.regiondata.regions.append([3, 3, 0.0, 0.3, 0.8, 1.0, 0.0, 0.3])
-    rundata.regiondata.regions.append([3, 3, 0.9, 1.5, 0.2, 0.7, 0.0, 0.3])
-    
 
     #  ----- For developers ----- 
     # Toggle debugging print statements:
