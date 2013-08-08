@@ -128,7 +128,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
         clawdata.output_step_interval = 1
-        clawdata.total_steps = 10
+        clawdata.total_steps = 15
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
@@ -166,9 +166,9 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.dt_max = 1.000000e+99
     
     # Desired Courant number if variable dt used 
-    clawdata.cfl_desired = 0.900000
+    clawdata.cfl_desired = 0.450000
     # max Courant number to allow without retaking step with a smaller dt:
-    clawdata.cfl_max = 1.000000
+    clawdata.cfl_max = .500000
     
     # Maximum number of time steps to allow between output times:
     clawdata.steps_max = 50000

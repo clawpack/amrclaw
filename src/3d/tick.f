@@ -128,11 +128,11 @@ c           write(*,*)" new possk is ", possk(1)
 
          do i = 2, mxnest
             possk(i) = possk(i-1) / kratio(i-1)
-            enddo
+         enddo
          if (nout .gt. 0) then
-        nextout = nextout + 1
-        dumpout = .true.
-            endif
+           nextout = nextout + 1
+           dumpout = .true.
+         endif
       endif
 
 

@@ -18,16 +18,17 @@ c     # set outaux = .true. to also output the aux arrays to fort.a<iframe>
       logical outaux
 
 
-      iadd(ivar,i,j,k)   = loc     +     (ivar-1)
-     &                             +     (i-1)*nvar
-     &                             +     (j-1)*nvar*mitot
-     &                             +     (k-1)*nvar*mitot*mjtot
-      iaddaux(iaux,i,j,k) = locaux +     (iaux-1)
-     &                             +     (i-1)*naux
-     &                             +     (j-1)*naux*mitot
-     &                             +     (k-1)*naux*mitot*mjtot
+      iadd(ivar,i,j,k)   = loc     +    (ivar-1)
+     &                             +    (i-1)*nvar
+     &                             +    (j-1)*nvar*mitot
+     &                             +    (k-1)*nvar*mitot*mjtot
+      iaddaux(iaux,i,j,k) = locaux +    (iaux-1)
+     &                             +    (i-1)*naux
+     &                             +    (j-1)*naux*mitot
+     &                             +    (k-1)*naux*mitot*mjtot
 
       outaux = .false.
+      matlabout = .true.
 c
 c
 
