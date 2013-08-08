@@ -3,9 +3,9 @@ c ------------------------------------------------------------
 c
       integer function nodget(dummy)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 c
 c ::::::::::::::::: NODGET ::::::::::::::::::::::::::::::::::::;
 c nodget =  get first free node of the linked list kept in node

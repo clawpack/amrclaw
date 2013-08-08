@@ -3,8 +3,8 @@ c -----------------------------------------------------
 c
       subroutine valout (lst, lend, time, nvar, naux)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
-      include  "call.i"
 
       parameter   (nDim = 3)
       character*14  fname

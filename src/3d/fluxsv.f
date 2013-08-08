@@ -5,10 +5,10 @@ c
      1                  listbc,
      2                  ndimx,ndimy,ndimz,nvar,maxsp,dtc,hx,hy,hz)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
       parameter(numbcs=6)
-      include  "call.i"
 
       dimension xfluxm(nvar,ndimx,ndimy,ndimz)
       dimension xfluxp(nvar,ndimx,ndimy,ndimz)

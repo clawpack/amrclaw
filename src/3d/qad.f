@@ -5,17 +5,17 @@ c
      .                svdflx,qc1d,lenbc,lratiox,lratioy,lratioz,
      .                hx,hy,hz,maux,aux,auxc1d,delt,mptr)
 
-       implicit double precision (a-h, o-z)
+      use amr_module
+      implicit double precision (a-h, o-z)
 
-       include "call.i"
 
-       logical qprint
+      logical qprint
 
-       dimension valbig(nvar,mitot,mjtot,mktot)
-       dimension qc1d(nvar,lenbc)
-       dimension svdflx(nvar,lenbc)
-       dimension aux(maux,mitot,mjtot,mktot)
-       dimension auxc1d(maux,lenbc)
+      dimension valbig(nvar,mitot,mjtot,mktot)
+      dimension qc1d(nvar,lenbc)
+      dimension svdflx(nvar,lenbc)
+      dimension aux(maux,mitot,mjtot,mktot)
+      dimension auxc1d(maux,lenbc)
 
 c
 c ::::::::::::::::::::::::::: QAD ::::::::::::::::::::::::::::::::::

@@ -3,13 +3,13 @@ c =======================================================================
       subroutine outval(val,nvar,mitot,mjtot,mktot,mptr,outgrd,naux,aux)
 c =======================================================================
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
       dimension  val(mitot,mjtot,mktot,nvar)
       dimension  aux(mitot,mjtot,mktot,naux)
       logical    outgrd
 
-      include  "call.i"
 
 c ::::::::::::::::::::::OUTVAL :::::::::::::::::::::::::::::::
 c print solution and aux. variables to output. 

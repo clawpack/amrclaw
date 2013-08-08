@@ -3,9 +3,8 @@ c --------------------------------------------------------------
 c
       subroutine advanc (level,nvar,dtlevnew,vtime,naux)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
-
-      include  "call.i"
 
       logical    vtime
       integer omp_get_thread_num, omp_get_max_threads
@@ -116,8 +115,9 @@ c -------------------------------------------------------------
 c
        subroutine prepgrids(listgrids, num, level)
 
+       use amr_module
        implicit double precision (a-h,o-z)
-       include "call.i"
+
        integer listgrids(num)
 
        mptr = lstart(level)
@@ -139,8 +139,8 @@ c --------------------------------------------------------------
 c
       subroutine par_advanc (mptr,mitot,mjtot,mktot,nvar,naux,dtnew)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
-      include "call.i"
 
       integer omp_get_thread_num, omp_get_max_threads
       integer mythread/0/, maxthreads/1/

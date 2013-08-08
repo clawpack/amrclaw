@@ -21,9 +21,10 @@ c
 c     # See the flux3 documentation for more information.
 c
 c
+      use amr_module
       implicit double precision(a-h,o-z)
+
       external rpn3,rpt3,rptt3
-      include  "call.i"
 
       dimension
      & qold(meqn, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc)

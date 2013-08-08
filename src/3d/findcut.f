@@ -10,15 +10,15 @@ c   either split at a hole, or use signatures to find
 c   zero crossing of laplacian.
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include "call.i"
 
       parameter(ithres = 2)
       parameter(minoff = 2)
 
       dimension iscr(idim), jscr(jdim), kscr(kdim)
-      dimension locval(4,numdim)
+      dimension locval(4,3)
 
 c
 c  look for holes first in horizontal then vertical then transverse direction

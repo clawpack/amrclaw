@@ -1,11 +1,11 @@
 c
 c ---------------------------------------------------------
 c
-      subroutine grdfit (lbase,lcheck,nvar,naux,cut,time,t0)
+      subroutine grdfit (lbase,lcheck,nvar,naux,cut,time,start_time)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 c
       dimension  corner(nsize,maxcl)
       integer    numptc(maxcl), prvptr
@@ -39,7 +39,7 @@ c     ## flagged points turned off due to proper nesting requirement.
 c     ## (storage based on nptmax calculation however).
 
       call flglvl (nvar, naux, lcheck, nptmax, index, lbase, 
-     .             i1flags,npts,t0,isize,jsize,ksize)
+     .             i1flags,npts,start_time,isize,jsize,ksize)
       if (npts .eq. 0) go to 99
 c
       levnew    = lcheck + 1
@@ -70,7 +70,7 @@ c
       prvptr  =  null
 c
  70   mnew      = nodget(dummy)
- 75   call  moment(node(1,mnew),alloc(index+numdim*ibase),numptc(icl),
+ 75   call  moment(node(1,mnew),alloc(index+3*ibase),numptc(icl),
      1             usage)
 
       if (gprint) write(outunit,100) icl,mnew,usage,numptc(icl)
@@ -96,7 +96,7 @@ c     ##  if new grid doesn't fit in base grid, nestck bisect it
 c     ##  and returns 2 clusters where there used to be 1.
 c
 c 2/28/02 : Add naux to argument list; needed by call to outtre in nestck.
-      fit = nestck(mnew,lbase,alloc(index+numdim*ibase),numptc(icl),
+      fit = nestck(mnew,lbase,alloc(index+3*ibase),numptc(icl),
      1            numptc,icl,nclust,i1flags,isize,jsize,ksize,nvar,naux)
       if (.not. fit) go to 75
 c
@@ -130,7 +130,7 @@ c    ## may have npts 0 but array was allocated due to initially flagged points
 c    ## that were not allowed for proper nesting or other reasons. in this case
 c    ## the array was still allocated, so need to test further to see if colating
 c    ## array space needs to be reclaimed
-      if (nptmax .gt. 0)  call reclam(index, numdim*nptmax)
+      if (nptmax .gt. 0)  call reclam(index, 3*nptmax)
 c
 c 99   call reclam(ldom2, (isize+2)*(jsize+2)*(ksize+2))
 

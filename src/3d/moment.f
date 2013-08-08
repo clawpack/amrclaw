@@ -3,11 +3,11 @@ c ----------------------------------------------------------
 c
       subroutine moment (intrect,badpts,npt,usage)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include "call.i"
 
-      dimension     intrect(nsize),badpts(numdim,npt)
+      dimension     intrect(nsize),badpts(3,npt)
 c
 c :::::::::::::::::::::::: MOMENT ::::::::::::::::::::::::::::::::::
 c  moment = compute enclosing rectangle around flagged points.

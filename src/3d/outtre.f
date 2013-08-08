@@ -3,10 +3,10 @@ c --------------------------------------------------------------
 c
       subroutine outtre(mlev,outgrd,nvar,naux)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
-      logical  outgrd
 
-      include  "call.i"
+      logical  outgrd
 c
 c ::::::::::::::::::::::: OUTTRE :::::::::::::::::::::::::::::::::::
 c

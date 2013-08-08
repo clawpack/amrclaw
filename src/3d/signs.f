@@ -4,12 +4,12 @@ c
        subroutine signs(badpts,npts,iscr,jscr,kscr,idim,jdim,kdim,
      &                  ist,iend,ilo,ihi,jlo,jhi,klo,khi)
 c
-       implicit double precision (a-h,o-z)
+      use amr_module
+      implicit double precision (a-h,o-z)
 
-       include "call.i"
  
-       dimension badpts(numdim,npts)
-       dimension iscr(idim), jscr(jdim), kscr(kdim)
+      dimension badpts(3,npts)
+      dimension iscr(idim), jscr(jdim), kscr(kdim)
 c
 c :::::::::::::::::::::::::::: SIGNS ::::::::::::::::::::::::::::::
 c  compute signatures = number of flagged cells in each row/column.

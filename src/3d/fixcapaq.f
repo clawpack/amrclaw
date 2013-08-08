@@ -3,9 +3,9 @@ c
      &                      valc,auxc,mic  ,mjc  ,mkc  ,
      &                      nvar,naux,levc)
 
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include "call.i"
 c
 c :::::::::::::::::::::::  FIXCAPAQ ::::::::::::::::::::::::::::::
 c  new fine grid solution q was linearly interpolated. but want

@@ -1,12 +1,13 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine ginit(msave, first, nvar, naux, t0)
+      subroutine ginit(msave, first, nvar, naux, start_time)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
+
       logical first
 
-      include  "call.i"
 
 c ::::::::::::::::::::::::::::: GINIT ::::::::::::::::::::::::
 c
@@ -57,7 +58,7 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
          loc2              = igetsp(mitot*mjtot*mktot*nvar)
          node(store2,mptr) = loc2
       endif
-      rnode(timemult, mptr) = t0
+      rnode(timemult, mptr) = start_time 
       go to 30
    20 continue
 c

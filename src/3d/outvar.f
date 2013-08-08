@@ -3,9 +3,9 @@ c -------------------------------------------------------------
 c
       subroutine outvar(rect,mitot,mjtot,mktot,nvar,mptr,ng)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       dimension rect(nvar,mitot,mjtot,mktot)
 

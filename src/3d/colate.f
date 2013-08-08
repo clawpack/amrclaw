@@ -4,11 +4,11 @@ c
       subroutine colate (badpts, len, lcheck, 
      1                   iflags,domflags,isize,jsize,ksize,npts)
 c
+      use amr_module
       implicit  double precision (a-h,o-z)
 
-      include  "call.i"
 
-      dimension badpts(numdim,len)
+      dimension badpts(3,len)
       integer*1 iflags  (0:isize+1,0:jsize+1,0:ksize+1)
       integer*1 domflags(0:isize+1,0:jsize+1,0:ksize+1)
 c

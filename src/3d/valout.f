@@ -11,11 +11,12 @@ c     # Use format required by matlab script  plotclaw3.m
 c
 c     # set outaux = .true. to also output the aux arrays to fort.a<iframe>
 
+      use amr_module
       implicit double precision (a-h,o-z)
+
       character*10  matname1, matname2, matname3
       logical outaux
 
-      include  "call.i"
 
       iadd(ivar,i,j,k)   = loc     +     (ivar-1)
      &                             +     (i-1)*nvar

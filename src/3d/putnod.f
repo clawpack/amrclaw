@@ -3,9 +3,9 @@ c -------------------------------------------------------------
 c
       subroutine putnod (mptr)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
 c :::::::::::::::::::::::::::::: PUTNOD :::::::::::::::::::::;
 c

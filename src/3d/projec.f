@@ -3,9 +3,9 @@ c ---------------------------------------------------------
 c
       subroutine projec(level,numpro,iflags,isize,jsize,ksize)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       integer*1 iflags(0:isize+1,0:jsize+1,0:ksize+1)
 c

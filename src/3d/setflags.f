@@ -4,9 +4,9 @@ c
       subroutine setflags(iflags,isize,jsize,ksize,
      1                    rctold,idim3,mitot,mjtot,mktot,mptr)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       dimension rctold(idim3,mitot,mjtot,mktot)
       integer*1 iflags(0:isize+1,0:jsize+1,0:ksize+1)

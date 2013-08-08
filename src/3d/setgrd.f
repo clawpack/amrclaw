@@ -1,11 +1,11 @@
 c
 c -----------------------------------------------------------------
 c
-      subroutine setgrd (nvar,cut,naux,dtinit,t0)
+      subroutine setgrd (nvar,cut,naux,dtinit,start_time)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       logical  vtime
       data     vtime/.false./
@@ -22,7 +22,7 @@ c
       if (mxnest .eq. 1) go to 99
 c
       levnew =  2
-      time   = t0
+      time   = start_time
 c
  10   if (levnew .gt. mxnest) go to 30
           levold = levnew - 1
@@ -48,17 +48,17 @@ c        dont count it in real integration stats
 c
 c  flag, cluster, and make new grids
 c
-         call grdfit(lbase,levold,nvar,naux,cut,time,t0)
+         call grdfit(lbase,levold,nvar,naux,cut,time,start_time)
          if (newstl(levnew) .ne. 0) lfnew = levnew
 c
 c  init new level. after each iteration. fix the data structure
 c  also reinitalize coarser grids so fine grids can be advanced
 c  and interpolate correctly for their bndry vals from coarser grids.
 c
-         call ginit(newstl(levnew),.true., nvar, naux,t0)
+         call ginit(newstl(levnew),.true., nvar, naux,start_time)
          lstart(levnew) = newstl(levnew)
          lfine = lfnew
-         call ginit(lstart(levold),.false., nvar, naux,t0)
+         call ginit(lstart(levold),.false., nvar, naux,start_time)
 c
 c count number of grids on newly created levels (needed for openmp
 c parallelization). this is also  done in regridding.
@@ -98,7 +98,7 @@ c
  50        itemp                = node(store1,mptr)
            node(store1,mptr)    = node(store2,mptr)
            node(store2,mptr)    = itemp
-           rnode(timemult,mptr) = t0
+           rnode(timemult,mptr) = start_time
            mptr                 = node(levelptr,mptr)
            if (mptr .ne. 0) go to 50
        lev = lev + 1

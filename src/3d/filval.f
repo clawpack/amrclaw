@@ -6,9 +6,9 @@ c
      2                  xleft,xright,yfront,yrear,zbot,ztop,nvar,
      3                  mptr,ilo,ihi,jlo,jhi,klo,khi,aux,naux)
 
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include "call.i"
 
       dimension   val(nvar,mitot,mjtot,mktot), valc(nvar,mic,mjc,mkc)
       dimension   aux(nvar,mitot,mjtot,mktot), auxc(nvar,mic,mjc,mkc)

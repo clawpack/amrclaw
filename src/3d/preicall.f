@@ -4,9 +4,9 @@ c
       subroutine preicall(val,aux,nrow,ncol,nfil,nvar,naux,
      1                    ilo,ihi,jlo,jhi,klo,khi,level)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       dimension val(nvar,nrow,ncol,nfil)
       dimension aux(naux,nrow,ncol,nfil)

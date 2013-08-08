@@ -1,4 +1,3 @@
-
 c
 c ------------------------------------------------------------------
 c
@@ -81,9 +80,8 @@ c     Don't overwrite ghost cells in periodic directions!
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
+      use amr_module, only:  mthbc
       implicit double precision (a-h,o-z)
-
-      common /combc3/ mthbc(6)
 
       dimension val(meqn,nrow,ncol,nfil)
       dimension aux(naux,nrow,ncol,nfil)

@@ -3,9 +3,8 @@ c -------------------------------------------------------------
 c
       subroutine errest (nvar,naux,lcheck)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
-
-      include  "call.i"
 
 c
 c     #   no sense computing new time step if just for error estimation,

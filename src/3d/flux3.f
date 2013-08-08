@@ -115,10 +115,11 @@ c            cmbsasdq = C^- B^* A^* Dq
 c            cpbsasdq = C^+ B^* A^* Dq
 c
 c
+      use amr_module
       implicit double precision(a-h,o-z)
+
       external rpn3,rpt3, rptt3
 
-      include "call.i"
 
       dimension     q1d(meqn,1-mbc:maxm+mbc)
       dimension    amdq(meqn,1-mbc:maxm+mbc)

@@ -24,9 +24,9 @@ c  used array marks when point filled. filpatch checks if points left over
 c  after intersections at specified level.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 c
       dimension   val(nvar,mi,mj,mk)
       logical     tinterp

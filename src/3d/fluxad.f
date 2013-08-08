@@ -7,9 +7,8 @@ c
      3                  ng,dtf,dx,dy,dz)
 c
 
+      use amr_module
       implicit double precision (a-h,o-z)
-
-      include  "call.i"
 
 c :::::::::::::::::::: FLUXAD ::::::::::::::::::::::::::::::::::
 c  save fine grid fluxes  at the border of the grid, for fixing
