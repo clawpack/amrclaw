@@ -13,6 +13,7 @@ UserVariable = 0;            % set to 1 to specify a user-defined variable
 UserVariableFile = ' ';      % name of m-file mapping data to q
 MappedGrid = 0;              % set to 1 if mapc2p.m exists for nonuniform grid
 MaxFrames = 1000;            % max number of frames to loop over
+ReadBlockNumber = 0;
 MaxLevels = 6;               % max number of AMR levels
 
 PlotData =  [1 1 1 0 0 0];       % Data on refinement level k is plotted only

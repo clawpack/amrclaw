@@ -26,30 +26,28 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 FC ?= gfortran   # default if not set as environment variable
 # Add any desired compiler flags such as -g here:
-FFLAGS ?=  -g
+FFLAGS ?=  -g -fbounds-check -ffpe-trap=zero,overflow,invalid -fopenmp
 
 # ---------------------------------
 # List of sources for this program:
 # ---------------------------------
-# MODULES = \
-#   $(AMRCLAW)/src/2d/amr_module.f90 \
-#   $(AMRCLAW)/src/2d/gauges_module.f90 \
-#   $(AMRCLAW)/src/2d/regions_module.f90 \
 
-MODULES = $(AMRCLAW)/src/3d/init_alloc.f
+MODULES = \
+   $(AMRCLAW)/src/3d/amr_module.f90 \
 
 SOURCES = \
   qinit.f \
+  setprob.f \
   ../rp/rpn3eu.f \
   ../rp/rpt3eu.f \
   ../rp/rptt3eu.f \
-  $(AMRCLAW)/src/3d/setaux.f \
-  $(AMRCLAW)/src/3d/amr3ez.f \
   $(AMRCLAW)/src/3d/bc3amr.f \
+  $(AMRCLAW)/src/3d/setaux.f \
+  $(AMRCLAW)/src/3d/amr3.f90 \
+  $(AMRCLAW)/src/3d/opendatafile.f \
   $(AMRCLAW)/src/3d/b4step3.f \
   $(AMRCLAW)/src/3d/qad.f \
   $(AMRCLAW)/src/3d/src3.f \
-  setprob.f \
   $(AMRCLAW)/src/3d/src1d.f \
   $(AMRCLAW)/src/3d/advanc.f \
   $(AMRCLAW)/src/3d/bound.f \
@@ -125,8 +123,9 @@ SOURCES = \
   $(AMRCLAW)/src/3d/valout.f \
   $(AMRCLAW)/src/3d/check.f \
   $(AMRCLAW)/src/3d/restrt.f \
-  $(AMRCLAW)/src/3d/resize_alloc.f \
-  $(AMRCLAW)/src/3d/restrt_alloc.f
+  $(AMRCLAW)/src/3d/init_alloc.f90 \
+  $(AMRCLAW)/src/3d/resize_alloc.f90 \
+  $(AMRCLAW)/src/3d/restrt_alloc.f90
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
