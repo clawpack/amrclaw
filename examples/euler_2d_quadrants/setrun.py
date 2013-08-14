@@ -191,9 +191,9 @@ def setrun(claw_pkg='amrclaw'):
     #   0 or 'none'     ==> no limiter (Lax-Wendroff)
     #   1 or 'minmod'   ==> minmod
     #   2 or 'superbee' ==> superbee
-    #   3 or 'mc'       ==> MC limiter
-    #   4 or 'vanleer'  ==> van Leer
-    clawdata.limiter = ['vanleer', 'vanleer', 'vanleer', 'vanleer']
+    #   3 or 'vanleer'  ==> van Leer
+    #   4 or 'mc'       ==> MC limiter
+    clawdata.limiter = ['mc', 'mc', 'mc', 'mc']
     
     clawdata.use_fwaves = False    # True ==> use f-wave version of algorithms
     
