@@ -106,6 +106,7 @@ c
 c
       call system_clock(clock_finish,clock_rate)
       tvoll(level) = tvoll(level) + clock_finish - clock_start
+      cflmax = dmax1(cflmax,cfl_level)
 
 c
       return
