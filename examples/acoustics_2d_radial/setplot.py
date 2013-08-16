@@ -125,7 +125,7 @@ def setplot(plotdata):
     plotdata.print_fignos = 'all'            # list of figures to print
     plotdata.html = True                     # create html files of plots?
     plotdata.html_homelink = '../README.html'   # pointer for top of index
-    plotdata.html_movie = 'JSAnimation'      # new style, or True for old style
+    plotdata.html_movie = 'JSAnimation'      # new style, or "4.x" for old style
     plotdata.latex = True                    # create latex file of plots?
     plotdata.latex_figsperline = 2           # layout of plots
     plotdata.latex_framesperline = 1         # layout of plots
