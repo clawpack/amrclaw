@@ -125,7 +125,6 @@ c
 
 !$OMP  CRITICAL (cflm)
 
-        cflmax = dmax1(cflmax,cflgrid)
         cfl_level = dmax1(cfl_level,cflgrid)
 
 !$OMP END CRITICAL (cflm)
