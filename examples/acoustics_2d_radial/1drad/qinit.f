@@ -1,7 +1,7 @@
 c
 c
 c =========================================================
-       subroutine qinit(maxmx,meqn,mbc,mx,xlower,dx,q,maux,aux)
+       subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 c =========================================================
 c
 c     # Set initial conditions for q.
@@ -9,8 +9,8 @@ c     # Pulse in pressure, zero velocity
 c
 c
       implicit double precision (a-h,o-z)
-      dimension q(meqn, 1-mbc:maxmx+mbc)
-      dimension aux(maux, 1-mbc:maxmx+mbc)
+      dimension q(meqn, 1-mbc:mx+mbc)
+      dimension aux(maux, 1-mbc:mx+mbc)
 c
       pi = 4.d0*datan(1.d0)
       width = 0.2d0
