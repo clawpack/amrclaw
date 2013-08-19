@@ -31,8 +31,8 @@ c     # of wave.
 c
       implicit real*8(a-h,o-z)
       dimension mthlim(mwaves)
-      dimension wave(1-mbc:maxm+mbc, meqn, mwaves)
-      dimension    s(1-mbc:maxm+mbc, mwaves)
+      dimension wave(meqn, mwaves, 1-mbc:maxm+mbc)
+      dimension    s(mwaves, 1-mbc:maxm+mbc)
 c
 c
       do 200 mw=1,mwaves
@@ -43,13 +43,13 @@ c
             dotl = dotr
             dotr = 0.d0
             do 5 m=1,meqn
-               wnorm2 = wnorm2 + wave(i,m,mw)**2
-               dotr = dotr + wave(i,m,mw)*wave(i+1,m,mw)
+               wnorm2 = wnorm2 + wave(m,mw,i)**2
+               dotr = dotr + wave(m,mw,i)*wave(m,mw,i+1)
     5          continue
             if (i.eq.0) go to 190
             if (wnorm2.eq.0.d0) go to 190
 c
-            if (s(i,mw) .gt. 0.d0) then
+            if (s(mw,i) .gt. 0.d0) then
                 r = dotl / wnorm2
               else
                 r = dotr / wnorm2
@@ -98,7 +98,7 @@ c
 c           # apply limiter to waves:
 c
             do 180 m=1,meqn
-               wave(i,m,mw) = wlimitr * wave(i,m,mw)
+               wave(m,mw,i) = wlimitr * wave(m,mw,i)
   180          continue
 
   190       continue

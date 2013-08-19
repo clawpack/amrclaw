@@ -1,0 +1,14 @@
+
+claw/applications/burgers/3d/cubedata
+
+3d Burgers' equation
+       q_t  +  u*(.5*q^2)_x + v*(.5*q^2)_y + w*(.5*q^2)_z = 0
+
+solved with u = v = w = 1.
+The initial data consists of q=1 inside the cube [.1,.5] x [.1,.5] x [.1,.5]
+and q=0 elsewhere.
+
+Along every ray in the direction (1,1,1), the solution should look like a
+shock followed by a rarefaction wave.
+
+u,v,w are set in setprob.f

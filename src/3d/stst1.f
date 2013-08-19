@@ -3,9 +3,9 @@ c --------------------------------------------------------------
 c
       subroutine stst1
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
 c
 c :::::::::::::::::::::::::::::: STST1 ::::::::::::::::::::::::::::::::
@@ -56,6 +56,7 @@ c after kcheck integrations of parent grid, move its refinements.
 c finest level grid never needs to have its finer subgrids moved.
 c
       do 60 i   = 1, maxlv
+         tvoll(i) = 0.d0
          iregridcount(i) = 0
          avenumgrids(i) = 0
          numgrids(i) = 0

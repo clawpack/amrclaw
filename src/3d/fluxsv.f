@@ -5,17 +5,17 @@ c
      1                  listbc,
      2                  ndimx,ndimy,ndimz,nvar,maxsp,dtc,hx,hy,hz)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
       parameter(numbcs=6)
-      include  "call.i"
 
-      dimension xfluxm(ndimx,ndimy,ndimz,nvar)
-      dimension xfluxp(ndimx,ndimy,ndimz,nvar)
-      dimension yfluxm(ndimx,ndimy,ndimz,nvar)
-      dimension yfluxp(ndimx,ndimy,ndimz,nvar)
-      dimension zfluxm(ndimx,ndimy,ndimz,nvar)
-      dimension zfluxp(ndimx,ndimy,ndimz,nvar)
+      dimension xfluxm(nvar,ndimx,ndimy,ndimz)
+      dimension xfluxp(nvar,ndimx,ndimy,ndimz)
+      dimension yfluxm(nvar,ndimx,ndimy,ndimz)
+      dimension yfluxp(nvar,ndimx,ndimy,ndimz)
+      dimension zfluxm(nvar,ndimx,ndimy,ndimz)
+      dimension zfluxp(nvar,ndimx,ndimy,ndimz)
       dimension listbc(numbcs,maxsp)
 c
 c :::::::::::::::::::: FLUXSV :::::::::::::::::::::::::
@@ -47,42 +47,42 @@ c
          if (listbc(4,ispot) .eq. 1) then
 c	    ::::: Cell i,j,k is on right side of a fine grid
 	    do 100 ivar = 1, nvar
-              alloc(inlist + ivar) = -xfluxp(i  ,j  ,k  ,ivar)*dtc*hy*hz
+              alloc(inlist + ivar) = -xfluxp(ivar,i  ,j  ,k  )*dtc*hy*hz
 100	    continue
          endif
 
          if (listbc(4,ispot) .eq. 2) then
 c	    ::::: Cell i,j,k is on front side of fine grid
 	    do 200 ivar = 1, nvar
-              alloc(inlist + ivar) = -yfluxm(i  ,j+1,k  ,ivar)*dtc*hx*hz
+              alloc(inlist + ivar) = -yfluxm(ivar,i  ,j+1,k  )*dtc*hx*hz
 200	    continue
          endif
 
          if (listbc(4,ispot) .eq. 3) then
 c	    ::::: Cell i,j,k is on left side of fine grid
 	    do 300 ivar = 1, nvar
-              alloc(inlist + ivar) = -xfluxm(i+1,j  ,k  ,ivar)*dtc*hy*hz
+              alloc(inlist + ivar) = -xfluxm(ivar,i+1,j  ,k  )*dtc*hy*hz
 300	    continue
          endif
 
          if (listbc(4,ispot) .eq. 4) then
 c	    ::::: Cell i,j,k is on rear side of fine grid
 	    do 400 ivar = 1, nvar
-              alloc(inlist + ivar) = -yfluxp(i  ,j  ,k  ,ivar)*dtc*hx*hz
+              alloc(inlist + ivar) = -yfluxp(ivar,i  ,j  ,k  )*dtc*hx*hz
 400	    continue
          endif
 
          if (listbc(4,ispot) .eq. 5) then
 c           ::::: Cell i,j,k is on top side of fine grid
             do 500 ivar = 1, nvar
-              alloc(inlist + ivar) = -zfluxp(i  ,j  ,k  ,ivar)*dtc*hx*hy
+              alloc(inlist + ivar) = -zfluxp(ivar,i  ,j  ,k  )*dtc*hx*hy
 500         continue
          endif
 
          if (listbc(4,ispot) .eq. 6) then
 c           ::::: Cell i,j,k is on bottom side of fine grid
             do 600 ivar = 1, nvar
-              alloc(inlist + ivar) = -zfluxm(i  ,j  ,k+1,ivar)*dtc*hx*hy
+              alloc(inlist + ivar) = -zfluxm(ivar,i  ,j  ,k+1)*dtc*hx*hy
 600         continue
          endif
 c

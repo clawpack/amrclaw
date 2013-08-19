@@ -12,10 +12,10 @@ c     # dummy routine
 c
 c     
       implicit double precision (a-h,o-z)
-      dimension    q(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc,
-     &               1-mbc:maxmz+mbc, meqn)
-      dimension  aux(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 
-     &               1-mbc:maxmz+mbc, maux)
+      dimension    q(meqn,1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc,
+     &               1-mbc:maxmz+mbc)
+      dimension  aux(maux,1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 
+     &               1-mbc:maxmz+mbc)
 c
       return
       end

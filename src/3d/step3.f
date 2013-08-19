@@ -21,48 +21,43 @@ c
 c     # See the flux3 documentation for more information.
 c
 c
+      use amr_module
       implicit double precision(a-h,o-z)
-      external rpn3,rpt3,rptt3
-      include  "call.i"
 
-      dimension qold(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc,
-     &               1-mbc:maxmz+mbc, meqn)
-      dimension  q1d(1-mbc:maxm+mbc, meqn)
+      external rpn3,rpt3,rptt3
+
+      dimension
+     & qold(meqn, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc)
+      dimension q1d(meqn, 1-mbc:maxm+mbc)
 c
-      dimension   fm(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
-      dimension   fp(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
-      dimension   gm(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
-      dimension   gp(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
-      dimension   hm(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
-      dimension   hp(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc,
-     &                meqn)
+      dimension fm(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
+      dimension fp(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
+      dimension gm(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
+      dimension gp(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
+      dimension hm(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
+      dimension hp(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
 c
-      dimension faddm(1-mbc:maxm+mbc, meqn)
-      dimension faddp(1-mbc:maxm+mbc, meqn)
-      dimension  gadd(1-mbc:maxm+mbc, meqn, 2, -1:1)
-      dimension  hadd(1-mbc:maxm+mbc, meqn, 2, -1:1)
+      dimension faddm(meqn, 1-mbc:maxm+mbc)
+      dimension faddp(meqn, 1-mbc:maxm+mbc)
+      dimension  gadd(meqn, 1-mbc:maxm+mbc, 2, -1:1)
+      dimension  hadd(meqn, 1-mbc:maxm+mbc, 2, -1:1)
 c
-      dimension aux(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc,
-     &              1-mbc:maxmz+mbc, *)
-      dimension aux1(1-mbc:maxm+mbc, maux, 3)
-      dimension aux2(1-mbc:maxm+mbc, maux, 3)
-      dimension aux3(1-mbc:maxm+mbc, maux, 3)
+      dimension
+     & aux(maux, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, 1-mbc:maxmz+mbc)
+      dimension aux1(maux, 1-mbc:maxm+mbc, 3)
+      dimension aux2(maux, 1-mbc:maxm+mbc, 3)
+      dimension aux3(maux, 1-mbc:maxm+mbc, 3)
       dimension dtdx1d(1-mbc:maxm+mbc)
       dimension dtdy1d(1-mbc:maxm+mbc)
       dimension dtdz1d(1-mbc:maxm+mbc)
       dimension work(mwork)
-      common /comxyzt/ dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
+c$$$      common /comxyzt/ dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
 c
 c     # store mesh parameters that may be needed in Riemann solver but not
 c     # passed in...
-      dxcom = dx
-      dycom = dy
-      dtcom = dt
+c$$$      dxcom = dx
+c$$$      dycom = dy
+c$$$      dtcom = dt
 c
 c
 c     # partition work array into pieces needed for local storage in
@@ -128,17 +123,17 @@ c
       dtdy = dt/dy
       dtdz = dt/dz
 c
-      do 10 m=1,meqn
-         do 10 i=1-mbc,mx+mbc
-            do 10 j=1-mbc,my+mbc
-              do 10 k=1-mbc,mz+mbc
-               fm(i,j,k,m) = 0.d0
-               fp(i,j,k,m) = 0.d0
-               gm(i,j,k,m) = 0.d0
-               gp(i,j,k,m) = 0.d0
-               hm(i,j,k,m) = 0.d0
-               hp(i,j,k,m) = 0.d0
-   10          continue
+      do 10 i=1-mbc,mx+mbc
+         do 10 j=1-mbc,my+mbc
+            do 10 k=1-mbc,mz+mbc
+               do 10 m=1,meqn
+                  fm(m,i,j,k) = 0.d0
+                  fp(m,i,j,k) = 0.d0
+                  gm(m,i,j,k) = 0.d0
+                  gp(m,i,j,k) = 0.d0
+                  hm(m,i,j,k) = 0.d0
+                  hp(m,i,j,k) = 0.d0
+ 10            continue
 
 c
       if (mcapa.eq.0) then
@@ -157,30 +152,30 @@ c
       do 50 k = 0,mz+1
          do 50 j = 0,my+1
 c
- 	    do 20 m=1,meqn
- 	       do 20 i = 1-mbc, mx+mbc
+            do 20 i = 1-mbc, mx+mbc
+               do 20 m=1,meqn
 c                 # copy data along a slice into 1d array:
- 	          q1d(i,m) = qold(i,j,k,m)
+ 	          q1d(m,i) = qold(m,i,j,k)
    20          continue
 c
          if (mcapa.gt.0)  then
            do 23 i = 1-mbc, mx+mbc
-               dtdx1d(i) = dtdx / aux(i,j,k,mcapa)
+               dtdx1d(i) = dtdx / aux(mcapa,i,j,k)
    23      continue
          endif
 c
          if (maux .gt. 0)  then
-             do 22 ma=1,maux
-               do 22 i = 1-mbc, mx+mbc
-                 aux1(i,ma,1) = aux(i,j-1,k-1,ma)
-                 aux1(i,ma,2) = aux(i,j-1,k,ma)
-                 aux1(i,ma,3) = aux(i,j-1,k+1,ma)
-                 aux2(i,ma,1) = aux(i,j,k-1,ma)
-                 aux2(i,ma,2) = aux(i,j,k,ma)
-                 aux2(i,ma,3) = aux(i,j,k+1,ma)
-                 aux3(i,ma,1) = aux(i,j+1,k-1,ma)
-                 aux3(i,ma,2) = aux(i,j+1,k,ma)
-                 aux3(i,ma,3) = aux(i,j+1,k+1,ma)
+            do 22 i = 1-mbc, mx+mbc
+               do 22 ma=1,maux
+                 aux1(ma,i,1) = aux(ma,i,j-1,k-1)
+                 aux1(ma,i,2) = aux(ma,i,j-1,k)
+                 aux1(ma,i,3) = aux(ma,i,j-1,k+1)
+                 aux2(ma,i,1) = aux(ma,i,j,k-1)
+                 aux2(ma,i,2) = aux(ma,i,j,k)
+                 aux2(ma,i,3) = aux(ma,i,j,k+1)
+                 aux3(ma,i,1) = aux(ma,i,j+1,k-1)
+                 aux3(ma,i,2) = aux(ma,i,j+1,k)
+                 aux3(ma,i,3) = aux(ma,i,j+1,k+1)
    22          continue
            endif
 c
@@ -188,8 +183,8 @@ c	    # Store the value of j and k along this slice in the common block
 c           # comxyt in case it is needed in the Riemann solver (for
 c           # variable coefficient problems)
 c
-	    jcom = j
-            kcom = k
+c$$$	    jcom = j
+c$$$        kcom = k
 c
 c           # compute modifications fadd, gadd and hadd to fluxes along
 c           # this slice:
@@ -221,38 +216,38 @@ c
 c
 c        # update fluxes for use in AMR:
 c
-         do 25 m=1,meqn
             do 25 i=1,mx+1
-               fm(i,j,k,m) = fm(i,j,k,m) + faddm(i,m)
-               fp(i,j,k,m) = fp(i,j,k,m) + faddp(i,m)
+               do 25 m=1,meqn
+               fm(m,i,j,k) = fm(m,i,j,k) + faddm(m,i)
+               fp(m,i,j,k) = fp(m,i,j,k) + faddp(m,i)
 c
-               gm(i,j  ,k-1,m) = gm(i,j  ,k-1,m) + gadd(i,m,1,-1)
-               gp(i,j  ,k-1,m) = gp(i,j  ,k-1,m) + gadd(i,m,1,-1)
-               gm(i,j  ,k,  m) = gm(i,j  ,k,  m) + gadd(i,m,1, 0)
-               gp(i,j  ,k,  m) = gp(i,j  ,k,  m) + gadd(i,m,1, 0)
-               gm(i,j  ,k+1,m) = gm(i,j  ,k+1,m) + gadd(i,m,1, 1)
-               gp(i,j  ,k+1,m) = gp(i,j  ,k+1,m) + gadd(i,m,1, 1)
+               gm(m,i,j  ,k-1) = gm(m,i,j  ,k-1) + gadd(m,i,1,-1)
+               gp(m,i,j  ,k-1) = gp(m,i,j  ,k-1) + gadd(m,i,1,-1)
+               gm(m,i,j  ,k  ) = gm(m,i,j  ,k  ) + gadd(m,i,1, 0)
+               gp(m,i,j  ,k  ) = gp(m,i,j  ,k  ) + gadd(m,i,1, 0)
+               gm(m,i,j  ,k+1) = gm(m,i,j  ,k+1) + gadd(m,i,1, 1)
+               gp(m,i,j  ,k+1) = gp(m,i,j  ,k+1) + gadd(m,i,1, 1)
 c
-               gm(i,j+1,k-1,m) = gm(i,j+1,k-1,m) + gadd(i,m,2,-1)
-               gp(i,j+1,k-1,m) = gp(i,j+1,k-1,m) + gadd(i,m,2,-1)
-               gm(i,j+1,k,  m) = gm(i,j+1,k,  m) + gadd(i,m,2, 0)
-               gp(i,j+1,k,  m) = gp(i,j+1,k,  m) + gadd(i,m,2, 0)
-               gm(i,j+1,k+1,m) = gm(i,j+1,k+1,m) + gadd(i,m,2, 1)
-               gp(i,j+1,k+1,m) = gp(i,j+1,k+1,m) + gadd(i,m,2, 1)
+               gm(m,i,j+1,k-1) = gm(m,i,j+1,k-1) + gadd(m,i,2,-1)
+               gp(m,i,j+1,k-1) = gp(m,i,j+1,k-1) + gadd(m,i,2,-1)
+               gm(m,i,j+1,k  ) = gm(m,i,j+1,k  ) + gadd(m,i,2, 0)
+               gp(m,i,j+1,k  ) = gp(m,i,j+1,k  ) + gadd(m,i,2, 0)
+               gm(m,i,j+1,k+1) = gm(m,i,j+1,k+1) + gadd(m,i,2, 1)
+               gp(m,i,j+1,k+1) = gp(m,i,j+1,k+1) + gadd(m,i,2, 1)
 c
-               hm(i,j-1,k  ,m) = hm(i,j-1,k  ,m) + hadd(i,m,1,-1)
-               hp(i,j-1,k  ,m) = hp(i,j-1,k  ,m) + hadd(i,m,1,-1)
-               hm(i,j  ,k  ,m) = hm(i,j  ,k  ,m) + hadd(i,m,1, 0)
-               hp(i,j  ,k  ,m) = hp(i,j  ,k  ,m) + hadd(i,m,1, 0)
-               hm(i,j+1,k  ,m) = hm(i,j+1,k  ,m) + hadd(i,m,1, 1)
-               hp(i,j+1,k  ,m) = hp(i,j+1,k  ,m) + hadd(i,m,1, 1)
+               hm(m,i,j-1,k) = hm(m,i,j-1,k) + hadd(m,i,1,-1)
+               hp(m,i,j-1,k) = hp(m,i,j-1,k) + hadd(m,i,1,-1)
+               hm(m,i,j  ,k) = hm(m,i,j  ,k) + hadd(m,i,1, 0)
+               hp(m,i,j  ,k) = hp(m,i,j  ,k) + hadd(m,i,1, 0)
+               hm(m,i,j+1,k) = hm(m,i,j+1,k) + hadd(m,i,1, 1)
+               hp(m,i,j+1,k) = hp(m,i,j+1,k) + hadd(m,i,1, 1)
 c
-               hm(i,j-1,k+1,m) = hm(i,j-1,k+1,m) + hadd(i,m,2,-1)
-               hp(i,j-1,k+1,m) = hp(i,j-1,k+1,m) + hadd(i,m,2,-1)
-               hm(i,j  ,k+1,m) = hm(i,j  ,k+1,m) + hadd(i,m,2, 0)
-               hp(i,j  ,k+1,m) = hp(i,j  ,k+1,m) + hadd(i,m,2, 0)
-               hm(i,j+1,k+1,m) = hm(i,j+1,k+1,m) + hadd(i,m,2, 1)
-               hp(i,j+1,k+1,m) = hp(i,j+1,k+1,m) + hadd(i,m,2, 1)
+               hm(m,i,j-1,k+1) = hm(m,i,j-1,k+1) + hadd(m,i,2,-1)
+               hp(m,i,j-1,k+1) = hp(m,i,j-1,k+1) + hadd(m,i,2,-1)
+               hm(m,i,j  ,k+1) = hm(m,i,j  ,k+1) + hadd(m,i,2, 0)
+               hp(m,i,j  ,k+1) = hp(m,i,j  ,k+1) + hadd(m,i,2, 0)
+               hm(m,i,j+1,k+1) = hm(m,i,j+1,k+1) + hadd(m,i,2, 1)
+               hp(m,i,j+1,k+1) = hp(m,i,j+1,k+1) + hadd(m,i,2, 1)
 
    25          continue
    50    continue
@@ -265,30 +260,30 @@ c
       do 100 k = 0, mz+1
          do 100 i = 0, mx+1
 c
-	    do 70 m=1,meqn
-	       do 70 j = 1-mbc, my+mbc
+            do 70 j = 1-mbc, my+mbc
+               do 70 m=1,meqn
 c                 # copy data along a slice into 1d array:
-	          q1d(j,m) = qold(i,j,k,m)
+	          q1d(m,j) = qold(m,i,j,k)
    70          continue
 c
          if (mcapa.gt.0)  then
            do 71 j = 1-mbc, my+mbc
-               dtdy1d(j) = dtdy / aux(i,j,k,mcapa)
+               dtdy1d(j) = dtdy / aux(mcapa,i,j,k)
    71      continue
          endif
 c
          if (maux .gt. 0)  then
-             do 72 ma=1,maux
-               do 72 j = 1-mbc, my+mbc
-                 aux1(j,ma,1) = aux(i-1,j,k-1,ma)
-                 aux1(j,ma,2) = aux(i,j,k-1,ma)
-                 aux1(j,ma,3) = aux(i+1,j,k-1,ma)
-                 aux2(j,ma,1) = aux(i-1,j,k,ma)
-                 aux2(j,ma,2) = aux(i,j,k,ma)
-                 aux2(j,ma,3) = aux(i+1,j,k,ma)
-                 aux3(j,ma,1) = aux(i-1,j,k+1,ma)
-                 aux3(j,ma,2) = aux(i,j,k+1,ma)
-                 aux3(j,ma,3) = aux(i+1,j,k+1,ma)
+            do 72 j = 1-mbc, my+mbc
+               do 72 ma=1,maux
+                 aux1(ma,j,1) = aux(ma,i-1,j,k-1)
+                 aux1(ma,j,2) = aux(ma,i,j,k-1)
+                 aux1(ma,j,3) = aux(ma,i+1,j,k-1)
+                 aux2(ma,j,1) = aux(ma,i-1,j,k)
+                 aux2(ma,j,2) = aux(ma,i,j,k)
+                 aux2(ma,j,3) = aux(ma,i+1,j,k)
+                 aux3(ma,j,1) = aux(ma,i-1,j,k+1)
+                 aux3(ma,j,2) = aux(ma,i,j,k+1)
+                 aux3(ma,j,3) = aux(ma,i+1,j,k+1)
    72          continue
          endif
 c
@@ -296,8 +291,8 @@ c	    # Store the value of i and k along this slice in the common block
 c           # comxyzt in case it is needed in the Riemann solver (for
 c           # variable coefficient problems)
 c
-            icom = i
-            kcom = k
+c$$$            icom = i
+c$$$            kcom = k
 c
 c           # compute modifications fadd, gadd and hadd to fluxes along this
 c           # slice:
@@ -334,38 +329,38 @@ c           # fadd - modifies the g-fluxes
 c           # gadd - modifies the h-fluxes
 c           # hadd - modifies the f-fluxes
 c
-         do 75 m=1,meqn
             do 75 j=1,my+1
-               gm(i,j,k,m) = gm(i,j,k,m) + faddm(j,m)
-               gp(i,j,k,m) = gp(i,j,k,m) + faddp(j,m)
+               do 75 m=1,meqn
+               gm(m,i,j,k) = gm(m,i,j,k) + faddm(m,j)
+               gp(m,i,j,k) = gp(m,i,j,k) + faddp(m,j)
 c
-               hm(i-1,j,k  ,m) = hm(i-1,j,k  ,m) + gadd(j,m,1,-1)
-               hp(i-1,j,k  ,m) = hp(i-1,j,k  ,m) + gadd(j,m,1,-1)
-               hm(i  ,j,k  ,m) = hm(i  ,j,k  ,m) + gadd(j,m,1, 0)
-               hp(i  ,j,k  ,m) = hp(i  ,j,k  ,m) + gadd(j,m,1, 0)
-               hm(i+1,j,k  ,m) = hm(i+1,j,k  ,m) + gadd(j,m,1, 1)
-               hp(i+1,j,k  ,m) = hp(i+1,j,k  ,m) + gadd(j,m,1, 1)
+               hm(m,i-1,j,k) = hm(m,i-1,j,k) + gadd(m,j,1,-1)
+               hp(m,i-1,j,k) = hp(m,i-1,j,k) + gadd(m,j,1,-1)
+               hm(m,i  ,j,k) = hm(m,i  ,j,k) + gadd(m,j,1, 0)
+               hp(m,i  ,j,k) = hp(m,i  ,j,k) + gadd(m,j,1, 0)
+               hm(m,i+1,j,k) = hm(m,i+1,j,k) + gadd(m,j,1, 1)
+               hp(m,i+1,j,k) = hp(m,i+1,j,k) + gadd(m,j,1, 1)
 c
-               hm(i-1,j,k+1,m) = hm(i-1,j,k+1,m) + gadd(j,m,2,-1)
-               hp(i-1,j,k+1,m) = hp(i-1,j,k+1,m) + gadd(j,m,2,-1)
-               hm(i  ,j,k+1,m) = hm(i  ,j,k+1,m) + gadd(j,m,2, 0)
-               hp(i  ,j,k+1,m) = hp(i  ,j,k+1,m) + gadd(j,m,2, 0)
-               hm(i+1,j,k+1,m) = hm(i+1,j,k+1,m) + gadd(j,m,2, 1)
-               hp(i+1,j,k+1,m) = hp(i+1,j,k+1,m) + gadd(j,m,2, 1)
+               hm(m,i-1,j,k+1) = hm(m,i-1,j,k+1) + gadd(m,j,2,-1)
+               hp(m,i-1,j,k+1) = hp(m,i-1,j,k+1) + gadd(m,j,2,-1)
+               hm(m,i  ,j,k+1) = hm(m,i  ,j,k+1) + gadd(m,j,2, 0)
+               hp(m,i  ,j,k+1) = hp(m,i  ,j,k+1) + gadd(m,j,2, 0)
+               hm(m,i+1,j,k+1) = hm(m,i+1,j,k+1) + gadd(m,j,2, 1)
+               hp(m,i+1,j,k+1) = hp(m,i+1,j,k+1) + gadd(m,j,2, 1)
 c
-               fm(i  ,j,k-1,m) = fm(i  ,j,k-1,m) + hadd(j,m,1,-1)
-               fp(i  ,j,k-1,m) = fp(i  ,j,k-1,m) + hadd(j,m,1,-1)
-               fm(i  ,j,k  ,m) = fm(i  ,j,k  ,m) + hadd(j,m,1, 0)
-               fp(i  ,j,k  ,m) = fp(i  ,j,k  ,m) + hadd(j,m,1, 0)
-               fm(i  ,j,k+1,m) = fm(i  ,j,k+1,m) + hadd(j,m,1, 1)
-               fp(i  ,j,k+1,m) = fp(i  ,j,k+1,m) + hadd(j,m,1, 1)
+               fm(m,i  ,j,k-1) = fm(m,i  ,j,k-1) + hadd(m,j,1,-1)
+               fp(m,i  ,j,k-1) = fp(m,i  ,j,k-1) + hadd(m,j,1,-1)
+               fm(m,i  ,j,k  ) = fm(m,i  ,j,k  ) + hadd(m,j,1, 0)
+               fp(m,i  ,j,k  ) = fp(m,i  ,j,k  ) + hadd(m,j,1, 0)
+               fm(m,i  ,j,k+1) = fm(m,i  ,j,k+1) + hadd(m,j,1, 1)
+               fp(m,i  ,j,k+1) = fp(m,i  ,j,k+1) + hadd(m,j,1, 1)
 c
-               fm(i+1,j,k-1,m) = fm(i+1,j,k-1,m) + hadd(j,m,2,-1)
-               fp(i+1,j,k-1,m) = fp(i+1,j,k-1,m) + hadd(j,m,2,-1)
-               fm(i+1,j,k  ,m) = fm(i+1,j,k  ,m) + hadd(j,m,2, 0)
-               fp(i+1,j,k  ,m) = fp(i+1,j,k  ,m) + hadd(j,m,2, 0)
-               fm(i+1,j,k+1,m) = fm(i+1,j,k+1,m) + hadd(j,m,2, 1)
-               fp(i+1,j,k+1,m) = fp(i+1,j,k+1,m) + hadd(j,m,2, 1)
+               fm(m,i+1,j,k-1) = fm(m,i+1,j,k-1) + hadd(m,j,2,-1)
+               fp(m,i+1,j,k-1) = fp(m,i+1,j,k-1) + hadd(m,j,2,-1)
+               fm(m,i+1,j,k  ) = fm(m,i+1,j,k  ) + hadd(m,j,2, 0)
+               fp(m,i+1,j,k  ) = fp(m,i+1,j,k  ) + hadd(m,j,2, 0)
+               fm(m,i+1,j,k+1) = fm(m,i+1,j,k+1) + hadd(m,j,2, 1)
+               fp(m,i+1,j,k+1) = fp(m,i+1,j,k+1) + hadd(m,j,2, 1)
 c
 
    75          continue
@@ -381,30 +376,30 @@ c
       do 150 j = 0, my+1
          do 150 i = 0, mx+1
 c
-	    do 110 m=1,meqn
-	       do 110 k = 1-mbc, mz+mbc
+            do 110 k = 1-mbc, mz+mbc
+               do 110 m=1,meqn
 c                 # copy data along a slice into 1d array:
-	          q1d(k,m) = qold(i,j,k,m)
+	          q1d(m,k) = qold(m,i,j,k)
  110           continue
 c
          if (mcapa.gt.0)  then
            do 130 k = 1-mbc, mz+mbc
-               dtdz1d(k) = dtdz / aux(i,j,k,mcapa)
+               dtdz1d(k) = dtdz / aux(mcapa,i,j,k)
  130       continue
          endif
 c
          if (maux .gt. 0)  then
-             do 131 ma=1,maux
-               do 131 k = 1-mbc, mz+mbc
-                 aux1(k,ma,1) = aux(i-1,j-1,k,ma)
-                 aux1(k,ma,2) = aux(i-1,j,k,ma)
-                 aux1(k,ma,3) = aux(i-1,j+1,k,ma)
-                 aux2(k,ma,1) = aux(i,j-1,k,ma)
-                 aux2(k,ma,2) = aux(i,j,k,ma)
-                 aux2(k,ma,3) = aux(i,j+1,k,ma)
-                 aux3(k,ma,1) = aux(i+1,j-1,k,ma)
-                 aux3(k,ma,2) = aux(i+1,j,k,ma)
-                 aux3(k,ma,3) = aux(i+1,j+1,k,ma)
+            do 131 k = 1-mbc, mz+mbc
+               do 131 ma=1,maux
+                 aux1(ma,k,1) = aux(ma,i-1,j-1,k)
+                 aux1(ma,k,2) = aux(ma,i-1,j,k)
+                 aux1(ma,k,3) = aux(ma,i-1,j+1,k)
+                 aux2(ma,k,1) = aux(ma,i,j-1,k)
+                 aux2(ma,k,2) = aux(ma,i,j,k)
+                 aux2(ma,k,3) = aux(ma,i,j+1,k)
+                 aux3(ma,k,1) = aux(ma,i+1,j-1,k)
+                 aux3(ma,k,2) = aux(ma,i+1,j,k)
+                 aux3(ma,k,3) = aux(ma,i+1,j+1,k)
   131          continue
            endif
 c
@@ -412,8 +407,8 @@ c	    # Store the value of i and j along this slice in the common block
 c           # comxyzt in case it is needed in the Riemann solver (for
 c           # variable coefficient problems)
 c
-            icom = i
-            jcom = j
+c$$$            icom = i
+c$$$            jcom = j
 c
 c           # compute modifications fadd, gadd and hadd to fluxes along this
 c           # slice:
@@ -450,38 +445,38 @@ c           # fadd - modifies the h-fluxes
 c           # gadd - modifies the f-fluxes
 c           # hadd - modifies the g-fluxes
 c
-         do 125 m=1,meqn
             do 125 k=1,mz+1
-               hm(i,j,k,m) = hm(i,j,k,m) + faddm(k,m)
-               hp(i,j,k,m) = hp(i,j,k,m) + faddp(k,m)
+               do 125 m=1,meqn
+               hm(m,i,j,k) = hm(m,i,j,k) + faddm(m,k)
+               hp(m,i,j,k) = hp(m,i,j,k) + faddp(m,k)
 c
-               fm(i  ,j-1,k,m) = fm(i  ,j-1,k,m) + gadd(k,m,1,-1)
-               fp(i  ,j-1,k,m) = fp(i  ,j-1,k,m) + gadd(k,m,1,-1)
-               fm(i  ,j  ,k,m) = fm(i  ,j  ,k,m) + gadd(k,m,1, 0)
-               fp(i  ,j  ,k,m) = fp(i  ,j  ,k,m) + gadd(k,m,1, 0)
-               fm(i  ,j+1,k,m) = fm(i  ,j+1,k,m) + gadd(k,m,1, 1)
-               fp(i  ,j+1,k,m) = fp(i  ,j+1,k,m) + gadd(k,m,1, 1)
+               fm(m,i  ,j-1,k) = fm(m,i  ,j-1,k) + gadd(m,k,1,-1)
+               fp(m,i  ,j-1,k) = fp(m,i  ,j-1,k) + gadd(m,k,1,-1)
+               fm(m,i  ,j  ,k) = fm(m,i  ,j  ,k) + gadd(m,k,1, 0)
+               fp(m,i  ,j  ,k) = fp(m,i  ,j  ,k) + gadd(m,k,1, 0)
+               fm(m,i  ,j+1,k) = fm(m,i  ,j+1,k) + gadd(m,k,1, 1)
+               fp(m,i  ,j+1,k) = fp(m,i  ,j+1,k) + gadd(m,k,1, 1)
 c
-               fm(i+1,j-1,k,m) = fm(i+1,j-1,k,m) + gadd(k,m,2,-1)
-               fp(i+1,j-1,k,m) = fp(i+1,j-1,k,m) + gadd(k,m,2,-1)
-               fm(i+1,j  ,k,m) = fm(i+1,j  ,k,m) + gadd(k,m,2, 0)
-               fp(i+1,j  ,k,m) = fp(i+1,j  ,k,m) + gadd(k,m,2, 0)
-               fm(i+1,j+1,k,m) = fm(i+1,j+1,k,m) + gadd(k,m,2, 1)
-               fp(i+1,j+1,k,m) = fp(i+1,j+1,k,m) + gadd(k,m,2, 1)
+               fm(m,i+1,j-1,k) = fm(m,i+1,j-1,k) + gadd(m,k,2,-1)
+               fp(m,i+1,j-1,k) = fp(m,i+1,j-1,k) + gadd(m,k,2,-1)
+               fm(m,i+1,j  ,k) = fm(m,i+1,j  ,k) + gadd(m,k,2, 0)
+               fp(m,i+1,j  ,k) = fp(m,i+1,j  ,k) + gadd(m,k,2, 0)
+               fm(m,i+1,j+1,k) = fm(m,i+1,j+1,k) + gadd(m,k,2, 1)
+               fp(m,i+1,j+1,k) = fp(m,i+1,j+1,k) + gadd(m,k,2, 1)
 c
-               gm(i-1,j  ,k,m) = gm(i-1,j  ,k,m) + hadd(k,m,1,-1)
-               gp(i-1,j  ,k,m) = gp(i-1,j  ,k,m) + hadd(k,m,1,-1)
-               gm(i  ,j  ,k,m) = gm(i  ,j  ,k,m) + hadd(k,m,1, 0)
-               gp(i  ,j  ,k,m) = gp(i  ,j  ,k,m) + hadd(k,m,1, 0)
-               gm(i+1,j  ,k,m) = gm(i+1,j  ,k,m) + hadd(k,m,1, 1)
-               gp(i+1,j  ,k,m) = gp(i+1,j  ,k,m) + hadd(k,m,1, 1)
+               gm(m,i-1,j  ,k) = gm(m,i-1,j  ,k) + hadd(m,k,1,-1)
+               gp(m,i-1,j  ,k) = gp(m,i-1,j  ,k) + hadd(m,k,1,-1)
+               gm(m,i  ,j  ,k) = gm(m,i  ,j  ,k) + hadd(m,k,1, 0)
+               gp(m,i  ,j  ,k) = gp(m,i  ,j  ,k) + hadd(m,k,1, 0)
+               gm(m,i+1,j  ,k) = gm(m,i+1,j  ,k) + hadd(m,k,1, 1)
+               gp(m,i+1,j  ,k) = gp(m,i+1,j  ,k) + hadd(m,k,1, 1)
 c
-               gm(i-1,j+1,k,m) = gm(i-1,j+1,k,m) + hadd(k,m,2,-1)
-               gp(i-1,j+1,k,m) = gp(i-1,j+1,k,m) + hadd(k,m,2,-1)
-               gm(i  ,j+1,k,m) = gm(i  ,j+1,k,m) + hadd(k,m,2, 0)
-               gp(i  ,j+1,k,m) = gp(i  ,j+1,k,m) + hadd(k,m,2, 0)
-               gm(i+1,j+1,k,m) = gm(i+1,j+1,k,m) + hadd(k,m,2, 1)
-               gp(i+1,j+1,k,m) = gp(i+1,j+1,k,m) + hadd(k,m,2, 1)
+               gm(m,i-1,j+1,k) = gm(m,i-1,j+1,k) + hadd(m,k,2,-1)
+               gp(m,i-1,j+1,k) = gp(m,i-1,j+1,k) + hadd(m,k,2,-1)
+               gm(m,i  ,j+1,k) = gm(m,i  ,j+1,k) + hadd(m,k,2, 0)
+               gp(m,i  ,j+1,k) = gp(m,i  ,j+1,k) + hadd(m,k,2, 0)
+               gm(m,i+1,j+1,k) = gm(m,i+1,j+1,k) + hadd(m,k,2, 1)
+               gp(m,i+1,j+1,k) = gp(m,i+1,j+1,k) + hadd(m,k,2, 1)
 c
   125          continue
   150    continue

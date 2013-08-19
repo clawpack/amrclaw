@@ -122,7 +122,7 @@
 !      :::::  collect stats
 !      ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !
-       common   /stats/  rvoll(maxlv),avenumgrids(maxlv),
+       common   /stats/  rvoll(maxlv),tvoll(maxlv),avenumgrids(maxlv),
      1                   iregridcount(maxlv),evol,rvol,
      2                   lentot,lenmax,lendim
 

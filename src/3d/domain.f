@@ -1,12 +1,13 @@
 c
 c  ----------------------------------------------------------
 c
-      subroutine domain (nvar,vtime,nx,ny,nz,naux,t0)
+      subroutine domain (nvar,vtime,nx,ny,nz,naux,start_time)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
+
       logical    vtime
 
-      include  "call.i"
 c
 c  allocate initial coarse grid domain. set node info & initialize grid
 c  initial space and time step set here too
@@ -44,7 +45,7 @@ c
 
       lfine = 1
       call  birect(mstart)
-      call  ginit (mstart, .true., nvar, naux,t0)
+      call  ginit (mstart,.true.,nvar,naux,start_time)
 
 c
 c compute number of grids at level 1 (may have been bi-rected above)

@@ -3,13 +3,13 @@ c =======================================================================
       subroutine outval(val,nvar,mitot,mjtot,mktot,mptr,outgrd,naux,aux)
 c =======================================================================
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
       dimension  val(mitot,mjtot,mktot,nvar)
       dimension  aux(mitot,mjtot,mktot,naux)
       logical    outgrd
 
-      include  "call.i"
 
 c ::::::::::::::::::::::OUTVAL :::::::::::::::::::::::::::::::
 c print solution and aux. variables to output. 
@@ -33,11 +33,11 @@ c
          x  = cornx + hx*(dble(i)-.5d0)
          y  = corny + hy*(dble(j)-.5d0)
          z  = cornz + hz*(dble(k)-.5d0)
-         write(outunit,107) x,y,z,i,j,k,(val(i,j,k,ivar),ivar=1,nvar)
+         write(outunit,107) x,y,z,i,j,k,(val(ivar,i,j,k),ivar=1,nvar)
  107     format(2hx=,f7.3,3h y=,f7.3,3h z=,f7.3,
      *          4h, i=,i3,4h, j=,i3 ,4h, k=,i3 ,
      *          ' a= ',5(e10.4,1x))
-         if (naux.gt.0) write(outunit,108) (aux(i,j,k,iaux),iaux=1,naux)
+         if (naux.gt.0) write(outunit,108) (aux(iaux,i,j,k),iaux=1,naux)
  108     format(1x,'aux = ',7(e9.3,1x))
 
  20   continue

@@ -3,9 +3,9 @@ c
      &                      valc,auxc,mic  ,mjc  ,mkc  ,
      &                      nvar,naux,levc)
 
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include "call.i"
 c
 c :::::::::::::::::::::::  FIXCAPAQ ::::::::::::::::::::::::::::::
 c  new fine grid solution q was linearly interpolated. but want
@@ -13,8 +13,8 @@ c  to conserve kappa*q, not q. calculate the discrepancy
 c  in kappa*q using this q, and modify q to account for it.
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-      dimension   val(mitot,mjtot,mktot,nvar), valc(mic,mjc,mkc,nvar)
-      dimension   aux(mitot,mjtot,mktot,naux), auxc(mic,mjc,mkc,naux)
+      dimension   val(nvar,mitot,mjtot,mktot), valc(nvar,mic,mjc,mkc)
+      dimension   aux(naux,mitot,mjtot,mktot), auxc(naux,mic,mjc,mkc)
 
       dcapamax = 0.d0
       lratiox  = intratx(levc)
@@ -36,11 +36,11 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
            jfine = (jc-2)*lratioy + nghost + jco
            do 20 ico = 1, lratiox
              ifine = (ic-2)*lratiox + nghost + ico
-	     capaqfine = capaqfine + aux(ifine,jfine,kfine,mcapa)
-     &                             * val(ifine,jfine,kfine,ivar)
+	     capaqfine = capaqfine + aux(mcapa,ifine,jfine,kfine)
+     &                             * val(ivar,ifine,jfine,kfine)
 20     continue
 
-       dcapaq = auxc(ic,jc,kc,mcapa)*valc(ic,jc,kc,ivar)-
+       dcapaq = auxc(mcapa,ic,jc,kc)*valc(ivar,ic,jc,kc)-
      &          capaqfine/(lratiox*lratioy*lratioz)
        dcapamax = dmax1(dcapamax,dabs(dcapaq))
       
@@ -50,8 +50,8 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
            jfine = (jc-2)*lratioy + nghost + jco
            do 30 ico = 1, lratiox
              ifine = (ic-2)*lratiox + nghost + ico
-             val(ifine,jfine,kfine,ivar)  = val(ifine,jfine,kfine,ivar)
-     &                             + dcapaq/aux(ifine,jfine,kfine,mcapa)
+             val(ivar,ifine,jfine,kfine)  = val(ivar,ifine,jfine,kfine)
+     &                             + dcapaq/aux(mcapa,ifine,jfine,kfine)
 30     continue
 
 15     continue

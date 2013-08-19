@@ -1,0 +1,5 @@
+
+3D advection equation $q_t + (uq)_x + (vq)_y  (wq)_z = 0$ with swirling flow,
+taken from Example 11.2 in the paper "High-resolution conservative algorithms 
+for advection in incompressible flow",
+
