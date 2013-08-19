@@ -15,6 +15,7 @@ elseif (PlotType == 4)
     error('afterframe : 1d reference solution is not time synchronized');
   end;
   [q1d,x1d,p] = plotframe1ez(amrdata1d,mq,'b-');
+  set(p,'linewidth',2);
 
   ph = getlegendinfo;
   lh = legend([ph,p],{'level 1','level 2','level 3','Exact'});
