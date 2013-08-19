@@ -138,6 +138,40 @@ class RegionData(clawpack.clawutil.data.ClawData):
             self._out_file.write(8*"%g  " % tuple(regions) +"\n")
         self.close_data_file()
 
+
+    def read(self, path, force=False):
+        r"""Read in region data from file at path
+        """
+
+        data_file = open(os.path.abspath(path),'r')
+
+        # Read past comments and blank lines
+        header_lines = 0
+        ignore_lines = True
+        while ignore_lines:
+            line = data_file.readline()
+            if line[0] == "#" or len(line.strip()) == 0:
+                header_lines += 1
+            else:
+                break
+
+        # Read in number of regions        
+        num_regions, tail = line.split("=:")
+        num_regions = int(num_regions)
+        varname = tail.split()[0]
+        if varname != "num_regions":
+            raise IOError("It does not appear that this file contains region data.")
+
+        # Read in each region
+        self.regions = []
+        for n in xrange(num_regions):
+            line = data_file.readline().split()
+            self.regions.append([int(line[0]), int(line[1]),
+                                 float(line[2]), float(line[3]), 
+                                 float(line[4]), float(line[5]),
+                                 float(line[6]), float(line[7])])
+
+
 # ==============================================================================
         
 # ==============================================================================
