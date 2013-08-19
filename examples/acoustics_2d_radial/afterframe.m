@@ -8,13 +8,16 @@ if (PlotType == 1)
   colorbar;
 elseif (PlotType == 4)
   hold on;
-  dir = './1drad/';
+  dir = './1drad/_output/';
   dim = 1;
   [amrdata1d,t1d] = readamrdata(dim,Frame,dir);
-  % [q1d,x1d] = plotframe1ez(amrdata1d,mq,'b-');
+  if (abs(t1d - t) > 1e-5)
+    error('afterframe : 1d reference solution is not time synchronized');
+  end;
+  [q1d,x1d,p] = plotframe1ez(amrdata1d,mq,'b-');
 
   ph = getlegendinfo;
-  lh = legend(ph,{'level 1','level 2','level 3'});
+  lh = legend([ph,p],{'level 1','level 2','level 3','Exact'});
   set(lh,'fontsize',16);
 
   hold off;
