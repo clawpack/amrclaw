@@ -4,8 +4,6 @@
 # options, and then includes the standard makefile pointed to by CLAWMAKE.
 CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
 
-SETRUN_FILE = setrun_model.py
-
 CLAW_PKG = classic
 EXE = xclaw
 FFLAGS = -g -fbounds-check -ffpe-trap=zero,overflow,invalid

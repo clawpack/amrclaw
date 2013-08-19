@@ -17,7 +17,7 @@ def setrun(claw_pkg='classic'):
     clawdata = rundata.clawdata    # Initialized when rundata is created
 
     # Size of computational domain
-    clawdata.lower = 0.0
+    clawdata.lower = 0
     clawdata.upper = 1.5
 
     # Grid dimensions
@@ -30,8 +30,9 @@ def setrun(claw_pkg='classic'):
 
     # Output control
     clawdata.output_style = 1
-    clawdata.num_output_times = 30
-    clawdata.tfinal = 0.27
+    clawdata.num_output_times = 20
+    clawdata.tfinal = 1.0
+    clawdata.output_t0 = True  # output at initial (or restart) time?
 
     # Time stepping
     clawdata.dt_initial = 0.5
@@ -53,6 +54,8 @@ def setrun(claw_pkg='classic'):
 
     # Boundary conditions
     # Zero-order extrapolation everywhere
+    clawdata.num_ghost = 2
+
     clawdata.bc_lower = [3]
     clawdata.bc_upper = [1]
 
