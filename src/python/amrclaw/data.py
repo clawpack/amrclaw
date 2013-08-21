@@ -171,6 +171,8 @@ class RegionData(clawpack.clawutil.data.ClawData):
                                  float(line[4]), float(line[5]),
                                  float(line[6]), float(line[7])])
 
+        data_file.close()
+
 
 # ==============================================================================
         
@@ -239,6 +241,8 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             line = gauge_file.readline().split()
             self.gauges.append([int(line[0]),float(line[1]),float(line[2]),
                                              float(line[3]),float(line[4])])
+
+        gauge_file.close()
 
 #  Gauge data objects
 # ==============================================================================
