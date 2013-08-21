@@ -3,10 +3,10 @@
 c
 c
 c =========================================================
-      subroutine src1(maxmx,meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
+      subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
 c =========================================================
       implicit real*8(a-h,o-z)
-      dimension q(meqn, 1-mbc:maxmx+mbc)
+      dimension q(meqn, 1-mbc:mx+mbc)
 c
       common /cparam/ rho,bulk,cc,zz   
       common /comsrc/ ndim
