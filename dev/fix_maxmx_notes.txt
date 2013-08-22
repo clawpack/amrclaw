@@ -1,0 +1,19 @@
+
+Run fix_maxmx.py in src/2d and examples directories
+This gets rid of strings "maxmx,maxmy," and some other things (see the script)
+Would need to be modified for 3d!
+
+grep maxmx to look for other occurances
+
+In stepgrid.f, first mx,my must be removed in 
+  call step2(...)
+  call src2(...)
+  call b4step2(...)
+Are there other places where mx,my are passed in as maxmx,maxmy that were
+not caught??
+
+
+In geoclaw/src/2d/shallow/surge/set_storm_fields
+  maxmx, maxmy removed from colling sequence and declarations
+  and from call to set_holland_storm_fields
+
