@@ -3,7 +3,7 @@ c
 c
 c
 c     =====================================================
-       subroutine qinit(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,
+       subroutine qinit(meqn,mbc,mx,my,xlower,ylower,
      &                   dx,dy,q,maux,aux)
 c     =====================================================
 c
@@ -22,7 +22,7 @@ c          pages="1394-1414" }
 
 c
        implicit double precision (a-h,o-z)
-       dimension q(meqn, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
+       dimension q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
        dimension rpp(4),rpr(4),rpu(4),rpv(4)
        common /cparam/  gamma
 c

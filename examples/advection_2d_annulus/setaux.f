@@ -1,5 +1,5 @@
 c     ============================================
-      subroutine setaux(maxmx,maxmy,mbc,mx,my,xlower,ylower,dxc,dyc,
+      subroutine setaux(mbc,mx,my,xlower,ylower,dxc,dyc,
      &                  maux,aux)
 c     ============================================
 c
@@ -13,7 +13,7 @@ c     #   aux(3,i,j) = kappa  is ratio of cell area to dxc*dyc
 c     
       implicit double precision (a-h,o-z)
       double precision, intent(inout), 
-     &              dimension(3, 1-mbc:maxmx+mbc,1-mbc:maxmy+mbc) :: aux
+     &              dimension(3, 1-mbc:mx+mbc,1-mbc:my+mbc) :: aux
       dimension xccorn(5),yccorn(5),xpcorn(5),ypcorn(5)
 c
 c

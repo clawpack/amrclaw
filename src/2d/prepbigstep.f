@@ -38,11 +38,9 @@ c
           if (naux .gt. 0) then
               xl     = rnode(cornxlo, mptr)
               yb     = rnode(cornylo, mptr)
-              maxmx = midub - 4*nghost
-              mx = maxmx
-              maxmy = mjdub - 4*nghost
-              my = maxmy
-              call setaux(maxmx,maxmy,2*nghost,mx,my,xl,yb,hx,hy,
+              mx = midub - 4*nghost
+              my = mjdub - 4*nghost
+              call setaux(2*nghost,mx,my,xl,yb,hx,hy,
      &                    naux,auxdub)
               call auxcoarsen(auxdub,midub,mjdub,
      1                     auxbgc,mi2tot,mj2tot,naux,auxtype)

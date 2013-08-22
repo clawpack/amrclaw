@@ -3,7 +3,7 @@ c
 c
 c
 c     =====================================================
-       subroutine qinit(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,
+       subroutine qinit(meqn,mbc,mx,my,xlower,ylower,
      &                   dx,dy,q,maux,aux)
 c     =====================================================
 c
@@ -13,7 +13,7 @@ c     # q = 1.0  if  0.1 < x < 0.6   and   0.1 < y < 0.6
 c     #     0.1  otherwise
 c
        implicit double precision (a-h,o-z)
-       dimension q(meqn, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
+       dimension q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
 c
        do 20 i=1,mx
           xi = xlower + (i-0.5d0)*dx

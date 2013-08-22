@@ -1,11 +1,11 @@
 c     =====================================================
-      subroutine qinit(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,
+      subroutine qinit(meqn,mbc,mx,my,xlower,ylower,
      &     dx,dy,q,maux,aux)
 c     =====================================================
 c
 c
       implicit double precision (a-h,o-z)
-      dimension q(meqn, 1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc)
+      dimension q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
       common /cqinit/ A1,beta1,x1,y1, A2,beta2,x2,y2
 
       do i=1,mx

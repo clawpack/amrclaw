@@ -1,5 +1,5 @@
 c     ============================================
-      subroutine setaux(maxmx,maxmy,mbc,mx,my,xlower,ylower,dx,dy,
+      subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,
      &                  maux,aux)
 c     ============================================
 c
@@ -12,7 +12,7 @@ c     #   aux(3,i,j) is kappa if a mapped grid is used.
 c
 c     
       implicit double precision (a-h,o-z)
-      dimension aux(maux,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc)
+      dimension aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
 c
 c     # constant velocities which are used if tperiod=0 is specified
 c     # in setprob.data

@@ -34,11 +34,9 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
               node(store1,mptr)   = loc
               if (naux .gt. 0) then
                 locaux              = igetsp(mitot*mjtot*naux)
-                maxmx = mitot - 2*nghost
-                mx = maxmx
-                maxmy = mjtot - 2*nghost
-                my = maxmy
-                call setaux(maxmx,maxmy,nghost,mx,my,corn1,corn2,hx,hy,
+                mx = mitot - 2*nghost
+                my = mjtot - 2*nghost
+                call setaux(nghost,mx,my,corn1,corn2,hx,hy,
      &                    naux,alloc(locaux))
               else 
                 locaux = 1
@@ -60,11 +58,9 @@ c
           locaux  = node(storeaux,mptr)
 c
    30     continue
-          maxmx = mitot - 2*nghost
-          mx = maxmx
-          maxmy = mjtot - 2*nghost
-          my = maxmy
-          call qinit(maxmx,maxmy,nvar,nghost,mx,my,corn1,corn2,hx,hy,
+          mx = mitot - 2*nghost
+          my = mjtot - 2*nghost
+          call qinit(nvar,nghost,mx,my,corn1,corn2,hx,hy,
      &               alloc(loc),naux,alloc(locaux))
 
 c         call qinit(alloc(loc),nvar,mitot,mjtot,

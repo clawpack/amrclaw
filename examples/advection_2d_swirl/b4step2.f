@@ -1,5 +1,5 @@
 c     ============================================
-      subroutine b4step2(maxmx,maxmy,mbc,mx,my,meqn,q,
+      subroutine b4step2(mbc,mx,my,meqn,q,
      &            xlower,ylower,dx,dy,time,dt,maux,aux)
 c     ============================================
 c
@@ -10,8 +10,8 @@ c     # make velocity time dependent, reversing flow.
 c
 c     
       implicit double precision (a-h,o-z)
-      dimension q(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc)
-      dimension aux(maux,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc)
+      dimension q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
+      dimension aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
       common /comvt/ tperiod,pi2
 c
       if (tperiod .eq. 0.d0) then
