@@ -1,18 +1,18 @@
 ! =========================================================
 ! Check for NANs in solution q
-subroutine check4nans(maxmx,maxmy,meqn,mbc,mx,my,q,t,ichecknan)
+subroutine check4nans(meqn,mbc,mx,my,q,t,ichecknan)
 
     implicit none
     
     ! Input
-    integer, intent(in) :: maxmx, maxmy, meqn, mbc, mx, my, ichecknan
-    real(kind=8), intent(in) :: t, q(meqn,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc)
+    integer, intent(in) ::  meqn, mbc, mx, my, ichecknan
+    real(kind=8), intent(in) :: t, q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
 
     ! Locals
     integer :: i, j, m
 
     ! print *,'Checking for NANs at ichecknan = ',ichecknan
-    ! print *,'  maxmx = ',maxmx,'  maxmy = ',maxmy,'  meqn = ',meqn
+    ! print *,'  mx = ',mx,'  my = ',my,'  meqn = ',meqn
       
     do i=1-mbc,mx+mbc
         do j=1-mbc,my+mbc
