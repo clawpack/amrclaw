@@ -7,7 +7,7 @@ Function test returns True if all .png files agree in the two directories.
 Image differences can be viewed by opening a browser to 
     _image_diff/_ImageDiffIndex.html
 
-For this to work you need to first clone and fetch the latest gallery
+For this to work you need to first clone and/or fetch the latest gallery
 results from
      git://github.com/clawpack/clawpack.github.com
 
@@ -15,11 +15,10 @@ results from
 
 import os, subprocess
 from clawpack.clawutil import imagediff
-reload(imagediff)
 
 verbose = True
-relocatable = False  # True ==> create directory _image_diff that can be posted 
-                     # online (copies all images to subdirs of _image_diff)
+relocatable = False  # True ==> copies all images to subdirs of _image_diff
+                     # so this directory can be moved, e.g. posted on web
 
 def test():
     try:
