@@ -59,7 +59,7 @@ def run_tests(tests_dir = '.'):
     current_dir = os.getcwd()
 
     dir_list = list_tests(tests_dir)
-    dir_list = ['advection_2d_square']
+    # dir_list = ['advection_2d_square']  ## just one for debugging
     print "Found the following test subdirectories:"
     for d in dir_list:
         print "    ", d

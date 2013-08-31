@@ -74,6 +74,8 @@ if __name__=="__main__":
     test1()
     test2(save_new_regression_data)
     test3(save_new_regression_data)
+    if save_new_regression_data:
+        print "*** Created new regression_data files ***"
     
 
 
