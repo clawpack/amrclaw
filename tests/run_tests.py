@@ -125,7 +125,7 @@ def run_tests(tests_dir = '.'):
     fout.close()
     ferr.close()
     print 'For all output see ', fname_output
-    print 'For all errors see ', fname_errors
+    print 'For results/errors see ', fname_errors
 
     os.chdir(current_dir)
 
