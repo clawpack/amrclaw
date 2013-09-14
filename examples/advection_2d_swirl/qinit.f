@@ -4,7 +4,7 @@ c
 c
 c     =====================================================
        subroutine qinit(meqn,mbc,mx,my,xlower,ylower,
-     &                   dx,dy,q)
+     &                   dx,dy,q,aux)
 c     =====================================================
 c
 c     # Set initial conditions for q.
