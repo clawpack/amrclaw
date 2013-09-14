@@ -8,7 +8,7 @@ c =========================================================
       implicit real*8(a-h,o-z)
       dimension q(meqn, 1-mbc:mx+mbc)
 c
-      common /cparam/ rho,bulk,cc,zz   
+      common /cparam/ rho,bulk,cc,zz
       common /comsrc/ ndim
 c
 c     # source terms for radial symmetry
