@@ -98,7 +98,8 @@ def setrun(claw_pkg='amrclaw'):
     # the OUTDIR indicated in Makefile.
 
     clawdata.restart = False               # True to restart from prior results
-    clawdata.restart_file = 'fort.chk00006'  # File to use for restart data
+    #clawdata.restart_file = 'fort.chk00006'  # File to use for restart data
+    clawdata.restart_file = 'fort.chk00741'
 
 
     # -------------
@@ -113,8 +114,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 4
-        clawdata.tfinal = 4.0
+        clawdata.num_output_times = 8
+        clawdata.tfinal = 4.
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
@@ -160,8 +161,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.dt_initial = 0.005
 
     # Max time step to be allowed if variable dt used:
-    # clawdata.dt_max = 1.000000e+99
-    clawdata.dt_max = .05
+    #clawdata.dt_max = 1.000000e+99
+    clawdata.dt_max = .045
 
     # Desired Courant number if variable dt used
     clawdata.cfl_desired = 0.900000
@@ -246,7 +247,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
-    clawdata.checkpt_style = 0
+    clawdata.checkpt_style = 1
 
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all
