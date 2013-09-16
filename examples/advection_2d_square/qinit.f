@@ -10,6 +10,7 @@ c     #     0.1  otherwise
 c
       implicit double precision (a-h,o-z)
       dimension q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+      dimension aux(maux, 1-mbc:mx+mbc, 1-mbc:my+mbc)
 
 c     # set concentration profile
 c     ---------------------------
