@@ -29,26 +29,25 @@ FFLAGS =
 # List of sources for this program:
 # ---------------------------------
 
-
-# Clawpack library to be used:
-CLAWLIB = $(CLAW)/classic/src/1d
+MODULES = \
     
 SOURCES = \
   qinit.f \
   src1.f \
   setprob.f \
   $(CLAW)/riemann/src/rp1_acoustics.f90 \
-  $(CLAWLIB)/setaux.f \
-  $(CLAWLIB)/claw1ez.f \
-  $(CLAWLIB)/b4step1.f \
-  $(CLAWLIB)/bc1.f \
-  $(CLAWLIB)/out1.f \
-  $(CLAWLIB)/claw1.f \
-  $(CLAWLIB)/step1.f \
-  $(CLAWLIB)/copyq1.f \
-  $(CLAWLIB)/limiter.f \
-  $(CLAWLIB)/philim.f\
-  $(CLAWLIB)/opendatafile.f
+  $(CLAW)/classic/src/1d/setaux.f \
+  $(CLAW)/classic/src/1d/bc1.f \
+  $(CLAW)/classic/src/1d/b4step1.f \
+  $(CLAW)/classic/src/1d/driver.f90 \
+  $(CLAW)/classic/src/1d/claw1ez.f \
+  $(CLAW)/classic/src/1d/claw1.f \
+  $(CLAW)/classic/src/1d/copyq1.f \
+  $(CLAW)/classic/src/1d/inlinelimiter.f90 \
+  $(CLAW)/classic/src/1d/opendatafile.f \
+  $(CLAW)/classic/src/1d/out1.f \
+  $(CLAW)/classic/src/1d/step1.f90
+
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
