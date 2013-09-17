@@ -59,7 +59,7 @@ c
        go to 20
 c
  85    totmass = totmass * hx * hy
-       if (time.eq.tstart .and. (level.eq.1) .and. .not. rest) then
+       if (time.eq. t0 .and. (level.eq.1) .and. .not. rest) then
            tmass0 = totmass
            write(6,*) 'Total mass at initial time: ',tmass0
            endif

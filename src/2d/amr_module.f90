@@ -129,7 +129,7 @@ module amr_module
     logical    printout,matlabout,ncarout
 
     ! variables for conservation checking:
-    real(kind=8) tstart,tmass0
+    real(kind=8) tmass0
 
     ! variables for specifying output format
     integer :: output_style, nstop, nout, iout
