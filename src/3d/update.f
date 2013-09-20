@@ -1,34 +1,30 @@
 c
 c -----------------------------------------------------------
 c
-      subroutine update (level, nvar)
+      subroutine update (level, nvar, maux)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       integer listgrids(numgrids(level))
 
-c2D   iadd(i,j,ivar)  = loc     + i - 1 + mitot*((ivar-1)*mjtot+j-1)
-c2D   iaddf(i,j,ivar) = locf    + i - 1 + mi*((ivar-1)*mj  +j-1)
-c2D   iaddfaux(i,j)   = locfaux + i - 1 + mi*((mcapa-1)*mj + (j-1))
-c2D   iaddcaux(i,j)   = loccaux + i - 1 + mitot*((mcapa-1)*mjtot+(j-1))
-      iadd(i,j,k,ivar)   = loc     +     (i-1)
-     &                             +     (j-1)*mitot
-     &                             +     (k-1)*mitot*mjtot
-     &                             +  (ivar-1)*mitot*mjtot*mktot
-      iaddf(i,j,k,ivar)  = locf    +     (i-1)
-     &                             +     (j-1)*mi
-     &                             +     (k-1)*mi*mj
-     &                             +  (ivar-1)*mi*mj*mk
-      iaddfaux(i,j,k)    = locfaux +     (i-1)
-     &                             +     (j-1)*mi
-     &                             +     (k-1)*mi*mj
-     &                             + (mcapa-1)*mi*mj*mk
-      iaddcaux(i,j,k)    = loccaux +     (i-1)
-     &                             +     (j-1)*mitot
-     &                             +     (k-1)*mitot*mjtot
-     &                             + (mcapa-1)*mitot*mjtot*mktot
+      iadd(ivar,i,j,k)   = loc     +     (ivar-1)
+     &                             +     (i-1)*nvar
+     &                             +     (j-1)*nvar*mitot
+     &                             +     (k-1)*nvar*mitot*mjtot
+      iaddf(ivar,i,j,k)  = locf    +     (ivar-1)
+     &                             +     (i-1)*nvar
+     &                             +     (j-1)*nvar*mi
+     &                             +     (k-1)*nvar*mi*mj
+      iaddfaux(i,j,k)    = locfaux +     (mcapa-1)
+     &                             +     (i-1)*maux
+     &                             +     (j-1)*maux*mi
+     &                             +     (k-1)*maux*mi*mj
+      iaddcaux(i,j,k)    = loccaux +     (mcapa-1)
+     &                             +     (i-1)*maux
+     &                             +     (j-1)*maux*mitot
+     &                             +     (k-1)*maux*mitot*mjtot
 c
 c :::::::::::::::::::::::::: UPDATE :::::::::::::::::::::::::::::::::
 c update - update all grids at level 'level'.
@@ -58,7 +54,7 @@ c 20   if (mptr .eq. 0) go to 85
 !$OMP&                    locfaux,iplo,jplo,kplo,iphi,jphi,kphi,
 !$OMP&                    iff,jff,kff,totrat,i,j,k,ivar,
 !$OMP&                    ico,jco,kco,capa),
-!$OMP&         SHARED(lget,numgrids,listgrids,listsp,alloc,nvar,
+!$OMP&         SHARED(lget,numgrids,listgrids,listsp,alloc,nvar,maux,
 !$OMP&                   intratx,intraty,intratz,nghost,uprint,mcapa,
 !$OMP&                   node,lstart,level),
 !$OMP&         SCHEDULE(dynamic,1),
@@ -83,7 +79,7 @@ c
          if (node(cfluxptr,mptr) .eq. 0) go to 25
 c         locuse = igetsp(mitot*mjtot*mktot)
          call upbnd(alloc(node(cfluxptr,mptr)),alloc(loc),nvar,
-     1              mitot,mjtot,mktot,listsp(lget),mptr)
+     1              maux,mitot,mjtot,mktot,listsp(lget),mptr)
 c         call reclam(locuse,mitot*mjtot*mktot)
 c
 c  loop through all intersecting fine grids as source updaters.
@@ -112,8 +108,8 @@ c
          jphi = min(jhi,jchi)
          kphi = min(khi,kchi)
 
-	       if (iplo .gt. iphi .or. jplo .gt. jphi
-     1                      .or. kplo .gt. kphi) go to 75
+        if (iplo .gt. iphi .or. jplo .gt. jphi
+     1                     .or. kplo .gt. kphi) go to 75
 c
 c  calculate starting index for fine grid source pts.
 c
@@ -129,7 +125,7 @@ c
               write(outunit,101) i,j,k,mptr,iff,jff,kff,mkid
  101          format(' updating pt. ',3i4,' of grid ',i3,' using ',3i4,
      1               ' of grid ',i4)
-              write(outunit,102)(alloc(iadd(i,j,k,ivar)),ivar=1,nvar)
+              write(outunit,102)(alloc(iadd(ivar,i,j,k)),ivar=1,nvar)
  102          format(' old vals: ',5e30.20)
            endif
 c
@@ -137,7 +133,7 @@ c
 c  update using intrat fine points in each direction
 c
            do 40 ivar = 1, nvar
- 40           alloc(iadd(i,j,k,ivar)) = 0.d0
+ 40           alloc(iadd(ivar,i,j,k)) = 0.d0
 c
            if (mcapa .eq. 0) then
 
@@ -145,12 +141,12 @@ c
                do 50 jco  = 1, intraty(lget)
                do 50 ico  = 1, intratx(lget)
                do 45 ivar = 1, nvar
-                 alloc(iadd(i,j,k,ivar))= alloc(iadd(i,j,k,ivar)) + 
-     1                  alloc(iaddf(iff+ico-1,jff+jco-1,kff+kco-1,ivar))
+                 alloc(iadd(ivar,i,j,k))= alloc(iadd(ivar,i,j,k)) + 
+     1                  alloc(iaddf(ivar,iff+ico-1,jff+jco-1,kff+kco-1))
  45              continue
  50            continue
                do 65 ivar = 1, nvar
- 65             alloc(iadd(i,j,k,ivar)) = alloc(iadd(i,j,k,ivar))/totrat
+ 65             alloc(iadd(ivar,i,j,k)) = alloc(iadd(ivar,i,j,k))/totrat
              
          else
 
@@ -159,16 +155,16 @@ c
               do 51 ico  = 1, intratx(lget)
                 capa = alloc(iaddfaux(iff+ico-1,jff+jco-1,kff+kco-1))
                 do 46 ivar = 1, nvar
-                 alloc(iadd(i,j,k,ivar))= alloc(iadd(i,j,k,ivar)) + 
-     1            alloc(iaddf(iff+ico-1,jff+jco-1,kff+kco-1,ivar))*capa
+                 alloc(iadd(ivar,i,j,k))= alloc(iadd(ivar,i,j,k)) + 
+     1            alloc(iaddf(ivar,iff+ico-1,jff+jco-1,kff+kco-1))*capa
  46             continue
  51           continue
               do 66 ivar = 1, nvar
- 66             alloc(iadd(i,j,k,ivar)) = alloc(iadd(i,j,k,ivar))/
+ 66             alloc(iadd(ivar,i,j,k)) = alloc(iadd(ivar,i,j,k))/
      1                                 (totrat*alloc(iaddcaux(i,j,k)))
          endif
 c
-         if (uprint) write(outunit,103)(alloc(iadd(i,j,k,ivar)),
+         if (uprint) write(outunit,103)(alloc(iadd(ivar,i,j,k)),
      .                                  ivar=1,nvar)
  103     format(' new vals: ',5e12.4)
 c

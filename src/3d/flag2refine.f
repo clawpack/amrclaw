@@ -51,8 +51,8 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
       implicit double precision (a-h, o-z)
 
-      dimension   q(1-mbc:mx+mbc,1-mbc:my+mbc,1-mbc:mz+mbc,meqn)
-      dimension   aux(1-mbc:mx+mbc,1-mbc:my+mbc,1-mbc:mz+mbc,maux)
+      dimension   q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc,1-mbc:mz+mbc)
+      dimension   aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc,1-mbc:mz+mbc)
       dimension   amrflags(1-mbc:mx+mbc,1-mbc:my+mbc,1-mbc:mz+mbc)
       logical     allowflag
       external    allowflag
@@ -75,9 +75,9 @@ c            # versions of amrclaw -- flag this point if dq > tolsp:
 
              dq = 0.d0
              do 5 m = 1,meqn
-                dqi = dabs(q(i+1,j,k,m) - q(i-1,j,k,m))
-                dqj = dabs(q(i,j+1,k,m) - q(i,j-1,k,m))
-                dqk = dabs(q(i,j,k+1,m) - q(i,j,k-1,m))
+                dqi = dabs(q(m,i+1,j,k) - q(m,i-1,j,k))
+                dqj = dabs(q(m,i,j+1,k) - q(m,i,j-1,k))
+                dqk = dabs(q(m,i,j,k+1) - q(m,i,j,k-1))
                 dq  = dmax1(dq, dqi, dqj, dqk)
     5           continue
 

@@ -1,14 +1,14 @@
 c
 c -----------------------------------------------------------------
 c
-      subroutine setgrd (nvar,cut,naux,dtinit,t0)
+      subroutine setgrd (nvar,cut,naux,dtinit,start_time)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
-
-      include  "call.i"
 
       logical  vtime
       data     vtime/.false./
+
 c     # may as well not bother to calculate time step for error est.
 c
 c :::::::::::::::::::::::::::: SETGRD :::::::::::::::::::::::::::::::;
@@ -16,13 +16,16 @@ c  set up the entire tree/grid structure.  only at this time t = 0
 c  can we take advantage of initialization routines.
 c  remember that regridding/error estimation needs to have two
 c  time steps of soln. values.
+c  6/21/05: added dtinit arg. to allow for better choice of initial timestep
+c   as discovered by advance/setgrd in first step.
 c ::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::::;
 c
       dtinit = possk(1)
       if (mxnest .eq. 1) go to 99
 c
       levnew =  2
-      time   = t0
+      time   = start_time
+      verbosity_regrid = method(4)
 c
  10   if (levnew .gt. mxnest) go to 30
           levold = levnew - 1
@@ -48,17 +51,17 @@ c        dont count it in real integration stats
 c
 c  flag, cluster, and make new grids
 c
-         call grdfit(lbase,levold,nvar,naux,cut,time,t0)
+         call grdfit(lbase,levold,nvar,naux,cut,time,start_time)
          if (newstl(levnew) .ne. 0) lfnew = levnew
 c
 c  init new level. after each iteration. fix the data structure
 c  also reinitalize coarser grids so fine grids can be advanced
 c  and interpolate correctly for their bndry vals from coarser grids.
 c
-         call ginit(newstl(levnew),.true., nvar, naux,t0)
+         call ginit(newstl(levnew),.true., nvar, naux,start_time)
          lstart(levnew) = newstl(levnew)
          lfine = lfnew
-         call ginit(lstart(levold),.false., nvar, naux,t0)
+         call ginit(lstart(levold),.false., nvar, naux,start_time)
 c
 c count number of grids on newly created levels (needed for openmp
 c parallelization). this is also  done in regridding.
@@ -77,6 +80,7 @@ c
           numcells(levnew) = ncells
           avenumgrids(levnew) = avenumgrids(levnew) + ngrids
           iregridcount(levnew) = iregridcount(levnew) + 1
+          if (ngrids .gt. 1) call arrangeGrids(levnew,ngrids)
           if (verbosity_regrid .ge. levnew) then
              write(*,100) ngrids,ncells,levnew
  100         format("there are ",i4," grids with ",i8,
@@ -88,7 +92,7 @@ c
  30   continue
 c
 c  switch location of old and new storage for soln. vals, 
-c  and reset time to 0.0
+c  and reset time to 0.0 (or initial time start_time)
 c
       if (mxnest .eq. 1) go to 99
 c
@@ -98,7 +102,7 @@ c
  50        itemp                = node(store1,mptr)
            node(store1,mptr)    = node(store2,mptr)
            node(store2,mptr)    = itemp
-           rnode(timemult,mptr) = t0
+           rnode(timemult,mptr) = start_time
            mptr                 = node(levelptr,mptr)
            if (mptr .ne. 0) go to 50
        lev = lev + 1
@@ -106,10 +110,10 @@ c
  60   continue
 c
 c initial updating so can do conservation check. can do before
-c bndry flux arrays set, since don't need them for this
+c bndry flux arrays set, since dont need them for this
 c
       do 65 level = 1, lfine-1
- 	 call update(lfine-level,nvar)
+         call update(lfine-level,nvar,naux)
  65   continue
 c
 c set up boundary flux conservation arrays

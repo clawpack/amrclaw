@@ -8,8 +8,8 @@ c   this is just a check to make sure all storage was accounted for.
 c   routine is called after all the data has been checkpointed.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
+      use amr_module
       implicit double precision (a-h,o-z)
-      include  "call.i"
 c
 c      ## clean up storage to double check that everything taken care of
 c      ## done after the checkpoint so pointers still work on restart

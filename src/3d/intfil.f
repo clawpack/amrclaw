@@ -24,31 +24,25 @@ c  used array marks when point filled. filpatch checks if points left over
 c  after intersections at specified level.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 c
-      dimension   val(mi,mj,mk,nvar)
+      dimension   val(nvar,mi,mj,mk)
       logical     tinterp
-c     2D
-c     iadd(i,j,ivar)   = loc    + i - 1 + mitot*((ivar-1)*mjtot+j-1)
-c     iadnew(i,j,ivar) = locnew + i - 1 + mitot*((ivar-1)*mjtot+j-1)
-c     iadold(i,j,ivar) = locold + i - 1 + mitot*((ivar-1)*mjtot+j-1)
-c     iaduse(i,j)      = locuse + i - 1 + nrow*(j-1)
 c
-c     3D
-      iadd(i,j,k,ivar)   = loc    +    (i-1)
-     &                            +    (j-1)*mitot
-     &                            +    (k-1)*mitot*mjtot
-     &                            + (ivar-1)*mitot*mjtot*mktot
-      iadnew(i,j,k,ivar) = locnew +    (i-1)
-     &                            +    (j-1)*mitot
-     &                            +    (k-1)*mitot*mjtot
-     &                            + (ivar-1)*mitot*mjtot*mktot
-      iadold(i,j,k,ivar) = locold +    (i-1)
-     &                            +    (j-1)*mitot
-     &                            +    (k-1)*mitot*mjtot
-     &                            + (ivar-1)*mitot*mjtot*mktot
+      iadd(ivar,i,j,k)   = loc    +    (ivar-1)
+     &                            +    (i-1)*nvar
+     &                            +    (j-1)*nvar*mitot
+     &                            +    (k-1)*nvar*mitot*mjtot
+      iadnew(ivar,i,j,k) = locnew +    (ivar-1)
+     &                            +    (i-1)*nvar
+     &                            +    (j-1)*nvar*mitot
+     &                            +    (k-1)*nvar*mitot*mjtot
+      iadold(ivar,i,j,k) = locold +    (ivar-1)
+     &                            +    (i-1)*nvar
+     &                            +    (j-1)*nvar*mitot
+     &                            +    (k-1)*nvar*mitot*mjtot
       dimension flaguse(ilo:ihi, jlo:jhi, klo:khi)
 c
       dt     = possk(level)
@@ -92,7 +86,7 @@ c
       kxhi = min(kmhi,khi)
 c
       if (.not.((ixlo .le. ixhi .and. jxlo .le. jxhi) .and.
-     &          (                     kxlo .le. kxhi))) go to 90
+     &          (kxlo .le. kxhi))) go to 90
 c
 c  :::  grids intersect. figure out what time to use.
 c  :::  alphai = 1 for new time; 0 for old time
@@ -149,37 +143,37 @@ c
 c
       if (.not. tinterp) then
 c     ::: no time interp. copy the solution values
-         do 45 ivar = 1, nvar
          do 35 k = kxlo, kxhi
          do 25 j = jxlo, jxhi
          do 15 i = ixlo, ixhi
-             val(i-ilo+nrowst,j-jlo+ncolst,k-klo+nfilst,ivar) =
-     1            alloc(iadd(i-imlo+nghost+1,
+         do 45 ivar = 1, nvar
+             val(ivar,i-ilo+nrowst,j-jlo+ncolst,k-klo+nfilst) =
+     1            alloc(iadd(ivar,i-imlo+nghost+1,
      2                       j-jmlo+nghost+1,
-     3                       k-kmlo+nghost+1,ivar))
+     3                       k-kmlo+nghost+1))
+ 45          continue
              flaguse(i,j,k) = 1.d0
  15      continue
  25      continue
  35      continue
- 45      continue
       else
 c     ::: linear interpolation in time 
-         do 85 ivar = 1, nvar
          do 75 k = kxlo, kxhi
          do 65 j = jxlo, jxhi
          do 55 i = ixlo, ixhi
-             val(i-ilo+nrowst,j-jlo+ncolst,k-klo+nfilst,ivar) =
-     1            alloc(iadnew(i-imlo+nghost+1,
+         do 85 ivar = 1, nvar
+             val(ivar,i-ilo+nrowst,j-jlo+ncolst,k-klo+nfilst) =
+     1            alloc(iadnew(ivar,i-imlo+nghost+1,
      2                         j-jmlo+nghost+1,
-     3                         k-kmlo+nghost+1,ivar))*alphai +
-     1            alloc(iadold(i-imlo+nghost+1,
+     3                         k-kmlo+nghost+1))*alphai +
+     1            alloc(iadold(ivar,i-imlo+nghost+1,
      2                         j-jmlo+nghost+1,
-     3                         k-kmlo+nghost+1,ivar))*alphac
-             flaguse(i,j,k) = 1.d0
+     3                         k-kmlo+nghost+1))*alphac
+ 85         continue
+            flaguse(i,j,k) = 1.d0
  55      continue
  65      continue
  75      continue
- 85      continue
       endif
 c
  90   mptr = node(levelptr, mptr)

@@ -3,9 +3,9 @@ c ----------------------------------------------------
 c
       subroutine domprep(domflags,lbase,ibase,jbase,kbase)
 
+      use amr_module
       implicit double precision (a-h, o-z)
 
-      include  "call.i"
 
       integer*1 domflags(0:ibase+1,0:jbase+1,0:kbase+1)
 

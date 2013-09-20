@@ -3,10 +3,10 @@ c --------------------------------------------------------------
 c
       subroutine outtre(mlev,outgrd,nvar,naux)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
       logical  outgrd
 
-      include  "call.i"
 c
 c ::::::::::::::::::::::: OUTTRE :::::::::::::::::::::::::::::::::::
 c
@@ -29,9 +29,10 @@ c
               mptr = node(levelptr, mptr)
           go to 20
  30       continue
-          write(outunit,2)level,iregst(level),jregst(level),
-     .                    iregend(level),jregend(level)
- 2        format(/,"grids at level ",i5," go from ",2i9," to",2i9,/)
+          write(outunit,2),numgrids(level), level,
+     &                     iregst(level), jregst(level), kregst(level),
+     2                     iregend(level),jregend(level),kregend(level)
+ 2        format(/,i5," grids at level ",i5," go from ",3i9," to",3i9,/)
           level = level + 1
       go to 10
 c

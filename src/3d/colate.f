@@ -4,11 +4,11 @@ c
       subroutine colate (badpts, len, lcheck, 
      1                   iflags,domflags,isize,jsize,ksize,npts)
 c
+      use amr_module
       implicit  double precision (a-h,o-z)
 
-      include  "call.i"
 
-      dimension badpts(numdim,len)
+      dimension badpts(3,len)
       integer*1 iflags  (0:isize+1,0:jsize+1,0:ksize+1)
       integer*1 domflags(0:isize+1,0:jsize+1,0:ksize+1)
 c
@@ -31,7 +31,7 @@ c     # note that this results in flags of 1,  not 2 of 3.
          write(outunit,*)" from colate: iflags"
          do 48 kk = 1, ksize
            k = ksize + 1 - kk
-           write(6,*) 'plane k = ',k
+           write(outunit,*) 'plane k = ',k
          do 48 jj = 1, jsize
            j = jsize + 1 - jj
            write(outunit,101)(iflags(i,j,k),i=1,isize)
@@ -39,7 +39,7 @@ c     # note that this results in flags of 1,  not 2 of 3.
          write(outunit,*)" from colate: domflags"
          do 49 kk = 1, ksize
            k = ksize + 1 - kk
-           write(6,*) 'plane k = ',k
+           write(outunit,*) 'plane k = ',k
          do 49 jj = 1, jsize
            j = jsize + 1 - jj
            write(outunit,101)(domflags(i,j,k),i=1,isize)

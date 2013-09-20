@@ -5,12 +5,12 @@ c
      1                 aux,naux)
 
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
-      dimension valbig(mitot,mjtot,mktot,nvar)
-      dimension aux   (mitot,mjtot,mktot,naux)
+      dimension valbig(nvar,mitot,mjtot,mktot)
+      dimension aux   (naux,mitot,mjtot,mktot)
       logical periodic
 
 c
@@ -109,12 +109,12 @@ c     left boundary
       zt = zhi
 
       if (periodic) then
-	call  prefilrecur(level,nvar,valbig,aux,naux,time,
+	      call  prefilrecur(level,nvar,valbig,aux,naux,time,
      1                    mitot,mjtot,mktot,
      2                    1,1,ng+1,
      3                    ilo-ng,ilo-1,jlo-ng,jhi+ng,klo,khi)
       else
-	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
+      	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                1,1,ng+1,
      2                ilo-ng,ilo-1,jlo-ng,jhi+ng,klo,khi)
       endif
@@ -130,12 +130,12 @@ c     right boundary
       zt = zhi
 
       if (periodic) then
-	call  prefilrecur(level,nvar,valbig,aux,naux,time,
+      	call  prefilrecur(level,nvar,valbig,aux,naux,time,
      1                    mitot,mjtot,mktot,
      2                    mitot-ng+1,1,ng+1,
      3                    ihi+1,ihi+ng,jlo-ng,jhi+ng,klo,khi)
       else
-	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
+      	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                mitot-ng+1,1,ng+1,
      2                ihi+1,ihi+ng,jlo-ng,jhi+ng,klo,khi)
       endif
@@ -167,7 +167,7 @@ c     rear boundary
       zb = zlo
       zt = zhi
       if (periodic) then
-	call prefilrecur(level,nvar,valbig,aux,naux,time,
+      	call prefilrecur(level,nvar,valbig,aux,naux,time,
      1                   mitot,mjtot,mktot,
      2                   ng+1,mjtot-ng+1,ng+1,
      3                   ilo,ihi,jhi+1,jhi+ng,klo,khi)
@@ -214,21 +214,6 @@ c     top boundary
       end if
 
 c
-c external boundary conditions
-c
-c$$$      if (.not. ((xperdom .and. yperdom) .and. zperdom)) then
-c$$$	xl = xlo    - ng*hx
-c$$$	yf = ylo    - ng*hy
-c$$$        zb = zlo    - ng*hz
-c$$$	xr = xhi    + ng*hx
-c$$$	yr = yhi    + ng*hy
-c$$$        zt = zhi    + ng*hz
-c$$$
-c$$$	call bc3amr( valbig,aux,mitot,mjtot,mktot,nvar,naux,
-c$$$     1        	     hx,hy,hz,level,time,xl,xr,yf,yr,zb,zt,
-c$$$     3               xlower,ylower,zlower,xupper,yupper,zupper,
-c$$$     4               xperdom,yperdom,zperdom)
-c$$$      endif
 c
       return
       end

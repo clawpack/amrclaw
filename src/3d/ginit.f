@@ -1,12 +1,13 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine ginit(msave, first, nvar, naux, t0)
+      subroutine ginit(msave, first, nvar, naux, start_time)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
+
       logical first
 
-      include  "call.i"
 
 c ::::::::::::::::::::::::::::: GINIT ::::::::::::::::::::::::
 c
@@ -25,8 +26,7 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
 
       mptr  = msave
 
-   10 if (mptr .eq. 0) go to 99
-      nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
+ 10       nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
       ny      = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
       nz      = node(ndkhi,mptr) - node(ndklo,mptr) + 1
       mitot   = nx + 2*nghost
@@ -57,7 +57,7 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
          loc2              = igetsp(mitot*mjtot*mktot*nvar)
          node(store2,mptr) = loc2
       endif
-      rnode(timemult, mptr) = t0
+      rnode(timemult, mptr) = start_time 
       go to 30
    20 continue
 c
@@ -84,7 +84,7 @@ c     2               hx,hy,hz,alloc(locaux),naux)
 
 c
       mptr  = node(levelptr, mptr)
-      go to 10
+      if (mptr .ne. 0) go to 10
 c
 c
    99 return

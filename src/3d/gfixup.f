@@ -3,9 +3,9 @@ c  -----------------------------------------------------------
 c
       subroutine gfixup(lbase, lfnew, nvar, naux)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
 c
 c ::::::::::::::::::::::::: GFIXUP ::::::::::::::::::::::::::::::::;
@@ -79,7 +79,7 @@ c
               node(storeaux, mptr)  = locaux
               time   = rnode(timemult, mptr)
 c
-c      We now fill in the values for grid mptr using filvar. It uses
+c      We now fill in the values for grid mptr using filval. It uses
 c      piecewise linear interpolation to obtain values from the
 c      (lcheck - 1) grid, then overwrites those with whatever (lcheck)
 c      grids are available. We take advantage of the fact that the

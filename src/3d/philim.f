@@ -3,7 +3,7 @@ c
 c     =====================================================
       double precision function philim(a,b,meth)
 c     =====================================================
-      implicit real*8(a-h,o-z)
+      implicit double precision (a-h,o-z)
 c
 c     # Compute a limiter based on wave strengths a and b.
 c     # meth determines what limiter is used.

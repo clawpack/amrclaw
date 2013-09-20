@@ -7,9 +7,8 @@ c
      3                  ng,dtf,dx,dy,dz)
 c
 
+      use amr_module
       implicit double precision (a-h,o-z)
-
-      include  "call.i"
 
 c :::::::::::::::::::: FLUXAD ::::::::::::::::::::::::::::::::::
 c  save fine grid fluxes  at the border of the grid, for fixing
@@ -19,12 +18,12 @@ c  left edge of fine grid, it is the minus xfluxes that modify the
 c  coarse cell.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-      dimension xfluxm(mitot,mjtot,mktot,nvar)
-      dimension xfluxp(mitot,mjtot,mktot,nvar)
-      dimension yfluxm(mitot,mjtot,mktot,nvar)
-      dimension yfluxp(mitot,mjtot,mktot,nvar)
-      dimension zfluxm(mitot,mjtot,mktot,nvar)
-      dimension zfluxp(mitot,mjtot,mktot,nvar)
+      dimension xfluxm(nvar,mitot,mjtot,mktot)
+      dimension xfluxp(nvar,mitot,mjtot,mktot)
+      dimension yfluxm(nvar,mitot,mjtot,mktot)
+      dimension yfluxp(nvar,mitot,mjtot,mktot)
+      dimension zfluxm(nvar,mitot,mjtot,mktot)
+      dimension zfluxp(nvar,mitot,mjtot,mktot)
       dimension svdflx(nvar,lenbc)
  
       nx  = mitot-2*ng
@@ -46,10 +45,10 @@ c ::::: left side saved first
                do 130 kl=1,lratioz
                do 130 jl=1,lratioy
                   svdflx(ivar,lind) = svdflx(ivar,lind) +
-     1                  xfluxm(ng+1,jfine+jl,kfine+kl,ivar)*dtf*dy*dz
+     1                  xfluxm(ivar,ng+1,jfine+jl,kfine+kl)*dtf*dy*dz
 c	          write(dbugunit,900)lind,
-c     .                              xfluxm(1,jfine+jl,kfine+kl,ivar),
-c     .                              xfluxp(1,jfine+jl,kfine+kl,ivar)
+c     .                              xfluxm(ivar,1,jfine+jl,kfine+kl),
+c     .                              xfluxp(ivar,1,jfine+jl,kfine+kl)
 130            continue
 120         continue
 110      continue
@@ -65,10 +64,10 @@ c ::::: rear side
                do 230 kl=1,lratioz
                do 230 il=1,lratiox
                   svdflx(ivar,lind) = svdflx(ivar,lind) + 
-     1              yfluxp(ifine+il,mjtot-ng+1,kfine+kl,ivar)*dtf*dx*dz
+     1              yfluxp(ivar,ifine+il,mjtot-ng+1,kfine+kl)*dtf*dx*dz
 c         	   write(dbugunit,900)lind,
-c     .                       yfluxm(ifine+il,mjtot-ng+1,kfine+kl,ivar),
-c     .                       yfluxp(ifine+il,mjtot-ng+1,kfine+kl,ivar)
+c     .                       yfluxm(ivar,ifine+il,mjtot-ng+1,kfine+kl),
+c     .                       yfluxp(ivar,ifine+il,mjtot-ng+1,kfine+kl)
 230            continue
 220         continue
 210      continue
@@ -84,10 +83,10 @@ c ::::: right side
                do 330 kl=1,lratioz
                do 330 jl=1,lratioy
                   svdflx(ivar,lind) = svdflx(ivar,lind) + 
-     1              xfluxp(mitot-ng+1,jfine+jl,kfine+kl,ivar)*dtf*dy*dz
+     1              xfluxp(ivar,mitot-ng+1,jfine+jl,kfine+kl)*dtf*dy*dz
 c                  write(dbugunit,900)lind
-c     .                       xfluxm(mitot-ng+1,jfine+jl,kfine+kl,ivar),
-c     .                       xfluxp(mitot-ng+1,jfine+jl,kfine+kl,ivar)
+c     .                       xfluxm(ivar,mitot-ng+1,jfine+jl,kfine+kl),
+c     .                       xfluxp(ivar,mitot-ng+1,jfine+jl,kfine+kl)
 330            continue
 320         continue
 310      continue
@@ -103,10 +102,10 @@ c ::::: front side
                do 430 kl=1,lratioz
                do 430 il=1,lratiox
                   svdflx(ivar,lind) = svdflx(ivar,lind) +
-     1                    yfluxm(ifine+il,ng+1,kfine+kl,ivar)*dtf*dx*dz
+     1                    yfluxm(ivar,ifine+il,ng+1,kfine+kl)*dtf*dx*dz
 c                  write(dbugunit,900)lind,
-c     .                             yfluxm(ifine+il,ng+1,kfine+kl,ivar),
-c     .                             yfluxp(ifine+il,ng+1,kfine+kl,ivar)
+c     .                             yfluxm(ivar,ifine+il,ng+1,kfine+kl),
+c     .                             yfluxp(ivar,ifine+il,ng+1,kfine+kl)
 430            continue
 420         continue
 410      continue
@@ -122,10 +121,10 @@ c ::::: bottom side
                do 530 jl=1,lratioy
                do 530 il=1,lratiox
                   svdflx(ivar,lind) = svdflx(ivar,lind) +
-     1                    zfluxm(ifine+il,jfine+jl,ng+1,ivar)*dtf*dx*dy
+     1                    zfluxm(ivar,ifine+il,jfine+jl,ng+1)*dtf*dx*dy
 c                  write(dbugunit,900)lind,
-c     .                             zfluxm(ifine+il,jfine+jl,ng+1,ivar),
-c     .                             zfluxp(ifine+il,jfine+jl,ng+1,ivar) 
+c     .                             zfluxm(ivar,ifine+il,jfine+jl,ng+1),
+c     .                             zfluxp(ivar,ifine+il,jfine+jl,ng+1) 
 530            continue
 520         continue
 510      continue
@@ -141,10 +140,10 @@ c ::::: top side
                do 630 jl=1,lratioy
                do 630 il=1,lratiox
                   svdflx(ivar,lind) = svdflx(ivar,lind) +
-     1              zfluxp(ifine+il,jfine+jl,mktot-ng+1,ivar)*dtf*dx*dy
+     1              zfluxp(ivar,ifine+il,jfine+jl,mktot-ng+1)*dtf*dx*dy
 c                  write(dbugunit,900)lind,
-c     .                             zfluxm(ifine+il,jfine+jl,ng+1,ivar),
-c     .                             zfluxp(ifine+il,jfine+jl,ng+1,ivar)
+c     .                             zfluxm(ivar,ifine+il,jfine+jl,ng+1),
+c     .                             zfluxp(ivar,ifine+il,jfine+jl,ng+1)
 630            continue
 620         continue
 610      continue

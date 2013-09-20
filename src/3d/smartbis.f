@@ -4,11 +4,11 @@ c
       subroutine smartbis(badpts,npts,cutoff,numptc,nclust,
      1                    lbase,intcorn,idim,jdim,kdim)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include "call.i"
 
-      dimension     badpts(numdim,npts),intcorn(nsize,maxcl)
+      dimension     badpts(3,npts),intcorn(nsize,maxcl)
       dimension     iscr(idim), jscr(jdim), kscr(kdim)
       integer       nclust, numptc(maxcl)
       parameter     (usemin=.4)
@@ -110,7 +110,7 @@ c                 necessary here because ibot cannot decrease below i.
               end if
           else
 c             do the switch in each coordinate direction
-              do 61 ndim=1,numdim
+              do 61 ndim=1,3
               temp              = badpts(ndim,ibot)
               badpts(ndim,ibot) = badpts(ndim,i)
               badpts(ndim,i)    = temp

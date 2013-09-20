@@ -6,10 +6,10 @@ c
 
        implicit double precision (a-h, o-z)
 
-       dimension qc(nrow,ncol,nfil,nvar)
-       dimension qc1d(lenbc,nvar)
-       dimension auxc(nrow,ncol,nfil,naux)
-       dimension auxc1d(lenbc,naux)
+       dimension qc(nvar,nrow,ncol,nfil)
+       dimension qc1d(nvar,lenbc)
+       dimension auxc(naux,nrow,ncol,nfil)
+       dimension auxc1d(naux,lenbc)
 c
 c      store coarse perimeter worth of solution into 1d array.
 c      go around fine grid in following order
@@ -37,9 +37,9 @@ c      side 1
        do 10 j = 2, ncol-1
 	 index = index + 1
 	 do 5 ivar = 1, nvar
- 5	   qc1d(index,ivar) = qc(1,j,k,ivar)
+ 5	   qc1d(ivar,index) = qc(ivar,1,j,k)
 	 do 6 iaux = 1, naux
- 6	   auxc1d(index,iaux) = auxc(1,j,k,iaux)
+ 6	   auxc1d(iaux,index) = auxc(iaux,1,j,k)
  10    continue
 
 c      side 2
@@ -47,9 +47,9 @@ c      side 2
        do 20 i = 2, nrow-1
 	 index = index + 1
 	 do 15 ivar = 1, nvar
- 15	   qc1d(index,ivar) = qc(i,ncol,k,ivar)
+ 15	   qc1d(ivar,index) = qc(ivar,i,ncol,k)
 	 do 16 iaux = 1, naux
- 16	   auxc1d(index,iaux) = auxc(i,ncol,k,iaux)
+ 16	   auxc1d(iaux,index) = auxc(iaux,i,ncol,k)
  20    continue
 
 c      side 3
@@ -57,9 +57,9 @@ c      side 3
        do 30 j = 2, ncol-1
 	 index = index + 1
 	 do 25 ivar = 1, nvar
- 25	   qc1d(index,ivar) = qc(nrow,j,k,ivar)
+ 25	   qc1d(ivar,index) = qc(ivar,nrow,j,k)
 	 do 26 iaux = 1, naux
- 26	   auxc1d(index,iaux) = auxc(nrow,j,k,iaux)
+ 26	   auxc1d(iaux,index) = auxc(iaux,nrow,j,k)
  30    continue
 
 c      side 4
@@ -67,9 +67,9 @@ c      side 4
        do 40 i = 2, nrow-1
 	 index = index + 1
 	 do 35 ivar = 1, nvar
- 35	   qc1d(index,ivar) = qc(i,1,k,ivar)
+ 35	   qc1d(ivar,index) = qc(ivar,i,1,k)
 	 do 36 iaux = 1, naux
- 36	   auxc1d(index,iaux) = auxc(i,1,k,iaux)
+ 36	   auxc1d(iaux,index) = auxc(iaux,i,1,k)
  40    continue
 
 c      side 5
@@ -77,9 +77,9 @@ c      side 5
        do 50 i = 2, nrow-1
          index = index + 1
          do 45 ivar = 1, nvar
- 45        qc1d(index,ivar) = qc(i,j,1,ivar)
+ 45        qc1d(ivar,index) = qc(ivar,i,j,1)
          do 46 iaux = 1, naux
- 46        auxc1d(index,iaux) = auxc(i,j,1,iaux)
+ 46        auxc1d(iaux,index) = auxc(iaux,i,j,1)
  50    continue
 
 c      side 6
@@ -87,9 +87,9 @@ c      side 6
        do 60 i = 2, nrow-1
          index = index + 1
          do 55 ivar = 1, nvar
- 55        qc1d(index,ivar) = qc(i,j,nfil,ivar)
+ 55        qc1d(ivar,index) = qc(ivar,i,j,nfil)
          do 56 iaux = 1, naux
- 56        auxc1d(index,iaux) = auxc(i,j,nfil,iaux)
+ 56        auxc1d(iaux,index) = auxc(iaux,i,j,nfil)
  60    continue
 
        return

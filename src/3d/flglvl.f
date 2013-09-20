@@ -4,9 +4,9 @@ c
       subroutine flglvl(nvar,naux,lcheck,nxypts,index,lbase,
      1                  i1flags,npts,t0,isize,jsize,ksize)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
       integer*1 i1flags(isize+2,jsize+2,ksize+2)
       integer*1 dom1flags(isize+2,jsize+2,ksize+2)
 c
@@ -62,7 +62,8 @@ c     # finish by transferring from iflags to iflags2
 c
       numbad = 0
 c     always call spest to set up stuff (initialize iflags, fill locbig)
-      call spest(nvar,naux,lcheck,dom1flags,isize,jsize,ksize,t0)
+      call spest(nvar,naux,lcheck,dom1flags,isize,jsize,ksize,
+     1           tstart_thisrun)
       if (tol .gt. 0.) call errest(nvar,naux,lcheck)
 
       call bufnst(nvar,naux,numbad,lcheck,dom1flags,isize,jsize,ksize)
@@ -71,7 +72,7 @@ c
 c  colate flagged pts into flagged points array
 c
       if (nxypts .gt. 0) then
-          index = igetsp(numdim*nxypts)
+          index = igetsp(3*nxypts)
           call colate(alloc(index),nxypts,lcheck,
      1                dom1flags,i1flags,isize,jsize,ksize,npts)
       else 

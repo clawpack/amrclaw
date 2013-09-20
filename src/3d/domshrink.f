@@ -3,9 +3,8 @@ c ----------------------------------------------------
 c
       subroutine domshrink(iflags2,iflags,idim,jdim,kdim)
 
+      use amr_module
       implicit double precision (a-h, o-z)
-
-      include  "call.i"
 
       integer*1  iflags2(0:idim+1,0:jdim+1,0:kdim+1)
       integer*1  iflags (0:idim+1,0:jdim+1,0:kdim+1)
