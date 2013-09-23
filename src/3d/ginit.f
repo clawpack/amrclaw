@@ -79,8 +79,8 @@ c     2               hx,hy,hz,alloc(locaux),naux)
       mx = maxmx
       my = maxmy
       mz = maxmz
-      call qinit(maxmx,maxmy,maxmz,nvar,nghost,mx,my,mz,
-     &      corn1,corn2,corn3,hx,hy,hz,alloc(loc),naux,alloc(locaux))
+      call qinit(nvar,nghost,mx,my,mz,corn1,corn2,corn3,
+     &           hx,hy,hz,alloc(loc),naux,alloc(locaux))
 
 c
       mptr  = node(levelptr, mptr)
