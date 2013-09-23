@@ -6,6 +6,7 @@ c
 c
       implicit double precision (a-h,o-z)
       dimension q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+      dimension aux(maux, 1-mbc:mx+mbc, 1-mbc:my+mbc)
       common /cqinit/ A1,beta1,x1,y1, A2,beta2,x2,y2
 
       do i=1,mx

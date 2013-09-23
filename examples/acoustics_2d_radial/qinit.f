@@ -12,6 +12,7 @@ c     # Acoustics with smooth radially symmetric profile to test accuracy
 c
        implicit double precision (a-h,o-z)
        dimension q(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+       dimension aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
 c
        pi = 4.d0*datan(1.d0)
        width = 0.2d0

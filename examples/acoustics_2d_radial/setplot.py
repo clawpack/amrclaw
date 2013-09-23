@@ -66,8 +66,8 @@ def setplot(plotdata):
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = 'auto'
+    plotaxes.xlimits = [0,1.5]
+    plotaxes.ylimits = [-2.,4.]
     plotaxes.title = 'Scatter plot'
 
     # Set up for item on these axes: scatter of 2d data

@@ -23,6 +23,7 @@ c          pages="1394-1414" }
 c
        implicit double precision (a-h,o-z)
        dimension q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+       dimension aux(maux, 1-mbc:mx+mbc, 1-mbc:my+mbc)
        dimension rpp(4),rpr(4),rpu(4),rpv(4)
        common /cparam/  gamma
 c

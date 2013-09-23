@@ -1,7 +1,8 @@
 c
 c  -------------------------------------------------------------
 c
-      subroutine tick(nvar,cut,nstart,vtime,time,naux,start_time,rest)
+      subroutine tick(nvar,cut,nstart,vtime,time,naux,start_time,
+     &                rest,dt_max)
 c
       use amr_module
 
@@ -185,10 +186,8 @@ c level 'lbase' stays fixed.
 c
           if (rprint) write(outunit,101) lbase
 101       format(8h  level ,i5,32h  stays fixed during regridding )
-          call conck(1,nvar,naux,time,rest)
           call regrid(nvar,lbase,cut,naux,start_time)
           call setbestsrc()     ! need at every grid change
-          call conck(1,nvar,naux,time,rest)
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
 c note negative time to signal regridding output in plots
 c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
@@ -307,7 +306,9 @@ c         find new dt for next cycle (passed back from integration routine).
              ii = lfine+1-i
              dtnew(ii) = min(dtnew(ii),dtnew(ii+1)*kratio(ii))
  115       continue
-           possk(1) = dtnew(1)
+c          make sure not to exceed largest permissible dt
+           dtnew(1) = min(dtnew(1),dt_max)  
+           possk(1) = dtnew(1)    ! propagate new timestep to hierarchy
            do 120 i = 2, mxnest
  120         possk(i) = possk(i-1) / kratio(i-1)
 

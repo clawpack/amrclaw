@@ -4,7 +4,7 @@ c
 c
 c     =====================================================
        subroutine qinit(meqn,mbc,mx,my,xlower,ylower,
-     &                   dx,dy,q)
+     &                   dx,dy,q,maux,aux)
 c     =====================================================
 c
 c     # Set initial conditions for q.
@@ -14,6 +14,7 @@ c     #     0.1  otherwise
 c
        implicit double precision (a-h,o-z)
        dimension q(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+       dimension aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
 c
        do 20 i=1,mx
           xi = xlower + (i-0.5d0)*dx
