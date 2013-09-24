@@ -11,8 +11,7 @@ c     #  aux(i,j,k,2) = sound speed c in (i,j) cell
 c
 c
       implicit double precision (a-h,o-z)
-      double precision
-     & aux(maux,1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,1-mbc:maxmz+mbc)
+      double precision aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc,1-mbc:mz+mbc)
       common /comaux/ z1,c1,z2,c2
 
 
