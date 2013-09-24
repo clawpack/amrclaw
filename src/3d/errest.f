@@ -79,7 +79,7 @@ c
 c	      xl     = rnode(cornxlo, mptr)-2*nghost*hx
 c	      yf     = rnode(cornylo, mptr)-2*nghost*hy
 c	      zb     = rnode(cornzlo, mptr)-2*nghost*hz
-              call setaux(nx,ny,nz,2*nghost,nx,ny,nz,
+              call setaux(2*nghost,nx,ny,nz,
      &              xlowmbc,ylowmbc,zlowmbc ,hx,hy,hz,
      &              naux,alloc(locaxb))
 

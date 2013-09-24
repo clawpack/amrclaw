@@ -1,5 +1,5 @@
 c     ==================================================================
-      subroutine setaux(maxmx,maxmy,maxmz,mbc,mx,my,mz,xlower,ylower,
+      subroutine setaux(mbc,mx,my,mz,xlower,ylower,
      &                  zlower,dx,dy,dz,maux,aux)
 c     ==================================================================
 c

@@ -27,52 +27,49 @@ c
       call putsp(lbase,level,nvar,naux)
           mptr = lstart(level)
  2        if (mptr .eq. 0) go to 3
-	      nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
-	      ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+              nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
+              ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
               nz = node(ndkhi,mptr) - node(ndklo,mptr) + 1
               mitot = nx + 2*nghost
               mjtot = ny + 2*nghost
               mktot = nz + 2*nghost
               nwords        = mitot*mjtot*mktot*nvar
-	      if (level .lt. mxnest)
-     .		 call reclam(node(store2, mptr), nwords)
+              if (level .lt. mxnest)
+     .             call reclam(node(store2, mptr), nwords)
               node(store2, mptr) = 0
               mptr          = node(levelptr, mptr)
-          go to 2
- 3        level   = level + 1
+              go to 2
+ 3            level   = level + 1
           go to 1
 c
  4    lcheck = lbase + 1
  5    if (lcheck .gt. mxnest) go to 99
-	  hx = hxposs(lcheck)
-	  hy = hyposs(lcheck)
+          hx = hxposs(lcheck)
+          hy = hyposs(lcheck)
           hz = hzposs(lcheck)
 c
 c  interpolate level lcheck
 c
           mptr   = newstl(lcheck)
  10       if (mptr .eq. 0) go to 80
-	      nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
-	      ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+              nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
+              ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
               nz = node(ndkhi,mptr) - node(ndklo,mptr) + 1
               mitot = nx + 2*nghost
               mjtot = ny + 2*nghost
               mktot = nz + 2*nghost
-	      corn1 = rnode(cornxlo,mptr)
-	      corn2 = rnode(cornylo,mptr)
-	      corn3 = rnode(cornzlo,mptr)
+              corn1 = rnode(cornxlo,mptr)
+              corn2 = rnode(cornylo,mptr)
+              corn3 = rnode(cornzlo,mptr)
               loc    = igetsp(mitot * mjtot * mktot * nvar)
               node(store1, mptr)  = loc
               if (naux .gt. 0) then
                 locaux = igetsp(mitot * mjtot *  mktot * naux)
-                maxmx = mitot - 2*nghost
-                mx = maxmx
-                maxmy = mjtot - 2*nghost
-                my = maxmy
-                maxmz = mktot - 2*nghost
-                mz = maxmz
-                call setaux(maxmx,maxmy,maxmz,nghost,mx,my,mz,
-     &                corn1,corn2,corn3,hx,hy,hz,naux,alloc(locaux))
+                mx = mitot - 2*nghost
+                my = mjtot - 2*nghost
+                mz = mktot - 2*nghost
+                call setaux(nghost,mx,my,mz,corn1,corn2,corn3,
+     &                      hx,hy,hz,naux,alloc(locaux))
               else
                 locaux = 1
               endif
@@ -95,8 +92,8 @@ c          # "interior" of coarser patch to fill fine grid.
            mic = nx/intratx(lcheck-1) + 2
            mjc = ny/intraty(lcheck-1) + 2
            mkc = nz/intratz(lcheck-1) + 2
-	   ivalc  = igetsp(mic*mjc*mkc*(nvar+naux))
-	   ivalaux  = ivalc + nvar*mic*mjc*mkc
+           ivalc  = igetsp(mic*mjc*mkc*(nvar+naux))
+           ivalaux  = ivalc + nvar*mic*mjc*mkc
            xl = rnode(cornxlo,mptr)
            xr = rnode(cornxhi,mptr)
            yf = rnode(cornylo,mptr)
@@ -106,21 +103,20 @@ c          # "interior" of coarser patch to fill fine grid.
            hx = hxposs(lcheck)
            hy = hyposs(lcheck)
            hz = hzposs(lcheck)
-	   ilo    = node(ndilo, mptr)
-	   ihi    = node(ndihi, mptr)
-	   jlo    = node(ndjlo, mptr)
-	   jhi    = node(ndjhi, mptr)
+           ilo    = node(ndilo, mptr)
+           ihi    = node(ndihi, mptr)
+           jlo    = node(ndjlo, mptr)
+           jhi    = node(ndjhi, mptr)
            klo    = node(ndklo, mptr)
            khi    = node(ndkhi, mptr)
 
            call filval(alloc(loc),mitot,mjtot,mktot,hx,hy,hz,lcheck,
-     &                                                         time,
-     1                 alloc(ivalc),alloc(ivalaux),mic,mjc,mkc,
+     1                 time,alloc(ivalc),alloc(ivalaux),mic,mjc,mkc,
      2                 xl,xr,yf,yr,zb,zt,nvar,
      3                 mptr,ilo,ihi,jlo,jhi,klo,khi,
      4                 alloc(locaux),naux)
 
-	   call reclam(ivalc,mic*mjc*mkc*(nvar+naux))
+           call reclam(ivalc,mic*mjc*mkc*(nvar+naux))
 
            mptr = node(levelptr, mptr)
            go to 10
@@ -129,13 +125,13 @@ c  done filling new grids at level. move them into lstart from newstl
 c  (so can use as source grids for filling next level). can also
 c  get rid of loc. 7 storage for old level.
 c
- 80   mptr = lstart(lcheck)
- 85   if (mptr .eq. 0) go to 90
-	  nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
-	  ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+ 80       mptr = lstart(lcheck)
+ 85       if (mptr .eq. 0) go to 90
+          nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
+          ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
           nz = node(ndkhi,mptr) - node(ndklo,mptr) + 1
-	  mitot = nx + 2*nghost
-	  mjtot = ny + 2*nghost
+          mitot = nx + 2*nghost
+          mjtot = ny + 2*nghost
           mktot = nz + 2*nghost
           call reclam(node(store1,mptr),mitot*mjtot*mktot*nvar)
           if (naux .gt. 0) then
@@ -155,18 +151,18 @@ c     initialize 2nd (old time) storage block for new grids not at top level
 c
       levend = min(lfine,mxnest-1)
       do 110 level = lbase+1, levend
-	 mptr = lstart(level)
+       mptr = lstart(level)
  105	 if (mptr .eq. 0) go to 110
-	    nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
-	    ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-            nz = node(ndkhi,mptr) - node(ndklo,mptr) + 1
-	    mitot = nx + 2*nghost
-	    mjtot = ny + 2*nghost
-            mktot = nz + 2*nghost
-	    nwords = mitot*mjtot*mktot*nvar
-	    node(store2,mptr) = igetsp(nwords)
-	 mptr = node(levelptr,mptr)
-	 go to 105
+           nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
+           ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+           nz = node(ndkhi,mptr) - node(ndklo,mptr) + 1
+           mitot = nx + 2*nghost
+	         mjtot = ny + 2*nghost
+           mktot = nz + 2*nghost
+           nwords = mitot*mjtot*mktot*nvar
+           node(store2,mptr) = igetsp(nwords)
+        	 mptr = node(levelptr,mptr)
+	         go to 105
  110   continue
 
 c

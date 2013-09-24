@@ -46,8 +46,8 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
          mx = maxmx
          my = maxmy
          mz = maxmz
-         call setaux(maxmx,maxmy,maxmz,nghost,mx,my,mz,
-     &         corn1,corn2,corn3,hx,hy,hz,naux,alloc(locaux))
+         call setaux(nghost,mx,my,mz, corn1,corn2,corn3,
+     &               hx,hy,hz,naux,alloc(locaux))
 
       else
          locaux = 1

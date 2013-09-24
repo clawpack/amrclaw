@@ -1,6 +1,6 @@
 c     ==================================================================
-      subroutine setaux(maxmx,maxmy,maxmz,mbc,mx,my,mz,xlower,ylower,
-     &                  zlower,dx,dy,dz,maux,aux)
+      subroutine setaux(mbc,mx,my,mz,xlower,ylower,zlower,
+     &                  dx,dy,dz,maux,aux)
 c     ==================================================================
 c
 c     # set auxiliary arrays
@@ -17,8 +17,8 @@ c
 
 
       do  k = 1-mbc,mz+mbc
-	    do j = 1-mbc,my+mbc
-	       do i = 1-mbc,mx+mbc
+        do j = 1-mbc,my+mbc
+           do i = 1-mbc,mx+mbc
                zcell = zlower + (k-0.5d0)*dz
                if (zcell .lt. 0.d0) then
                   aux(1,i,j,k) = z1

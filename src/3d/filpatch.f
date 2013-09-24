@@ -155,16 +155,13 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
       endif
 
       if (naux > 0) then
-         maxmx = nrowc - 2*nghost
-         mx = maxmx
-         maxmy = ncolc - 2*nghost
-         my = maxmy
-         maxmz = nfilc - 2*nghost
-         mz = maxmz
+         mx = nrowc - 2*nghost
+         my = ncolc - 2*nghost
+         mz = nfilc - 2*nghost
          xl = xlc + nghost*hxc
          yb = ybc + nghost*hyc
          zf = zfc + nghost*hzc
-         call setaux(maxmx,maxmy,maxmz,nghost,mx,my,mz,xl,yb,zf,
+         call setaux(nghost,mx,my,mz,xl,yb,zf,
      &               hxc,hyc,hzc,naux,auxcrse)
       endif
 
