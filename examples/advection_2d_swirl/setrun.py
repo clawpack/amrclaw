@@ -65,8 +65,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[1] = 1.000000e+00          # yupper
 
     # Number of grid cells:
-    clawdata.num_cells[0] = 128      # mx
-    clawdata.num_cells[1] = 128      # my
+    clawdata.num_cells[0] = 64       # mx
+    clawdata.num_cells[1] = 64       # my
 
 
     # ---------------
@@ -272,7 +272,7 @@ def setrun(claw_pkg='amrclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 4
+    amrdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
     amrdata.refinement_ratios_x = [2, 2, 2, 2]

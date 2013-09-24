@@ -5,7 +5,7 @@ OutputFlag = 'hdf';
 setopengl;
 setviews  % set viewpoints so that view(xSlice), for example, can be used.
 
-PlotType = 3;                % type of plot to produce:
+PlotType = 1;                % type of plot to produce:
 			     % 1 = pcolor on slices (with optional contours)
 			     % 2 = contour lines in 3d on transparent slices
 			     % 3 = Schlieren plot on slices
