@@ -15,12 +15,11 @@ try:
 except:
     raise Exception("Need to set CLAW environment variable")
 
-amrlib = os.path.join(CLAW,'amrclaw','src','2d')
-print "First remove .o and .mod files from %s" % amrlib
-ans = raw_input("   for a clean build? ")
-if ans.lower() in ['y','yes']: 
-    cmd = "rm -f %s/*.o %s/*.mod" % (amrlib,amrlib)
-    os.system(cmd)
+# Remove library files for a clean build:
+
+lib = CLAW + '/amrclaw/src/*'
+cmd = "rm -f %s/*.o %s/*.mod" % (lib,lib)
+os.system(cmd)
 
 
 def list_tests(tests_dir='.'):
@@ -130,5 +129,4 @@ def run_tests(tests_dir = '.'):
     os.chdir(current_dir)
 
 if __name__=='__main__':
-    import sys
-    run_tests(*sys.argv[1:])
+    run_tests()
