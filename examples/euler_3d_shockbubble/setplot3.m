@@ -1,7 +1,6 @@
 %  setplot3.m
 %  called in plotclaw3 before plotting to set various parameters
 
-OutputFlag = 'hdf';
 setopengl;
 setviews  % set viewpoints so that view(xSlice), for example, can be used.
 
