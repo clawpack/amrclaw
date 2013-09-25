@@ -37,7 +37,6 @@ def setrun(claw_pkg='amrclaw'):
     #------------------------------------------------------------------
 
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('tperiod',     4.0,  'period')
 
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -329,15 +328,15 @@ def setrun(claw_pkg='amrclaw'):
 
     #  ----- For developers -----
     # Toggle debugging print statements:
-    amrdata.dprint = False      # print domain flags
-    amrdata.eprint = False      # print err est flags
+    amrdata.dprint = True       # print domain flags
+    amrdata.eprint = True       # print err est flags
     amrdata.edebug = False      # even more err est flags
-    amrdata.gprint = False      # grid bisection/clustering
-    amrdata.nprint = False      # proper nesting output
-    amrdata.pprint = False      # proj. of tagged points
-    amrdata.rprint = False      # print regridding summary
+    amrdata.gprint = True       # grid bisection/clustering
+    amrdata.nprint = True       # proper nesting output
+    amrdata.pprint = True       # proj. of tagged points
+    amrdata.rprint = True       # print regridding summary
     amrdata.sprint = False      # space/memory output
-    amrdata.tprint = False      # time step reporting each level
+    amrdata.tprint = True       # time step reporting each level
     amrdata.uprint = False      # update/upbnd reporting
 
 

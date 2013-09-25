@@ -14,7 +14,7 @@ setpatchbordercolor('b',2);
 setpatchbordercolor('r',3);
 
 
-%showcubes;
+showcubes;
 setcubecolor('k',1);
 setcubecolor('b',2);
 setcubecolor('r',3);
