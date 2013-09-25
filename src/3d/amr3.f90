@@ -395,12 +395,14 @@ program amr3
         ! Change to Version 4.1 terminology:
         if (auxtype(iaux) == "leftface") auxtype(iaux) = "xleft"
         if (auxtype(iaux) == "bottomface") auxtype(iaux) = "yleft"
+        if (auxtype(iaux) == "frontface") auxtype(iaux) = "zleft"
         if (.not. (auxtype(iaux) .eq."xleft" .or. &
                    auxtype(iaux) .eq. "yleft".or. &
+                   auxtype(iaux) .eq. "zleft".or. &
                    auxtype(iaux) .eq. "capacity".or. &
                    auxtype(iaux) .eq. "center"))  then
             print *," unknown type for auxiliary variables"
-            print *," use  xleft/yleft/center/capacity"
+            print *," use  xleft/yleft/zleft/center/capacity"
             stop
         endif
     enddo
