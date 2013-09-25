@@ -19,7 +19,7 @@ c colate = takes the error plane with flagged pts at level lcheck
 c          and puts their (i,j,k) cell centered
 c          indices into the badpts array.
 c          To insure proper nesting,  get rid of flagged point
-c          that don't fit into properly nested domain (in iflags2)
+c          that dont fit into properly nested domain (in iflags2)
 c
 c *************************************************************
 c
@@ -61,16 +61,16 @@ c     give points the indices from integer region space.
       do 20 j   = 1, jsize
       do 20 i   = 1, isize
         if (iflags(i,j,k) .ne. goodpt) then
-	  index = index + 1
-	  badpts(1,index) = dble(i)-.5
-	  badpts(2,index) = dble(j)-.5
+          index = index + 1
+          badpts(1,index) = dble(i)-.5
+          badpts(2,index) = dble(j)-.5
           badpts(3,index) = dble(k)-.5
-	endif
+        endif
  20   continue
 c
  99   npts = index 
       if (gprint) then
-	write(outunit,100) npts, lcheck
+        write(outunit,100) npts, lcheck
  100    format( i5,' flagged points colated on level ',i4)
       endif
 

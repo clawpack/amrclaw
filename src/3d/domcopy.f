@@ -20,7 +20,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
       do 10 k = 0, ksize+1
       do 10 j = 0, jsize+1
       do 10 i = 0, isize+1
-	 iflags2(i,j,k) = iflags(i,j,k)
+        iflags2(i,j,k) = iflags(i,j,k)
  10   continue
 c
 c  take care of periodicity again
@@ -33,9 +33,9 @@ c
  35      continue
        else
          do 65 k = 1, ksize
-	 do 65 j = 1, jsize
-	   if (iflags2(    1,j,k) .eq. 1) iflags2(      0,j,k) = 1
-	   if (iflags2(isize,j,k) .eq. 1) iflags2(isize+1,j,k) = 1
+         do 65 j = 1, jsize
+           if (iflags2(    1,j,k) .eq. 1) iflags2(      0,j,k) = 1
+           if (iflags2(isize,j,k) .eq. 1) iflags2(isize+1,j,k) = 1
  65      continue
       endif
       if (yperdom) then
@@ -46,9 +46,9 @@ c
  45      continue
        else
          do 55 k = 1, ksize
-	 do 55 i = 1, isize
-	   if (iflags2(i,    1,k) .eq. 1) iflags2(i,      0,k) = 1
-	   if (iflags2(i,jsize,k) .eq. 1) iflags2(i,jsize+1,k) = 1
+         do 55 i = 1, isize
+           if (iflags2(i,    1,k) .eq. 1) iflags2(i,      0,k) = 1
+           if (iflags2(i,jsize,k) .eq. 1) iflags2(i,jsize+1,k) = 1
  55      continue
       endif
       if (zperdom) then
@@ -69,6 +69,7 @@ c
          write(outunit,*)" from domcopy: domflags "
          do 40 kk = 1, ksize
          k = ksize + 1 - kk
+         write(outunit,*) 'plane k = ',k
          do 40 jj = 1, jsize
          j = jsize + 1 - jj
          write(outunit,100)(iflags2(i,j,k),i=1,isize)
