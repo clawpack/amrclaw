@@ -66,9 +66,9 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[2] = 1.000000e+00          # zupper
 
     # Number of grid cells:
-    clawdata.num_cells[0] = 20      # mx
-    clawdata.num_cells[1] = 20      # my
-    clawdata.num_cells[2] = 20      # mz
+    clawdata.num_cells[0] = 40      # mx
+    clawdata.num_cells[1] = 40      # my
+    clawdata.num_cells[2] = 40      # mz
 
 
     # ---------------
@@ -201,8 +201,8 @@ def setrun(claw_pkg='amrclaw'):
     #   0 or 'none'     ==> no limiter (Lax-Wendroff)
     #   1 or 'minmod'   ==> minmod
     #   2 or 'superbee' ==> superbee
-    #   3 or 'mc'       ==> MC limiter
-    #   4 or 'vanleer'  ==> van Leer
+    #   3 or 'vanleer'  ==> van Leer
+    #   4 or 'mc'       ==> MC limiter
     clawdata.limiter = ['mc']
 
     clawdata.use_fwaves = False    # True ==> use f-wave version of algorithms
@@ -277,7 +277,7 @@ def setrun(claw_pkg='amrclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 3
+    amrdata.amr_levels_max = 2
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
     amrdata.refinement_ratios_x = [2, 2, 2, 2]
