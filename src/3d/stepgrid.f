@@ -43,7 +43,7 @@ c#### common/comxyzt/dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
       dimension work(mwork)
 
       logical    debug,  dump
-      data       debug/.false./,  dump/.false./
+      data       debug/.false./,  dump/.true./
 c
 c     # set tcom = time.  This is in the common block comxyt that could
 c     # be included in the Riemann solver, for example, if t is explicitly
@@ -52,17 +52,19 @@ c     # needed there.
       tcom = time
 
 c
-      if (dump) then
-         write(outunit,*)" grid ", mptr
-         do k = 1, mktot
-         do j = 1, mjtot
-         do i = 1, mitot
-           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
- 545       format(3i3,3x,5e30.20)
-         end do
-         end do
-         end do
-      endif
+        if (dump .and. mptr .ne. 1) 
+     1       call prettyprint(q,nvar,mitot,mjtot,mktot,outunit)
+!--      if (dump) then
+!--         write(outunit,*)" grid ", mptr
+!--         do k = 1, mktot
+!--         do j = 1, mjtot
+!--         do i = 1, mitot
+!--           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
+!-- 545       format(3i3,3x,5e30.20)
+!--         end do
+!--         end do
+!--         end do
+!--      endif
 c
       meqn   = nvar
       mx = mitot - 2*mbc
@@ -129,9 +131,9 @@ c
 c
 c       write(outunit,*) ' Courant # of grid ',mptr, '  is  ',cflgrid
 c
-!$OMP CRITICAL (cflmax)
+!$OMP CRITICAL (setcfl)
       cfl_level = dmax1(cfl_level,cflgrid)
-!$OMP END CRITICAL (cflmax)
+!$OMP END CRITICAL (setcfl)
 c
 c       # update q
       dtdx = dt/dx
@@ -217,16 +219,36 @@ c
      &              '  is larger than cflv(1) ')
             endif
 
-      if (dump) then
-         write(outunit,*)" after time step on grid ", mptr
-         do k = 1, mktot
-         do j = 1, mjtot
-         do i = 1, mitot
-           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
-         end do
-         end do
-         end do
-      endif
+        if (dump .and. mptr .ne. 1) 
+     1     call prettyprint(q,nvar,mitot,mjtot,mktot,outunit)
+!--      if (dump) then
+!--         write(outunit,*)" after time step on grid ", mptr
+!--         do k = 1, mktot
+!--         do j = 1, mjtot
+!--         do i = 1, mitot
+!--           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
+!--         end do
+!--         end do
+!--         end do
+!--      endif
+
+      return
+      end
+
+c ------------------------------------------------------------------------
+
+      subroutine prettyprint(q,nvar,mitot,mjtot,mktot,outunit)
+      implicit double precision (a-h, o-z)
+      dimension q(nvar,mitot,mjtot,mktot)
+      integer  outunit
+
+      do k = 1, mktot
+      write(outunit,*)" plane k = ",k
+      do j = mjtot,1,-1
+        write(outunit,545) (q(1,i,j,k),i=1,mitot)
+ 545    format(50f3.1)
+      end do
+      end do
 
       return
       end

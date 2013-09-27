@@ -4,7 +4,7 @@ c
       recursive subroutine prefilrecur(level,nvar,
      1                                 valbig,aux,naux,time,
      2                                 mitot,mjtot,mktot,
-     3                                 nrowst,ncolst,nfilst
+     3                                 nrowst,ncolst,nfilst,
      4                                 ilo,ihi,jlo,jhi,klo,khi)
 
       use amr_module
@@ -16,13 +16,13 @@ c
       dimension ist(3), iend(3), jst(3), jend(3), kst(3), kend(3)
       dimension ishift(3), jshift(3), kshift(3)
 
-      dimension scratch(max(mitot,mjtot,mktot)*nghost*nvar)
-      dimension scratchaux(max(mitot,mjtot,mktot)*nghost*naux)
+c     dimension scratch(max(mitot,mjtot,mktot)*nghost*nvar)
+c     dimension scratchaux(max(mitot,mjtot,mktot)*nghost*naux)
 
-      iadd(ivar,i,j,k) = locflip + ivar - 1 + nvar*(i-1) + nvar*nr*(j-1)
-     &                           + nvar*nr*nc*(k-1)
-      iaddscratch(ivar,i,j,k) = ivar + nvar*(i-1) + nvar*nr*(j-1)
-     &                               + nvar*nr*nc*(k-1)
+c      iadd(ivar,i,j,k) = locflip + ivar - 1 + nvar*(i-1) + nvar*nr*(j-1)
+c     &                           + nvar*nr*nc*(k-1)
+c      iaddscratch(ivar,i,j,k) = ivar + nvar*(i-1) + nvar*nr*(j-1)
+c     &                               + nvar*nr*nc*(k-1)
 
 c
 c  :::::::::::::: PREFILRECUR :::::::::::::::::::::::::::::::::::::::::::
@@ -81,14 +81,14 @@ c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
 
 
         do i = 1, 3
-           i1 = max(ilo,  ist(i))
-           i2 = min(ihi, iend(i))
-           do j = 1, 3
+         i1 = max(ilo,  ist(i))
+         i2 = min(ihi, iend(i))
+         do j = 1, 3
            j1 = max(jlo,  jst(j))
            j2 = min(jhi, jend(j))
            do k = 1, 3
-           k1 = max(klo,  kst(j))
-           k2 = min(khi, kend(j))
+             k1 = max(klo,  kst(k))
+             k2 = min(khi, kend(k))
 
            if ((i1 <= i2) .and. (j1 <= j2) .and. (k1 <= k2)) then ! part of patch in this region
               iputst = (i1 - ilo) + nrowst
@@ -104,7 +104,7 @@ c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
            end if
 
            end do
-           end do
+         end do
         end do
 
         return
