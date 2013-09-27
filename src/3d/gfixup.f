@@ -152,17 +152,17 @@ c
       levend = min(lfine,mxnest-1)
       do 110 level = lbase+1, levend
        mptr = lstart(level)
- 105	 if (mptr .eq. 0) go to 110
+ 105   if (mptr .eq. 0) go to 110
            nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
            ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
            nz = node(ndkhi,mptr) - node(ndklo,mptr) + 1
            mitot = nx + 2*nghost
-	         mjtot = ny + 2*nghost
+           mjtot = ny + 2*nghost
            mktot = nz + 2*nghost
            nwords = mitot*mjtot*mktot*nvar
            node(store2,mptr) = igetsp(nwords)
-        	 mptr = node(levelptr,mptr)
-	         go to 105
+       	 mptr = node(levelptr,mptr)
+         go to 105
  110   continue
 
 c

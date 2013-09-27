@@ -210,13 +210,13 @@ c          # add new info. to spatial and counting arrays
  99        level = lfine + 1
            rrk = dble(kratio(lfine))
 35         if (level .gt. mxnest) go to 45
-      hxposs(level) = hxposs(level-1) / dble(intratx(level-1))
-      hyposs(level) = hyposs(level-1) / dble(intraty(level-1))
-      hzposs(level) = hzposs(level-1) / dble(intratz(level-1))
+             hxposs(level) = hxposs(level-1) / dble(intratx(level-1))
+             hyposs(level) = hyposs(level-1) / dble(intraty(level-1))
+             hzposs(level) = hzposs(level-1) / dble(intratz(level-1))
              possk (level) = possk (level-1) / rrk
              iregsz(level) = iregsz(level-1) * intratx(level-1)
              jregsz(level) = jregsz(level-1) * intraty(level-1)
-      kregsz(level) = kregsz(level-1) * intratz(level-1)
+             kregsz(level) = kregsz(level-1) * intratz(level-1)
              rrk           = kratio(level)
              level         = level + 1
              go to 35

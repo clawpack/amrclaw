@@ -20,13 +20,13 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
        if (auxtype(iaux) .eq. "center" .or.
      .     auxtype(iaux) .eq. "capacity") then
-	 do 20 k = 1, mk2tot
+         do 20 k = 1, mk2tot
             kfine = 2*(k-1) + 1
-	    do 20 j = 1, mj2tot
-	       jfine = 2*(j-1) + 1
-	       do 20 i = 1, mi2tot
-	          ifine = 2*(i-1) + 1
-	          auxbgc(iaux,i,j,k) =
+            do 20 j = 1, mj2tot
+               jfine = 2*(j-1) + 1
+               do 20 i = 1, mi2tot
+                  ifine = 2*(i-1) + 1
+                  auxbgc(iaux,i,j,k) =
      &                      ( auxdub(iaux,ifine  ,jfine  ,kfine  )
      &                       +auxdub(iaux,ifine+1,jfine  ,kfine  )
      &                       +auxdub(iaux,ifine  ,jfine+1,kfine  )
@@ -38,13 +38,13 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 20       continue
 
        elseif (auxtype(iaux) .eq. "xleft") then
-	 do 10 k = 1, mk2tot
-	    kfine = 2*(k-1) + 1
-	    do 10 j = 1, mj2tot
-	       jfine = 2*(j-1) + 1
-	       do 10 i = 1, mi2tot
-	          ifine = 2*(i-1) + 1
-	          auxbgc(iaux,i,j,k) =
+         do 10 k = 1, mk2tot
+            kfine = 2*(k-1) + 1
+            do 10 j = 1, mj2tot
+               jfine = 2*(j-1) + 1
+               do 10 i = 1, mi2tot
+                  ifine = 2*(i-1) + 1
+                  auxbgc(iaux,i,j,k) =
      &                        ( auxdub(iaux,ifine,jfine  ,kfine  )
      &                         +auxdub(iaux,ifine,jfine+1,kfine  )
      &                         +auxdub(iaux,ifine,jfine  ,kfine+1)
@@ -52,13 +52,13 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 10       continue
 
        elseif (auxtype(iaux) .eq. "yleft") then
-	 do 15 k = 1, mk2tot
-	    kfine = 2*(k-1) + 1
-	    do 15 j = 1, mj2tot
-	       jfine = 2*(j-1) + 1
-	       do 15 i = 1, mi2tot
-	          ifine = 2*(i-1) + 1
-	          auxbgc(iaux,i,j,k) =
+         do 15 k = 1, mk2tot
+            kfine = 2*(k-1) + 1
+            do 15 j = 1, mj2tot
+               jfine = 2*(j-1) + 1
+               do 15 i = 1, mi2tot
+                  ifine = 2*(i-1) + 1
+                  auxbgc(iaux,i,j,k) =
      &                         (auxdub(iaux,ifine  ,jfine,kfine  )
      &                         +auxdub(iaux,ifine+1,jfine,kfine  )
      &                         +auxdub(iaux,ifine  ,jfine,kfine+1)

@@ -21,7 +21,7 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
        if (xperdom) then
           do 10 k = 0, ksize+1
-	        do 10 j = 0, jsize+1
+          do 10 j = 0, jsize+1
             intarray(      0,j,k) = intarray(isize,j,k)
             intarray(isize+1,j,k) = intarray(    1,j,k)
  10       continue

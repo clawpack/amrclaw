@@ -36,7 +36,7 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
            jfine = (jc-2)*lratioy + nghost + jco
            do 20 ico = 1, lratiox
              ifine = (ic-2)*lratiox + nghost + ico
-	     capaqfine = capaqfine + aux(mcapa,ifine,jfine,kfine)
+             capaqfine = capaqfine + aux(mcapa,ifine,jfine,kfine)
      &                             * val(ivar,ifine,jfine,kfine)
 20     continue
 

@@ -34,7 +34,7 @@ c
        mptr = lstart(lcheck)
  5     continue
           nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-       	  ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
           nz     = node(ndkhi,mptr) - node(ndklo,mptr) + 1
           mitot  = nx + 2*nghost
           mjtot  = ny + 2*nghost
@@ -85,10 +85,10 @@ c	      zb     = rnode(cornzlo, mptr)-2*nghost*hz
 
               call auxcoarsen(alloc(locaxb),midub ,mjdub ,mkdub ,
      1                        alloc(locaxc),mi2tot,mj2tot,mk2tot,
-     2                        naux,auxtype)
-	         else
-	            locaxb = 1
-	         endif
+     2                       naux,auxtype)
+          else
+              locaxb = 1
+          endif
 
 c         # fill it - use enlarged (before coarsening) aux arrays
           call bound(tpre,nvar,
@@ -98,7 +98,7 @@ c         # fill it - use enlarged (before coarsening) aux arrays
 c         coarsen by 2 in every direction
           call coarsen(alloc(locdub),midub ,mjdub ,mkdub ,
      1                 alloc(locbgc),mi2tot,mj2tot,mk2tot,nvar)
-      	  call reclam(locdub,midub*mjdub*mkdub*(nvar+naux))
+          call reclam(locdub,midub*mjdub*mkdub*(nvar+naux))
 c
 c ****************************************************************
 c      changed. now locbig filled from spest, always, even if no
@@ -159,8 +159,8 @@ c
 c should we set to 1 if naux=0?
 c
           evol = evol + (nx/2)*(ny/2)*(nz/2)
- 	        xlow = rnode(cornxlo,mptr) - nghost*hx2
-	        ylow = rnode(cornylo,mptr) - nghost*hy2
+          xlow = rnode(cornxlo,mptr) - nghost*hx2
+          ylow = rnode(cornylo,mptr) - nghost*hy2
           zlow = rnode(cornzlo,mptr) - nghost*hz2
           call stepgrid(alloc(locbgc),alloc(locfm),alloc(locfp),
      1                alloc(locgm),alloc(locgp),

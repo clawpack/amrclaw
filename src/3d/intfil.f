@@ -219,7 +219,7 @@ c  they will be set elsewhere
       endif
  
       if (ilo .lt. 0) then
-	nrowend = nrowst + nrow - 1
+        nrowend = nrowst + nrow - 1
         do 1500 k = klo, khi
         do 1500 j = jlo, jhi
         do 1500 i = ilo, min(-1,nrowend)

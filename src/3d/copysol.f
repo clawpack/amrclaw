@@ -15,8 +15,8 @@ c
        do 10 j = nghost+1, mjtot-nghost
        do 10 i = nghost+1, mitot-nghost
        do 10 ivar = 1, nvar
-	  valbig(ivar,i-nghost+ngbig,j-nghost+ngbig,k-nghost+ngbig)
-     &  = val   (ivar,i             ,j             ,k             )
+          valbig(ivar,i-nghost+ngbig,j-nghost+ngbig,k-nghost+ngbig) =
+     &                                                val(ivar,i,j,k)
  10    continue
 c
        return

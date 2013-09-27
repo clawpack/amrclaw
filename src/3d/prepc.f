@@ -68,11 +68,11 @@ c
           jchi = node(ndjhi,mkid)/intraty(level)
           kchi = node(ndkhi,mkid)/intratz(level)
 
-	  iplo = max(ilo,iclo)
-	  jplo = max(jlo,jclo)
+          iplo = max(ilo,iclo)
+          jplo = max(jlo,jclo)
           kplo = max(klo,kclo)
-	  iphi = min(ihi,ichi)
-	  jphi = min(jhi,jchi)
+          iphi = min(ihi,ichi)
+          jphi = min(jhi,jchi)
           kphi = min(khi,kchi)
 
 c   regular intersections

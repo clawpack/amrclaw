@@ -35,55 +35,55 @@ c       x sticks out left, x interior, x sticks out right;
 c       same for y, same for z. for example, the max. would be
 c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
         
-	ist(1)    =  ilo
-	ist(2)    =  0
-	ist(3)    =  iregsz(level)
-	iend(1)   = -1
-	iend(2)   =  iregsz(level)-1
-	iend(3)   =  ihi
-	jst(1)    =  jlo
-	jst(2)    =  0
-	jst(3)    =  jregsz(level)
-	jend(1)   = -1
-	jend(2)   =  jregsz(level)-1
-	jend(3)   =  jhi
+        ist(1)    =  ilo
+        ist(2)    =  0
+        ist(3)    =  iregsz(level)
+        iend(1)   = -1
+        iend(2)   =  iregsz(level)-1
+        iend(3)   =  ihi
+        jst(1)    =  jlo
+        jst(2)    =  0
+        jst(3)    =  jregsz(level)
+        jend(1)   = -1
+        jend(2)   =  jregsz(level)-1
+        jend(3)   =  jhi
         kst(1)    =  klo
         kst(2)    =  0
         kst(3)    =  kregsz(level)
         kend(1)   = -1
         kend(2)   =  kregsz(level)-1
         kend(3)   =  khi
-	ishift(1) =  iregsz(level)
-	ishift(2) =  0
-	ishift(3) = -iregsz(level)
-	jshift(1) =  jregsz(level)
-	jshift(2) =  0
-	jshift(3) = -jregsz(level)
+        ishift(1) =  iregsz(level)
+        ishift(2) =  0
+        ishift(3) = -iregsz(level)
+        jshift(1) =  jregsz(level)
+        jshift(2) =  0
+        jshift(3) = -jregsz(level)
         kshift(1) =  kregsz(level)
         kshift(2) =  0
         kshift(3) = -kregsz(level)
 
        do 30 i = 1, 3
-	  i1 = max(ilo,  ist(i))
-	  i2 = min(ihi, iend(i))
+          i1 = max(ilo,  ist(i))
+          i2 = min(ihi, iend(i))
        do 20 j = 1, 3
-	  j1 = max(jlo,  jst(j))
-	  j2 = min(jhi, jend(j))
+          j1 = max(jlo,  jst(j))
+          j2 = min(jhi, jend(j))
        do 10 k = 1, 3
           k1 = max(klo,  kst(k))
           k2 = min(khi, kend(k))
 
 
-	  if (((i1 .le. i2) .and. (j1 .le. j2)) .and. (k1 .le. k2)) then
-	    iputst = (i1 - ilo) + 1
-	    jputst = (j1 - jlo) + 1
+          if (((i1 .le. i2) .and. (j1 .le. j2)) .and. (k1 .le. k2)) then
+            iputst = (i1 - ilo) + 1
+            jputst = (j1 - jlo) + 1
             kputst = (k1 - klo) + 1
-	    call intcopy(val,mitot,mjtot,mktot,nvar,
+            call intcopy(val,mitot,mjtot,mktot,nvar,
      1                    i1+ishift(i),i2+ishift(i),
      2                    j1+jshift(j),j2+jshift(j),
      3                    k1+kshift(k),k2+kshift(k),level,
      4                    iputst,jputst,kputst)
-	  endif
+          endif
 
  10    continue
  20    continue

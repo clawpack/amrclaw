@@ -66,11 +66,11 @@ c
       call findcut(icl,iscr,jscr,kscr,idim,jdim,kdim,index,iside,
      &             ilo,ihi,jlo,jhi,klo,khi)
       if (index .eq. 0) then
-	   icl = icl + 1
-	   if (icl .gt. nclust) go to 200
-	   ist = iend + 1
-	   iend = ist + numptc(icl) - 1
-	   go to 10
+         icl = icl + 1
+         if (icl .gt. nclust) go to 200
+         ist = iend + 1
+         iend = ist + numptc(icl) - 1
+         go to 10
       endif
 c
       if     (iside .eq. kplane) then
@@ -129,7 +129,7 @@ c         itop always points to a badpt in the top half (ie, .ge. fmid)
           end if
       end if
 c
-c done smartbisecting icl'th clusters. adjust counts, repeat bisect stage .
+c done smartbisecting icl-th clusters. adjust counts, repeat bisect stage .
 c
  80   numptc(icl) = itop - ist + 1
       ibump       = icl + 1

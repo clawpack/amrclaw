@@ -1,7 +1,7 @@
 c
 c     ==================================================================
       subroutine step3(maxm,maxmx,maxmy,maxmz,meqn,maux,mbc,mx,my,mz,
-     &		       qold,aux,dx,dy,dz,dt,cflgrid,
+     &                qold,aux,dx,dy,dz,dt,cflgrid,
      &                 fm,fp,gm,gp,hm,hp,
      &                 faddm,faddp,gadd,hadd,
      &                 q1d,dtdx1d,dtdy1d,dtdz1d,
@@ -110,11 +110,11 @@ c
       iused      = i0bpcpapdq + (maxm+2*mbc)*meqn - 1
 c
       if (iused.gt.mwork) then
-c        # This shouldn't happen if mwork is set properly in stepgrid3
-	 write(6,*) '*** not enough work space in step3'
-	 write(6,*) '*** check parameter mwork in stepgrid3'
+c        # This shouldnt happen if mwork is set properly in stepgrid3
+         write(6,*) '*** not enough work space in step3'
+         write(6,*) '*** check parameter mwork in stepgrid3'
          write(6,*) '*** iused = ', iused, '   mwork =',mwork
-	 stop
+         stop
       endif
 c
 c
@@ -138,12 +138,12 @@ c
 c
       if (mcapa.eq.0) then
 c        # no capa array:
-	 do 5 i=1-mbc,maxm+mbc
-	    dtdx1d(i) = dtdx
-	    dtdy1d(i) = dtdy
-	    dtdz1d(i) = dtdz
+         do 5 i=1-mbc,maxm+mbc
+            dtdx1d(i) = dtdx
+            dtdy1d(i) = dtdy
+            dtdz1d(i) = dtdz
     5       continue
-	 endif
+         endif
 c
 c
 c     # perform x-sweeps
@@ -155,7 +155,7 @@ c
             do 20 i = 1-mbc, mx+mbc
                do 20 m=1,meqn
 c                 # copy data along a slice into 1d array:
- 	          q1d(m,i) = qold(m,i,j,k)
+                  q1d(m,i) = qold(m,i,j,k)
    20          continue
 c
          if (mcapa.gt.0)  then
@@ -179,11 +179,11 @@ c
    22          continue
            endif
 c
-c	    # Store the value of j and k along this slice in the common block
+c           # Store the value of j and k along this slice in the common block
 c           # comxyt in case it is needed in the Riemann solver (for
 c           # variable coefficient problems)
 c
-c$$$	    jcom = j
+c$$$        jcom = j
 c$$$        kcom = k
 c
 c           # compute modifications fadd, gadd and hadd to fluxes along
@@ -212,7 +212,7 @@ c
      &                 work(i0bpcpamdq),work(i0bpcpapdq),
      &                 rpn3,rpt3,rptt3)
 c
-	    cflgrid = dmax1(cflgrid,cfl1d)
+            cflgrid = dmax1(cflgrid,cfl1d)
 c
 c        # update fluxes for use in AMR:
 c
@@ -263,7 +263,7 @@ c
             do 70 j = 1-mbc, my+mbc
                do 70 m=1,meqn
 c                 # copy data along a slice into 1d array:
-	          q1d(m,j) = qold(m,i,j,k)
+                  q1d(m,j) = qold(m,i,j,k)
    70          continue
 c
          if (mcapa.gt.0)  then
@@ -287,7 +287,7 @@ c
    72          continue
          endif
 c
-c	    # Store the value of i and k along this slice in the common block
+c           # Store the value of i and k along this slice in the common block
 c           # comxyzt in case it is needed in the Riemann solver (for
 c           # variable coefficient problems)
 c
@@ -379,7 +379,7 @@ c
             do 110 k = 1-mbc, mz+mbc
                do 110 m=1,meqn
 c                 # copy data along a slice into 1d array:
-	          q1d(m,k) = qold(m,i,j,k)
+                  q1d(m,k) = qold(m,i,j,k)
  110           continue
 c
          if (mcapa.gt.0)  then
@@ -403,7 +403,7 @@ c
   131          continue
            endif
 c
-c	    # Store the value of i and j along this slice in the common block
+c           # Store the value of i and j along this slice in the common block
 c           # comxyzt in case it is needed in the Riemann solver (for
 c           # variable coefficient problems)
 c
@@ -436,7 +436,7 @@ c
      &                 work(i0bpcpamdq),work(i0bpcpapdq),
      &                 rpn3,rpt3,rptt3)
 c
-	    cflgrid = dmax1(cflgrid,cfl1d)
+            cflgrid = dmax1(cflgrid,cfl1d)
 c
 c
 c        # update fluxes for use in AMR:

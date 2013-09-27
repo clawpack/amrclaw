@@ -60,7 +60,7 @@ c
 15       continue
 101      format(' ',13f6.3)
 c
-c zero out the exterior locations so they don't affect err.est.
+c zero out the exterior locations so they dont affect err.est.
 c
  20   continue
       kfine = nghost+1
@@ -87,7 +87,7 @@ c         # divide by (aval*order) for relative error
      &            +term5+term6+term7+term8)/8.d0
           est   =  dabs((aval-rctcrse(1,i,j,k))/ order)
           if (est .gt. errmax) errmax = est
-	        err2 = err2 + est*est
+            err2 = err2 + est*est
 c         write(outunit,102) i,j,est
  102      format(' i,j,k,est ',3i5,e12.5)
 c         rctcrse(2,i,j,k) = est
@@ -116,19 +116,19 @@ c
 c  print out intermediate flagged rctcrse (for debugging)
 c
       if (eprint) then
-	 err2 = dsqrt(err2/dble((mi2tot-2*nghost)*(mj2tot-2*nghost)
+         err2 = dsqrt(err2/dble((mi2tot-2*nghost)*(mj2tot-2*nghost)
      &                                           *(mk2tot-2*nghost)))
          write(outunit,103) mptr, levm, errmax, err2
  103     format(' grid ',i4,' level ',i4,
      .          ' max. error = ',e15.7,' err2 = ',e15.7)
-	 if (edebug) then
-	   write(outunit,*) ' flagged points on coarsened grid ',
+         if (edebug) then
+           write(outunit,*) ' flagged points on coarsened grid ',
      .             	    'for grid ',mptr
            do 45 kk = nghost+1, mk2tot-nghost
               k = mk2tot + 1 - kk
-	   do 45 jj = nghost+1, mj2tot-nghost
-	      j = mj2tot + 1 - jj
-	      write(outunit,106) (nint(rctcrse(1,i,j,k)),
+           do 45 jj = nghost+1, mj2tot-nghost
+              j = mj2tot + 1 - jj
+              write(outunit,106) (nint(rctcrse(1,i,j,k)),
      .                            i=nghost+1,mi2tot-nghost)
 106           format(1h ,80i1)
 45         continue
@@ -141,11 +141,11 @@ c
       do 70 j = nghost+1, mj2tot-nghost
       ifine   = nghost+1
       do 60 i = nghost+1, mi2tot-nghost
-	 if (rctcrse(1,i,j,k) .eq. goodpt) go to 55
-	    rctflg(1,ifine  ,jfine  ,kfine  ) = badpt
-	    rctflg(1,ifine+1,jfine  ,kfine  ) = badpt
-	    rctflg(1,ifine  ,jfine+1,kfine  ) = badpt
-	    rctflg(1,ifine+1,jfine+1,kfine  ) = badpt
+          if (rctcrse(1,i,j,k) .eq. goodpt) go to 55
+            rctflg(1,ifine  ,jfine  ,kfine  ) = badpt
+            rctflg(1,ifine+1,jfine  ,kfine  ) = badpt
+            rctflg(1,ifine  ,jfine+1,kfine  ) = badpt
+            rctflg(1,ifine+1,jfine+1,kfine  ) = badpt
             rctflg(1,ifine  ,jfine  ,kfine+1) = badpt
             rctflg(1,ifine+1,jfine  ,kfine+1) = badpt
             rctflg(1,ifine  ,jfine+1,kfine+1) = badpt

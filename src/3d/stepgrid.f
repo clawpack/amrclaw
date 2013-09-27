@@ -110,7 +110,7 @@ c
       mwork1 = mwork - mused              !# remaining space (passed to step3)
 
 c 2/28/02 : Added call to b4step3.
-      call b4step3(mx,my,mz,mbc,mx,my,mz,nvar,q,
+      call b4step3(mbc,mx,my,mz,nvar,q,
      &             xlowmbc,ylowmbc,zlowmbc,dx,dy,dz,time,dt,maux,aux)
 
 c
@@ -173,8 +173,8 @@ c
       if (method(5).eq.1) then
 c        # with source term:   use Godunov splitting
 c         call src3(q,mitot,mjtot,mktot,nvar,aux,maux,time,dt)
-         call src3(mx,my,mz,nvar,mbc,mx,my,mz,xlowmbc,
-     &         ylowmbc,zlowmbc,dx,dy,dz,q,maux,aux,time,dt)
+         call src3(nvar,mbc,mx,my,mz,xlowmbc,ylowmbc,
+     &             zlowmbc,dx,dy,dz,q,maux,aux,time,dt)
        endif
 c
 c

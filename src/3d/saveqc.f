@@ -39,21 +39,25 @@ c         make coarsened enlarged patch for conservative fixup
        ihi = node(ndihi,mkid)
        jhi = node(ndjhi,mkid)
        khi = node(ndkhi,mkid)
+
        iclo = ilo/intratx(level-1) - 1
        jclo = jlo/intraty(level-1) - 1
        kclo = klo/intratz(level-1) - 1
        ichi = (ihi+1)/intratx(level-1)
        jchi = (jhi+1)/intraty(level-1)
        kchi = (khi+1)/intratz(level-1)
+
        nrow = ichi-iclo+1
        ncol = jchi-jclo+1
        nfil = kchi-kclo+1
+
        xl   = rnode(cornxlo,mkid) - hxc
        yf   = rnode(cornylo,mkid) - hyc
        zb   = rnode(cornzlo,mkid) - hzc
        xr   = rnode(cornxhi,mkid) + hxc
        yr   = rnode(cornyhi,mkid) + hyc
        zt   = rnode(cornzhi,mkid) + hzc
+
        loctmp = igetsp(nrow*ncol*nfil*(nvar+naux))
        loctx  = loctmp + nrow*ncol*nfil*nvar
        locaux = node(storeaux,mkid)

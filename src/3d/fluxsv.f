@@ -45,31 +45,31 @@ c
          inlist   = kidlst + nvar*(intopl-1) - 1
 
          if (listbc(4,ispot) .eq. 1) then
-c	    ::::: Cell i,j,k is on right side of a fine grid
-	    do 100 ivar = 1, nvar
+c           ::::: Cell i,j,k is on right side of a fine grid
+            do 100 ivar = 1, nvar
               alloc(inlist + ivar) = -xfluxp(ivar,i  ,j  ,k  )*dtc*hy*hz
-100	    continue
+100         continue
          endif
 
          if (listbc(4,ispot) .eq. 2) then
-c	    ::::: Cell i,j,k is on front side of fine grid
-	    do 200 ivar = 1, nvar
+c           ::::: Cell i,j,k is on front side of fine grid
+            do 200 ivar = 1, nvar
               alloc(inlist + ivar) = -yfluxm(ivar,i  ,j+1,k  )*dtc*hx*hz
-200	    continue
+200         continue
          endif
 
          if (listbc(4,ispot) .eq. 3) then
-c	    ::::: Cell i,j,k is on left side of fine grid
-	    do 300 ivar = 1, nvar
+c           ::::: Cell i,j,k is on left side of fine grid
+            do 300 ivar = 1, nvar
               alloc(inlist + ivar) = -xfluxm(ivar,i+1,j  ,k  )*dtc*hy*hz
-300	    continue
+300         continue
          endif
 
          if (listbc(4,ispot) .eq. 4) then
-c	    ::::: Cell i,j,k is on rear side of fine grid
-	    do 400 ivar = 1, nvar
+c           ::::: Cell i,j,k is on rear side of fine grid
+            do 400 ivar = 1, nvar
               alloc(inlist + ivar) = -yfluxp(ivar,i  ,j  ,k  )*dtc*hx*hz
-400	    continue
+400         continue
          endif
 
          if (listbc(4,ispot) .eq. 5) then

@@ -81,15 +81,15 @@ c
       indaux = indaux + 1
       if (maux.gt.0) then
          do 5 ma = 1,maux
-	    if (auxtype(ma).eq."xleft") then
+            if (auxtype(ma).eq."xleft") then
 c               # Assuming velocity at left-face, this fix
 c               # preserves conservation in incompressible flow:
-   	        auxl(ma,indaux) = aux(ma,nghost+1,j,k)
-	    else
+                auxl(ma,indaux) = aux(ma,nghost+1,j,k)
+            else
 c               # Normal case -- we set the aux arrays
 c               # from the cell corresponding  to q
-	        auxl(ma,indaux) = aux(ma,nghost,j,k)
-	    endif
+                auxl(ma,indaux) = aux(ma,nghost,j,k)
+            endif
     5    continue
       endif
       do 10 ivar = 1, nvar
@@ -116,9 +116,9 @@ c               # from the cell corresponding  to q
 
        if (qprint) then
          write(dbugunit,*) 'side 1, ql and qr:'
-	 do i=2,nc
+         do i=2,nc
         write(dbugunit,4101) i,qr(1,i-1),ql(1,i),auxr(1,i-1),auxl(1,i)
- 	  enddo
+          enddo
  4101      format(i3,4e16.6)
        endif
 
@@ -192,10 +192,10 @@ c                 # preserves conservation in incompressible flow:
       if (kcnext .ne. kc) index0 = index
 
        if (qprint) then
-	 write(dbugunit,*) 'side 2, ql and qr:'
-	 do i=2,nr
+         write(dbugunit,*) 'side 2, ql and qr:'
+         do i=2,nr
       write(dbugunit,4101) i,qr(1,i-1),ql(1,i),auxr(1,i-1),auxl(1,i)
-	    enddo
+            enddo
        endif
 
        call rpn3(2,max1dp1-2*nghost,nvar,mwaves,nghost,nr+1-2*nghost,
@@ -268,10 +268,10 @@ c               # preserves conservation in incompressible flow:
       if (kcnext .ne. kc) index0 = index
 
        if (qprint) then
-	 write(dbugunit,*) 'side 3, ql and qr:'
-	 do i=2,nc
+         write(dbugunit,*) 'side 3, ql and qr:'
+         do i=2,nc
       write(dbugunit,4101) i,qr(1,i-1),ql(1,i),auxr(1,i-1),auxl(1,i)
-	    enddo
+            enddo
        endif
 
        call rpn3(1,max1dp1-2*nghost,nvar,mwaves,nghost,nc+1-2*nghost,
@@ -342,10 +342,10 @@ c               # preserves conservation in incompressible flow:
       if (kcnext .ne. kc) index0 = index
 
        if (qprint) then
-	 write(dbugunit,*) 'side 4, ql and qr:'
-	 do i=2,nr
+         write(dbugunit,*) 'side 4, ql and qr:'
+         do i=2,nr
       write(dbugunit,4101) i,qr(1,i-1),ql(1,i),auxr(1,i-1),auxl(1,i)
-	    enddo
+            enddo
        endif
 
        call rpn3(2,max1dp1-2*nghost,nvar,mwaves,nghost,nr+1-2*nghost,
@@ -526,7 +526,7 @@ C
 
 c      # for source terms:
        if (method(5) .ne. 0) then
-c	   call src3(qc1d,lenbc,1,nvar,auxc1d,maux,tgrid,delt)
+c          call src3(qc1d,lenbc,1,nvar,auxc1d,maux,tgrid,delt)
            call src1d(nvar,nghost,lenbc,qc1d,maux,auxc1d,tgrid,delt)
        endif
 

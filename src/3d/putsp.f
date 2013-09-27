@@ -27,7 +27,7 @@ c
  30    if (level .eq. lbase) go to 99
       mptr = lstart(level)
  40       nx    = node(ndihi,mptr) - node(ndilo,mptr) + 1
-	  ny    = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+          ny    = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
           nz    = node(ndkhi,mptr) - node(ndklo,mptr) + 1
           ikeep = nx/intratx(level-1)
           jkeep = ny/intraty(level-1)

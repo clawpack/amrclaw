@@ -77,7 +77,7 @@ c         # does it intersect?
            do 25 iaux = 1, naux
              ialloc = iaddaux(iaux,i-iglo+nghost+1,j-jglo+nghost+1,
      &                                             k-kglo+nghost+1)
-		         aux(iaux,i-ilo+iputst,j-jlo+jputst,
+             aux(iaux,i-ilo+iputst,j-jlo+jputst,
      &                             k-klo+kputst) = alloc(ialloc)
  25        continue
  30       continue
