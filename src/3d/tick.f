@@ -238,7 +238,7 @@ c         # rjl & mjb changed to cfl_level, 3/17/10
 
 
 c        # to debug individual grid updates...
-c        call valout(level,level,time,nvar,naux)
+c         call valout(level,level,-time,nvar,naux)
 c
 c done with a level of integration. update counts, decide who next.
 c

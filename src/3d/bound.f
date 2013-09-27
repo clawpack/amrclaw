@@ -11,8 +11,7 @@ c
 
       dimension valbig(nvar,mitot,mjtot,mktot)
       dimension aux   (naux,mitot,mjtot,mktot)
-      logical periodic
-
+      logical   xsticksout, ysticksout
 c
 c  :::::::::::::: BOUND :::::::::::::::::::::::::::::::::::::::::::
 c     This routine sets the boundary values for a given grid
@@ -49,56 +48,6 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       hy     = hyposs(level)
       hz     = hzposs(level)
 
-      periodic = .false.
-c     left boundary
-      xl = xlo - ng*hx
-      xr = xlo
-      yf = ylo - ng*hy
-      yr = yhi + ng*hy
-      zb = zlo
-      zt = zhi
-      periodic = (periodic) .or. (xl .lt. xlower .and. xperdom)
-c     right boundary
-      xl = xhi
-      xr = xhi + ng*hx
-      yf = ylo - ng*hy
-      yr = yhi + ng*hy
-      zb = zlo
-      zt = zhi
-      periodic = (periodic) .or. (xr .gt. xupper .and. xperdom)
-c     front boundary
-      xl = xlo
-      xr = xhi
-      yf = ylo - ng*hy
-      yr = ylo
-      zb = zlo
-      zt = zhi
-      periodic = (periodic) .or. (yf .lt. ylower .and. yperdom)
-c     rear boundary
-      xl = xlo
-      xr = xhi
-      yf = yhi
-      yr = yhi + ng*hy
-      zb = zlo
-      zt = zhi
-      periodic = (periodic) .or. (yr .gt. yupper .and. yperdom)
-c     bottom boundary
-      xl = xlo - ng*hx
-      xr = xhi + ng*hx
-      yf = ylo - ng*hy
-      yr = yhi + ng*hy
-      zb = zlo - ng*hz
-      zt = zlo
-      periodic = (periodic) .or. (zb .lt. zlower .and. zperdom)
-c     top boundary
-      xl = xlo - ng*hx
-      xr = xhi + ng*hx
-      yf = ylo - ng*hy
-      yr = yhi + ng*hy
-      zb = zhi
-      zt = zhi + ng*hz
-      periodic = (periodic) .or. (zt .gt. zupper .and. zperdom)
-
 c     left boundary
 
       xl = xlo - ng*hx
@@ -107,8 +56,10 @@ c     left boundary
       yr = yhi + ng*hy
       zb = zlo
       zt = zhi
+      ysticksout =  ((yf .lt. ylower) .or. (yr .gt. yupper))
 
-      if (periodic) then
+      if ((xperdom .and. xl .lt. xlower) .or. 
+     1    (yperdom .and. ysticksout)) then
 	      call  prefilrecur(level,nvar,valbig,aux,naux,time,
      1                    mitot,mjtot,mktot,
      2                    1,1,ng+1,
@@ -128,8 +79,10 @@ c     right boundary
       yr = yhi + ng*hy
       zb = zlo
       zt = zhi
+      ysticksout =  ((yf .lt. ylower) .or. (yr .gt. yupper))
 
-      if (periodic) then
+      if ((xperdom .and. xr .gt. xupper) .or. 
+     1    (yperdom .and. ysticksout)) then
       	call  prefilrecur(level,nvar,valbig,aux,naux,time,
      1                    mitot,mjtot,mktot,
      2                    mitot-ng+1,1,ng+1,
@@ -148,7 +101,7 @@ c     front boundary
       yr = ylo
       zb = zlo
       zt = zhi
-      if (periodic) then
+      if (yperdom .and. yf .lt. ylower) then
         call prefilrecur(level,nvar,valbig,aux,naux,time,
      1                   mitot,mjtot,mktot,
      2                   ng+1,1,ng+1,
@@ -166,7 +119,7 @@ c     rear boundary
       yr = yhi + ng*hy
       zb = zlo
       zt = zhi
-      if (periodic) then
+      if (yperdom .and. yr .gt. yupper) then
       	call prefilrecur(level,nvar,valbig,aux,naux,time,
      1                   mitot,mjtot,mktot,
      2                   ng+1,mjtot-ng+1,ng+1,
@@ -184,7 +137,12 @@ c     bottom boundary
       yr = yhi + ng*hy
       zb = zlo - ng*hz
       zt = zlo
-      if (periodic) then
+      xsticksout = (xl .lt. xlower) .or. (xr .gt. xupper)
+      ysticksout = (yf .lt. ylower) .or. (yr .gt. yupper)
+
+      if ((zperdom .and. zb .lt. zlower) .or. 
+     1    (xperdom .and. xsticksout) .or.
+     2    (yperdom .and. ysticksout)) then
         call prefilrecur(level,nvar,valbig,aux,naux,time,
      1                   mitot,mjtot,mktot,
      2                   1,1,1,
@@ -202,7 +160,12 @@ c     top boundary
       yr = yhi + ng*hy
       zb = zhi
       zt = zhi + ng*hz
-      if (periodic) then
+      xsticksout = (xl .lt. xlower) .or. (xr .gt. xupper)
+      ysticksout = (yf .lt. ylower) .or. (yr .gt. yupper)
+
+      if ((zperdom .and. zt .gt. zupper) .or.
+     1    (xperdom .and. xsticksout) .or.
+     2    (yperdom .and. ysticksout)) then
         call prefilrecur(level,nvar,valbig,aux,naux,time,
      1                   mitot,mjtot,mktot,
      2                   1,1,mktot-ng+1,

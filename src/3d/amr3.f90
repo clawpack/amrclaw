@@ -241,8 +241,8 @@ program amr3
 
     ! Boundary conditions
     read(inunit,*) nghost
-    read(inunit,*) mthbc(1),mthbc(2),mthbc(3)
-    read(inunit,*) mthbc(4),mthbc(5),mthbc(6)
+    read(inunit,*) mthbc(1),mthbc(3),mthbc(5)
+    read(inunit,*) mthbc(2),mthbc(4),mthbc(6)
 
     ! 1,2,3 = low x,y,z  4,5,6 = hi x,y,z
     xperdom = (mthbc(1) == 2 .and. mthbc(2) == 2)
