@@ -65,7 +65,7 @@ c get user flags for refinement, which might be based on spatial gradient,
 c for example.  Use old values of soln at time t  before
 c integration to get accurate boundary gradients
 c
-          if (tolsp .gt. 0.) then
+          if (flag_gradient) then
              locamrflags = igetsp(mitot*mjtot*mktot)
              do 20 i = 1, mitot*mjtot*mktot
  20             alloc(locamrflags+i-1) = goodpt
@@ -74,6 +74,7 @@ c        # call user-supplied routine to flag any points where
 c        # refinement is desired based on user's criterion.  
 c        # Default version compares spatial gradient to tolsp.
 
+         
          call flag2refine(nx,ny,nz,nghost,nvar,naux,xlow,ylow,zlow,
      &              dx,dy,dz,time,lcheck,tolsp,alloc(locbig),
      &              alloc(locaux),alloc(locamrflags), goodpt, badpt )

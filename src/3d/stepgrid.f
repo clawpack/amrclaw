@@ -43,7 +43,7 @@ c#### common/comxyzt/dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
       dimension work(mwork)
 
       logical    debug,  dump
-      data       debug/.false./,  dump/.true./
+      data       debug/.false./,  dump/.false./
 c
 c     # set tcom = time.  This is in the common block comxyt that could
 c     # be included in the Riemann solver, for example, if t is explicitly
@@ -52,19 +52,19 @@ c     # needed there.
       tcom = time
 
 c
-        if (dump .and. mptr .ne. 1) 
-     1       call prettyprint(q,nvar,mitot,mjtot,mktot,outunit)
-!--      if (dump) then
-!--         write(outunit,*)" grid ", mptr
-!--         do k = 1, mktot
-!--         do j = 1, mjtot
-!--         do i = 1, mitot
-!--           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
-!-- 545       format(3i3,3x,5e30.20)
-!--         end do
-!--         end do
-!--         end do
-!--      endif
+!--        if (dump .and. mptr .ne. 1) 
+!--     1       call prettyprint(q,nvar,mitot,mjtot,mktot,outunit)
+      if (dump) then
+         write(outunit,*)" grid ", mptr
+         do k = 1, mktot
+         do j = 1, mjtot
+         do i = 1, mitot
+           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
+ 545       format(3i3,3x,5e30.20)
+         end do
+         end do
+         end do
+      endif
 c
       meqn   = nvar
       mx = mitot - 2*mbc
@@ -219,18 +219,18 @@ c
      &              '  is larger than cflv(1) ')
             endif
 
-        if (dump .and. mptr .ne. 1) 
-     1     call prettyprint(q,nvar,mitot,mjtot,mktot,outunit)
-!--      if (dump) then
-!--         write(outunit,*)" after time step on grid ", mptr
-!--         do k = 1, mktot
-!--         do j = 1, mjtot
-!--         do i = 1, mitot
-!--           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
-!--         end do
-!--         end do
-!--         end do
-!--      endif
+!--        if (dump .and. mptr .ne. 1) 
+!--     1     call prettyprint(q,nvar,mitot,mjtot,mktot,outunit)
+      if (dump) then
+         write(outunit,*)" after time step on grid ", mptr
+         do k = 1, mktot
+         do j = 1, mjtot
+         do i = 1, mitot
+           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
+         end do
+         end do
+         end do
+      endif
 
       return
       end

@@ -47,13 +47,13 @@ c new grids have even number of points
 c
       if (nx + 2*nghost .gt. max1d) then
 
-        nxl    = nx/2
-        if (level .gt. 1) then
-	   lratio = intratx(level-1)
-	else
-	   lratio = 2
-	endif
-	nxl = (nxl/lratio)*lratio
+         nxl    = nx/2
+         if (level .gt. 1) then
+           lratio = intratx(level-1)
+        else
+           lratio = 2
+        endif
+        nxl = (nxl/lratio)*lratio
         nxr    = nx - nxl
         cxmid  = cxlo + nxl*hx
 
@@ -64,7 +64,7 @@ c
         rnode(cornxhi,mptr) = cxmid
 
         node(ndihi,mptrnx)  = node(ndihi,mptr)
-	      node(ndihi,mptr)    = node(ndilo,mptr) + nxl - 1
+        node(ndihi,mptr)    = node(ndilo,mptr) + nxl - 1
         node(ndilo,mptrnx)  = node(ndihi,mptr) + 1
         node(ndjhi,mptrnx)  = node(ndjhi,mptr)
         node(ndjlo,mptrnx)  = node(ndjlo,mptr)

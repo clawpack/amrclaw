@@ -64,7 +64,7 @@ c
 c     always call spest to set up stuff (initialize iflags, fill locbig)
       call spest(nvar,naux,lcheck,dom1flags,isize,jsize,ksize,
      1           tstart_thisrun)
-      if (tol .gt. 0.) call errest(nvar,naux,lcheck)
+      if (flag_richardson) call errest(nvar,naux,lcheck)
 
       call bufnst(nvar,naux,numbad,lcheck,dom1flags,isize,jsize,ksize)
       nxypts = nxypts + numbad

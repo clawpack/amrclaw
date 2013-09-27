@@ -94,12 +94,17 @@ c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
               iputst = (i1 - ilo) + nrowst
               jputst = (j1 - jlo) + ncolst
               kputst = (k1 - klo) + nfilst
+
+              kuse1 = k1+kshift(k)
+              kuse2 = k2+kshift(k)
+
               call filrecur(level,nvar,valbig,aux,naux,time,
      1                      mitot,mjtot,mktot,
      2                      iputst,jputst,kputst,
      3                      i1+ishift(i),i2+ishift(i),
      4                      j1+jshift(j),j2+jshift(j),
-     5                      k1+kshift(k),k2+kshift(k))
+     5                      kuse1,kuse2)               
+c    5                      k1+kshift(k),k2+kshift(k))
 
            end if
 
