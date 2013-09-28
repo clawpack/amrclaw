@@ -20,7 +20,17 @@ verbose = True
 relocatable = False  # True ==> copies all images to subdirs of _image_diff
                      # so this directory can be moved, e.g. posted on web
 
-def test():
+def test(stdout=None,stderr=None):
+    """
+    Redirect output and errors if stdout or stderr passed in.
+    """
+    
+    import sys
+    if stdout is not None:
+        sys.stdout = stdout
+    if stderr is not None:
+        sys.stderr = stderr
+        
     try:
         CLAW = os.environ['CLAW']
     except:
@@ -36,9 +46,14 @@ def test():
     
     gallery_plots = gallery_dir + "amrclaw/examples/" + this_example + "/_plots"
     if not os.path.isdir(gallery_plots):
-        error_msg = "Missing directory %s\n Need to clone clawpack.github.com"\
+        error_msg = "Missing directory %s\n Need to clone clawpack.github.com\n"\
                      % gallery_plots
-        raise Exception(error_msg)
+        #raise Exception(error_msg)
+        sys.stderr.write(error_msg)
+        gallery_found = False
+    else:
+        gallery_found = True
+        
 
     # Run the code and create _plots directory:
     cmd = "make clean; make .plots"
@@ -47,15 +62,22 @@ def test():
         raise Exception("Problem running the code, status = %s" % status)
 
     # Compare the resulting plots to the gallery version:
-    try:
-        regression_ok = imagediff.imagediff_dir('_plots',gallery_plots, \
-                                relocatable=relocatable,overwrite=True, \
-                                verbose=verbose)
-    except:
-        error_msg = "Error running imagediff with directories \n  %s\n  %s" \
-                    % ('_plots',gallery_plots)
-        raise Exception(error_msg)
-    
+    if gallery_found:
+        try:
+            regression_ok = imagediff.imagediff_dir('_plots',gallery_plots, \
+                                    relocatable=relocatable,overwrite=True, \
+                                    verbose=verbose)
+            if not regression_ok:
+                sys.stderr.write("***Regression files are not all identical")
+        except:
+            error_msg = "Error running imagediff with directories \n  %s\n  %s\n" \
+                        % ('_plots',gallery_plots)
+            #raise Exception(error_msg)
+            sys.stderr.write(error_msg)
+            regression_ok = False
+    else:
+        regression_ok = False
+            
     return regression_ok
     
 if __name__=="__main__":
