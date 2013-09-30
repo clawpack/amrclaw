@@ -35,9 +35,16 @@ def setrun(claw_pkg='amrclaw'):
     #------------------------------------------------------------------
     # Problem-specific parameters to be written to setprob.data:
     #------------------------------------------------------------------
-
+    # Sample setup to write one line to setprob.data ...
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('tperiod',     4.0,  'period')
+    probdata.add_param('A1',     1.0,  'amplitude on first Gaussian')
+    probdata.add_param('beta1', 40.0,  'decay')
+    probdata.add_param('x1',    -0.5,  'x-location')
+    probdata.add_param('y1',     0.0,  'y-location')
+    probdata.add_param('A2',    -1.0,  'amplitude on second Gaussian')
+    probdata.add_param('beta2', 40.0,  'decay')
+    probdata.add_param('x2',     0.5,  'x-location')
+    probdata.add_param('y2',     0.0,  'y-location')
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -59,14 +66,15 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_dim = num_dim
     
     # Lower and upper edge of computational domain:
-    clawdata.lower[0] = 0.000000e+00          # xlower
+    clawdata.lower[0] = 2.000000e-01          # xlower
     clawdata.upper[0] = 1.000000e+00          # xupper
     clawdata.lower[1] = 0.000000e+00          # ylower
-    clawdata.upper[1] = 1.000000e+00          # yupper
+    clawdata.upper[1] = 2. * np.pi            # yupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 40      # mx
-    clawdata.num_cells[1] = 40      # my
+    clawdata.num_cells[0] = 20      # mx
+    clawdata.num_cells[1] = 120      # my
+    
 
     # ---------------
     # Size of system:
@@ -79,7 +87,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_aux = 3
     
     # Index of aux array corresponding to capacity function, if there is one:
-    clawdata.capa_index = 0
+    clawdata.capa_index = 3
     
     
     # -------------
@@ -112,14 +120,14 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 25
-        clawdata.tfinal = 2.5
+        clawdata.num_output_times = 1
+        clawdata.tfinal = 0.500000
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
         # Specify a list or numpy array of output times:
         # Include t0 if you want output at the initial time.
-        clawdata.output_times =  [0., 0.5, 1.0]
+        clawdata.output_times =  [0., 0.1]
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
@@ -130,9 +138,9 @@ def setrun(claw_pkg='amrclaw'):
 
     clawdata.output_format = 'ascii'       # 'ascii', 'binary', 'netcdf'
 
-    clawdata.output_q_components = 'all'    # only 'all' 
-    clawdata.output_aux_components = 'all'  # 'all' or 'none' 
-    clawdata.output_aux_onlyonce = False    # output aux arrays only at t0?
+    clawdata.output_q_components = 'all'   # could be list such as [True,True]
+    clawdata.output_aux_components = 'none'  # could be list
+    clawdata.output_aux_onlyonce = True    # output aux arrays only at t0
     
 
     # ---------------------------------------------------
@@ -156,7 +164,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Initial time step for variable dt.  
     # (If dt_variable==0 then dt=dt_initial for all steps)
-    clawdata.dt_initial = 2.000000e-02
+    clawdata.dt_initial = 0.005
     
     # Max time step to be allowed if variable dt used:
     clawdata.dt_max = 1.000000e+99
@@ -198,7 +206,7 @@ def setrun(claw_pkg='amrclaw'):
     #   2 or 'superbee' ==> superbee
     #   3 or 'vanleer'  ==> van Leer
     #   4 or 'mc'       ==> MC limiter
-    clawdata.limiter = ['mc']
+    clawdata.limiter = ['vanleer']
     
     clawdata.use_fwaves = False    # True ==> use f-wave version of algorithms
     
@@ -233,8 +241,8 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    rundata.gaugedata.gauges.append([1, 0.4, 0.3, 0., 10.])
-    rundata.gaugedata.gauges.append([2, 0.6, 0.3, 0., 10.])
+    rundata.gaugedata.gauges.append([1, 0.5, 0.5*np.pi, 0., 10.])
+    rundata.gaugedata.gauges.append([2, 0.5, 1.5*np.pi, 0., 10.])
     
 
     # --------------
@@ -272,34 +280,32 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    amrdata.refinement_ratios_x = [2, 4, 2]
-    amrdata.refinement_ratios_y = [2, 4, 2]
-    amrdata.refinement_ratios_t = [2, 4, 2]
-
-
+    amrdata.refinement_ratios_x = [2, 2]
+    amrdata.refinement_ratios_y = [2, 2]
+    amrdata.refinement_ratios_t = [2, 2]
+    
     # Specify type of each aux variable in amrdata.auxtype.
     # This must be a list of length num_aux, each element of which is one of:
     #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
-    amrdata.aux_type = ['xleft', 'yleft', 'center']
-
+    amrdata.aux_type = ['xleft', 'yleft', 'capacity']
 
     # Flag for refinement based on Richardson error estimater:
     amrdata.flag_richardson = False    # use Richardson?
-    amrdata.flag_richardson_tol = 1.000000e+00  # Richardson tolerance
+    amrdata.flag_richardson_tol = 0.000100e+00  # Richardson tolerance
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 5.000000e-02  # tolerance used in this routine
+    amrdata.flag2refine_tol = 0.02  # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
-    # Default: check max-norm of difference between q in a cell and 
-    # each of its neighbors.
+    # Default: check maximum absolute difference of first component of q
+    # between a cell and each of its neighbors.
 
     # steps to take on each level L between regriddings of level L+1:
     amrdata.regrid_interval = 2       
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
-    amrdata.regrid_buffer_width  = 2
+    amrdata.regrid_buffer_width  = 3
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)
@@ -309,12 +315,15 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.verbosity_regrid = 0      
 
 
-    # ---------------
-    # Regions:
-    # ---------------
+    # -------------------
+    # Refinement Regions:
+    # -------------------
     rundata.regiondata.regions = []
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
+    rundata.regiondata.regions.append([1,2,0.,10., 0.2,1., 0.,2.*np.pi])
+    rundata.regiondata.regions.append([3,3,0.,10., 0.5,1., 0.,0.5*np.pi])
+
 
 
     #  ----- For developers ----- 
@@ -329,7 +338,6 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.sprint = False      # space/memory output
     amrdata.tprint = False      # time step reporting each level
     amrdata.uprint = False      # update/upbnd reporting
-
     
     return rundata
 
