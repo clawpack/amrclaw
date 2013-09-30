@@ -51,8 +51,8 @@ c     Some helper functions
 
       sticksout(iplo, iphi, jplo, jphi, kplo, kphi) =
      &     (iplo < 0 .or. jplo < 0 .or. kplo < 0 .or.
-     &      iphi > iregsz(levc) .or. jphi > jregsz(levc)
-     &      .or. kphi > kregsz(levc))
+     &      iphi >= iregsz(levc) .or. jphi >= jregsz(levc)
+     &      .or. kphi >= kregsz(levc))
       ! *** NOTE *** levc needs to be defined later as level-1
 
 c     Begin by filling values for grids at level "level".  If all values
@@ -165,7 +165,7 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
      &               hxc,hyc,hzc,naux,auxcrse)
       endif
 
-      if ((xperdom .or. yperdom) .and.
+      if ((xperdom .or. yperdom .or. zperdom) .and.
      &     sticksout(iplo,iphi,jplo,jphi,kplo,kphi)) then
          call prefilrecur(levc,nvar,valcrse,auxcrse,
      1                    naux,time,nrowc,ncolc,nfilc,1,1,1,
@@ -175,7 +175,6 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
      1                 time,nrowc,ncolc,nfilc,1,1,1,
      2                 iplo,iphi,jplo,jphi,kplo,kphi)
       endif
-
 
       do 100 iff = 1,nrowp
          ic = 2 + (iff-(isl-ilo)-1)/lratiox
