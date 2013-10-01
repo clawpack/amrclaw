@@ -21,4 +21,5 @@ if PlotType==5
   grid off;
   end
 
+shg
 clear afterframe

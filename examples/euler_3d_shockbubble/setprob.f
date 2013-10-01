@@ -5,7 +5,7 @@ c     ==================
       implicit double precision (a-h,o-z)
       character*12 fname
       common /comic/ qin(5),qout(5)
-      common /cparam/  gamma,gamma1
+      common /cparam/  gamma
       common /cdisc/ x0,y0,r0,radius
       common /cominf/ rinf,vinf,einf
 c
