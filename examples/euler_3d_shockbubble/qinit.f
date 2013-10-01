@@ -20,7 +20,7 @@ c
        double precision zc(1-mbc:mz+mbc)
        double precision ze(1-mbc:mz+mbc)
 
-       common /cparam/ gamma, gamma1
+       common /cparam/ gamma
        common /comic/ qin(5),qout(5)
        common /cominf/ rinf,vinf,einf
        common /cdisc/ x0,y0,r0,radius
