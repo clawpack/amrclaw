@@ -3,9 +3,9 @@ c ----------------------------------------------------------
 c
       function igetsp (nwords)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 c
 c ::::::::::::::::::::::::::: IGETSP ::::::::::::::::::::::::::::
 c
@@ -59,8 +59,8 @@ c
  902  format(' free list: ',//,2x,50(i10,4x,i10,/,2x))
       
       ! Dynamic memory adjustment
-      print *, lenf
-      write(*,902)       ((lfree(i,j),j=1,2),i=1,lenf)
+c     print *, lenf
+c     write(*,902)       ((lfree(i,j),j=1,2),i=1,lenf)
       ! Attempt to allocate new memory
       factor = 2.0d0
       istatus = 1

@@ -16,16 +16,13 @@
 
        subroutine resize_storage(new_size,status)
     
-       use mem_storage
-       implicit double precision (a-h,o-z)
-       include "call.i"
-
+      use amr_module
+    implicit none
     
-       integer, intent(out) :: status
-       integer, intent(in) :: new_size
-       double precision, allocatable, target,dimension(:) :: new_storage
+      integer, intent(out) :: status
+      integer, intent(in) :: new_size
 
-
+    real(kind=8), allocatable, target, dimension(:) :: new_storage
   
 
        if (memsize < new_size) then

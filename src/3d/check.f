@@ -7,24 +7,38 @@ c :::::::::::::::::::::: CHECK ::::::::::::::::::::::::::::::::;
 c   check point routine - can only call at end of coarse grid cycle
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
+      use amr_module
       implicit double precision (a-h,o-z)
-      character  chkname*12
-      include  "call.i"
+      integer tchkunit
+      parameter (tchkunit = 13)
+      character  chkname*13
+      character  tchkname*13
+
+      write(6,601) time,nsteps
+ 601  format('Creating checkpoint file at t = ',e16.9,'  nsteps = ',i5)
 c
 c     ###  make the file name showing the time step
 c
-      chkname = 'fort.chkxxxx'
+      chkname = 'fort.chkxxxxx'
+      tchkname = 'fort.tckxxxxx'
       nstp = nsteps
-      do 20 ipos = 12, 9, -1
+      do 20 ipos = 13, 9, -1
        idigit = mod(nstp,10)
        chkname(ipos:ipos) = char(ichar('0') + idigit)
+         tchkname(ipos:ipos) = char(ichar('0') + idigit)
        nstp = nstp / 10
  20   continue
+
+      open(unit=tchkunit,file=tchkname,status='unknown',
+     .     form='formatted')
       open(unit=chkunit,file=chkname,status='unknown',
      .     form='unformatted')
 c
 c     ###  dump the data
 c
+      write(tchkunit,*) 'Checkpoint file at time t = ',time
+      write(tchkunit,*) 'alloc size memsize = ',memsize
+      write(tchkunit,*) 'Number of steps taken = ',nsteps
       write(chkunit) lenmax,lendim,memsize
       write(chkunit) (alloc(i),i=1,lendim)
       write(chkunit) hxposs,hyposs,hzposs,possk,icheck
@@ -38,6 +52,7 @@ c
      1               evol, rvol, rvoll, lentot, tmass0,cflmax
 c
       close(chkunit)
+      close(tchkunit)
 c
       return
       end

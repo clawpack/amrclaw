@@ -10,8 +10,8 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
        implicit double precision (a-h, o-z)
 
-       dimension val(mitot,mjtot,mktot,nvar)
-       dimension aux(mitot,mjtot,mktot,naux)
+       dimension val(nvar,mitot,mjtot,mktot)
+       dimension aux(naux,mitot,mjtot,mktot)
 c
 c
        return

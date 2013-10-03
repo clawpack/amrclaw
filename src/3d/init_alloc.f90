@@ -6,19 +6,15 @@
 ! ============================================================================
 !  Description:  Initialization of alloc storage
 ! ============================================================================
-      module mem_storage
-          double precision, allocatable, target, dimension(:) :: storage
-      end module mem_storage
 
 
       subroutine init_alloc()
     
-      use mem_storage
-      implicit double precision (a-h,o-z)
-      include "call.i"
+      use amr_module
+      implicit none
 
        if (.not.allocated(storage)) then
-          memsize = 1000000
+          memsize = 2000000
           allocate(storage(memsize))
           alloc => storage
           print *, "Storage allocated..."

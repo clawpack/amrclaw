@@ -24,13 +24,13 @@ c  Adapted from 2D recursive routine, 10/22/2012.
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       logical   set, sticksout
-      dimension valbig(mitot,mjtot,mktot,nvar)
-      dimension    aux(mitot,mjtot,mktot,naux)
+      dimension valbig(nvar,mitot,mjtot,mktot)
+      dimension    aux(naux,mitot,mjtot,mktot)
 
 
 c     Use stack-based scratch arrays instead of alloc for better
@@ -46,12 +46,13 @@ c     grid to enclose the fine, including an offset of 1.
       dimension flaguse(ihi-ilo+1, jhi-jlo+1, khi-klo+1)
 
 c     Some helper functions
-      ivalc(i, j, k, ivar) = i + nrowc*(j-1) + nrowc*ncolc*(k-1)
-     &                         + nrowc*ncolc*nfilc*(ivar-1)
+      ivalc(ivar, i, j, k) = ivar + nvar*(i-1) + nvar*nrowc*(j-1)
+     &                            + nvar*nrowc*ncolc*(k-1)
+
       sticksout(iplo, iphi, jplo, jphi, kplo, kphi) =
      &     (iplo < 0 .or. jplo < 0 .or. kplo < 0 .or.
-     &      iphi > iregsz(levc) .or. jphi > jregsz(levc)
-     &      .or. kphi > kregsz(levc))
+     &      iphi >= iregsz(levc) .or. jphi >= jregsz(levc)
+     &      .or. kphi >= kregsz(levc))
       ! *** NOTE *** levc needs to be defined later as level-1
 
 c     Begin by filling values for grids at level "level".  If all values
@@ -154,20 +155,17 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
       endif
 
       if (naux > 0) then
-         maxmx = nrowc - 2*nghost
-         mx = maxmx
-         maxmy = ncolc - 2*nghost
-         my = maxmy
-         maxmz = nfilc - 2*nghost
-         mz = maxmz
+         mx = nrowc - 2*nghost
+         my = ncolc - 2*nghost
+         mz = nfilc - 2*nghost
          xl = xlc + nghost*hxc
          yb = ybc + nghost*hyc
          zf = zfc + nghost*hzc
-         call setaux(maxmx,maxmy,maxmz,nghost,mx,my,mz,xl,yb,zf,
+         call setaux(nghost,mx,my,mz,xl,yb,zf,
      &               hxc,hyc,hzc,naux,auxcrse)
       endif
 
-      if ((xperdom .or. yperdom) .and.
+      if ((xperdom .or. yperdom .or. zperdom) .and.
      &     sticksout(iplo,iphi,jplo,jphi,kplo,kphi)) then
          call prefilrecur(levc,nvar,valcrse,auxcrse,
      1                    naux,time,nrowc,ncolc,nfilc,1,1,1,
@@ -177,7 +175,6 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
      1                 time,nrowc,ncolc,nfilc,1,1,1,
      2                 iplo,iphi,jplo,jphi,kplo,kphi)
       endif
-
 
       do 100 iff = 1,nrowp
          ic = 2 + (iff-(isl-ilo)-1)/lratiox
@@ -196,13 +193,13 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
 
             do 101 ivar = 1,nvar
 
-               valp100 = valcrse(ivalc(ic+1,jc  ,kc  ,ivar))
-               valm100 = valcrse(ivalc(ic-1,jc  ,kc  ,ivar))
-               valc    = valcrse(ivalc(ic  ,jc  ,kc  ,ivar))
-               valp010 = valcrse(ivalc(ic  ,jc+1,kc  ,ivar))
-               valm010 = valcrse(ivalc(ic  ,jc-1,kc  ,ivar))
-               valp001 = valcrse(ivalc(ic  ,jc  ,kc+1,ivar))
-               valm001 = valcrse(ivalc(ic  ,jc  ,kc-1,ivar))
+               valp100 = valcrse(ivalc(ivar,ic+1,jc  ,kc   ))
+               valm100 = valcrse(ivalc(ivar,ic-1,jc  ,kc   ))
+               valc    = valcrse(ivalc(ivar,ic  ,jc  ,kc   ))
+               valp010 = valcrse(ivalc(ivar,ic  ,jc+1,kc   ))
+               valm010 = valcrse(ivalc(ivar,ic  ,jc-1,kc   ))
+               valp001 = valcrse(ivalc(ivar,ic  ,jc  ,kc+1 ))
+               valm001 = valcrse(ivalc(ivar,ic  ,jc  ,kc-1 ))
 
                ! Use monotonized centered limiter to reconstruct in all axes
                dupc = valp100 - valc
@@ -231,7 +228,7 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
      &                       + eta2*dv*dsign(1.d0,dvcc)*fv
      &                       + eta3*dw*dsign(1.d0,dwcc)*fw
 
-               valbig(iff+nrowst-1,jf+ncolst-1,kf+nfilst-1,ivar)
+               valbig(ivar,iff+nrowst-1,jf+ncolst-1,kf+nfilst-1)
      &                = valint
 
  101        continue
@@ -239,8 +236,6 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
          endif
 
  100  continue
-
-c     call reclam(loccrse,ntot)
 
  90   continue
 c     

@@ -3,10 +3,10 @@ c -------------------------------------------------------------
 c
       subroutine spest (nvar,naux,lcheck,dom1flags,isize,jsize,ksize,t0)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
       integer*1  dom1flags (0:isize+1,0:jsize+1,0:ksize+1)
-      include  "call.i"
 
  
 c :::::::::::::::::::::::::: SPEST :::::::::::::::::::::::::::::::::::
@@ -65,15 +65,16 @@ c get user flags for refinement, which might be based on spatial gradient,
 c for example.  Use old values of soln at time t  before
 c integration to get accurate boundary gradients
 c
-          if (tolsp .gt. 0.) then
+          if (flag_gradient) then
              locamrflags = igetsp(mitot*mjtot*mktot)
-	           do 20 i = 1, mitot*mjtot*mktot
+             do 20 i = 1, mitot*mjtot*mktot
  20             alloc(locamrflags+i-1) = goodpt
 c
 c        # call user-supplied routine to flag any points where 
 c        # refinement is desired based on user's criterion.  
 c        # Default version compares spatial gradient to tolsp.
 
+         
          call flag2refine(nx,ny,nz,nghost,nvar,naux,xlow,ylow,zlow,
      &              dx,dy,dz,time,lcheck,tolsp,alloc(locbig),
      &              alloc(locaux),alloc(locamrflags), goodpt, badpt )

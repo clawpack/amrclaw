@@ -4,9 +4,8 @@ c
       subroutine domup(iflags2,iflags,ibase,jbase,kbase,
      1                                isize,jsize,ksize,lev)
 
+      use amr_module
       implicit double precision (a-h, o-z)
-
-      include  "call.i"
 
       integer*1  iflags2(0:isize+1,0:jsize+1,0:ksize+1)
       integer*1  iflags (0:ibase+1,0:jbase+1,0:kbase+1)
@@ -23,6 +22,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
          write(outunit,*)" from domup: domflags (before expansion)"
          do 5 kk = 1, kbase
          k = kbase + 1 - kk
+         write(outunit,*) 'plane k = ',k
          do 5 jj = 1, jbase
          j = jbase + 1 - jj
          write(outunit,100)(iflags(i,j,k),i=1,ibase)
@@ -173,6 +173,7 @@ c
          write(outunit,*)" from domup: domflags (after expansion)"
          do 70 kk = 1, ksize
          k = ksize + 1 - kk
+         write(outunit,*) 'plane k = ',k
          do 70 jj = 1, jsize
          j = jsize + 1 - jj
          write(outunit,100)(iflags2(i,j,k),i=1,isize)
