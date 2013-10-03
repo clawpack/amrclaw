@@ -15,7 +15,7 @@ CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
 CLAW_PKG = amrclaw                  # Clawpack package to use
 EXE = xamr                          # Executable to create
 SETRUN_FILE = setrun.py             # File containing function to make data
-OUTDIR = _output4                   # Directory for output
+OUTDIR = _output                    # Directory for output
 SETPLOT_FILE = setplot.py           # File containing function to set plots
 PLOTDIR = _plots                    # Directory for plots
 

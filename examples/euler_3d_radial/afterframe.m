@@ -32,15 +32,16 @@ if PlotType==4
 showpatchborders;
 setpatchborderprops(1,'linewidth',2,'color','k');  % new version only
 setpatchborderprops(2,'linewidth',2,'color','b');  % new version only
-setpatchborderprops(3,'linewidth',2,'color','r');  % new version only
-setpatchbordercolor('r',1);
+setpatchborderprops(3,'linewidth',2,'color','g');  % new version only
+setpatchbordercolor('k',1);
 setpatchbordercolor('b',2);
+setpatchbordercolor('g',3);
 
 
-showcubes;
+%showcubes;
 setcubecolor('k',1);
 setcubecolor('b',2);
-setcubecolor('r',3);
+setcubecolor('g',3);
 
 
 colorbar;
