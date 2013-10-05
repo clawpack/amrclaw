@@ -7,18 +7,15 @@ if PlotType==1
   yrbcolormap
 end
 
-if (PlotType == 3)
+if PlotType==3
   set(gca,'box','on');
 end
-
-if PlotType==3
-   set(gca,'box','on');
-  end
 camlight;
-showcubes;
-setcubecolor('k',1);
-setcubecolor('b',2);
-setcubecolor('r',3);
+
+% showcubes;
+% setcubecolor('k',1);
+% setcubecolor('b',2);
+% setcubecolor('r',3);
 
 if PlotType==5
   camlight left;

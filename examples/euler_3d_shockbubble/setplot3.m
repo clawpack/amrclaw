@@ -11,7 +11,6 @@ PlotType = 3;                % type of plot to produce:
 			     % 2 = contour lines in 3d on transparent slices
 			     % 3 = Schlieren plot on slices
 			     % 4 = scatter plot of q vs. r
-			     % 5 = isosurface plot (at given levels)
 
 mq = 1;                      % which component of q to plot
 UserVariable = 0;            % set to 1 to specify a user-defined variable
