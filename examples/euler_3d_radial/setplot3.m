@@ -2,9 +2,10 @@
 %  setplot3.m
 %  called in plotclaw3 before plotting to set various parameters
 
+OutputDir = '.';
+
 setopengl;
 setviews  % set viewpoints so that view(xSlice), for example, can be used.
-UserView = [120 30];
 
 %PlotType = 4;                % type of plot to produce:
 PlotType = 1;                % type of plot to produce:
