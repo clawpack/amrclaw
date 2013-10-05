@@ -9,13 +9,10 @@ showslices('z',6);
 
 
 showpatchborders;
-setpatchborderprops(1,'linewidth',2,'color','k');  % new version only
-setpatchborderprops(2,'linewidth',2,'color','b');  % new version only
-setpatchborderprops(3,'linewidth',2,'color','r');  % new version only
-%setpatchbordercolor('k',1);
-setpatchbordercolor('k',2);
-setpatchbordercolor('k',3);
-
+setpatchbordercolor('k');
+% setpatchborderprops(1,'linewidth',2,'color','k');  % new version only
+% setpatchborderprops(2,'linewidth',2,'color','k');  % new version only
+% setpatchborderprops(3,'linewidth',2,'color','k');  % new version only
 
 showcubes;
 setcubecolor('r',1);
@@ -23,11 +20,13 @@ setcubecolor('b',2);
 setcubecolor('k',3);
 hidecubes(1:2);
 
-showgridlines(2:3);
+showgridlines(1:2);
 
 cv = linspace(0,1,11);
 cv([1 end]) = [];
 drawcontourlines(cv);
+
+h = surflight;
 
 axis off;
 

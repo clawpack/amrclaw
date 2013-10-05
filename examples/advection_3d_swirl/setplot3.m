@@ -42,9 +42,9 @@ ContourValues = [];   % draw contour lines from 'afterframe.m'
 
   IsosurfValues    =  [0.5];     % Plot surfaces at q = surfValue(i).
 
-  IsosurfAlphas    =  [0.4];     % Transparency of each surface
+  IsosurfAlphas    =  [0.5];     % Transparency of each surface
                                           % (0=clear; 1=opaque)
                                           % NOTE: Your system must be able to
                                           % use the OpenGL Renderer.
 
-  IsosurfColors    = strvcat('q');      % Colors for each surface.
+  IsosurfColors    = 'q';      % Colors for each surface.
