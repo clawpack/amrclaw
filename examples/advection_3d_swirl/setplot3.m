@@ -1,6 +1,7 @@
 %  setplot3.m
 %  called in plotclaw3 before plotting to set various parameters
 
+OutputDir = '_output';
 setviews  % set viewpoints so that view(xSlice), for example, can be used.
 setopengl;
 
@@ -29,11 +30,21 @@ PlotCubeEdges = [0 0 0 0 0 0];   % Plot edges of cube of refinement patch at
 
 % ContourValues is a vector of contour lines that can be used with
 % PlotType = 1,2,3.   Empty ==> no contour lines drawn
-  ContourValues = .1:.1:.9;
+
+ContourValues = [];   % draw contour lines from 'afterframe.m'
 
 % The next three parameters are vectors of x,y,z coordinates of 2d slices
 % to be displayed for PlotType = 1,2,3.
 
-  xSliceCoords = 0.6;
-  ySliceCoords = 0.6;
-  zSliceCoords = 0.425;
+  xSliceCoords = 0:0.1:1;
+  ySliceCoords = 0:0.1:1;
+  zSliceCoords = 0:0.1:1;
+
+  IsosurfValues    =  [0.5];     % Plot surfaces at q = surfValue(i).
+
+  IsosurfAlphas    =  [0.4];     % Transparency of each surface
+                                          % (0=clear; 1=opaque)
+                                          % NOTE: Your system must be able to
+                                          % use the OpenGL Renderer.
+
+  IsosurfColors    = strvcat('q');      % Colors for each surface.
