@@ -2,12 +2,12 @@
 %  setplot3.m
 %  called in plotclaw3 before plotting to set various parameters
 
-OutputDir = '.';
+OutputDir = '_output';
 
 setopengl;
 setviews  % set viewpoints so that view(xSlice), for example, can be used.
 
-%PlotType = 4;                % type of plot to produce:
+% PlotType = 4;                % type of plot to produce:
 PlotType = 1;                % type of plot to produce:
 			     % 1 = pcolor on slices (with optional contours)
 			     % 2 = contour lines in 3d on transparent slices
@@ -37,9 +37,10 @@ PlotCubeEdges = [0 0 0 0 0 0];   % Plot edges of cube of refinement patch at
 
 % The next three parameters are vectors of x,y,z coordinates of 2d slices
 % to be displayed for PlotType = 1,2,3.
-  xSliceCoords = 0;
-  ySliceCoords = 0;
-  zSliceCoords = 0;
+s = linspace(0,2,6);
+  xSliceCoords = s;
+  ySliceCoords = s;
+  zSliceCoords = s;
 
 % For PlotType = 4 (Scatter plot)
 % Use default x0, y0, z0;

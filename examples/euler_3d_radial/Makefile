@@ -25,7 +25,7 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS ?=  
+FFLAGS ?= -g -O0
 
 # ---------------------------------
 # List of sources for this program:
@@ -34,13 +34,14 @@ FFLAGS ?=
 AMRLIB = $(CLAW)/amrclaw/src/3d
 
 MODULES = \
-  $(AMRLIB)/amr_module.f90 
+  $(AMRLIB)/amr_module.f90
 #$(AMRLIB)/gauges_module.f90 \
 #$(AMRLIB)/regions_module.f90 \
 
 SOURCES = \
   qinit.f \
   setprob.f \
+  flag2refine.f \
   $(CLAW)/riemann/src/rpn3_euler.f90 \
   $(CLAW)/riemann/src/rpt3_euler.f90 \
   $(CLAW)/riemann/src/rptt3_euler.f90 \
@@ -64,7 +65,6 @@ SOURCES = \
   $(AMRLIB)/cleanup.f \
   $(AMRLIB)/colate.f \
   $(AMRLIB)/errest.f \
-  $(AMRLIB)/flag2refine.f \
   $(AMRLIB)/allowflag.f \
   $(AMRLIB)/bufnst.f \
   $(AMRLIB)/spest.f \
@@ -134,4 +134,3 @@ SOURCES = \
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
 include $(CLAWMAKE)
-
