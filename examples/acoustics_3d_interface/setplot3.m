@@ -2,6 +2,8 @@
 %  setplot3.m
 %  called in plotclaw3 before plotting to set various parameters
 
+OutputDir = '_output';
+
 PlotType = 1;                % type of plot to produce:
 			     % 1 = pcolor on slices (with optional contours)
 			     % 2 = contour lines in 3d on transparent slices
@@ -10,7 +12,7 @@ PlotType = 1;                % type of plot to produce:
 
 mq = 1;                      % which component of q to plot
 UserVariable = 0;            % set to 1 to specify a user-defined variable
-UserVariableFile = ' ';      % name of m-file mapping data to q
+UserVariableFile = '';      % name of m-file mapping data to q
 MappedGrid = 0;              % set to 1 if mapc2p.m exists for nonuniform grid
 MaxFrames = 1000;            % max number of frames to loop over
 ReadBlockNumber = 0;
