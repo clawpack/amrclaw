@@ -27,7 +27,7 @@ PlotCubeEdges = [0 0 0 0 0 0];   % Plot edges of cube of refinement patch at
 
 % ContourValues is a vector of contour lines that can be used with
 % PlotType = 1,2,3.   Empty ==> no contour lines drawn
-  ContourValues = linspace(-0.005,0.005,20);
+  ContourValues = [];
 
 % The next three parameters are vectors of x,y,z coordinates of 2d slices
 % to be displayed for PlotType = 1,2,3.   Empty ==> no slices in that direction.
