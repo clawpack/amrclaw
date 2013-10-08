@@ -18,7 +18,9 @@ elseif (PlotType == 4)
   set(p,'linewidth',2);
 
   ph = getlegendinfo;
-  lh = legend([ph,p],{'level 1','level 2','level 3','Exact'});
+  level_str = {'level 1', 'level 2', 'level 3'};
+  n = length(ph);
+  lh = legend([ph,p],{level_str{1:n},'Exact'});
   set(lh,'fontsize',16);
 
   hold off;
@@ -31,6 +33,6 @@ if (prt)
   print('-dpng',fname);
 end
 
-
+shg;
 
 clear afterframe;
