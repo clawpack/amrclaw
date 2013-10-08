@@ -3,9 +3,9 @@ c ---------------------------------------------------------
 c
       subroutine projec(level,numpro,iflags,isize,jsize,ksize)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       integer*1 iflags(0:isize+1,0:jsize+1,0:ksize+1)
 c
@@ -89,6 +89,7 @@ c
  103     format(/,'  from projec: flagged pts. at level ',i4,':')
          do 110 kk = 1, ksize
             k        = ksize + 1 - kk
+            write(outunit,*) 'plane k = ',k
          do 110 jj = 1, jsize
             j        = jsize + 1 - jj
             write(outunit,104) (iflags(i,j,k),i=1,isize)

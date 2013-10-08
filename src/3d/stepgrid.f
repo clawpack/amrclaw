@@ -23,22 +23,23 @@ c dtnew      = return suggested new time step for this grids soln.
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+      use amr_module
       implicit double precision (a-h,o-z)
+
       external rpn3,rpt3, rptt3
 
-      include  "call.i"
-      common/comxyzt/dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
+c#### common/comxyzt/dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
 
       parameter (msize=max1d+4)
 
       parameter (mwork=msize*(46*maxvar + (maxvar+1)*maxwave
      &                 + 9*maxaux + 3))
 
-      dimension q(mitot,mjtot,mktot,nvar)
-      dimension fm(mitot,mjtot,mktot,nvar),fp(mitot,mjtot,mktot,nvar)
-      dimension gm(mitot,mjtot,mktot,nvar),gp(mitot,mjtot,mktot,nvar)
-      dimension hm(mitot,mjtot,mktot,nvar),hp(mitot,mjtot,mktot,nvar)
-      dimension aux(mitot,mjtot,mktot,maux)
+      dimension q(nvar,mitot,mjtot,mktot)
+      dimension fm(nvar,mitot,mjtot,mktot),fp(nvar,mitot,mjtot,mktot)
+      dimension gm(nvar,mitot,mjtot,mktot),gp(nvar,mitot,mjtot,mktot)
+      dimension hm(nvar,mitot,mjtot,mktot),hp(nvar,mitot,mjtot,mktot)
+      dimension aux(maux,mitot,mjtot,mktot)
       dimension work(mwork)
 
       logical    debug,  dump
@@ -51,12 +52,14 @@ c     # needed there.
       tcom = time
 
 c
+!--        if (dump .and. mptr .ne. 1) 
+!--     1       call prettyprint(q,nvar,mitot,mjtot,mktot,outunit)
       if (dump) then
          write(outunit,*)" grid ", mptr
          do k = 1, mktot
          do j = 1, mjtot
          do i = 1, mitot
-           write(outunit,545) i,j,k,(q(i,j,k,ivar),ivar=1,nvar)
+           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
  545       format(3i3,3x,5e30.20)
          end do
          end do
@@ -107,7 +110,7 @@ c
       mwork1 = mwork - mused              !# remaining space (passed to step3)
 
 c 2/28/02 : Added call to b4step3.
-      call b4step3(mx,my,mz,mbc,mx,my,mz,nvar,q,
+      call b4step3(mbc,mx,my,mz,nvar,q,
      &             xlowmbc,ylowmbc,zlowmbc,dx,dy,dz,time,dt,maux,aux)
 
 c
@@ -128,39 +131,39 @@ c
 c
 c       write(outunit,*) ' Courant # of grid ',mptr, '  is  ',cflgrid
 c
-!$OMP CRITICAL (cflmax)
-      cflmax = dmax1(cflmax,cflgrid)
-!$OMP END CRITICAL (cflmax)
+!$OMP CRITICAL (setcfl)
+      cfl_level = dmax1(cfl_level,cflgrid)
+!$OMP END CRITICAL (setcfl)
 c
 c       # update q
       dtdx = dt/dx
       dtdy = dt/dy
       dtdz = dt/dz
         if (mcapa.eq.0) then
-         do 50 m=1,nvar
-         do 50 i=mbc+1,mitot-mbc
-         do 50 j=mbc+1,mjtot-mbc
          do 50 k=mbc+1,mktot-mbc
+         do 50 j=mbc+1,mjtot-mbc
+         do 50 i=mbc+1,mitot-mbc
+         do 50 m=1,nvar
 c
 c            # no capa array.  Standard flux differencing:
 
-            q(i,j,k,m) = q(i,j,k,m)
-     &                 - dtdx * (fm(i+1,j,k,m) - fp(i,j,k,m))
-     &                 - dtdy * (gm(i,j+1,k,m) - gp(i,j,k,m))
-     &                 - dtdz * (hm(i,j,k+1,m) - hp(i,j,k,m))
+            q(m,i,j,k) = q(m,i,j,k)
+     &                 - dtdx * (fm(m,i+1,j,k) - fp(m,i,j,k))
+     &                 - dtdy * (gm(m,i,j+1,k) - gp(m,i,j,k))
+     &                 - dtdz * (hm(m,i,j,k+1) - hp(m,i,j,k))
  50       continue
        else
-         do 51 m=1,nvar
-         do 51 i=mbc+1,mitot-mbc
-         do 51 j=mbc+1,mjtot-mbc
          do 51 k=mbc+1,mktot-mbc
+         do 51 j=mbc+1,mjtot-mbc
+         do 51 i=mbc+1,mitot-mbc
+         do 51 m=1,nvar
 
 c            # with capa array.
 
-          q(i,j,k,m) = q(i,j,k,m)
-     &              - (dtdx * (fm(i+1,j,k,m) - fp(i,j,k,m))
-     &              +  dtdy * (gm(i,j+1,k,m) - gp(i,j,k,m))
-     &              +  dtdz * (hm(i,j,k+1,m) - hp(i,j,k,m)))
+          q(m,i,j,k) = q(m,i,j,k)
+     &              - (dtdx * (fm(m,i+1,j,k) - fp(m,i,j,k))
+     &              +  dtdy * (gm(m,i,j+1,k) - gp(m,i,j,k))
+     &              +  dtdz * (hm(m,i,j,k+1) - hp(m,i,j,k)))
      &         / aux(i,j,k,mcapa)
  51       continue
        endif
@@ -170,8 +173,8 @@ c
       if (method(5).eq.1) then
 c        # with source term:   use Godunov splitting
 c         call src3(q,mitot,mjtot,mktot,nvar,aux,maux,time,dt)
-         call src3(mx,my,mz,nvar,mbc,mx,my,mz,xlowmbc,
-     &         ylowmbc,zlowmbc,dx,dy,dz,q,maux,aux,time,dt)
+         call src3(nvar,mbc,mx,my,mz,xlowmbc,ylowmbc,
+     &             zlowmbc,dx,dy,dz,q,maux,aux,time,dt)
        endif
 c
 c
@@ -182,13 +185,13 @@ c     # output fluxes for debugging purposes:
          do 830 i = mbc+1, mitot-1
             do 830 j = mbc+1, mjtot-1
             do 830 k = mbc+1, mktot-1
-               write(dbugunit,831) i,j,k,fm(i,j,k,1),fp(i,j,k,1),
-     .                           gm(i,j,k,1),gp(i,j,k,1),
-     .                           hm(i,j,k,1),hp(i,j,k,1)
+               write(dbugunit,831) i,j,k,fm(1,i,j,k),fp(1,i,j,k),
+     .                           gm(1,i,j,k),gp(1,i,j,k),
+     .                           hm(1,i,j,k),hp(1,i,j,k)
              do 830 m = 2, meqn
-              write(dbugunit,832) fm(i,j,k,m),fp(i,j,k,m),
-     .              gm(i,j,k,m),gp(i,j,k,m),
-     .              hm(i,j,k,m),hp(i,j,k,m)
+              write(dbugunit,832) fm(m,i,j,k),fp(m,i,j,k),
+     .              gm(m,i,j,k),gp(m,i,j,k),
+     .              hm(m,i,j,k),hp(m,i,j,k)
   831          format(3i4,6d16.6)
   832          format(8x,6d16.6)
   830    continue
@@ -216,16 +219,36 @@ c
      &              '  is larger than cflv(1) ')
             endif
 
+!--        if (dump .and. mptr .ne. 1) 
+!--     1     call prettyprint(q,nvar,mitot,mjtot,mktot,outunit)
       if (dump) then
          write(outunit,*)" after time step on grid ", mptr
          do k = 1, mktot
          do j = 1, mjtot
          do i = 1, mitot
-           write(outunit,545) i,j,k,(q(i,j,k,ivar),ivar=1,nvar)
+           write(outunit,545) i,j,k,(q(ivar,i,j,k),ivar=1,nvar)
          end do
          end do
          end do
       endif
+
+      return
+      end
+
+c ------------------------------------------------------------------------
+
+      subroutine prettyprint(q,nvar,mitot,mjtot,mktot,outunit)
+      implicit double precision (a-h, o-z)
+      dimension q(nvar,mitot,mjtot,mktot)
+      integer  outunit
+
+      do k = 1, mktot
+      write(outunit,*)" plane k = ",k
+      do j = mjtot,1,-1
+        write(outunit,545) (q(1,i,j,k),i=1,mitot)
+ 545    format(50f3.1)
+      end do
+      end do
 
       return
       end

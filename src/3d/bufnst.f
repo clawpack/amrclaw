@@ -4,9 +4,9 @@ c
       subroutine bufnst (nvar,naux,numbad,lcheck,iflags,
      .                   isize,jsize,ksize)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
       integer*1  iflags (0:isize+1,0:jsize+1,0:ksize+1)
       logical    vtime
@@ -115,7 +115,7 @@ c
        do 82 k = 1, ksize
          if (iflags(i,j,k) .ne. goodpt) numbad = numbad + 1
  82    continue
-       write(outunit,116) numbad, lcheck
+       if (eprint) write(outunit,116) numbad, lcheck
  116   format(i5,' points flagged on level ',i4)
 
 c      call reclam(ldom3,(isize+2)*(jsize+2)*(ksize+2))

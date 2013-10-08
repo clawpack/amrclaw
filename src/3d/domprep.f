@@ -3,9 +3,9 @@ c ----------------------------------------------------
 c
       subroutine domprep(domflags,lbase,ibase,jbase,kbase)
 
+      use amr_module
       implicit double precision (a-h, o-z)
 
-      include  "call.i"
 
       integer*1 domflags(0:ibase+1,0:jbase+1,0:kbase+1)
 
@@ -20,7 +20,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
       do 10 k = 0, kbase+1
       do 10 j = 0, jbase+1
       do 10 i = 0, ibase+1
-	 domflags(i,j,k) = 0
+        domflags(i,j,k) = 0
  10   continue
 
       mptr = lstart(lbase)
@@ -28,7 +28,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
       do 20 k = node(ndklo,mptr) + 1, node(ndkhi,mptr) + 1
       do 20 j = node(ndjlo,mptr) + 1, node(ndjhi,mptr) + 1
       do 20 i = node(ndilo,mptr) + 1, node(ndihi,mptr) + 1
-	 domflags(i,j,k) = 1
+        domflags(i,j,k) = 1
  20   continue
       mptr = node(levelptr, mptr)
       if (mptr .ne. 0) go to 15
@@ -40,27 +40,27 @@ c
       if (xperdom) then
          do 25 k = 0, kbase+1
          do 25 j = 0, jbase+1
-	   domflags(      0,j,k) = domflags(ibase,j,k)
-	   domflags(ibase+1,j,k) = domflags(    1,j,k)
+          domflags(      0,j,k) = domflags(ibase,j,k)
+          domflags(ibase+1,j,k) = domflags(    1,j,k)
  25      continue
        else
          do 65 k = 1, kbase
-	 do 65 j = 1, jbase
-	   if (domflags(    1,j,k) .eq. 1) domflags(      0,j,k) = 1
-	   if (domflags(ibase,j,k) .eq. 1) domflags(ibase+1,j,k) = 1
+         do 65 j = 1, jbase
+           if (domflags(    1,j,k) .eq. 1) domflags(      0,j,k) = 1
+           if (domflags(ibase,j,k) .eq. 1) domflags(ibase+1,j,k) = 1
  65      continue
       endif
       if (yperdom) then
          do 35 k = 0, kbase+1
          do 35 i = 0, ibase+1
-	   domflags(i,      0,k) = domflags(i,jbase,k)
-	   domflags(i,jbase+1,k) = domflags(i,    1,k)
+           domflags(i,      0,k) = domflags(i,jbase,k)
+           domflags(i,jbase+1,k) = domflags(i,    1,k)
  35      continue
        else
          do 55 k = 1, kbase
-	 do 55 i = 1, ibase
-	   if (domflags(i,    1,k) .eq. 1) domflags(i,      0,k) = 1
-	   if (domflags(i,jbase,k) .eq. 1) domflags(i,jbase+1,k) = 1
+         do 55 i = 1, ibase
+            if (domflags(i,    1,k) .eq. 1) domflags(i,      0,k) = 1
+            if (domflags(i,jbase,k) .eq. 1) domflags(i,jbase+1,k) = 1
  55      continue
       endif
       if (zperdom) then
@@ -157,6 +157,7 @@ c
          write(outunit,*)" from domprep: domflags at level  ", lbase
          do 40 kk = 1, kbase
          k = kbase + 1 - kk
+         write(outunit,*) 'plane k = ',k
          do 40 jj = 1, jbase
          j = jbase + 1 - jj
          write(outunit,100)(domflags(i,j,k),i=1,ibase)

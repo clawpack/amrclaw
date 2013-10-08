@@ -10,33 +10,33 @@ c   either split at a hole, or use signatures to find
 c   zero crossing of laplacian.
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include "call.i"
 
       parameter(ithres = 2)
       parameter(minoff = 2)
 
       dimension iscr(idim), jscr(jdim), kscr(kdim)
-      dimension locval(4,numdim)
+      dimension locval(4,3)
 
 c
 c  look for holes first in horizontal then vertical then transverse direction
 c
        do 10 i = ilo, ihi
-	  if (iscr(i) .eq. 0) then
-	     index = i
-	     iside = iplane
-	     return
-	  endif
+          if (iscr(i) .eq. 0) then
+             index = i
+             iside = iplane
+             return
+          endif
  10    continue
 
        do 20 j = jlo, jhi
-	  if (jscr(j) .eq. 0) then
-	      index = j
-	      iside = jplane
-	      return
-	  endif
+          if (jscr(j) .eq. 0) then
+              index = j
+              iside = jplane
+              return
+          endif
  20    continue
 
        do 30 k = klo, khi
@@ -54,9 +54,9 @@ c  from boundary
 c
       ipre = iscr(ilo)
       do 50 i = ilo+1, ihi-1
-	 icur = iscr(i)
-	 iscr(i) = iscr(i+1)-2*icur+ipre
-	 ipre = icur
+         icur = iscr(i)
+         iscr(i) = iscr(i+1)-2*icur+ipre
+         ipre = icur
  50   continue
 
       locmaxi = 0
@@ -70,8 +70,8 @@ c
                 if (locdif .gt. locmaxi) then
                  locmaxi = locdif
                  indexi = i
-		else if (locdif .eq. locmaxi) then 
-		    if (iabs(i-imid).lt.iabs(indexi-imid)) indexi = i
+                else if (locdif .eq. locmaxi) then 
+                    if (iabs(i-imid).lt.iabs(indexi-imid)) indexi = i
                 endif
            endif
  60   continue              
@@ -95,9 +95,9 @@ c
                if (locdif .gt. locmaxj) then
                   locmaxj = locdif
                   indexj = j
-		else if (locdif .eq. locmaxj) then
-		       if (iabs(j-jmid).lt.iabs(indexj-jmid)) indexj = j
-	       endif
+                else if (locdif .eq. locmaxj) then
+                       if (iabs(j-jmid).lt.iabs(indexj-jmid)) indexj = j
+               endif
            endif
  160   continue
 

@@ -4,25 +4,25 @@ c
       recursive subroutine prefilrecur(level,nvar,
      1                                 valbig,aux,naux,time,
      2                                 mitot,mjtot,mktot,
-     3                                 nrowst,ncolst,nfilst
+     3                                 nrowst,ncolst,nfilst,
      4                                 ilo,ihi,jlo,jhi,klo,khi)
 
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
-      dimension valbig(mitot,mjtot,mktot,nvar)
-      dimension    aux(mitot,mjtot,mktot,naux)
+      dimension valbig(nvar,mitot,mjtot,mktot)
+      dimension    aux(naux,mitot,mjtot,mktot)
       dimension ist(3), iend(3), jst(3), jend(3), kst(3), kend(3)
       dimension ishift(3), jshift(3), kshift(3)
 
-      dimension scratch(max(mitot,mjtot,mktot)*nghost*nvar)
-      dimension scratchaux(max(mitot,mjtot,mktot)*nghost*naux)
+c     dimension scratch(max(mitot,mjtot,mktot)*nghost*nvar)
+c     dimension scratchaux(max(mitot,mjtot,mktot)*nghost*naux)
 
-      iadd(i,j,k,ivar)  = locflip + i - 1 + nr*(j-1) + nc*nr*(k-1)
-     &                            + nf*nc*nr*(ivar-1)
-      iaddscratch(i,j,k,ivar)  = i + nr*(j-1) + nc*nr*(k-1)
-     &                             + nf*nc*nr*(ivar-1)
+c      iadd(ivar,i,j,k) = locflip + ivar - 1 + nvar*(i-1) + nvar*nr*(j-1)
+c     &                           + nvar*nr*nc*(k-1)
+c      iaddscratch(ivar,i,j,k) = ivar + nvar*(i-1) + nvar*nr*(j-1)
+c     &                               + nvar*nr*nc*(k-1)
 
 c
 c  :::::::::::::: PREFILRECUR :::::::::::::::::::::::::::::::::::::::::::
@@ -81,30 +81,35 @@ c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
 
 
         do i = 1, 3
-           i1 = max(ilo,  ist(i))
-           i2 = min(ihi, iend(i))
-           do j = 1, 3
+         i1 = max(ilo,  ist(i))
+         i2 = min(ihi, iend(i))
+         do j = 1, 3
            j1 = max(jlo,  jst(j))
            j2 = min(jhi, jend(j))
            do k = 1, 3
-           k1 = max(klo,  kst(j))
-           k2 = min(khi, kend(j))
+             k1 = max(klo,  kst(k))
+             k2 = min(khi, kend(k))
 
            if ((i1 <= i2) .and. (j1 <= j2) .and. (k1 <= k2)) then ! part of patch in this region
               iputst = (i1 - ilo) + nrowst
               jputst = (j1 - jlo) + ncolst
               kputst = (k1 - klo) + nfilst
+
+              kuse1 = k1+kshift(k)
+              kuse2 = k2+kshift(k)
+
               call filrecur(level,nvar,valbig,aux,naux,time,
      1                      mitot,mjtot,mktot,
      2                      iputst,jputst,kputst,
      3                      i1+ishift(i),i2+ishift(i),
      4                      j1+jshift(j),j2+jshift(j),
-     5                      k1+kshift(k),k2+kshift(k))
+     5                      kuse1,kuse2)               
+c    5                      k1+kshift(k),k2+kshift(k))
 
            end if
 
            end do
-           end do
+         end do
         end do
 
         return

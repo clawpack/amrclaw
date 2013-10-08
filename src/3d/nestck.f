@@ -5,11 +5,11 @@ c
      1                        nclust,domflags,isize,jsize,ksize,
      &                        nvar,naux)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
-      dimension  badpts(numdim,npts)
+      dimension  badpts(3,npts)
       integer*1  domflags(0:isize+1,0:jsize+1,0:ksize+1)
       integer   numptc(maxcl)
 c
@@ -106,7 +106,7 @@ c  ### swap with a point in top half not yet tested. keep smaller
 c  ### half of rect. in bottom half
 c
 c      do the switch in each coordinate direction
-       do 91 ndim=1,numdim
+       do 91 ndim=1,3
        temp              = badpts(ndim,ipt)
        badpts(ndim,ipt)  = badpts(ndim,ntop)
        badpts(ndim,ntop) = temp

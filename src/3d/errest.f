@@ -3,9 +3,8 @@ c -------------------------------------------------------------
 c
       subroutine errest (nvar,naux,lcheck)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
-
-      include  "call.i"
 
 c
 c     #   no sense computing new time step if just for error estimation,
@@ -34,11 +33,11 @@ c
        hz2  = 2.d0*hz
        mptr = lstart(lcheck)
  5     continue
-	        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-       	  ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
           nz     = node(ndkhi,mptr) - node(ndklo,mptr) + 1
-	        mitot  = nx + 2*nghost
-	        mjtot  = ny + 2*nghost
+          mitot  = nx + 2*nghost
+          mjtot  = ny + 2*nghost
           mktot  = nz + 2*nghost
           locnew = node(store1,mptr)
           locold = node(store2,mptr)
@@ -47,29 +46,29 @@ c
           mj2tot = ny/2  + 2*nghost
           mk2tot = nz/2  + 2*nghost
           time   = rnode(timemult,mptr)
- 	        dt     = possk(lcheck)
+          dt     = possk(lcheck)
           tpre   = time - dt
 c
 c     prepare double the stencil size worth of boundary values,
 c            then coarsen them for the giant step integration.
 c
-	        midub = nx+4*nghost
-	        mjdub = ny+4*nghost
+          midub = nx+4*nghost
+          mjdub = ny+4*nghost
           mkdub = nz+4*nghost
           locdub = igetsp(midub *mjdub *mkdub *(nvar+naux))
-	        locbgc = igetsp(mi2tot*mj2tot*mk2tot*(nvar+naux))
-	        node(errptr,mptr) = locbgc
+          locbgc = igetsp(mi2tot*mj2tot*mk2tot*(nvar+naux))
+          node(errptr,mptr) = locbgc
           ngbig = 2*nghost
 
 c         # transfer soln. into grid with twice the ghost cells
- 	        call copysol(alloc(locdub),alloc(locold),nvar,
+          call copysol(alloc(locdub),alloc(locold),nvar,
      &                 mitot,mjtot,mktot,
      1                 nghost,midub,mjdub,mkdub,ngbig)
 
 c
-	        if (naux .gt. 0) then
-	            locaxb = locdub + midub *mjdub *mkdub *nvar
-	            locaxc = locbgc + mi2tot*mj2tot*mk2tot*nvar
+          if (naux .gt. 0) then
+              locaxb = locdub + midub *mjdub *mkdub *nvar
+              locaxc = locbgc + mi2tot*mj2tot*mk2tot*nvar
               xlowmbc = rnode(cornxlo, mptr)
               ylowmbc = rnode(cornylo, mptr)
               zlowmbc = rnode(cornzlo, mptr)
@@ -80,16 +79,16 @@ c
 c	      xl     = rnode(cornxlo, mptr)-2*nghost*hx
 c	      yf     = rnode(cornylo, mptr)-2*nghost*hy
 c	      zb     = rnode(cornzlo, mptr)-2*nghost*hz
-              call setaux(nx,ny,nz,2*nghost,nx,ny,nz,
+              call setaux(2*nghost,nx,ny,nz,
      &              xlowmbc,ylowmbc,zlowmbc ,hx,hy,hz,
      &              naux,alloc(locaxb))
 
               call auxcoarsen(alloc(locaxb),midub ,mjdub ,mkdub ,
      1                        alloc(locaxc),mi2tot,mj2tot,mk2tot,
-     2                        naux,auxtype)
-	         else
-	            locaxb = 1
-	         endif
+     2                       naux,auxtype)
+          else
+              locaxb = 1
+          endif
 
 c         # fill it - use enlarged (before coarsening) aux arrays
           call bound(tpre,nvar,
@@ -99,7 +98,7 @@ c         # fill it - use enlarged (before coarsening) aux arrays
 c         coarsen by 2 in every direction
           call coarsen(alloc(locdub),midub ,mjdub ,mkdub ,
      1                 alloc(locbgc),mi2tot,mj2tot,mk2tot,nvar)
-      	  call reclam(locdub,midub*mjdub*mkdub*(nvar+naux))
+          call reclam(locdub,midub*mjdub*mkdub*(nvar+naux))
 c
 c ****************************************************************
 c      changed. now locbig filled from spest, always, even if no
@@ -134,11 +133,11 @@ c
 
        mptr = lstart(lcheck)
  25    continue
-	        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-	        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
           nz     = node(ndkhi,mptr) - node(ndklo,mptr) + 1
-	        mitot  = nx+ 2*nghost
-	        mjtot  = ny+ 2*nghost
+          mitot  = nx+ 2*nghost
+          mjtot  = ny+ 2*nghost
           mktot  = nz+ 2*nghost
           mi2tot = nx/2 + 2*nghost
           mj2tot = ny/2 + 2*nghost
@@ -146,22 +145,22 @@ c
 c
 c         # this scratch storage will be used both for regular and half
 c         # sized grid. different dimensions in stepgrid - do not reuse.
-	        locfp = igetsp(mitot*mjtot*mktot*nvar)
-	        locfm = igetsp(mitot*mjtot*mktot*nvar)
-	        locgp = igetsp(mitot*mjtot*mktot*nvar)
-	        locgm = igetsp(mitot*mjtot*mktot*nvar)
-	        lochp = igetsp(mitot*mjtot*mktot*nvar)
-	        lochm = igetsp(mitot*mjtot*mktot*nvar)
+          locfp = igetsp(mitot*mjtot*mktot*nvar)
+          locfm = igetsp(mitot*mjtot*mktot*nvar)
+          locgp = igetsp(mitot*mjtot*mktot*nvar)
+          locgm = igetsp(mitot*mjtot*mktot*nvar)
+          lochp = igetsp(mitot*mjtot*mktot*nvar)
+          lochm = igetsp(mitot*mjtot*mktot*nvar)
           locaux = node(storeaux,mptr)
 c
-	        locbgc = node(errptr,mptr)
+          locbgc = node(errptr,mptr)
 c
-      	  locaxc = locbgc+nvar*mi2tot*mj2tot*mk2tot
+          locaxc = locbgc+nvar*mi2tot*mj2tot*mk2tot
 c should we set to 1 if naux=0?
 c
           evol = evol + (nx/2)*(ny/2)*(nz/2)
- 	        xlow = rnode(cornxlo,mptr) - nghost*hx2
-	        ylow = rnode(cornylo,mptr) - nghost*hy2
+          xlow = rnode(cornxlo,mptr) - nghost*hx2
+          ylow = rnode(cornylo,mptr) - nghost*hy2
           zlow = rnode(cornzlo,mptr) - nghost*hz2
           call stepgrid(alloc(locbgc),alloc(locfm),alloc(locfp),
      1                alloc(locgm),alloc(locgp),

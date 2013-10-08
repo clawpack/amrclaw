@@ -42,8 +42,8 @@ c since have same size buffer on finer grid
       do 20 i = ilo,ihi
           ifine = i * lratiox - 1  ! subtract 1 so can add in next loop
           jfine = j * lratioy - 1
-          do 15 mj = 1, lratiox
-          do 15 mi = 1, lratioy
+          do 15 mj = 1, lratioy
+          do 15 mi = 1, lratiox
             iset = min(ifine+mi,ihifine+mbuff)  ! might as well include buffer, though done later
             jset = min(jfine+mj,jhifine+mbuff)  ! needed since grids dont align over many levels
             iset = max(iset,ilofine-mbuff)      ! but so expensive

@@ -4,11 +4,11 @@ c
       subroutine smartbis(badpts,npts,cutoff,numptc,nclust,
      1                    lbase,intcorn,idim,jdim,kdim)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include "call.i"
 
-      dimension     badpts(numdim,npts),intcorn(nsize,maxcl)
+      dimension     badpts(3,npts),intcorn(nsize,maxcl)
       dimension     iscr(idim), jscr(jdim), kscr(kdim)
       integer       nclust, numptc(maxcl)
       parameter     (usemin=.4)
@@ -66,11 +66,11 @@ c
       call findcut(icl,iscr,jscr,kscr,idim,jdim,kdim,index,iside,
      &             ilo,ihi,jlo,jhi,klo,khi)
       if (index .eq. 0) then
-	   icl = icl + 1
-	   if (icl .gt. nclust) go to 200
-	   ist = iend + 1
-	   iend = ist + numptc(icl) - 1
-	   go to 10
+         icl = icl + 1
+         if (icl .gt. nclust) go to 200
+         ist = iend + 1
+         iend = ist + numptc(icl) - 1
+         go to 10
       endif
 c
       if     (iside .eq. kplane) then
@@ -110,7 +110,7 @@ c                 necessary here because ibot cannot decrease below i.
               end if
           else
 c             do the switch in each coordinate direction
-              do 61 ndim=1,numdim
+              do 61 ndim=1,3
               temp              = badpts(ndim,ibot)
               badpts(ndim,ibot) = badpts(ndim,i)
               badpts(ndim,i)    = temp
@@ -129,7 +129,7 @@ c         itop always points to a badpt in the top half (ie, .ge. fmid)
           end if
       end if
 c
-c done smartbisecting icl'th clusters. adjust counts, repeat bisect stage .
+c done smartbisecting icl-th clusters. adjust counts, repeat bisect stage .
 c
  80   numptc(icl) = itop - ist + 1
       ibump       = icl + 1

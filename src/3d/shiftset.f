@@ -3,12 +3,11 @@ c ----------------------------------------------------------
 c
        subroutine shiftset(intarray,isize,jsize,ksize)
 
-       implicit double precision (a-h, o-z)
+      use amr_module
+      implicit double precision (a-h, o-z)
 
-       include "call.i"
-
-       integer*1 intarray (0:isize+1,0:jsize+1,0:ksize+1)
-       integer*1 intarray2(0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1 intarray (0:isize+1,0:jsize+1,0:ksize+1)
+      integer*1 intarray2(0:isize+1,0:jsize+1,0:ksize+1)
 
 c :::::::::::::::::::::: CSHIFT :::::::::::::::::::::::::::::::
 c shift by + or - 1 in either direction (but only 1 at a time)
@@ -22,7 +21,7 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
        if (xperdom) then
           do 10 k = 0, ksize+1
-	        do 10 j = 0, jsize+1
+          do 10 j = 0, jsize+1
             intarray(      0,j,k) = intarray(isize,j,k)
             intarray(isize+1,j,k) = intarray(    1,j,k)
  10       continue

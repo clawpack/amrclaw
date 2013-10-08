@@ -3,8 +3,8 @@ c -----------------------------------------------------
 c
       subroutine valout (lst, lend, time, nvar, naux)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
-      include  "call.i"
 
       parameter   (nDim = 3)
       character*14  fname
@@ -46,10 +46,10 @@ c
 c
 c      iadd(i,j,ivar) = loc + i - 1 + mitot*((ivar-1)*mjtot+j-1)
 c 3/1/02 : Taken from update.f.  Also see intfil.f
-      iadd(i,j,k,ivar)   = loc     +     (i-1)
-     &                             +     (j-1)*mitot
-     &                             +     (k-1)*mitot*mjtot
-     &                             +  (ivar-1)*mitot*mjtot*mktot
+      iadd(ivar,i,j,k)   = loc     +     (ivar-1)
+     &                             +     (i-1)*nvar
+     &                             +     (j-1)*nvar*mitot
+     &                             +     (k-1)*nvar*mitot*mjtot
 c
 c ::::::::::::::::::::::::::: VALOUT ::::::::::::::::::::::::::::::::::;
 c valout = graphics output of soln values for contour or surface plots.
@@ -85,7 +85,8 @@ c
             level = level + 1
         go to 10
 c
-60    endif
+60    continue
+      endif
 
 
 c     ### MATLAB graphics output
@@ -240,7 +241,7 @@ c
             do k = nghost+1, mitot-nghost
                do j = nghost+1, mjtot-nghost
                   do i = nghost+1, mktot-nghost
-                     qout(ioffset+i-nghost) = alloc(iadd(k,j,i,ivar))
+                     qout(ioffset+i-nghost) = alloc(iadd(ivar,k,j,i))
                   end do
                   ioffset = ioffset + nz
                end do

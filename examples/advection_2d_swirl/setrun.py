@@ -67,7 +67,6 @@ def setrun(claw_pkg='amrclaw'):
     # Number of grid cells:
     clawdata.num_cells[0] = 40      # mx
     clawdata.num_cells[1] = 40      # my
-    
 
     # ---------------
     # Size of system:
