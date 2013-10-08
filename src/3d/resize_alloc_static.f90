@@ -17,15 +17,13 @@
 
        subroutine resize_storage(new_size,status)
     
-       implicit double precision (a-h,o-z)
-      include "call.i"
+      use amr_module
+    implicit none
 
+    integer, intent(out) :: status
+    integer, intent(in) :: new_size
     
-!!$    integer, intent(out) :: status
-!!$    integer, intent(in) :: new_size
-       integer status, new_size
-    
-       status = 1
+      status = 1
 
        write(6,*) '*** Ran out of storage for AMR.  '
        write(6,*) '*** Increase memsize in init_alloc_static.f'

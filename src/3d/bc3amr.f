@@ -1,4 +1,3 @@
-
 c
 c ------------------------------------------------------------------
 c
@@ -81,12 +80,11 @@ c     Don't overwrite ghost cells in periodic directions!
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
+      use amr_module, only:  mthbc
       implicit double precision (a-h,o-z)
 
-      common /combc3/ mthbc(6)
-
-      dimension val(nrow,ncol,nfil,meqn)
-      dimension aux(nrow,ncol,nfil,naux)
+      dimension val(meqn,nrow,ncol,nfil)
+      dimension aux(naux,nrow,ncol,nfil)
       logical xperiodic, yperiodic, zperiodic
 
       hxmarg = hx*.01d0
@@ -119,12 +117,12 @@ c     # user-specified boundary conditions go here in place of error output
 c
   110 continue
 c     # zero-order extrapolation:
-      do 115 m=1,meqn
-         do 115 i=1,nxl
-            do 115 j = 1,ncol
-               do 115 k = 1,nfil
-                  val(i,j,k,m) = val(nxl+1,j,k,m)
-  115          continue
+         do 115 k = 1,nfil
+          do 115 j = 1,ncol
+           do 115 i=1,nxl
+            do 115 m=1,meqn
+               val(m,i,j,k) = val(m,nxl+1,j,k)
+  115       continue
       go to 199
 
   120 continue
@@ -133,17 +131,17 @@ c     # periodic:   handled elsewhere in amr
 
   130 continue
 c     # solid wall (assumes 2'nd component is velocity or momentum in x):
-      do 135 m=1,meqn
-         do 135 i=1,nxl
-            do 135 j = 1,ncol
-               do 135 k = 1,nfil
-                  val(i,j,k,m) = val(2*nxl+1-i,j,k,m)
-  135          continue
+      do 135 k = 1,nfil
+       do 135 j = 1,ncol
+        do 135 i=1,nxl
+         do 135 m=1,meqn
+               val(m,i,j,k) = val(m,2*nxl+1-i,j,k)
+  135    continue
 c     # negate the normal velocity:
       do 136 i=1,nxl
          do 136 j = 1,ncol
             do 136 k = 1,nfil
-               val(i,j,k,2) = -val(i,j,k,2)
+               val(2,i,j,k) = -val(2,i,j,k)
   136       continue
       go to 199
 
@@ -173,12 +171,12 @@ c     # user-specified boundary conditions go here in place of error output
 
   210 continue
 c     # zero-order extrapolation:
-      do 215 m=1,meqn
+       do 215 k = 1,nfil
+        do 215 j = 1,ncol
          do 215 i=ibeg,nrow
-            do 215 j = 1,ncol
-               do 215 k = 1,nfil
-                  val(i,j,k,m) = val(ibeg-1,j,k,m)
-  215          continue
+          do 215 m=1,meqn
+             val(m,i,j,k) = val(m,ibeg-1,j,k)
+  215     continue
       go to 299
 
   220 continue
@@ -187,18 +185,18 @@ c     # periodic:   handled elsewhere in amr
 
   230 continue
 c     # solid wall (assumes 2'nd component is velocity or momentum in x):
-      do 235 m=1,meqn
-         do 235 i=ibeg,nrow
-            do 235 j = 1,ncol
-               do 235 k = 1,nfil
-                  val(i,j,k,m) = val(2*ibeg-1-i,j,k,m)
-  235          continue
+      do 235 k = 1,nfil
+       do 235 j = 1,ncol
+        do 235 i=ibeg,nrow
+         do 235 m=1,meqn
+            val(m,i,j,k) = val(m,2*ibeg-1-i,j,k)
+  235    continue
 c     # negate the normal velocity:
-      do 236 i=ibeg,nrow
-         do 236 j = 1,ncol
-            do 236 k = 1,nfil
-               val(i,j,k,2) = -val(i,j,k,2)
-  236       continue
+       do 236 k = 1,nfil
+       do 236 j = 1,ncol
+       do 236 i=ibeg,nrow
+          val(2,i,j,k) = -val(2,i,j,k)
+  236  continue
       go to 299
 
   299 continue
@@ -226,12 +224,12 @@ c     # user-specified boundary conditions go here in place of error output
 c
   310 continue
 c     # zero-order extrapolation:
-      do 315 m=1,meqn
-         do 315 j=1,nyf
-            do 315 i=1,nrow
-               do 315 k = 1,nfil
-                  val(i,j,k,m) = val(i,nyf+1,k,m)
-  315          continue
+      do 315 k = 1,nfil
+       do 315 j=1,nyf
+        do 315 i=1,nrow
+         do 315 m=1,meqn
+            val(m,i,j,k) = val(m,i,nyf+1,k)
+  315 continue
       go to 399
 
   320 continue
@@ -240,18 +238,18 @@ c     # periodic:   handled elsewhere in amr
 
   330 continue
 c     # solid wall (assumes 3'rd component is velocity or momentum in y):
-      do 335 m=1,meqn
-         do 335 j=1,nyf
-            do 335 i=1,nrow
-               do 335 k = 1,nfil
-                  val(i,j,k,m) =  val(i,2*nyf+1-j,k,m)
-  335          continue
+      do 335 k = 1,nfil
+       do 335 j=1,nyf
+        do 335 i=1,nrow
+         do 335 m=1,meqn
+            val(m,i,j,k) =  val(m,i,2*nyf+1-j,k)
+  335    continue
 c     # negate the normal velocity:
-      do 336 j=1,nyf
-         do 336 i=1,nrow
-            do 336 k = 1,nfil
-               val(i,j,k,3) = -val(i,j,k,3)
-  336       continue
+      do 336 k = 1,nfil
+       do 336 j=1,nyf
+        do 336 i=1,nrow
+           val(3,i,j,k) = -val(3,i,j,k)
+  336   continue
       go to 399
 
   399 continue
@@ -280,12 +278,12 @@ c     # user-specified boundary conditions go here in place of error output
 
   410 continue
 c     # zero-order extrapolation:
-      do 415 m=1,meqn
-         do 415 j=jbeg,ncol
-            do 415 i=1,nrow
-               do 415 k = 1,nfil
-                  val(i,j,k,m) =  val(i,jbeg-1,k,m)
-  415          continue
+       do 415 k = 1,nfil
+        do 415 j=jbeg,ncol
+         do 415 i=1,nrow
+          do 415 m=1,meqn
+             val(m,i,j,k) =  val(m,i,jbeg-1,k)
+  415     continue
       go to 499
 
   420 continue
@@ -298,13 +296,13 @@ c     # solid wall (assumes 3'rd component is velocity or momentum in y):
          do 435 j=jbeg,ncol
             do 435 i=1,nrow
                do 435 k = 1,nfil
-                  val(i,j,k,m) =  val(i,2*jbeg-1-j,k,m)
+                  val(m,i,j,k) =  val(m,i,2*jbeg-1-j,k)
   435          continue
 c     # negate the normal velocity:
       do 436 j=jbeg,ncol
          do 436 i=1,nrow
             do 436 k = 1,nfil
-               val(i,j,k,3) = -val(i,j,k,3)
+               val(3,i,j,k) = -val(3,i,j,k)
   436       continue
       go to 499
 
@@ -334,12 +332,12 @@ c     # user-specified boundary conditions go here in place of error output
 c
   510 continue
 c     # zero-order extrapolation:
-      do 515 m=1,meqn
-         do 515 k=1,nzb
-            do 515 i=1,nrow
-               do 515 j = 1,ncol
-                  val(i,j,k,m) = val(i,j,nzb+1,m)
-  515          continue
+      do 515 k=1,nzb
+       do 515 j = 1,ncol
+        do 515 i=1,nrow
+         do 515 m=1,meqn
+            val(m,i,j,k) = val(m,i,j,nzb+1)
+  515    continue
       go to 599
 
   520 continue
@@ -348,18 +346,18 @@ c     # periodic:   handled elsewhere in amr
 
   530 continue
 c     # solid wall (assumes 3'rd component is velocity or momentum in y):
-      do 535 m=1,meqn
-         do 535 k=1,nzb
-            do 535 i=1,nrow
-               do 535 j = 1,ncol
-                  val(i,j,k,m) =  val(i,j,2*nzb+1-k,m)
-  535          continue
+      do 535 k=1,nzb
+       do 535 j = 1,ncol
+        do 535 i=1,nrow
+         do 535 m=1,meqn
+            val(m,i,j,k) =  val(m,i,j,2*nzb+1-k)
+  535    continue
 c     # negate the normal velocity:
       do 536 k = 1,nzb
-         do 536 i = 1,nrow
-            do 536 j = 1,ncol
-               val(i,j,k,4) = -val(i,j,k,4)
-  536       continue
+       do 536 j = 1,ncol
+        do 536 i = 1,nrow
+           val(4,i,j,k) = -val(4,i,j,k)
+  536   continue
       go to 599
 
   599 continue
@@ -388,11 +386,11 @@ c     # user-specified boundary conditions go here in place of error output
 
   610 continue
 c     # zero-order extrapolation:
-      do 615 m = 1,meqn
-         do 615 k = kbeg,nfil
+      do 615 k = kbeg,nfil
+         do 615 j = 1,ncol
             do 615 i = 1,nrow
-               do 615 j = 1,ncol
-                  val(i,j,k,m) =  val(i,j,kbeg-1,m)
+               do 615 m = 1,meqn
+                  val(m,i,j,k) =  val(m,i,j,kbeg-1)
   615          continue
       go to 699
 
@@ -402,18 +400,18 @@ c     # periodic:   handled elsewhere in amr
 
   630 continue
 c     # solid wall (assumes 3'rd component is velocity or momentum in y):
-      do 635 m=1,meqn
-         do 635 k = kbeg,nfil
-            do 635 i = 1,nrow
-               do 635 j = 1,ncol
-                  val(i,j,k,m) =  val(i,j,2*kbeg-1-k,m)
-  635          continue
+       do 635 k = kbeg,nfil            
+        do 635 j = 1,ncol
+         do 635 i = 1,nrow
+          do 635 m=1,meqn
+             val(m,i,j,k) =  val(m,i,j,2*kbeg-1-k)
+  635     continue
 c     # negate the normal velocity:
       do 636 k=kbeg,nfil
-         do 636 i=1,nrow
-            do 636 j = 1,ncol
-               val(i,j,k,4) = -val(i,j,k,4)
-  636       continue
+       do 636 j = 1,ncol
+        do 636 i=1,nrow
+           val(4,i,j,k) = -val(4,i,j,k)
+  636   continue
       go to 699
 
   699 continue

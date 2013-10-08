@@ -7,8 +7,8 @@ c :::::::::::::::::::::: CHECK ::::::::::::::::::::::::::::::::;
 c   check point routine - can only call at end of coarse grid cycle
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
+      use amr_module
       implicit double precision (a-h,o-z)
-      include  "call.i"
 
       character*16  chkname
 c

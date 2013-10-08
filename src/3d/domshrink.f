@@ -3,9 +3,8 @@ c ----------------------------------------------------
 c
       subroutine domshrink(iflags2,iflags,idim,jdim,kdim)
 
+      use amr_module
       implicit double precision (a-h, o-z)
-
-      include  "call.i"
 
       integer*1  iflags2(0:idim+1,0:jdim+1,0:kdim+1)
       integer*1  iflags (0:idim+1,0:jdim+1,0:kdim+1)
@@ -23,6 +22,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          write(outunit,*)" from domshrink: on entry, iflags2"
          do 10 kk = 1, kdim
             k = kdim + 1 - kk
+            write(outunit,*) 'plane k = ',k
             do 10 jj = 1, jdim
                j = jdim + 1 - jj
                write(outunit,100)(iflags2(i,j,k),i=1,idim)
@@ -82,6 +82,7 @@ c
          write(outunit,*)" from domshrink: on exit, iflags"
          do 80 kk = 1, kdim
             k = kdim + 1 - kk
+            write(outunit,*) 'plane k = ',k
             do 80 jj = 1, jdim
                j = jdim + 1 - jj
                write(outunit,100)(iflags(i,j,k),i=1,idim)

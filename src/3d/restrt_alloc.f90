@@ -10,13 +10,9 @@
 
        subroutine restrt_alloc(isize)
    
-       use mem_storage
+       use amr_module
        implicit none
        integer :: isize
-   
-       double precision, pointer, dimension(:) :: alloc
-       integer :: memsize
-       common  /calloc/ alloc, memsize
    
        if (.not.allocated(storage)) then
            write(6,*)"allocating ",isize," -sized alloc array"

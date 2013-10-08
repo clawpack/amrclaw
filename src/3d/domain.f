@@ -1,12 +1,13 @@
 c
 c  ----------------------------------------------------------
 c
-      subroutine domain (nvar,vtime,nx,ny,nz,naux,t0)
+      subroutine domain (nvar,vtime,nx,ny,nz,naux,start_time)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
+
       logical    vtime
 
-      include  "call.i"
 c
 c  allocate initial coarse grid domain. set node info & initialize grid
 c  initial space and time step set here too
@@ -44,7 +45,7 @@ c
 
       lfine = 1
       call  birect(mstart)
-      call  ginit (mstart, .true., nvar, naux,t0)
+      call  ginit (mstart,.true.,nvar,naux,start_time)
 
 c
 c compute number of grids at level 1 (may have been bi-rected above)
@@ -64,6 +65,8 @@ c parallelization
        numcells(1) = ncells
        avenumgrids(1) = avenumgrids(1) + ngrids
        iregridcount(1) = 1
+       if (ngrids .gt. 1) call arrangeGrids(1,ngrids)
+
        write(*,100) ngrids,ncells
  100   format("there are ",i4," grids with ",i8," cells at level   1")
 
@@ -107,7 +110,7 @@ c
          jregsz(level) = jregsz(level-1) * intraty(level-1)
          kregsz(level) = kregsz(level-1) * intratz(level-1)
 
-         possk(level)  = possk(level-1) / dfloat(kratio(level-1))
+         possk(level)  = possk(level-1) / dble(kratio(level-1))
  70   continue
 c
       return

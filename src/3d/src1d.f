@@ -4,8 +4,8 @@ c =========================================================
       subroutine src1d(meqn,mbc,mx1d,q1d,maux,aux1d,t,dt)
 c =========================================================
       implicit double precision (a-h,o-z)
-      dimension   q1d(mx1d, meqn)
-      dimension aux1d(mx1d, maux)
+      dimension   q1d(meqn,mx1d)
+      dimension aux1d(maux,mx1d)
 c
 c     # dummy source routine... does nothing
 c

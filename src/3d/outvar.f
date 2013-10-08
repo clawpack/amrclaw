@@ -3,11 +3,11 @@ c -------------------------------------------------------------
 c
       subroutine outvar(rect,mitot,mjtot,mktot,nvar,mptr,ng)
 c
+      use amr_module
       implicit double precision (a-h,o-z)
 
-      include  "call.i"
 
-      dimension rect(mitot,mjtot,mktot,nvar)
+      dimension rect(nvar,mitot,mjtot,mktot)
 
 c ::::::::::::::: OUTVAR ::::::::::::::::::::::::::::::::::
 c
@@ -22,7 +22,7 @@ c
  100  format('*SOLN     ',i10,' is the grid - all variables')
 c
       do 20 ivar = 1, nvar
-         write(pltunit1,101) (((rect(i,j,k,ivar),i=ng+1,mitot-ng),
+         write(pltunit1,101) (((rect(ivar,i,j,k),i=ng+1,mitot-ng),
      .                                           j=ng+1,mjtot-ng),
      .                                           k=ng+1,mktot-ng)
  101     format(5e12.6)
