@@ -32,7 +32,7 @@ before_script:
   
 script:
   - cd $CLAW/amrclaw/tests
-  - make tests
+  - nosetests */
   
 notifications:
   email: false
