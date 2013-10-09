@@ -1,23 +1,42 @@
+"""
+Regression tests.  Execute via:
+    python regression_tests.py
+to test, or
+    python regression_tests.py True
+to create new regression data for archiving.
+"""
+
 
 from clawpack.visclaw import data
 import os, sys
 import numpy as np
 import subprocess
 
-# Create plotdata object for reading in gauges in tests below:
-plotdata = data.ClawPlotData()
-plotdata.outdir = '_output'
+
+def setup():
+    # Create plotdata object for reading in gauges in tests below:
+    global plotdata
+    global olddir
+
+    plotdata = data.ClawPlotData()
+    plotdata.outdir = '_output'
+
+    # Now set current working directory to regression_tests.py
+    olddir = os.getcwd()
+    testdir = os.path.abspath(os.path.dirname(__file__))
+    os.chdir(testdir)
+
+
+def teardown():
+    os.chdir(olddir)
+
 
 def test1():
     """
     Compile and run the code
     """
-    job = subprocess.Popen(['make', 'clean'])
-    return_code = job.wait()
-    assert return_code == 0, "Problem with 'make clean'"
-    job = subprocess.Popen(['make', '.output'])
-    return_code = job.wait()
-    assert return_code == 0, "Problem with 'make .output'"
+    subprocess.check_call(['make', 'clean'])
+    subprocess.check_call(['make', '.output'])
 
 
 def test2(save_new_regression_data=False):
@@ -76,10 +95,11 @@ def test3(save_new_regression_data=False):
     print "Gauge %i ok" % gaugeno
     
 if __name__=="__main__":
+    setup()
     test1()
     save_new_regression_data = (len(sys.argv) > 1) and (sys.argv[1]=='True')
     test2(save_new_regression_data)
     test3(save_new_regression_data)
-    
+    teardown()
 
 
