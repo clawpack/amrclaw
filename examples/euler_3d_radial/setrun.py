@@ -303,7 +303,7 @@ def setrun(claw_pkg='amrclaw'):
 
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 10.0  # tolerance used in this routine
+    amrdata.flag2refine_tol = 0.05  # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
     # between a cell and each of its neighbors.
