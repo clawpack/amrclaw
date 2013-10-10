@@ -35,7 +35,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
 
         # Flagging control
         self.add_attribute('flag_richardson',False)
-        self.add_attribute('flag_richardson_tol',1.0)
+        self.add_attribute('flag_richardson_tol',-1.0)
         self.add_attribute('flag2refine',True)
         self.add_attribute('flag2refine_tol',0.05)
         self.add_attribute('regrid_interval',2)
@@ -88,6 +88,9 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         self.data_write()
 
         self.data_write('flag_richardson')
+        if self.flag_richardson == False:
+            # Still need to add flag_richardson to fortran, for now this works:
+            self.flag_richardson_tol = -1.   
         self.data_write('flag_richardson_tol')
         self.data_write('flag2refine')
         self.data_write('flag2refine_tol')
