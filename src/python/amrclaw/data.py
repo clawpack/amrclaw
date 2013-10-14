@@ -27,7 +27,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         if self._clawdata.num_dim == 3:
             self.add_attribute('refinement_ratios_z',[1])
         if self._clawdata.num_dim == 1:
-            raise NotImplemented("1d AMR not yet supported")
+            raise NotImplementedError("1d AMR not yet supported")
         self.add_attribute('variable_dt_refinement_ratios',False)
 
         self.add_attribute('refinement_ratios_t',[1])
@@ -122,7 +122,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
 class RegionData(clawpack.clawutil.data.ClawData):
     r""""""
 
-    def __init__(self,regions=None):
+    def __init__(self,regions=None,num_dim=2):
 
         super(RegionData,self).__init__()
 
@@ -130,13 +130,17 @@ class RegionData(clawpack.clawutil.data.ClawData):
             self.add_attribute('regions',[])
         else:
             self.add_attribute('regions',regions)
+        self.add_attribute('num_dim',num_dim)
 
 
     def write(self,out_file='regions.data',data_source='setrun.py'):
 
+
         self.open_data_file(out_file,data_source)
 
         self.data_write(value=len(self.regions),alt_name='num_regions')
+        if (self.num_dim == 3) and (len(self.regions) > 0):
+            raise NotImplementedError("*** Regions not yet implemented in 3d")
         for regions in self.regions:
             self._out_file.write(8*"%g  " % tuple(regions) +"\n")
         self.close_data_file()
@@ -191,9 +195,10 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         else:
             return [gauge[0] for gauge in self.gauges]
 
-    def __init__(self):
+    def __init__(self, num_dim=2):
         super(GaugeData,self).__init__()
 
+        self.add_attribute('num_dim',num_dim)
         self.add_attribute('gauges',[])
 
     def __str__(self):
@@ -208,6 +213,9 @@ class GaugeData(clawpack.clawutil.data.ClawData):
 
     def write(self,out_file='gauges.data',data_source='setrun.py'):
         r"""Write out gague information data file."""
+
+        if (self.num_dim == 3) and (len(self.gauges) > 0):
+            raise NotImplementedError("*** Gauges not yet implemented in 3d")
 
         # Check to make sure we have only unique gauge numebrs
         if len(self.gauges) > 0:
