@@ -240,14 +240,6 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_lower[2] = 'wall'     # at zlower
     clawdata.bc_upper[2] = 'extrap'   # at zupper
 
-    # ---------------
-    # Gauges:
-    # ---------------
-    #rundata.gaugedata.gauges = []
-    # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    #rundata.gaugedata.gauges.append([0, 0.0, 0.0, 0., 10.])
-    #rundata.gaugedata.gauges.append([1, 0.7, 0.0, 0., 10.])
-    #rundata.gaugedata.gauges.append([2, 0.7/np.sqrt(2.), 0.7/np.sqrt(2.), 0., 10.])
     
     # --------------
     # Checkpointing:
@@ -325,13 +317,6 @@ def setrun(claw_pkg='amrclaw'):
     # print info about each regridding up to this level:
     amrdata.verbosity_regrid = 1      
 
-
-    # ---------------
-    # Regions:
-    # ---------------
-    #rundata.regiondata.regions = []
-    # to specify regions of refinement append lines of the form
-    #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
 
 
     #  ----- For developers ----- 
