@@ -1,9 +1,9 @@
 ! Default rpn2 routine
-subroutine rpn2(ixy,maxm,meqn,mwaves,mbc,mx,ql,qr,auxl,auxr,wave,s,amdq,apdq)
+subroutine rpn2(ixy,maxm,meqn,mwaves,maux,mbc,mx,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 
     implicit none
     
-    integer, intent(in) :: ixy,maxm,meqn,mwaves,mbc,mx
+    integer, intent(in) :: ixy,maxm,meqn,mwaves,mbc,mx,maux
     double precision, intent(inout) :: ql(1-mbc:maxm+mbc,meqn)
     double precision, intent(inout) :: qr(1-mbc:maxm+mbc,meqn)
     double precision, intent(inout) :: auxl(1-mbc:maxm+mbc,meqn)
