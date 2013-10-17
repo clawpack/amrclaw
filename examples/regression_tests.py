@@ -56,13 +56,21 @@ def test(stdout=None,stderr=None):
         
 
     # Run the code and create _plots directory:
-    cmd = "make clean; make .plots"
+    cmd = "make clean; make .output"
     status=subprocess.Popen(cmd,shell=True).wait()
     if status != 0:
-        raise Exception("Problem running the code, status = %s" % status)
+        #raise Exception("Problem running the code, status = %s" % status)
+        error_msg = "Problem running the code, status = %s" % status
+        sys.stderr.write(error_msg)
+    else:
+        cmd = "make .plots"
+        status=subprocess.Popen(cmd,shell=True).wait()
+        if status != 0:
+            error_msg = "Problem running the code, status = %s" % status
+            sys.stderr.write(error_msg)
 
     # Compare the resulting plots to the gallery version:
-    if gallery_found:
+    if (status==0) and gallery_found:
         try:
             regression_ok = imagediff.imagediff_dir('_plots',gallery_plots, \
                                     relocatable=relocatable,overwrite=True, \
