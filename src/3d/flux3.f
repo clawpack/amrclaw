@@ -175,7 +175,6 @@ c
 c#### common/comxyzt/dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
 
 
-
       limit = .false.
       do 5 mw=1,mwaves
          if (mthlim(mw) .gt. 0) limit = .true.
@@ -218,13 +217,13 @@ c
 c     # aux2(1-mbc,1,2) is the start of a 1d array now used by rpn3
 c     
          if (maux > 0) then
-            call rpn3(ixyz,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+            call rpn3(ixyz,maxm,meqn,mwaves,maux,mbc,mx,q1d,q1d,
      &           aux2(1,1-mbc,2),aux2(1,1-mbc,2),
-     &           maux,wave,s,amdq,apdq)
+     &           wave,s,amdq,apdq)
          else
-            call rpn3(ixyz,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
+            call rpn3(ixyz,maxm,meqn,mwaves,maux,mbc,mx,q1d,q1d,
      &           aux2,aux2,
-     &           maux,wave,s,amdq,apdq)
+     &           wave,s,amdq,apdq)
          endif
 c     
 c     # Set fadd for the donor-cell upwind method (Godunov)
@@ -277,26 +276,26 @@ c
 c     # split the left-going flux difference into down-going and up-going
 c     # flux differences (in the y-direction).
 c     
-         call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &             aux3,maux,1,amdq,bmamdq,bpamdq)
+         call rpt3(ixyz,2,1,maxm,meqn,mwaves,maux,mbc,mx,
+     &             q1d,q1d,aux1,aux2,aux3,amdq,bmamdq,bpamdq)
 c     
 c     # split the right-going flux difference into down-going and up-going
 c     # flux differences (in the y-direction).
 c     
-         call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &             aux3,maux,2,apdq,bmapdq,bpapdq)
+         call rpt3(ixyz,2,2,maxm,meqn,mwaves,maux,mbc,mx,
+     &             q1d,q1d,aux1,aux2,aux3,apdq,bmapdq,bpapdq)
 c     
 c     # split the left-going flux difference into down-going and up-going
 c     # flux differences (in the z-direction).
 c     
-         call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &             aux3,maux,1,amdq,cmamdq,cpamdq)
+         call rpt3(ixyz,3,1,maxm,meqn,mwaves,maux,mbc,mx,
+     &             q1d,q1d,aux1,aux2,aux3,amdq,cmamdq,cpamdq)
 c     
 c     # split the right-going flux difference into down-going and up-going
 c     # flux differences (in the y-direction).
 c     
-         call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &             aux3,maux,2,apdq,cmapdq,cpapdq)
+         call rpt3(ixyz,3,2,maxm,meqn,mwaves,maux,mbc,mx,
+     &             q1d,q1d,aux1,aux2,aux3,apdq,cmapdq,cpapdq)
 c     
 c     # Split the correction wave into transverse propagating waves
 c     # in the y-direction and z-direction.
@@ -314,20 +313,20 @@ c     # amdq or apdq, i.e. cqxxm or cqxxp
 
 
 c     # in the y-like direction with imp=1
-               call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &                   aux1,aux2,aux3,maux,1,cqxx,bmcqxxm,bpcqxxm)
+               call rpt3(ixyz,2,1,maxm,meqn,mwaves,maux,mbc,mx,
+     &               q1d,q1d,aux1,aux2,aux3,cqxx,bmcqxxm,bpcqxxm)
 
 c     # in the y-like direction with imp=2
-               call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &                   aux1,aux2,aux3,maux,2,cqxx,bmcqxxp,bpcqxxp)
+               call rpt3(ixyz,2,2,maxm,meqn,mwaves,maux,mbc,mx,
+     &               q1d,q1d,aux1,aux2,aux3,cqxx,bmcqxxp,bpcqxxp)
 
 c     # in the z-like direction with imp=1
-               call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &                   aux1,aux2,aux3,maux,1,cqxx,cmcqxxm,cpcqxxm)
+               call rpt3(ixyz,3,1,maxm,meqn,mwaves,maux,mbc,mx,
+     &               q1d,q1d,aux1,aux2,aux3,cqxx,cmcqxxm,cpcqxxm)
 
 c     # in the z-like direction with imp=2
-               call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &                   aux1,aux2,aux3,maux,2,cqxx,cmcqxxp,cpcqxxp)
+               call rpt3(ixyz,3,2,maxm,meqn,mwaves,maux,mbc,mx,
+     &               q1d,q1d,aux1,aux2,aux3,cqxx,cmcqxxp,cpcqxxp)
             else
 c     # aux arrays aren't being used, so we only need to split
 c     # cqxx once in each transverse direction and the same result can
@@ -335,12 +334,12 @@ c     # presumably be used to left and right.
 c     # Set imp = 0 since this shouldn't be needed in rpt3 in this case.
 
 c     # in the y-like direction
-               call rpt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &                   aux1,aux2,aux3,maux,0,cqxx,bmcqxxm,bpcqxxm)
+               call rpt3(ixyz,2,0,maxm,meqn,mwaves,maux,mbc,mx,
+     &               q1d,q1d,aux1,aux2,aux3,cqxx,bmcqxxm,bpcqxxm)
 
 c     # in the z-like direction
-               call rpt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,
-     &                   aux1,aux2,aux3,maux,0,cqxx,cmcqxxm,cpcqxxm)
+               call rpt3(ixyz,3,0,maxm,meqn,mwaves,maux,mbc,mx,
+     &                   q1d,q1d,aux1,aux2,aux3,cqxx,cmcqxxm,cpcqxxm)
 
 c     # use the same splitting to left and right:
                do i = 0,mx+2
@@ -386,14 +385,18 @@ c     # are also split. This yields terms of the form BCAu_{xzy} and
 c     # BCAAu_{xxzy}.
 c     
          if( m4.gt.0 )then
-           call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &                aux3,maux,2,2,cpapdq2,bmcpapdq,bpcpapdq)
-           call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &                aux3,maux,1,2,cpamdq2,bmcpamdq,bpcpamdq)
-           call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &                aux3,maux,2,1,cmapdq2,bmcmapdq,bpcmapdq)
-           call rptt3(ixyz,2,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &                aux3,maux,1,1,cmamdq2,bmcmamdq,bpcmamdq)
+           call rptt3(ixyz,2,2,2,maxm,meqn,mwaves,maux,mbc,mx,
+     &                q1d,q1d,aux1,aux2,aux3,cpapdq2,
+     &                bmcpapdq,bpcpapdq)
+           call rptt3(ixyz,2,1,2,maxm,meqn,mwaves,maux,mbc,mx,
+     &                q1d,q1d,aux1,aux2,aux3,cpamdq2,
+     &                bmcpamdq,bpcpamdq)
+           call rptt3(ixyz,2,2,1,maxm,meqn,mwaves,maux,mbc,mx,
+     &                q1d,q1d,aux1,aux2,aux3,cmapdq2,
+     &                bmcmapdq,bpcmapdq)
+           call rptt3(ixyz,2,1,1,maxm,meqn,mwaves,maux,mbc,mx,
+     &                q1d,q1d,aux1,aux2,aux3,cmamdq2,
+     &                bmcmamdq,bpcmamdq)
          endif
 c     
 c     -----------------------------
@@ -506,14 +509,14 @@ c     # cmbsasdq and cpbsasdq rather than bmcsasdq and bpcsasdq, but
 c     # we are re-using the previous storage rather than requiring new arrays.
 c     
           if (m4.gt.0) then
-           call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &                aux3,maux,2,2,bpapdq,bmcpapdq,bpcpapdq)
-           call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &                aux3,maux,1,2,bpamdq,bmcpamdq,bpcpamdq)
-           call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &                aux3,maux,2,1,bmapdq,bmcmapdq,bpcmapdq)
-           call rptt3(ixyz,3,maxm,meqn,mwaves,mbc,mx,q1d,q1d,aux1,aux2,
-     &                aux3,maux,1,1,bmamdq,bmcmamdq,bpcmamdq)
+           call rptt3(ixyz,3,2,2,maxm,meqn,mwaves,maux,mbc,mx,
+     &                q1d,q1d,aux1,aux2,aux3,bpapdq,bmcpapdq,bpcpapdq)
+           call rptt3(ixyz,3,1,2,maxm,meqn,mwaves,maux,mbc,mx,
+     &                q1d,q1d,aux1,aux2,aux3,bpamdq,bmcpamdq,bpcpamdq)
+           call rptt3(ixyz,3,2,1,maxm,meqn,mwaves,maux,mbc,mx,
+     &                q1d,q1d,aux1,aux2,aux3,bmapdq,bmcmapdq,bpcmapdq)
+           call rptt3(ixyz,3,1,1,maxm,meqn,mwaves,maux,mbc,mx,
+     &                q1d,q1d,aux1,aux2,aux3,bmamdq,bmcmamdq,bpcmamdq)
           endif
 c     
 c     -----------------------------

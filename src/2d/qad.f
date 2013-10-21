@@ -66,6 +66,7 @@ c
        nr = mitot-2*nghost
        level = node(nestlevel, mptr)
        index = 0
+
 c
 c--------
 c  side 1
@@ -122,8 +123,8 @@ c                # from the cell corresponding  to q
          endif
        endif
  
-       call rpn2(1,max1dp1-2*nghost,nvar,mwaves,nghost,nc+1-2*nghost,
-     .              ql,qr,auxl,auxr,wave,s,amdq,apdq,maux)
+       call rpn2(1,max1dp1-2*nghost,nvar,mwaves,maux,nghost,
+     .              nc+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 1 add into sdflxm
 c
@@ -200,8 +201,8 @@ c                # preserves conservation in incompressible flow:
                 enddo
          endif
        endif
-       call rpn2(2,max1dp1-2*nghost,nvar,mwaves,nghost,nr+1-2*nghost,
-     .              ql,qr,auxl,auxr,wave,s,amdq,apdq,maux)
+       call rpn2(2,max1dp1-2*nghost,nvar,mwaves,maux,nghost,
+     .              nr+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 2. add into sdflxp
 c
@@ -261,8 +262,8 @@ c                # preserves conservation in incompressible flow:
             write(dbugunit,4101) i,ql(1,i),qr(1,i)
             enddo
        endif
-       call rpn2(1,max1dp1-2*nghost,nvar,mwaves,nghost,nc+1-2*nghost,
-     .              ql,qr,auxl,auxr,wave,s,amdq,apdq,maux)
+       call rpn2(1,max1dp1-2*nghost,nvar,mwaves,maux,nghost,
+     .              nc+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 3 add into sdflxp
 C
@@ -327,8 +328,8 @@ c                # preserves conservation in incompressible flow:
             write(dbugunit,4101) i, ql(1,i),qr(1,i)
             enddo
        endif
-       call rpn2(2,max1dp1-2*nghost,nvar,mwaves,nghost,nr+1-2*nghost,
-     .              ql,qr,auxl,auxr,wave,s,amdq,apdq,maux)
+       call rpn2(2,max1dp1-2*nghost,nvar,mwaves,maux,nghost,
+     .              nr+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 4. add into sdflxm
 c
