@@ -275,7 +275,7 @@ c               # preserves conservation in incompressible flow:
        endif
 
        call rpn3(1,max1dp1-2*nghost,nvar,mwaves,maux,nghost,
-     .           nc+1-2*nghost,ql,qr,auxl,auxr,maux,wave,s,amdq,apdq)
+     .           nc+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 3 add into sdflxp
 C
@@ -349,7 +349,7 @@ c               # preserves conservation in incompressible flow:
        endif
 
        call rpn3(2,max1dp1-2*nghost,nvar,mwaves,maux,nghost,
-     .         nr+1-2*nghost,ql,qr,auxl,auxr,maux,wave,s,amdq,apdq)
+     .         nr+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 4. add into sdflxm
 c
@@ -425,7 +425,7 @@ c               # from the cell corresponding  to q
        endif
 
        call rpn3(3,max1dp1-2*nghost,nvar,mwaves,maux,nghost,
-     .         nr+1-2*nghost,ql,qr,auxl,auxr,maux,wave,s,amdq,apdq)
+     .         nr+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 5 add into sdflxm
 c
@@ -501,7 +501,7 @@ c                 # preserves conservation in incompressible flow:
        endif
 
        call rpn3(3,max1dp1-2*nghost,nvar,mwaves,maux,nghost,
-     .         nr+1-2*nghost,ql,qr,auxl,auxr,maux,wave,s,amdq,apdq)
+     .         nr+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 6 add into sdflxp
 C

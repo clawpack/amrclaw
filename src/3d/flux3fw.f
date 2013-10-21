@@ -283,26 +283,26 @@ c
 c     # split the left-going flux difference into down-going and up-going
 c     # flux differences (in the y-direction).
 c
-      call rpt3(ixyz,2,1,maxm,meqn,mwaves,maux,mbc,mx,q1d,q1d,aux1,aux2,
-     &          aux3,,amdq,bmamdq,bpamdq)
+      call rpt3(ixyz,2,1,maxm,meqn,mwaves,maux,mbc,mx,
+     &          q1d,q1d,aux1,aux2,aux3,amdq,bmamdq,bpamdq)
 c
 c     # split the right-going flux difference into down-going and up-going
 c     # flux differences (in the y-direction).
 c
       call rpt3(ixyz,2,2,maxm,meqn,mwaves,maux,mbc,mx,
-     &          q1d,q1d,aux1,aux2,aux3,maux,apdq,bmapdq,bpapdq)
+     &          q1d,q1d,aux1,aux2,aux3,apdq,bmapdq,bpapdq)
 c
 c     # split the left-going flux difference into down-going and up-going
 c     # flux differences (in the z-direction).
 c
       call rpt3(ixyz,3,1,maxm,meqn,mwaves,maux,mbc,mx,
-     &          q1d,q1d,aux1,aux2,aux3,maux,amdq,cmamdq,cpamdq)
+     &          q1d,q1d,aux1,aux2,aux3,amdq,cmamdq,cpamdq)
 c
 c     # split the right-going flux difference into down-going and up-going
 c     # flux differences (in the y-direction).
 c
       call rpt3(ixyz,3,2,maxm,meqn,mwaves,maux,mbc,mx,
-     &          q1d,q1d,aux1,aux2,aux3,maux,apdq,cmapdq,cpapdq)
+     &          q1d,q1d,aux1,aux2,aux3,apdq,cmapdq,cpapdq)
 c
 c     # Split the correction wave into transverse propagating waves
 c     # in the y-direction and z-direction.
@@ -328,11 +328,11 @@ c            # in the y-like direction with imp=2
      &                  q1d,q1d,aux1,aux2,aux3,cqxx,bmcqxxp,bpcqxxp)
 
 c            # in the z-like direction with imp=1
-              call rpt3(ixyz,3,,1,axm,meqn,mwaves,maux,mbc,mx,
+              call rpt3(ixyz,3,1,axm,meqn,mwaves,maux,mbc,mx,
      &                  q1d,q1d,aux1,aux2,aux3,cqxx,cmcqxxm,cpcqxxm)
 
 c            # in the z-like direction with imp=2
-              call rpt3(ixyz,3,,2,axm,meqn,mwaves,maux,mbc,mx,
+              call rpt3(ixyz,3,2,axm,meqn,mwaves,maux,mbc,mx,
      &                  q1d,q1d,aux1,aux2,aux3,cqxx,cmcqxxp,cpcqxxp)
            else
 c            # aux arrays aren't being used, so we only need to split
