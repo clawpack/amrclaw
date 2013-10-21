@@ -314,19 +314,19 @@ c     # amdq or apdq, i.e. cqxxm or cqxxp
 
 c     # in the y-like direction with imp=1
                call rpt3(ixyz,2,1,maxm,meqn,mwaves,maux,mbc,mx,
-     &               q1d,q1d,aux1,aux2,aux3,maux,cqxx,bmcqxxm,bpcqxxm)
+     &               q1d,q1d,aux1,aux2,aux3,cqxx,bmcqxxm,bpcqxxm)
 
 c     # in the y-like direction with imp=2
                call rpt3(ixyz,2,2,maxm,meqn,mwaves,maux,mbc,mx,
-     &               q1d,q1d,aux1,aux2,aux3,maux,cqxx,bmcqxxp,bpcqxxp)
+     &               q1d,q1d,aux1,aux2,aux3,cqxx,bmcqxxp,bpcqxxp)
 
 c     # in the z-like direction with imp=1
                call rpt3(ixyz,3,1,maxm,meqn,mwaves,maux,mbc,mx,
-     &               q1d,q1d,aux1,aux2,aux3,maux,cqxx,cmcqxxm,cpcqxxm)
+     &               q1d,q1d,aux1,aux2,aux3,cqxx,cmcqxxm,cpcqxxm)
 
 c     # in the z-like direction with imp=2
                call rpt3(ixyz,3,2,maxm,meqn,mwaves,maux,mbc,mx,
-     &               q1d,q1d,aux1,aux2,aux3,maux,cqxx,cmcqxxp,cpcqxxp)
+     &               q1d,q1d,aux1,aux2,aux3,cqxx,cmcqxxp,cpcqxxp)
             else
 c     # aux arrays aren't being used, so we only need to split
 c     # cqxx once in each transverse direction and the same result can
@@ -335,7 +335,7 @@ c     # Set imp = 0 since this shouldn't be needed in rpt3 in this case.
 
 c     # in the y-like direction
                call rpt3(ixyz,2,0,maxm,meqn,mwaves,maux,mbc,mx,
-     &               q1d,q1d,aux1,aux2,aux3,maux,cqxx,bmcqxxm,bpcqxxm)
+     &               q1d,q1d,aux1,aux2,aux3,cqxx,bmcqxxm,bpcqxxm)
 
 c     # in the z-like direction
                call rpt3(ixyz,3,0,maxm,meqn,mwaves,maux,mbc,mx,
@@ -386,16 +386,16 @@ c     # BCAAu_{xxzy}.
 c     
          if( m4.gt.0 )then
            call rptt3(ixyz,2,2,2,maxm,meqn,mwaves,maux,mbc,mx,
-     &                q1d,q1d,aux1,aux2,aux3,maux,cpapdq2,
+     &                q1d,q1d,aux1,aux2,aux3,cpapdq2,
      &                bmcpapdq,bpcpapdq)
            call rptt3(ixyz,2,1,2,maxm,meqn,mwaves,maux,mbc,mx,
-     &                q1d,q1d,aux1,aux2,aux3,maux,cpamdq2,
+     &                q1d,q1d,aux1,aux2,aux3,cpamdq2,
      &                bmcpamdq,bpcpamdq)
            call rptt3(ixyz,2,2,1,maxm,meqn,mwaves,maux,mbc,mx,
-     &                q1d,q1d,aux1,aux2,aux3,maux,cmapdq2,
+     &                q1d,q1d,aux1,aux2,aux3,cmapdq2,
      &                bmcmapdq,bpcmapdq)
            call rptt3(ixyz,2,1,1,maxm,meqn,mwaves,maux,mbc,mx,
-     &                q1d,q1d,aux1,aux2,aux3,maux,cmamdq2,
+     &                q1d,q1d,aux1,aux2,aux3,cmamdq2,
      &                bmcmamdq,bpcmamdq)
          endif
 c     
