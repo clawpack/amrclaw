@@ -21,6 +21,21 @@ c
 c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       call prepgrids(listgrids,numgrids(lcheck),lcheck)
+         mbuff = max(nghost,ibuff+1)  
+c before parallel loop give grids the extra storage they need for error estimation
+         do  jg = 1, numgrids(lcheck)
+            mptr = listgrids(jg)
+            nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+            ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+            mitot  = nx + 2*nghost
+            mjtot  = ny + 2*nghost
+            locbig = igetsp(mitot*mjtot*nvar)
+            node(tempptr,mptr) = locbig
+            mibuff = nx + 2*mbuff       ! NOTE THIS NEW DIMENSIONING 
+            mjbuff = ny + 2*mbuff       ! TO ALLOW ROOM FOR BUFFERING IN PLACE
+            locamrflags = igetsp(mibuff*mjbuff)  
+            node(storeflags,mptr) = locamrflags
+          end do
 
 !$OMP PARALLEL DO PRIVATE(jg,mptr,nx,ny,mitot,mjtot,locnew,locaux),
 !$OMP&            PRIVATE(time,dx,dy,xleft,ybot,xlow,ylow,locbig),
@@ -46,8 +61,7 @@ c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           xlow   = xleft - nghost*dx
           ylow   = ybot - nghost*dy
 c
-          locbig = igetsp(mitot*mjtot*nvar)
-          node(tempptr,mptr) = locbig
+          locbig =  node(tempptr,mptr)
 c         # straight copy into scratch array so don't mess up latest soln.
 
 c         ## at later times want to use newest soln for spatial error flagging
@@ -81,8 +95,7 @@ c            them in locnew
 
 !              ##  locamrflags used for flag storage. flag2refine flags directly into it.
 !              ## richardson flags added to it. Then colate finished the job
-                locamrflags = igetsp(mibuff*mjbuff)  
-                node(storeflags,mptr) = locamrflags
+                locamrflags = node(storeflags,mptr)
                 do 20 i = 1, mibuff*mjbuff  ! initialize
  20                alloc(locamrflags+i-1) = goodpt
 
@@ -103,6 +116,7 @@ c
      .                                    nx,ny)
 
        end do
+! $OMP END PARALLEL DO
 
        return
        end
