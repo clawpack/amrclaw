@@ -17,6 +17,7 @@ before_install:
   - ln -s ../ amrclaw
   
 install:
+  - export PYTHONPATH=${PWD}:$PYTHONPATH
   - python setup.py install
   - export CLAW=${PWD}
   - export FC=gfortran
