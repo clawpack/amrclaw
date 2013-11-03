@@ -11,12 +11,13 @@ before_install:
   - python -c "import numpy; print numpy.__version__"
   - git clone --branch=master --depth=100 --quiet git://github.com/clawpack/clawpack
   - cd clawpack
-  - python setup.py git-dev
+  - git submodule init
+  - git submodule update
+  - python setup.py install
   - rm -rf amrclaw
   - ln -s ../ amrclaw
   
 install:
-  - export PYTHONPATH=${PWD}:$PYTHONPATH
   - export CLAW=${PWD}
   - export FC=gfortran
   - cd amrclaw
