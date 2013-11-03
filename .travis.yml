@@ -13,11 +13,11 @@ before_install:
   - cd clawpack
   - git submodule init
   - git submodule update
-  - python setup.py install
   - rm -rf amrclaw
   - ln -s ../ amrclaw
   
 install:
+  - python setup.py install
   - export CLAW=${PWD}
   - export FC=gfortran
   - cd amrclaw
