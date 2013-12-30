@@ -48,10 +48,10 @@ SOURCES = \
   $(AMRLIB)/amr3.f90 \
   $(AMRLIB)/bc3amr.f \
   $(AMRLIB)/opendatafile.f \
-  $(AMRLIB)/b4step3.f \
+  $(AMRLIB)/b4step3.f90 \
   $(AMRLIB)/qad.f \
-  $(AMRLIB)/src3.f \
-  $(AMRLIB)/src1d.f \
+  $(AMRLIB)/src3.f90 \
+  $(AMRLIB)/src1d.f90 \
   $(AMRLIB)/advanc.f \
   $(AMRLIB)/bound.f \
   $(AMRLIB)/stepgrid.f \
