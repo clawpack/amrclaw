@@ -1,16 +1,14 @@
+real(kind=8) function psi(x,y)
+    ! stream function 
 
-c
-c     =================================================
-      double precision function psi(x,y)
-c     =================================================
-c
-c     # stream function 
+    implicit none
 
-      implicit double precision (a-h,o-z)
-      common /compsi/ pi
+    real(kind=8), intent(in) :: x, y
 
-      psi = ((dsin(pi*x))**2 * (dsin(pi*y))**2) / pi
-c
-      return
-      end
+    real(kind=8) :: pi
+    common /compsi/ pi
+
+    psi = ((sin(pi * x))**2 * (sin(pi * y))**2) / pi
+
+end function psi
 

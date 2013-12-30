@@ -1,34 +1,41 @@
-c     ============================================
-      subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,
-     &                  maux,aux)
-c     ============================================
-c
-c     # set auxiliary arrays 
+subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,maux,aux,aux_copy_mask)
+    ! Set auxiliary arrays 
+    ! aux(1,i,j) is edge velocity at "left" boundary of grid point (i,j)
+    ! aux(2,i,j) is edge velocity at "bottom" boundary of grid point (i,j)
+    ! aux(3,i,j) is kappa if a mapped grid is used.
+ 
+    implicit none
+    integer, intent(in) :: mbc,mx,my,maux
+    real(kind=8), intent(in) :: xlower,ylower,dx,dy
+    real(kind=8), intent(in out) ::  aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
+    integer(kind=1), intent(in) :: aux_copy_mask(1-mbc:mx+mbc,1-mbc:my+mbc)
+    
+    ! Local storage
+    integer :: i, j
+    real(kind=8) :: xll, yll
 
-c     #   aux(1,i,j) is edge velocity at "left" boundary of grid point (i,j)
-c     #   aux(2,i,j) is edge velocity at "bottom" boundary of grid point (i,j)
-c     #   aux(3,i,j) is kappa if a mapped grid is used.
+    ! Stream function interface
+    interface
+        real(kind=8) function psi(x,y)
+            implicit none
+            real(kind=8), intent(in) :: x, y
+        end function psi
+    end interface
 
-c
-c     
-      implicit double precision (a-h,o-z)
-      dimension aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
-c
-c     # constant velocities which are used if tperiod=0 is specified
-c     # in setprob.data
+    ! constant velocities which are used if tperiod=0 is specified
+    ! in setprob.data
 
-      do 20 i=1-mbc,mx+mbc
-         do 20 j=1-mbc,my+mbc
+    do i=1-mbc,mx+mbc
+        do j=1-mbc,my+mbc
 
-c           # coordinates of lower left corner of grid cell:
+            ! coordinates of lower left corner of grid cell:
             xll = xlower + (i-1)*dx
             yll = ylower + (j-1)*dy
 
-c           # difference stream function psi to get normal velocities:
+            ! difference stream function psi to get normal velocities:
             aux(1,i,j) = -(psi(xll, yll+dy) - psi(xll,yll)) / dy
             aux(2,i,j) =  (psi(xll+dx, yll) - psi(xll,yll)) / dx
-   20       continue
+        end do
+    end do
 
-c
-       return
-       end
+end subroutine setaux
