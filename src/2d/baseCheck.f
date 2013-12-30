@@ -29,9 +29,9 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
 
-       if (debug) write(*,100) mnew,ilo,ihi,jlo,jhi,lbase
- 100   format("NESTCK2 testing grid ",i5," from ",2i10," to ",2i10,/,
-     .        " base level ",i5)
+       if (debug) write(outunit,100) mnew,ilo,ihi,jlo,jhi,lbase
+ 100   format("NESTCK2 testing grid ",i5," base level ",i5,/,
+     .  " new grid from ilo:hi: ",2i12," to ",2i12)
 
        levnew = node(nestlevel,mnew)
 c
@@ -52,12 +52,35 @@ c    on to initializing for the given grid and its nest checking
  5     continue
 
 c widen by 1 cell (proper nesting), then project to lbase
-       iclo = ixproj(ilo-1,levratx)
-       ichi = ixproj(ihi+1,levratx)
-       jclo = ixproj(jlo-1,levraty)
-       jchi = ixproj(jhi+1,levraty)
-       if (debug) write(*,101) iclo,ichi,jclo,jchi
- 101   format("coarsened (enlarged by 1)  grid from ",2i10," to ",2i10)
+       iclo = ilo-1
+       ichi = ihi+1
+       jclo = jlo-1
+       jchi = jhi+1
+       do lev = levnew-1,lbase,-1
+          iclo = (dfloat(iclo)/intratx(lev))
+          ichi = (dfloat(ichi)/intratx(lev))
+          jclo = (dfloat(jclo)/intraty(lev)) 
+          jchi = (dfloat(jchi)/intraty(lev))
+          if (debug) then
+             write(outunit,111) lev, iclo,ichi,jclo,jchi
+111          format(10x,"at level",i5," projected coords ilo:hi:",2i10,
+     .           " jlo:hi:",2i10)
+          endif
+       end do
+c      high end of integer grid index truncates during the divide
+c      if it were exactly lined up with coarser grid it would
+c      not be properly nested, but since we added one to the index 
+c      space, we took care of that already.
+       if (debug) then
+          write(outunit,108) ilo-1,ihi+1,jlo-1,jhi+1
+          write(outunit,109) levratx,levraty
+ 108      format(" enlarged fine grid from ilo:hi:",2i12,
+     .           " to jlo:hi:", 2i12)
+ 109      format(" refinement factors to base grid of ", 2i12)
+          write(outunit,101) iclo,ichi,jclo,jchi
+ 101      format("coarsened to lbase, grid from ilo:hi: ",2i12,
+     .        " to jlo:hi:",2i12)
+       endif
 
        leni = ichi - iclo + 1
        lenj = jchi - jclo + 1
@@ -110,9 +133,10 @@ c  fix extra border, and first/last real edge
           jbhi = node(ndjhi, mptr)
 
           if (debug) then
-              write(*,*)
-             write(*,102) mptr,iblo,ibhi,jblo,jbhi
- 102        format("TESTING AGAINST GRID ",i5," from ",2i10," to ",2i10)
+              write(outunit,*)
+             write(outunit,102) mptr,lbase,iblo,ibhi,jblo,jbhi
+ 102        format("TESTING AGAINST GRID ",i5," level ",i5,
+     .             " from ilo:hi:",2i10," to jlo:hi:",2i10)
            endif
 
 c          compare all regions of patch with one lbase grid at a time
@@ -125,17 +149,26 @@ c          compare all regions of patch with one lbase grid at a time
 
               if (.not. ((i1 .le. i2) .and. (j1 .le. j2))) go to 25
 
-              if (debug) write(*,103)i,j,i1,i2,j1,j2
- 103          format("region ",2i10," from ",2i10," to ",2i10)
+              if (debug) write(outunit,103)i,j,i1,i2,j1,j2
+ 103          format("region ",2i10," from ilo:hi:",2i10,
+     .               " to jlo:ji:",2i10)
 c
 c             patch not empty. project coords to level lbase
-              iplo = ixproj(i1+ishift(i),levratx)
-              iphi = ixproj(i2+ishift(i),levratx)
-              jplo = ixproj(j1+jshift(j),levraty)
-              jphi = ixproj(j2+jshift(j),levraty)
-              if (debug) write(*,104) i,j,iplo,iphi,jplo,jphi
- 104          format("projected coords of region ",2i5," is ",2i5,
-     .               " by ",2i5)
+              iplo = i1+ishift(i)
+              iphi = i2+ishift(i)
+              jplo = j1+jshift(j)
+              jphi = j2+jshift(j)
+              do lev = levnew-1,lbase,-1
+                iplo = floor(dfloat(iplo)/intratx(lev))
+                iphi = ceiling(dfloat(iphi+1)/intratx(lev) - 1)
+                jplo = floor(dfloat(jplo)/intraty(lev))
+                jphi = ceiling(dfloat(jphi+1)/intraty(lev) - 1)
+              end do
+              if (debug) then
+                 write(outunit,104) i,j,iplo,iphi,jplo,jphi
+ 104             format("projected coords of region ",2i15," is ",2i12,
+     .                  " by ",2i12)
+              endif
 
               ixlo = max(iplo,iblo)
               ixhi = min(iphi,ibhi)
@@ -144,15 +177,15 @@ c             patch not empty. project coords to level lbase
 
               if (.not.((ixlo.le.ixhi) .and. (jxlo.le.jxhi))) go to 25
 
-              if (debug) write(*,105) ixlo,ixhi,jxlo,jxhi
- 105          format("intersected reg ",2i10," by ",2i10)
+              if (debug) write(outunit,105) ixlo,ixhi,jxlo,jxhi
+ 105          format("intersected reg ",2i12," by ",2i12)
 c FOR NOW DO NOT HANDLE PERIODIC NEST CHECKING
           
               if (debug) then
-                 write(*,106) ixlo,ixhi,jxlo,jxhi
-                 write(*,107) ishift(i),jshift(j)
+                 write(outunit,106) ixlo,ixhi,jxlo,jxhi
+                 write(outunit,107) ishift(i),jshift(j)
  106             format("SETTING FROM ",4i5)
- 107             format("shift are ",2i5)
+ 107             format("shifts are ",2i5)
               endif
 c     mark intersected regions with 1
               do jx = jxlo, jxhi
@@ -171,7 +204,7 @@ c     output for debugging
       if (debug) then
           do 34 jj = jclo, jchi
               j = jchi + jclo - jj
-              write(*,344)(int(alloc(iadd(i,j))), i=iclo,ichi) 
+              write(outunit,344)(int(alloc(iadd(i,j))), i=iclo,ichi) 
  344          format(110i1)
  34       continue
        endif
