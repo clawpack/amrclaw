@@ -46,7 +46,7 @@ SOURCES = \
   $(CLAW)/riemann/src/rpt3_euler.f90 \
   $(CLAW)/riemann/src/rptt3_euler.f90 \
   $(AMRLIB)/amr3.f90 \
-  $(AMRLIB)/setaux.f \
+  $(AMRLIB)/setaux.f90 \
   $(AMRLIB)/bc3amr.f \
   $(AMRLIB)/opendatafile.f \
   $(AMRLIB)/b4step3.f \
