@@ -1,4 +1,4 @@
-subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,maux,aux)
+subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,maux,aux,aux_copy_mask)
 
     ! Called at start of computation before calling qinit, and
     ! when AMR is used, also called every time a new grid patch is created.
