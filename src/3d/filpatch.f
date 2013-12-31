@@ -45,6 +45,8 @@ c     grid to enclose the fine, including an offset of 1.
 
       dimension flaguse(ihi-ilo+1, jhi-jlo+1, khi-klo+1)
 
+      integer(kind=1) :: aux_copy_mask(max1d, max1d, max1d)
+
 c     Some helper functions
       ivalc(ivar, i, j, k) = ivar + nvar*(i-1) + nvar*nrowc*(j-1)
      &                            + nvar*nrowc*ncolc*(k-1)
@@ -57,6 +59,7 @@ c     Some helper functions
 
 c     Begin by filling values for grids at level "level".  If all values
 c     can be filled this way, return.
+      aux_copy_mask = 0
 
       hxf     = hxposs(level)
       hyf     = hyposs(level)

@@ -6,6 +6,9 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
+      integer(kind=1) :: aux_copy_mask(max1d, max1d, max1d)
+      aux_copy_mask = 0
+
 c
 c     #   no sense computing new time step if just for error estimation,
 c     #   vtime removed from arg list to stepgrid, but new dt not used
