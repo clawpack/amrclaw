@@ -40,9 +40,9 @@ MODULES = \
   $(AMRLIB)/gauges_module.f90
 
 SOURCES = \
-  setaux.f \
+  setaux.f90 \
   mapc2p.f \
-  stream.f \
+  stream.f90 \
   setprob.f \
   qinit.f \
   $(CLAW)/riemann/src/rpn2_vc_advection.f \
