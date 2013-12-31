@@ -45,7 +45,7 @@ SOURCES = \
   $(CLAW)/riemann/src/rpt2_burgers.f90 \
   $(AMRLIB)/amr2.f \
   $(AMRLIB)/setprob.f \
-  $(AMRLIB)/setaux.f \
+  $(AMRLIB)/setaux.f90 \
   $(AMRLIB)/bc2amr.f \
   $(AMRLIB)/b4step2.f \
   $(AMRLIB)/qad.f \

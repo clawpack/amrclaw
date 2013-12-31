@@ -48,7 +48,7 @@ SOURCES = \
   $(AMRLIB)/amr2.f90 \
   $(AMRLIB)/bc2amr.f \
   $(AMRLIB)/b4step2.f \
-  $(AMRLIB)/setaux.f \
+  $(AMRLIB)/setaux.f90 \
   $(AMRLIB)/qad.f \
   $(AMRLIB)/src2.f \
   $(AMRLIB)/src1d.f \
