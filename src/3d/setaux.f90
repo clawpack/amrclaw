@@ -11,7 +11,7 @@ subroutine setaux(mbc,mx,my,mz,xlower,ylower,zlower,dx,dy,dz,maux,aux,aux_copy_m
     
     implicit none
     integer, intent(in) :: mbc,mx,my,mz,maux
-    real(kind=8), intent(in) :: xlower,ylower,dx,dy,dz
+    real(kind=8), intent(in) :: xlower,ylower,zlower,dx,dy,dz
     real(kind=8), intent(in out) ::  aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
     integer(kind=1), intent(in) :: aux_copy_mask(1-mbc:mx+mbc,1-mbc:my+mbc,1-mbc:mz+mbc)
 
