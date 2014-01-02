@@ -45,12 +45,12 @@ SOURCES = \
   $(CLAW)/riemann/src/rpn2_advection.f \
   $(CLAW)/riemann/src/rpt2_advection.f \
   $(AMRLIB)/amr2.f90 \
-  $(AMRLIB)/setaux.f \
+  $(AMRLIB)/setaux.f90 \
   $(AMRLIB)/bc2amr.f \
-  $(AMRLIB)/b4step2.f \
+  $(AMRLIB)/b4step2.f90 \
   $(AMRLIB)/qad.f \
-  $(AMRLIB)/src2.f \
-  $(AMRLIB)/src1d.f \
+  $(AMRLIB)/src2.f90 \
+  $(AMRLIB)/src1d.f90 \
   $(AMRLIB)/advanc.f \
   $(AMRLIB)/bound.f90 \
   $(AMRLIB)/stepgrid.f \
