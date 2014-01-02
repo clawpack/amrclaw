@@ -40,7 +40,7 @@ MODULES = \
 
 SOURCES = \
   qinit.f \
-  setaux.f \
+  setaux.f90 \
   $(CLAW)/riemann/src/rpn3_vc_advection.f90 \
   $(CLAW)/riemann/src/rpt3_vc_advection.f90 \
   $(CLAW)/riemann/src/rptt3_vc_advection.f90 \
