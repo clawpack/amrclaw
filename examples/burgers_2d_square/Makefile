@@ -44,13 +44,13 @@ SOURCES = \
   $(CLAW)/riemann/src/rpn2_burgers.f90 \
   $(CLAW)/riemann/src/rpt2_burgers.f90 \
   $(AMRLIB)/amr2.f \
-  $(AMRLIB)/setprob.f \
+  $(AMRLIB)/setprob.f90 \
   $(AMRLIB)/setaux.f90 \
   $(AMRLIB)/bc2amr.f \
-  $(AMRLIB)/b4step2.f \
+  $(AMRLIB)/b4step2.f90 \
   $(AMRLIB)/qad.f \
-  $(AMRLIB)/src2.f \
-  $(AMRLIB)/src1d.f \
+  $(AMRLIB)/src2.f90 \
+  $(AMRLIB)/src1d.f90 \
   $(AMRLIB)/advanc.f \
   $(AMRLIB)/bound.f90 \
   $(AMRLIB)/stepgrid.f \
