@@ -40,8 +40,8 @@ MODULES = \
   $(AMRLIB)/gauges_module.f90
 
 SOURCES = \
-  setaux.f \
-  psi.f \
+  setaux.f90 \
+  psi.f90 \
   setprob.f \
   b4step2.f \
   qinit.f \

@@ -12,6 +12,9 @@ c
       dimension aux(naux,nrow,ncol)
 
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
+
+c     Aux masking copy storage
+      integer(kind=1) :: aux_copy_mask(max1d, max1d)
 c
 c OLD INDEXING
 c      iadd   (i,j,ivar)  = locflip    + i - 1 + nr*((ivar-1)*nc+j-1)
@@ -37,6 +40,9 @@ c     The values of the grid are inserted
 c     directly into the enlarged val array for this piece.
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+c     Fill all aux array for right now      
+      aux_copy_mask = 0
 
 c
 c     # will divide patch into 9 possibilities (some empty):
@@ -114,7 +120,7 @@ c             locflip = igetsp(nr*nc*(nvar+naux))
               locflipaux = locflip + nr*nc*nvar
               if (naux>0) call setaux(nr,nc,ng,nr,nc,xlwrap,ybwrap,
      1                    hxposs(level),hyposs(level),naux,
-     2                    alloc(locflipaux))
+     2                    alloc(locflipaux),aux_copy_mask)
 
 c             write(dbugunit,101) i1,i2,j1,j2
 c             write(dbugunit6,102) iwrap1,iwrap2,j1+jbump,j2+jbump

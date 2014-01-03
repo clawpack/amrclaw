@@ -40,7 +40,7 @@ MODULES = \
 
 SOURCES = \
   qinit.f \
-  setaux.f \
+  setaux.f90 \
   setprob.f \
   $(CLAW)/riemann/src/rpn3_vc_acoustics.f90 \
   $(CLAW)/riemann/src/rpt3_vc_acoustics.f90 \

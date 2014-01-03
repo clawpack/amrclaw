@@ -1,4 +1,5 @@
-subroutine setaux(mbc,mx,my,mz,xlower,ylower,zlower,dx,dy,dz,maux,aux)
+
+subroutine setaux(mbc,mx,my,mz,xlower,ylower,zlower,dx,dy,dz,maux,aux,aux_copy_mask)
 
     ! Called at start of computation before calling qinit, and
     ! when AMR is used, also called every time a new grid patch is created.
@@ -8,10 +9,12 @@ subroutine setaux(mbc,mx,my,mz,xlower,ylower,zlower,dx,dy,dz,maux,aux)
     ! are used by the Riemann solver(s).
     !
     ! This default version does nothing. 
- 
+
+    
     implicit none
     integer, intent(in) :: mbc,mx,my,mz,maux
     real(kind=8), intent(in) :: xlower,ylower,zlower,dx,dy,dz
-    real(kind=8), intent(out) ::  aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
+    real(kind=8), intent(in out) ::  aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
+    integer(kind=1), intent(in) :: aux_copy_mask(1-mbc:mx+mbc,1-mbc:my+mbc,1-mbc:mz+mbc)
 
 end subroutine setaux
