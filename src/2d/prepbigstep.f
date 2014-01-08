@@ -12,10 +12,6 @@ c
        dimension fp(nvar,mi2tot,mj2tot),gp(nvar,mi2tot,mj2tot)
        dimension fm(nvar,mi2tot,mj2tot),gm(nvar,mi2tot,mj2tot)
 
-c     Aux masking copy storage
-      integer(kind=1) :: aux_copy_mask(max1d, max1d)
-      aux_copy_mask = 0
-
 
           hx  = hxposs(lcheck)
           hy  = hyposs(lcheck)
@@ -45,7 +41,7 @@ c
               mx = midub - 4*nghost
               my = mjdub - 4*nghost
               call setaux(2*nghost,mx,my,xl,yb,hx,hy,
-     &                    naux,auxdub,aux_copy_mask)
+     &                    naux,auxdub)
               call auxcoarsen(auxdub,midub,mjdub,
      1                     auxbgc,mi2tot,mj2tot,naux,auxtype)
           endif

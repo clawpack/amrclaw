@@ -1,4 +1,4 @@
-subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,maux,aux,aux_copy_mask)
+subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,maux,aux)
 
     ! Called at start of computation before calling qinit, and
     ! when AMR is used, also called every time a new grid patch is created.
@@ -11,7 +11,6 @@ subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,maux,aux,aux_copy_mask)
     implicit none
     integer, intent(in) :: mbc,mx,my,maux
     real(kind=8), intent(in) :: xlower,ylower,dx,dy
-    real(kind=8), intent(in out) ::  aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
-    integer(kind=1), intent(in) :: aux_copy_mask(1-mbc:mx+mbc,1-mbc:my+mbc)
+    real(kind=8), intent(out) ::  aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
 
 end subroutine setaux

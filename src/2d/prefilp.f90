@@ -38,9 +38,6 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
     real(kind=8) :: scratch(max(mitot,mjtot)*nghost*nvar)
     real(kind=8) :: scratchaux(max(mitot,mjtot)*nghost*naux)
 
-    ! Aux masking copy storage
-    integer(kind=1) :: aux_copy_mask(mitot, mjtot)
-
 !     # will divide patch into 9 possibilities (some empty): 
 !       x sticks out left, x interior, x sticks out right
 !       same for y. for example, the max. would be
@@ -114,8 +111,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
                     ybwrap = ylower + jwrap1*hyposs(level)
               
                     if (naux>0) then
-                        call setaux(nr,nc,ng,nr,nc,xlwrap,ybwrap,hxposs(level), &
-                                    hyposs(level),naux,scratchaux,aux_copy_mask)
+                        call setaux(nr,nc,ng,nr,nc,xlwrap,ybwrap,hxposs(level),hyposs(level),naux,scratchaux)
                     endif
                     rect = [iwrap1,iwrap2,j1+jbump,j2+jbump]
                     call filrecur(level,nvar,scratch,scratchaux,naux,time,nr, &
