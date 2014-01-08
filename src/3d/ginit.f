@@ -8,9 +8,6 @@ c
 
       logical first
 
-      integer(kind=1) :: aux_copy_mask(max1d, max1d, max1d)
-      aux_copy_mask = 0
-
 
 c ::::::::::::::::::::::::::::: GINIT ::::::::::::::::::::::::
 c

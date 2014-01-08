@@ -40,7 +40,7 @@ MODULES = \
   $(AMRLIB)/gauges_module.f90
 
 SOURCES = \
-  setaux.f90 \
+  setaux.f \
   mapc2p.f \
   stream.f \
   setprob.f \

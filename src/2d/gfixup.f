@@ -6,9 +6,6 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-c     Aux masking copy storage
-      integer(kind=1) :: aux_copy_mask(max1d, max1d)
-      aux_copy_mask = 0
 
 c
 c ::::::::::::::::::::::::: GFIXUP ::::::::::::::::::::::::::::::::;
@@ -65,7 +62,7 @@ c
                 mx = mitot - 2*nghost
                 my = mjtot - 2*nghost
                 call setaux(nghost,mx,my,corn1,corn2,hx,hy,
-     &                    naux,alloc(locaux),aux_copy_mask)
+     &                    naux,alloc(locaux))
               else
                 locaux = 1
               endif
