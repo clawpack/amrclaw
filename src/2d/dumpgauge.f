@@ -71,6 +71,12 @@ c          # for printing without underflow of exponent:
 
 c       # output values at gauge, along with gauge no, level, time:
 
+        ! Zero out tiny values to prevent later problems reading data,
+        ! as done in valout.f
+        do j = 1,3
+           if (abs(var(j)) < 1d-90) var(j) = 0.d0
+        end do
+
 !$OMP CRITICAL (gaugeio)
 
         write(OUTGAUGEUNIT,100)igauge(i),level,
