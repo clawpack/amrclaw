@@ -112,7 +112,7 @@ c             swap so that smaller one is left index, etc since mapping reflects
 c   ## scratch space now passed in through locflip for both soln and aux
 c             locflip = igetsp(nr*nc*(nvar+naux))
               locflipaux = locflip + nr*nc*nvar
-              if (naux>0) call setaux(nr,nc,ng,nr,nc,xlwrap,ybwrap,
+              if (naux>0) call setaux(ng,nr,nc,xlwrap,ybwrap,
      1                    hxposs(level),hyposs(level),naux,
      2                    alloc(locflipaux))
 
