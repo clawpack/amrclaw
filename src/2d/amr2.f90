@@ -584,7 +584,7 @@ program amr2
              real(tvoll(level),kind=8) / real(clock_rate,kind=8)
     end do
     format_string = "('Total regridding time          ',1f16.8,' s')"
-    write(outunit,format_string) level, &
+    write(outunit,format_string)  &
              real(timeRegridding,kind=8) / real(clock_rate,kind=8)
 
     ! Done with computation, cleanup:
