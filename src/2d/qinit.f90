@@ -1,3 +1,4 @@
+! Default qinit file
 subroutine qinit(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
 
     ! Set initial conditions for the q array.

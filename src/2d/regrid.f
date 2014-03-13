@@ -5,7 +5,8 @@ c
 c
       use amr_module
       implicit double precision (a-h,o-z)
-
+      integer newnumgrids(maxlv)
+      integer clock_start2, clock_finish, clock_rate
 c
 c :::::::::::::::::::::::::::: REGRID :::::::::::::::::::::::::::::::
 
@@ -33,6 +34,7 @@ c
       lcheck    = min0(lfine,mxnest-1)
       lfnew     = lbase
       do 10 i   = 1, mxnest
+        newnumgrids(i) = 0
  10     newstl(i) = 0
       time      = rnode(timemult, lstart(lbase))
 c
@@ -49,13 +51,29 @@ c
 c  end of level loop
 c
 c  remaining tasks left in regridding:
+c  1.  count number of new grids at each level  
+      maxnumnewgrids = 0   ! max over all levels. needed for dimensioning
+      do lev = lbase+1,lfnew 
+          ngridcount = 0
+          mptr = newstl(lev)
+ 52       if (mptr .eq. 0) go to 55
+             ngridcount = ngridcount + 1
+             mptr = node(levelptr,mptr)
+             go to 52
+
+ 55       newnumgrids(lev) = ngridcount
+          maxnumnewgrids = max(maxnumnewgrids,ngridcount)
+      end do
 c
-c  interpolate storage for the new grids.  the starting pointers
+c  2. interpolate storage for the new grids.  the starting pointers
 c  for each level are in newstl. also reclaim some space before new
 c  allocations.
-      call gfixup(lbase, lfnew, nvar, naux)
+      call system_clock(clock_start2,clock_rate)
+      call gfixup(lbase,lfnew,nvar,naux,newnumgrids,maxnumnewgrids)
+      call system_clock(clock_finish,clock_rate)
+      timeGrdfit2 = timeGrdfit2 + clock_finish - clock_start2
 c
-c  merge data structures (newstl and lstart )
+c  3. merge data structures (newstl and lstart )
 c  finish storage allocation, reclaim space, etc. set up boundary
 c  flux conservation arrays
 c
@@ -70,23 +88,25 @@ c  if there are no grids from lfine+1 to mxnest
 c
       do 72 levnew = lbase+1, mxnest
         mptr = lstart(levnew)
-        ngrids = 0
+        ngridcount = 0
         ncells = 0
         do while (mptr .gt. 0)
-           ngrids = ngrids + 1
+           ngridcount = ngridcount + 1
            ncells = ncells + (node(ndihi,mptr)-node(ndilo,mptr)+1)
      .                     * (node(ndjhi,mptr)-node(ndjlo,mptr)+1)
            mptr = node(levelptr, mptr)
          end do
-         numgrids(levnew) = ngrids
+         numgrids(levnew) = ngridcount
          numcells(levnew) = ncells
-         avenumgrids(levnew) = avenumgrids(levnew) + ngrids
+         avenumgrids(levnew) = avenumgrids(levnew) + ngridcount
          iregridcount(levnew) = iregridcount(levnew) + 1
-         if (ngrids .gt. 1) call arrangeGrids(levnew,ngrids)
+c        sort grids to first ones are the most work. this helps load
+c        balancing, but doesn't help locality
+         if (ngridcount .gt. 1) call arrangeGrids(levnew,ngridcount)
 
          if (verbosity_regrid .ge. levnew) then
-           write(*,100) ngrids,ncells,levnew
-           write(outunit,100) ngrids,ncells,levnew
+           write(*,100) ngridcount,ncells,levnew
+           write(outunit,100) ngridcount,ncells,levnew
  100       format("there are ",i4," grids with ",i8,
      &            " cells at level ", i3)
          endif

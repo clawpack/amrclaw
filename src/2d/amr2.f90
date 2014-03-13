@@ -80,6 +80,7 @@ program amr2
 
     use amr_module, only: lfine, lentot, iregridcount, avenumgrids
     use amr_module, only: tvoll, rvoll, rvol, mstart, possk, ibuff
+    use amr_module, only: timeRegridding
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
@@ -564,6 +565,7 @@ program amr2
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
     ! --------------------------------------------------------
+
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
 
@@ -581,6 +583,9 @@ program amr2
       write(*,format_string) level, &
              real(tvoll(level),kind=8) / real(clock_rate,kind=8)
     end do
+    format_string = "('Total regridding time          ',1f16.8,' s')"
+    write(outunit,format_string) level, &
+             real(timeRegridding,kind=8) / real(clock_rate,kind=8)
 
     ! Done with computation, cleanup:
     lentotsave = lentot

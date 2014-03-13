@@ -36,13 +36,14 @@ c
 
 c      mptr = lstart(lcheck)
 c41   continue
-!$OMP PARALLEL DO PRIVATE(jg,mptr,ilo,ihi,jlo,jhi,nx,ny,mitot,mjtot),
+!$OMP PARALLEL DO REDUCTION(+:numbad)
+!$OMP&            PRIVATE(jg,mptr,ilo,ihi,jlo,jhi,nx,ny,mitot,mjtot),
 !$OMP&            PRIVATE(mibuff,mjbuff,locamrflags,mbuff,ibytesPerDP),
 !$OMP&            PRIVATE(loctmp,locbig,j,i,numpro2,numflagged),
 !$OMP&            PRIVATE(locdomflags,locdom2),
 !$OMP&            SHARED(numgrids, listgrids,nghost,flag_richardson),
 !$OMP&            SHARED(nvar,eprint,maxthreads,node,rnode,lbase,ibuff),
-!$OMP&            SHARED(alloc,lcheck,numpro,mxnest,numbad,dx,dy,time),
+!$OMP&            SHARED(alloc,lcheck,numpro,mxnest,dx,dy,time),
 !$OMP&            DEFAULT(none),      
 !$OMP&            SCHEDULE (DYNAMIC,1)
       do  jg = 1, numgrids(lcheck)
@@ -71,8 +72,10 @@ c        ### put flags into locamrflag array.
 
 c     still need to reclaim error est space from spest.f 
 c     which was saved for possible errest reuse
+         if (flag_richardson) then
          locbig = node(tempptr,mptr)
          call reclam(locbig,mitot*mjtot*nvar)
+         endif
 c     
          if (eprint .and. maxthreads .eq. 1) then ! otherwise race for printing
             write(outunit,*)" flagged points before projec2", 
@@ -166,10 +169,11 @@ c     bad names, for historical reasons. they are both smae size now
 
 
       end do
+!$OMP END PARALLEL DO
 c     mptr = node(levelptr,mptr)
 c     if (mptr .ne. 0) go to 41
 
-      if (verbosity_regrid .gt. 0) then
+      if (verbosity_regrid .ge. lcheck) then
         write(outunit,*)" total flagged points counted on level ",
      .                  lcheck," is ",numbad
         write(outunit,*)"this may include double counting buffer cells",

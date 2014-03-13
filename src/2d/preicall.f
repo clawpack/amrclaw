@@ -2,21 +2,17 @@ c
 c --------------------------------------------------------------
 c
       subroutine preicall(val,aux,nrow,ncol,nvar,naux,
-     1                    ilo,ihi,jlo,jhi,level,locflip)
+     1                    ilo,ihi,jlo,jhi,level,fliparray)
 c
       use amr_module
       implicit double precision (a-h,o-z)
 
-
+      dimension fliparray((nrow+ncol)*(nvar+naux))
       dimension val(nvar,nrow,ncol)
       dimension aux(naux,nrow,ncol)
 
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
 c
-c OLD INDEXING
-c      iadd   (i,j,ivar)  = locflip    + i - 1 + nr*((ivar-1)*nc+j-1)
-c      iaddaux(i,j,iaux)  = locflipaux + i - 1 + nr*((iaux-1)*nc+j-1)
-
 c NEW INDEXING - ORDER SWITCHED
       iadd   (ivar,i,j)  = locflip    + ivar-1 + nvar*((j-1)*nc+i-1)
       iaddaux(iaux,i,j)  = locflipaux + iaux-1 + naux*((j-1)*nc+i-1)
@@ -37,7 +33,9 @@ c     The values of the grid are inserted
 c     directly into the enlarged val array for this piece.
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
+c
+        locflip = 1
+        locflipaux = 1 + nvar*nc*nr
 c
 c     # will divide patch into 9 possibilities (some empty):
 c       x sticks out left, x interior, x sticks out right
@@ -109,19 +107,17 @@ c             swap so that smaller one is left index, etc since mapping reflects
               ybwrap = ylower + jwrap1*hyposs(level)
               jwrap2 = j2 + jbump
 
-c   ## scratch space now passed in through locflip for both soln and aux
-c             locflip = igetsp(nr*nc*(nvar+naux))
-              locflipaux = locflip + nr*nc*nvar
-              if (naux>0) call setaux(ng,nr,nc,xlwrap,ybwrap,
+              if (naux>0) call setaux(nr,nc,ng,nr,nc,xlwrap,ybwrap,
      1                    hxposs(level),hyposs(level),naux,
-     2                    alloc(locflipaux))
+     2                    fliparray(locflipaux))
 
 c             write(dbugunit,101) i1,i2,j1,j2
 c             write(dbugunit6,102) iwrap1,iwrap2,j1+jbump,j2+jbump
  101          format(" actual patch from i:",2i5," j :",2i5)
  102          format(" icall called w i:",2i5," j :",2i5)
-              call icall(alloc(locflip),alloc(locflipaux),nr,nc,nvar,
-     1                   naux,iwrap1,iwrap2,jwrap1,jwrap2,level,1,1)
+              call icall(fliparray(locflip),fliparray(locflipaux),
+     1                   nr,nc,nvar, naux,iwrap1,iwrap2,jwrap1,jwrap2,
+     2                   level,1,1)
 
 c             copy back using weird mapping for spherical folding
               nrowst = 1   ! start filling up val at (1,1) - no additional offset
@@ -134,18 +130,15 @@ c    1                            nc-jj+j1
 
                 do 17 ivar = 1, nvar
                    val(ivar,nrowst+(ii-ilo),ncolst+(jj-jlo)) = 
-     1                    alloc(iadd(ivar,nr-(ii-i1),nc-(jj-j1)))
+     1                    fliparray(iadd(ivar,nr-(ii-i1),nc-(jj-j1)))
  17             continue
 
                 do 16 iaux = 1, naux
                    aux(iaux,nrowst+(ii-ilo),ncolst+(jj-jlo)) = 
-     1                    alloc(iaddaux(iaux,nr-(ii-i1),nc-(jj-j1)))
+     1                    fliparray(iaddaux(iaux,nr-(ii-i1),nc-(jj-j1)))
  16             continue
  15           continue
              
-c  ## scratch space now done above, in case dynamic memory moves alloc
-c             call reclam(locflip, (nr*nc*(nvar+naux)))
-
             endif
 
           endif

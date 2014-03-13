@@ -6,6 +6,7 @@ c
 c
       use amr_module
       implicit double precision (a-h,o-z)
+      integer clock_start, clock_finish, clock_rate
 c
 c :::::::::::::::::::: FLGLVL :::::::::::::::::::::::::::::::::
 c
@@ -28,12 +29,20 @@ c
 
 c     flag arrays- based on either spatial gradients (and/or user defined 
 c                  criteria),  or Richardson error estimation
+    
+      call system_clock(clock_start,clock_rate)
       call flagger(nvar,naux,lcheck,start_time)
+      call system_clock(clock_finish,clock_rate)
+      timeFlagger = timeFlagger + clock_finish - clock_start
+
 
 c     buffer the flagged cells (done for each grid patch of flags)
 c     also project flags from finer levels onto this level to ensure
 c     proper nesting. Finally compute proper domain for each patch
+      call system_clock(clock_start,clock_rate)
       call bufnst2(nvar,naux,numbad,lcheck,lbase) 
+      call system_clock(clock_finish,clock_rate)
+      timeBufnst = timeBufnst + clock_finish - clock_start
 
       nxypts = nxypts + numbad
 c

@@ -32,7 +32,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     real(kind=8), intent(in out) :: aux(naux,mitot,mjtot)
 
     ! Locals
-    integer :: ilo, ihi, jlo, jhi, level, rect(4),i,j
+    integer :: ilo, ihi, jlo, jhi, level,i,j  ! rect(4)
     real(kind=8) :: xleft, xright, ybot, ytop, hx, hy, xl, xr, yb, yt
 
     xleft  = rnode(cornxlo, mptr)
@@ -54,12 +54,12 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     yb = ybot 
     yt = ytop
 
-    rect = [ilo-ng,ilo-1,jlo,jhi]
+    !rect = [ilo-ng,ilo-1,jlo,jhi]
     if ((xl < xlower) .and. xperdom) then
         call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1, &
-                          rect)
+                          ilo-ng,ilo-1,jlo,jhi)
     else
-        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1,rect)
+        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1,ilo-ng,ilo-1,jlo,jhi)
     endif
 
     ! right boundary
@@ -68,13 +68,13 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     yb = ybot
     yt = ytop
 
-    rect = [ihi+1,ihi+ng,jlo,jhi]
+    !rect = [ihi+1,ihi+ng,jlo,jhi]
     if ((xr .gt. xupper) .and. xperdom) then
         call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                          mitot-ng+1,ng+1,rect)
+                          mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi)
     else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                      mitot-ng+1,ng+1,rect)
+                      mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi)
     endif
 
 
@@ -84,12 +84,12 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     yb = ybot - ng*hy
     yt = ybot
     
-    rect = [ilo-ng,ihi+ng,jlo-ng,jlo-1]
+    !rect = [ilo-ng,ihi+ng,jlo-ng,jlo-1]
     if ( ((yb < ylower) .and. (yperdom .or. spheredom)) .or. &
         ( ((xl < xlower) .or. (xr > xupper)) .and. xperdom) ) then
-       call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,rect)
+       call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1)
     else
-        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,rect)
+        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1)
     endif
 
     ! top boundary
@@ -98,14 +98,14 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     yb = ytop
     yt = ytop + ng*hy
 
-    rect = [ilo-ng,ihi+ng,jhi+1,jhi+ng]
+    !rect = [ilo-ng,ihi+ng,jhi+1,jhi+ng]
     if ( ((yt .gt. yupper) .and. (yperdom .or. spheredom)) .or. &
          (((xl .lt. xlower) .or. (xr .gt. xupper)) .and. xperdom) ) then
         call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                         1,mjtot-ng+1,rect)
+                         1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng)
     else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                      1,mjtot-ng+1,rect)
+                      1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng)
     endif
 
 ! external boundary conditions   THIS IS NOW DONE IN THE FILPATCHES 
