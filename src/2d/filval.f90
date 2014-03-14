@@ -6,7 +6,7 @@
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 subroutine filval(val,mitot,mjtot,hx,hy,lev,time,valc,auxc,mic,mjc,xleft, &
-                  xright,ybot,ytop,nvar,mptr,ilo,ihi,jlo,jhi,aux,naux,locflip)
+                  xright,ybot,ytop,nvar,mptr,ilo,ihi,jlo,jhi,aux,naux)
  
     use amr_module, only: intratx, intraty, max1d, xperdom, yperdom, spheredom
     use amr_module, only: xlower, xupper, ylower, yupper, mcapa, nghost
@@ -14,7 +14,7 @@ subroutine filval(val,mitot,mjtot,hx,hy,lev,time,valc,auxc,mic,mjc,xleft, &
 
     ! Input
     integer, intent(in) :: mitot, mjtot, lev, mic, mjc, nvar, mptr, ilo, ihi
-    integer, intent(in) :: jlo, jhi, naux, locflip
+    integer, intent(in) :: jlo, jhi, naux
     real(kind=8), intent(in) :: hx, hy, time, xleft, xright, ybot, ytop
 
     ! Output
@@ -26,6 +26,7 @@ subroutine filval(val,mitot,mjtot,hx,hy,lev,time,valc,auxc,mic,mjc,xleft, &
     integer :: ico, jco, ifine, jfine
     real(kind=8) :: hxcrse, hycrse, xl, xr, yb, yt, slp, slm, slopex, slopey
     real(kind=8) :: xoff, yoff
+    real(kind=8) :: fliparray((mitot+mjtot)*(nvar+naux))
     
     real(kind=8) :: dudx(max1d), dudy(max1d)
 
@@ -51,14 +52,14 @@ subroutine filval(val,mitot,mjtot,hx,hy,lev,time,valc,auxc,mic,mjc,xleft, &
     ! :::  mcapa  is the capacity function index
     if (mcapa == 0) then   !dont need to copy aux stuff along with soln
         if (xperdom .or. yperdom .or. spheredom) then
-            call preintcopy(valc,mic,mjc,nvar,iclo,ichi,jclo,jchi,levc,locflip)
+            call preintcopy(valc,mic,mjc,nvar,iclo,ichi,jclo,jchi,levc,fliparray)
         else
             call intcopy(valc,mic,mjc,nvar,iclo,ichi,jclo,jchi,levc,1,1)
         endif
     else  ! intersect grids and copy all (soln and aux)
         if (xperdom .or. yperdom .or. spheredom) then
             call preicall(valc,auxc,mic,mjc,nvar,naux,iclo,ichi,jclo,jchi, &
-                          levc,locflip)
+                          levc,fliparray)
         else
             call icall(valc,auxc,mic,mjc,nvar,naux,iclo,ichi,jclo,jchi,levc,1,1)
         endif

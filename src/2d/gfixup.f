@@ -1,11 +1,12 @@
 c
 c  -----------------------------------------------------------
 c
-      subroutine gfixup(lbase, lfnew, nvar, naux)
+      subroutine gfixup(lbase, lfnew, nvar, naux, newnumgrids,
+     .                  maxnumnewgids)
 c
       use amr_module
       implicit double precision (a-h,o-z)
-
+      integer newnumgrids(maxlv)
 
 c
 c ::::::::::::::::::::::::: GFIXUP ::::::::::::::::::::::::::::::::;
@@ -101,17 +102,14 @@ c         ## need to get scratch space here, since passing ins
 c         ## variables indexed into alloc. This is in case dynamic
 c         ## memory would have changed the alloc location
           iperim = mitot+mjtot    ! get max amount possible
-          locflip = igetsp(iperim*(nvar+naux))
 
            call filval(alloc(loc),mitot,mjtot,hx,hy,lcheck,time,
      1                 alloc(ivalc),alloc(ivalaux),mic,mjc,
      2                 xl,xr,yb,yt,nvar,
      3                 mptr,ilo,ihi,jlo,jhi,
-     4                 alloc(locaux),naux,locflip)
+     4                 alloc(locaux),naux)
  
            call reclam(ivalc,mic*mjc*(nvar+naux))
-           call reclam(locflip,iperim*(nvar+naux))
-
  
            mptr = node(levelptr, mptr)
            go to 10
