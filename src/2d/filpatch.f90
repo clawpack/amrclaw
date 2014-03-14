@@ -168,16 +168,16 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my, &
         ! grids
         if (num_aux > 0) then
             nghost_patch = 0
-            call setaux(nghost_patch, mx_coarse,my_coarse, &
-                       xlow_coarse+nghost*dx_coarse, ylow_coarse+nghost*dy_coarse, &
+            call setaux(nghost_patch, mx_coarse,my_coarse,  &
+                       xlow_coarse, ylow_coarse,            &
                         dx_coarse,dy_coarse,num_aux,auxcrse)
         endif
 
         ! Fill in the edges of the coarse grid
         if ((xperdom .or. (yperdom .or. spheredom)) .and. sticksout(iplo,iphi,jplo,jphi)) then
-            call prefilrecur(level - 1,num_eqn,valcrse,auxcrse,num_aux,t,mx_coarse,my_coarse,1,1,iplo,iphi,jplo,jphi)
+            call prefilrecur(level-1,num_eqn,valcrse,auxcrse,num_aux,t,mx_coarse,my_coarse,1,1,iplo,iphi,jplo,jphi)
         else
-            call filrecur(level - 1,num_eqn,valcrse,auxcrse,num_aux,t,mx_coarse,my_coarse,1,1,iplo,iphi,jplo,jphi)
+            call filrecur(level-1,num_eqn,valcrse,auxcrse,num_aux,t,mx_coarse,my_coarse,1,1,iplo,iphi,jplo,jphi)
         endif
 
         do i_fine = 1,mx_patch
