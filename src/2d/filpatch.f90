@@ -34,11 +34,10 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my, &
     ! Local storage
     integer :: i_fine, j_fine, i_coarse, j_coarse, n
     integer  :: iplo, iphi, jplo, jphi
-    integer :: mx_patch, my_patch, mx_coarse, my_coarse
+    integer :: mx_patch, my_patch, mx_coarse, my_coarse, nghost_patch
     integer :: refinement_ratio_x, refinement_ratio_y
-    integer :: unset_indices(4), coarse_indices(4)
+    integer :: unset_indices(4)
     real(kind=8) :: dx_fine, dy_fine, dx_coarse, dy_coarse
-    !real(kind=8) :: fill_rect(4), coarse_rect(4)
     real(kind=8) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine   
 
     ! Interpolation variables
@@ -48,8 +47,6 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my, &
     ! Cell set tracking
     logical :: set
     integer(kind=1) :: flaguse(ihi-ilo+1, jhi-jlo+1)
-!   integer(kind=1) :: flaguse(fill_indices(2)-fill_indices(1)+1, &
-!                              fill_indices(4)-fill_indices(3)+1)
 
     ! Scratch storage
     !  use stack-based scratch arrays instead of alloc, since dont really
@@ -140,18 +137,6 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my, &
         refinement_ratio_x = intratx(level - 1)
         refinement_ratio_y = intraty(level - 1)
 
-        ! New patch rectangle (after we have partially filled it in) but in the
-        ! coarse patches [iplo,iphi,jplo,jphi]
-        coarse_indices = [(unset_indices(1) - refinement_ratio_x + nghost * refinement_ratio_x) &
-                                                / refinement_ratio_x - nghost, &
-                          (unset_indices(2) + refinement_ratio_x) / refinement_ratio_x, &
-                          (unset_indices(3) - refinement_ratio_y + nghost * refinement_ratio_y) &
-                                                / refinement_ratio_y - nghost, &
-                          (unset_indices(4) + refinement_ratio_y) / refinement_ratio_y]
-!!$        coarse_rect = [xlower + coarse_indices(1) * dx_coarse, &
-!!$                       xlower + (coarse_indices(2) + 1) * dx_coarse, &
-!!$                       ylower + coarse_indices(3) * dy_coarse, &
-!!$                       ylower + (coarse_indices(4) + 1) * dy_coarse]
         xlow_coarse = xlower + iplo * dx_coarse
         ylow_coarse = ylower + jplo * dy_coarse
 
@@ -165,8 +150,8 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my, &
 
 
         ! Coarse grid number of spatial points (nrowc,ncolc)
-        mx_coarse   =  coarse_indices(2) - coarse_indices(1) + 1
-        my_coarse   =  coarse_indices(4) - coarse_indices(3) + 1
+        mx_coarse   =  iphi - iplo + 1
+        my_coarse   =  jphi - jplo + 1
 
         ! Check to make sure we created big enough scratch arrays
         if (mx_coarse > ihi - ilo + 3 .or. &
@@ -182,13 +167,14 @@ recursive subroutine filrecur(level,num_eqn,valbig,aux,num_aux,t,mx,my, &
         ! instead in intfil using possibly already available bathy data from the
         ! grids
         if (num_aux > 0) then
-            call setaux(nghost, mx_coarse - 2*nghost,my_coarse - 2*nghost, &
-                       xlow_coarse + nghost * dx_coarse, ylow_coarse + nghost * dy_coarse, &
+            nghost_patch = 0
+            call setaux(nghost_patch, mx_coarse,my_coarse, &
+                       xlow_coarse+nghost*dx_coarse, ylow_coarse+nghost*dy_coarse, &
                         dx_coarse,dy_coarse,num_aux,auxcrse)
         endif
 
         ! Fill in the edges of the coarse grid
-        if ((xperdom .or. (yperdom .or. spheredom)) .and. sticksout(coarse_indices)) then
+        if ((xperdom .or. (yperdom .or. spheredom)) .and. sticksout(iplo,iphi,jplo,jphi)) then
             call prefilrecur(level - 1,num_eqn,valcrse,auxcrse,num_aux,t,mx_coarse,my_coarse,1,1,iplo,iphi,jplo,jphi)
         else
             call filrecur(level - 1,num_eqn,valcrse,auxcrse,num_aux,t,mx_coarse,my_coarse,1,1,iplo,iphi,jplo,jphi)
@@ -255,11 +241,11 @@ contains
         coarse_index = n + num_eqn*(i-1)+num_eqn*mx_coarse*(j-1)
     end function coarse_index
 
-    logical pure function sticksout(rect)
+    logical pure function sticksout(iplo,iphi,jplo,jphi)
         implicit none
-        integer, intent(in) :: rect(4)
-        sticksout = (rect(1) < 0 .or. rect(3) < 0 .or. &
-                     rect(2) >= iregsz(level - 1) .or. rect(4) >= jregsz(level - 1))
+        integer, intent(in) :: iplo,iphi,jplo,jphi
+        sticksout = (iplo < 0 .or. jplo < 0 .or. &
+                     iphi >= iregsz(level - 1) .or. jphi >= jregsz(level - 1))
     end function sticksout
 
 end subroutine filrecur
