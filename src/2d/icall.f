@@ -4,7 +4,7 @@ c
        subroutine icall(val,aux,nrow,ncol,nvar,naux,
      .                  ilo,ihi,jlo,jhi,level,iputst,jputst)
 
-      use amr_module
+       use amr_module
        implicit double precision (a-h, o-z)
 
        dimension val(nvar,nrow,ncol)

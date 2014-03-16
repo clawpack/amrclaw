@@ -46,6 +46,9 @@ c         make coarsened enlarged patch for conservative fixup
           yt   = rnode(cornyhi,mkid) + hyc
           loctmp = igetsp(nrow*ncol*(nvar+naux))
           loctx  = loctmp + nrow*ncol*nvar
+          do i = 1, nrow*ncol*naux
+             alloc(loctx+i-1) = rinfinity
+          end do
           locaux = node(storeaux,mkid)
 
           if (iclo .lt. 0 .or. ichi .eq. iregsz(levc) .or.
@@ -56,14 +59,14 @@ c         make coarsened enlarged patch for conservative fixup
           endif
 
           if (sticksout .and. (xperdom.or.yperdom.or.spheredom)) then
-             iperim = nrow*ncol
+             iperim = nrow+ncol
              locflip = igetsp(iperim*(nvar+naux))
              call preicall(alloc(loctmp),alloc(loctx),nrow,ncol,nvar,
      .                     naux,iclo,ichi,jclo,jchi,level-1,locflip)
              call reclam(locflip,iperim*(nvar+naux))
           else 
              call icall(alloc(loctmp),alloc(loctx),nrow,ncol,nvar,naux,
-     .                   iclo,ichi,jclo,jchi,level-1,1,1,sticksout)
+     .                   iclo,ichi,jclo,jchi,level-1,1,1)
           endif
           call bc2amr(alloc(loctmp),alloc(loctx),nrow,ncol,nvar,naux,
      .                hxc,hyc,level,time,
