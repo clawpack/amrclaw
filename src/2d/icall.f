@@ -85,16 +85,16 @@ c in there so qad and src1d doesnt complain. the values wont be used
 c dont fill using values where debuggers might complain about uninitialized values
       if (ilo .lt. 0 .or. ihi .ge. iregsz(level) .or.
      &    jlo .lt. 0 .or. jhi .ge. jregsz(level)) then
-	sticksout = .true.
+         sticksout = .true.
       else
-	sticksout = .false.
+         sticksout = .false.
       endif
 
       if (sticksout) then  
          if (xperdom .or. yperdom .or. spheredom) then
            write(*,*)" should not be in this code with periodic bc"
            write(*,*)"not writing into val correctly using mapping "
-	   stop
+           stop
          endif
          if (ilo .eq. -1) then
             do j = max(jlo,0), min(jhi,jregsz(level)-1)

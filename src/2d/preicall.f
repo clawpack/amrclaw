@@ -34,8 +34,9 @@ c     directly into the enlarged val array for this piece.
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
+!     ## fliparray now passed in; index into it below
         locflip = 1
-        locflipaux = 1 + nvar*nc*nr
+        locflipaux = 1 + nvar*(ncol+nrow)
 c
 c     # will divide patch into 9 possibilities (some empty):
 c       x sticks out left, x interior, x sticks out right

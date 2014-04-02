@@ -2,11 +2,14 @@ c
 c  -----------------------------------------------------------
 c
       subroutine gfixup(lbase, lfnew, nvar, naux, newnumgrids,
-     .                  maxnumnewgids)
+     .                  maxnumnewgrids)
 c
       use amr_module
       implicit double precision (a-h,o-z)
-      integer newnumgrids(maxlv)
+
+      integer omp_get_thread_num, omp_get_max_threads
+      integer mythread/0/, maxthreads/1/
+      integer newnumgrids(maxlv), listnewgrids(maxnumnewgrids)
 
 c
 c ::::::::::::::::::::::::: GFIXUP ::::::::::::::::::::::::::::::::;
@@ -42,33 +45,66 @@ c
           go to 1
 c
  4    lcheck = lbase + 1
+
+      time = rnode(timemult, lstart(lbase))
  5    if (lcheck .gt. mxnest) go to 99
           hx = hxposs(lcheck)
           hy = hyposs(lcheck)
+
+c
+c prepare for doing next loop over grids at a given level in parallel
+c unlike other level loops, these are newly created grids, not yet merged in
+c so take grids from newstl (NEWSTartOfLevel), not lstart. Dont yet know
+c how many either.
+       call prepnewgrids(listnewgrids,newnumgrids(lcheck),lcheck)
 c
 c  interpolate level lcheck
+c   first get space, since cant do that part in parallel
+       do  j = 1, newnumgrids(lcheck)
+          mptr = listnewgrids(j)
+            nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
+            ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+            mitot = nx + 2*nghost
+            mjtot = ny + 2*nghost
+            loc    = igetsp(mitot * mjtot * nvar)
+            node(store1, mptr)  = loc
+            if (naux .gt. 0) then
+              locaux = igetsp(mitot * mjtot * naux)
+             else
+              locaux = 1
+            endif
+            node(storeaux, mptr)  = locaux
+       end do
+
 c
-          mptr   = newstl(lcheck)
- 10       if (mptr .eq. 0) go to 80
+!$OMP PARALLEL DO 
+!$OMP&            PRIVATE(j,mptr,nx,ny,mitot,mjtot,corn1,corn2,loc)
+!$OMP&            PRIVATE(locaux,time,mic,mjc,xl,xr,yb,yt,ilo,ihi)
+!$OMP&            PRIVATE(jlo,jhi,sp_over_h,thisSetauxTime)
+!$OMP&            SHARED(newnumgrids,listnewgrids,nghost,node,hx,hy)
+!$OMP&            SHARED(rnode,intratx,intraty,lcheck,nvar,alloc,naux)
+!$OMP&            SCHEDULE(dynamic,1)
+!$OMP&            DEFAULT(none)
+c
+      do  j = 1, newnumgrids(lcheck)
+          mptr = listnewgrids(j)
+
+c  changed to move setaux out of this loop. instead, copy aux in filval 
+c  along with soln.involves changing intcopy to icall and making flag array
+c  can only do this after topo stops moving
               nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
               ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
               mitot = nx + 2*nghost
               mjtot = ny + 2*nghost
               corn1 = rnode(cornxlo,mptr)
               corn2 = rnode(cornylo,mptr)
-              loc    = igetsp(mitot * mjtot * nvar)
-              node(store1, mptr)  = loc
+              loc   =  node(store1, mptr)
               if (naux .gt. 0) then
-                locaux = igetsp(mitot * mjtot * naux)
-                mx = mitot - 2*nghost
-                my = mjtot - 2*nghost
-                call setaux(nghost,mx,my,corn1,corn2,hx,hy,
-     &                    naux,alloc(locaux))
+                locaux =  node(storeaux, mptr)
               else
                 locaux = 1
               endif
-              node(storeaux, mptr)  = locaux
-              time   = rnode(timemult, mptr)
+
 c
 c      We now fill in the values for grid mptr using filval. It uses
 c      piecewise linear interpolation to obtain values from the
@@ -85,34 +121,22 @@ c          # extra 2 cells so that can use linear interp. on
 c          # "interior" of coarser patch to fill fine grid.
            mic = nx/intratx(lcheck-1) + 2
            mjc = ny/intraty(lcheck-1) + 2
-           ivalc  = igetsp(mic*mjc*(nvar+naux))
-           ivalaux  = ivalc + nvar*mic*mjc
            xl = rnode(cornxlo,mptr)
            xr = rnode(cornxhi,mptr)
            yb = rnode(cornylo,mptr)
            yt = rnode(cornyhi,mptr)
-           hx = hxposs(lcheck)
-           hy = hyposs(lcheck)
            ilo    = node(ndilo, mptr)
            ihi    = node(ndihi, mptr)
            jlo    = node(ndjlo, mptr)
            jhi    = node(ndjhi, mptr)
  
-c         ## need to get scratch space here, since passing ins
-c         ## variables indexed into alloc. This is in case dynamic
-c         ## memory would have changed the alloc location
-          iperim = mitot+mjtot    ! get max amount possible
-
            call filval(alloc(loc),mitot,mjtot,hx,hy,lcheck,time,
-     1                 alloc(ivalc),alloc(ivalaux),mic,mjc,
+     1                 mic,mjc,
      2                 xl,xr,yb,yt,nvar,
      3                 mptr,ilo,ihi,jlo,jhi,
      4                 alloc(locaux),naux)
  
-           call reclam(ivalc,mic*mjc*(nvar+naux))
- 
-           mptr = node(levelptr, mptr)
-           go to 10
+           end do 
 c
 c  done filling new grids at level. move them into lstart from newstl
 c  (so can use as source grids for filling next level). can also
@@ -155,8 +179,37 @@ c
  110   continue
 
 c
+c -------------
 c  grid structure now complete again. safe to print, etc. assuming
 c  things initialized to zero in nodget.
+c -------------
 c
       return
       end
+c
+c -----------------------------------------------------------------------------------------
+c
+c  use different routine since need to scan new grid list (newstl) not lstart
+c  to make grids.  
+c  could make one routine by passing in source of list, but this changed 4 other routines
+c  so I didnt want to have to deal with it
+
+       subroutine prepnewgrids(listnewgrids,num,level)
+
+       use amr_module
+       implicit double precision (a-h,o-z)
+       integer listnewgrids(num)
+
+       mptr = newstl(level)
+       do j = 1, num
+          listnewgrids(j) = mptr
+          mptr = node(levelptr, mptr)
+       end do
+
+       if (mptr .ne. 0) then
+         write(*,*)" Error in routine setting up grid array "
+         stop
+       endif
+
+       return
+       end

@@ -66,7 +66,7 @@ program amr2
 
     use amr_module, only: max1d, maxvar, maxlv
 
-    use amr_module, only: method, mthlim, use_fwaves
+    use amr_module, only: method, mthlim, use_fwaves, numgrids
     use amr_module, only: nghost, mwaves, mcapa, auxtype
     use amr_module, only: tol, tolsp, flag_richardson, flag_gradient
 
@@ -80,7 +80,7 @@ program amr2
 
     use amr_module, only: lfine, lentot, iregridcount, avenumgrids
     use amr_module, only: tvoll, rvoll, rvol, mstart, possk, ibuff
-    use amr_module, only: timeRegridding
+    use amr_module, only: timeRegridding,timeUpdating, timeValout
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
@@ -570,6 +570,8 @@ program amr2
     ! --------------------------------------------------------
 
     call system_clock(clock_finish,clock_rate)
+    write(*,*) " "
+    write(outunit,*) " "
     format_string = "('Total time to solution = ',1f16.8,' s')"
     write(outunit,format_string) &
             real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
@@ -583,8 +585,21 @@ program amr2
       write(*,format_string) level, &
              real(tvoll(level),kind=8) / real(clock_rate,kind=8)
     end do
-    format_string = "('Total regridding time          ',1f16.8,' s')"
+    write(*,*) " "
+    write(outunit,*)" "
+
+    format_string = "('Total updating   time            ',1f16.8,' s')"
+    write(outunit,format_string)  real(timeUpdating,kind=8) / real(clock_rate,kind=8)
+    write(*,format_string) real(timeUpdating,kind=8) / real(clock_rate,kind=8)
+
+    format_string = "('Total valout     time            ',1f16.8,' s')"
+    write(outunit,format_string)  real(timeValout,kind=8) / real(clock_rate,kind=8)
+    write(*,format_string) real(timeValout,kind=8) / real(clock_rate,kind=8)
+
+    format_string = "('Total regridding time            ',1f16.8,' s')"
     write(outunit,format_string)  &
+             real(timeRegridding,kind=8) / real(clock_rate,kind=8)
+    write(*,format_string)  &
              real(timeRegridding,kind=8) / real(clock_rate,kind=8)
 
     ! Done with computation, cleanup:
@@ -610,6 +625,8 @@ program amr2
         write(outunit,801) i,avenumgrids(i)/iregridcount(i),iregridcount(i)
  801    format("for level ",i3, " average num. grids = ",f10.2," over ",i10,  &
                " regridding steps")
+        write(outunit,802) i,numgrids(i)
+ 802    format("for level ",i3,"  current num. grids = ",i7)
       endif
     end do
 
