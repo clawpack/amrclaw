@@ -16,7 +16,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
 
     use amr_module, only: xlower, ylower, intratx, intraty, nghost, xperdom
     use amr_module, only: yperdom, spheredom, xupper, yupper, alloc
-    use amr_module, only: outunit, rinfinity, mcapa
+    use amr_module, only: outunit, NEEDS_TO_BE_SET, mcapa
 
     implicit none
 
@@ -91,12 +91,12 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     ny = mjtot - 2*nghost
 
     if (naux .gt. 0) then 
-!       ## rinfinity is signal that aux array not set.
+!       ## NEEDS_TO_BE_SET is signal that aux array not set.
 !       ## after calling icall to copy aux from other grids
-!       ## any remaining rinfinity signals will be set in setaux.
+!       ## any remaining NEEDS_TO_BE_SET (==rinfinity) signals will be set in setaux.
 !       ## it also signals where soln was copied, so it wont be
 !       ## overwritten with coarse grid interpolation
-        aux(1,:,:) = rinfinity  ! will indicate fine cells not yet set. 
+        aux(1,:,:) = NEEDS_TO_BE_SET  ! indicates fine cells not yet set. 
 
         if (xperdom .or. yperdom .or. spheredom) then
             call preicall(val,aux,mitot,mjtot,nvar,naux,ilo-nghost,ihi+nghost, & 
@@ -111,10 +111,10 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
         call setaux(nghost,nx,ny,xleft,ybot,dx,dy,naux,aux)
     else ! either no aux exists, or cant reuse yet  
          ! so only call intcopy (which copies soln) and not icall.
-         ! in this case init q(1,:) to rinfinity so wont be overwritten
+         ! in this case flag q(1,:) to rinfinity (needs to be set) so wont be overwritten
          ! by coarse grid interp.  this is needed due to reversing order of
          ! work - first copy from fine grids, then interpolate from coarse grids
-        val(1,:,:) = rinfinity
+        val(1,:,:) = NEEDS_TO_BE_SET
         if (xperdom .or. yperdom .or. spheredom) then
             call preintcopy(val,mitot,mjtot,nvar,ilo-nghost,ihi+nghost,     &
                             jlo-nghost,jhi+nghost,level,1,1,fliparray)
@@ -154,7 +154,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
                  xoff = (real(ico,kind=8) - 0.5d0) / refinement_ratio_x - 0.5d0
                  ifine = (i-2) * refinement_ratio_x + nghost + ico
 
-                 if (setflags(ifine,jfine) .eq. rinfinity) then
+                 if (setflags(ifine,jfine) .eq. NEEDS_TO_BE_SET) then
                     val(ivar,ifine,jfine) = valc(ivar,i,j) + xoff*slopex + yoff*slopey
                  endif
 
@@ -173,7 +173,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
  
 !!$! CHECK BY CALLING SETAUX AND SETTING ALL, THEN DIFFING
 !!$   if (naux .gt. 0) then
-!!$      aux2(1,:,:) = rinfinity   ! indicates fine cells not yet set
+!!$      aux2(1,:,:) = NEEDS_TO_BE_SET   ! indicates fine cells not yet set
 !!$      call setaux(nghost,nx,ny,xleft,ybot,dx,dy,naux,aux2)
 !!$      maxauxdif = 1.d-13
 !!$      do i = 1, mitot

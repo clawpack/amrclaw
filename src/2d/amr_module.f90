@@ -46,6 +46,7 @@ module amr_module
     real(kind=8), parameter :: badpt  = 2.0
     real(kind=8), parameter :: badpro = 3.0
 
+    real(kind=8), parameter :: NEEDS_TO_BE_SET = 10.e33
     real(kind=8), parameter :: rinfinity = 10.e32
     integer, parameter :: iinfinity = 999999999
     integer, parameter :: horizontal = 1

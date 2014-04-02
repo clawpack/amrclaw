@@ -1,4 +1,5 @@
 Makefile
+setrun.py
 *.pyc
 *.o
 *.mod

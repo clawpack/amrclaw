@@ -47,7 +47,7 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
        do 30 jco = 1, lratioy
          jfine = (jc-2)*lratioy + nghost + jco
 
-         if (setflags(ifine,jfine) .eq. rinfinity) then 
+         if (setflags(ifine,jfine) .eq. NEEDS_TO_BE_SET) then 
          ! was set by coarsegrid, need to check for adjustment
            val(ivar,ifine,jfine) = val(ivar,ifine,jfine) +
      &                             dcapaq/aux(mcapa,ifine,jfine)

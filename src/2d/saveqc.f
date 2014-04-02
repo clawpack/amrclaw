@@ -47,7 +47,7 @@ c         make coarsened enlarged patch for conservative fixup
           loctmp = igetsp(nrow*ncol*(nvar+naux))
           loctx  = loctmp + nrow*ncol*nvar
           do i = 1, nrow*ncol*naux
-             alloc(loctx+i-1) = rinfinity
+             alloc(loctx+i-1) = NEEDS_TO_BE_SET
           end do
           locaux = node(storeaux,mkid)
 

@@ -17,7 +17,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
 
     use amr_module, only: hxposs, hyposs, xlower, ylower, xupper, yupper
     use amr_module, only: outunit, nghost, xperdom, yperdom, spheredom
-    use amr_module, only: iregsz, jregsz, intratx, intraty, rinfinity
+    use amr_module, only: iregsz, jregsz, intratx, intraty, NEEDS_TO_BE_SET
 
     implicit none
 
@@ -171,7 +171,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
             nghost_patch = 0
             lencrse = (ihi-ilo+2)*(jhi-jlo+2)*naux ! set 1 component, not all naux
             do k = 1, lencrse, naux
-              auxcrse(k) = rinfinity  ! new system checks initialization before setting aux vals
+              auxcrse(k) = NEEDS_TO_BE_SET ! new system checks initialization before setting aux vals
             end do
             call setaux(nghost_patch, mx_coarse,my_coarse,  &
                        xlow_coarse, ylow_coarse,            &
