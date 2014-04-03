@@ -21,7 +21,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
 
 
     use amr_module, only: iregsz, jregsz, nghost, xlower, ylower
-    use amr_module, only: spheredom, hxposs, hyposs
+    use amr_module, only: spheredom, hxposs, hyposs, NEEDS_TO_BE_SET
     implicit none
 
     ! Input
@@ -115,8 +115,10 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
                     ybwrap = ylower + jwrap1*hyposs(level)
               
                     if (naux>0) then
-                        call setaux(nr,nc,ng,nr,nc,xlwrap,ybwrap,hxposs(level),hyposs(level),naux,scratchaux)
-                    endif
+                        scratchaux = NEEDS_TO_BE_SET  !flag all cells with signal since dimensioned strangely
+                        call setaux(ng,nr,nc,xlwrap,ybwrap,hxposs(level),hyposs(level),naux,scratchaux)
+                    endif 
+
                     rect = [iwrap1,iwrap2,j1+jbump,j2+jbump]
                     call filrecur(level,nvar,scratch,scratchaux,naux,time,nr, &
                                   nc,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump)

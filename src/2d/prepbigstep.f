@@ -40,6 +40,7 @@ c
               yb     = rnode(cornylo, mptr)
               mx = midub - 4*nghost
               my = mjdub - 4*nghost
+              auxdub = NEEDS_TO_BE_SET  ! signal that needs a val
               call setaux(2*nghost,mx,my,xl,yb,hx,hy,
      &                    naux,auxdub)
               call auxcoarsen(auxdub,midub,mjdub,

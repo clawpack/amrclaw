@@ -108,9 +108,13 @@ c             swap so that smaller one is left index, etc since mapping reflects
               ybwrap = ylower + jwrap1*hyposs(level)
               jwrap2 = j2 + jbump
 
-              if (naux>0) call setaux(nr,nc,ng,nr,nc,xlwrap,ybwrap,
+              if (naux>0) then
+                 fliparray(locflip:locflip+ naux*(ncol+nrow)-1) = 
+     1                     NEEDS_TO_BE_SET
+                 call setaux(ng,nr,nc,xlwrap,ybwrap,
      1                    hxposs(level),hyposs(level),naux,
      2                    fliparray(locflipaux))
+              endif
 
 c             write(dbugunit,101) i1,i2,j1,j2
 c             write(dbugunit6,102) iwrap1,iwrap2,j1+jbump,j2+jbump

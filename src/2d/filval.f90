@@ -36,6 +36,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     real(kind=8) :: s1m, s1p, slopex, slopey, xoff, yoff
     real(kind=8) :: fliparray((mitot+mjtot)*(nvar+naux))
     real(kind=8) :: setflags(mitot,mjtot),maxauxdif,aux2(naux,mitot,mjtot)
+    integer :: mjb
 
 
     ! External function definitions
@@ -172,7 +173,8 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     endif
  
 !!$! CHECK BY CALLING SETAUX AND SETTING ALL, THEN DIFFING
-!!$   if (naux .gt. 0) then
+!!$   mjb = 0
+!!$   if (naux .gt. 0  .and. mjb .eq. 1) then
 !!$      aux2(1,:,:) = NEEDS_TO_BE_SET   ! indicates fine cells not yet set
 !!$      call setaux(nghost,nx,ny,xleft,ybot,dx,dy,naux,aux2)
 !!$      maxauxdif = 1.d-13

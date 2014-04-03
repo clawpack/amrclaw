@@ -169,7 +169,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
         ! grids
         if (naux > 0) then
             nghost_patch = 0
-            lencrse = (ihi-ilo+2)*(jhi-jlo+2)*naux ! set 1 component, not all naux
+            lencrse = (ihi-ilo+3)*(jhi-jlo+3)*naux ! set 1 component, not all naux
             do k = 1, lencrse, naux
               auxcrse(k) = NEEDS_TO_BE_SET ! new system checks initialization before setting aux vals
             end do
