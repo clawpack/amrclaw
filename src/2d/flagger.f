@@ -8,7 +8,7 @@ c
 
       integer omp_get_thread_num, omp_get_max_threads
       integer mythread/0/, maxthreads/1/
-      integer listgrids(numgrids(lcheck))
+      integer listgrids(numgrids(lcheck)), locuse
 
 c ::::::::::::::::::::: FLAGGER :::::::::::::::::::::::::
 c
@@ -75,6 +75,7 @@ c            do in other order in case user messes up locbig in flag2refine, alr
 c            them in locnew
              call bound(time,nvar,nghost,alloc(locnew),mitot,mjtot,mptr,
      1                  alloc(locaux),naux)
+             locuse = locnew ! flag based on newest vals
              if (flag_richardson) then
                do 10 i = 1, mitot*mjtot*nvar
  10             alloc(locbig+i-1) = alloc(locnew+i-1)
@@ -82,6 +83,8 @@ c            them in locnew
 
          else   ! boundary values already in locold
              locold = node(store2,mptr)
+             locuse = locold ! flag based on old vals at initial time
+             ! put back this way to agree with nosetests
              if (flag_richardson) then
                do 11 i = 1, mitot*mjtot*nvar
  11              alloc(locbig+i-1) = alloc(locold+i-1)
@@ -109,7 +112,7 @@ c     # Default version compares spatial gradient to tolsp.
 c no longer getting locbig, using "real" solution array in locnew
             call flag2refine2(nx,ny,nghost,mbuff,nvar,naux,
      &                        xleft,ybot,dx,dy,time,lcheck,
-     &                        tolsp,alloc(locnew),
+     &                        tolsp,alloc(locuse),
      &                        alloc(locaux),alloc(locamrflags),
      &                        goodpt,badpt)
              endif     
