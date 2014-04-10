@@ -44,6 +44,7 @@ c before parallel loop give grids the extra storage they need for error estimati
 !$OMP PARALLEL DO PRIVATE(jg,mptr,nx,ny,mitot,mjtot,locnew,locaux),
 !$OMP&            PRIVATE(time,dx,dy,xleft,ybot,xlow,ylow,locbig),
 !$OMP&            PRIVATE(locold,mbuff,mibuff,mjbuff,locamrflags,i),
+!$OMP&            PRIVATE(locuse),
 !$OMP&            SHARED(numgrids,listgrids,lcheck,nghost,nvar,naux),
 !$OMP&            SHARED(tolsp,alloc,node,rnode,hxposs,hyposs,ibuff),
 !$OMP&            SHARED(start_time,possk,flag_gradient,flag_richardson)
