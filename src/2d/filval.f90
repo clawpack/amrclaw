@@ -71,12 +71,25 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
         endif
     else  
         ! intersect grids and copy all (soln and aux)
+        auxc(1,:,:) = NEEDS_TO_BE_SET
         if (xperdom .or. yperdom .or. spheredom) then
             call preicall(valc,auxc,mic,mjc,nvar,naux,iclo,ichi,jclo,jchi, &
                           level-1,fliparray)
         else
             call icall(valc,auxc,mic,mjc,nvar,naux,iclo,ichi,jclo,jchi,level-1,1,1)
         endif
+!!$        do i = 1, mic
+!!$        do j = 1, mjc
+!!$          if (auxc(1,:,:) == NEEDS_TO_BE_SET) then
+!!$             write(*,*)" *** coarsenened new fine grid not completely set from previously"  &
+!!$                       "existing coarse grids ***"
+!!$             stop
+!!$          endif
+!!$        end do
+!!$        end do
+           ! no ghost cells on coarse enlarged patch. set any remaining
+           ! vals. should only be bcs that stick out of domain.
+           call setaux(ng,mic,mjc,xl,yb,dx_coarse,dy_coarse,naux,auxc)
     endif
     call bc2amr(valc,auxc,mic,mjc,nvar,naux,dx_coarse,dy_coarse,level-1,time,xl,xr,yb, &
                 yt,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
@@ -94,7 +107,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     if (naux .gt. 0) then 
 !       ## NEEDS_TO_BE_SET is signal that aux array not set.
 !       ## after calling icall to copy aux from other grids
-!       ## any remaining NEEDS_TO_BE_SET (==rinfinity) signals will be set in setaux.
+!       ## any remaining NEEDS_TO_BE_SET signals will be set in setaux.
 !       ## it also signals where soln was copied, so it wont be
 !       ## overwritten with coarse grid interpolation
         aux(1,:,:) = NEEDS_TO_BE_SET  ! indicates fine cells not yet set. 
@@ -112,7 +125,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
         call setaux(nghost,nx,ny,xleft,ybot,dx,dy,naux,aux)
     else ! either no aux exists, or cant reuse yet  
          ! so only call intcopy (which copies soln) and not icall.
-         ! in this case flag q(1,:) to rinfinity (needs to be set) so wont be overwritten
+         ! in this case flag q(1,:) to NEEDS_TO_BE_SET flag so wont be overwritten
          ! by coarse grid interp.  this is needed due to reversing order of
          ! work - first copy from fine grids, then interpolate from coarse grids
         val(1,:,:) = NEEDS_TO_BE_SET
@@ -123,7 +136,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
             call intcopy(val,mitot,mjtot,nvar,ilo-nghost,ihi+nghost,  &
                          jlo-nghost,jhi+nghost,level,1,1)   
         endif
-        setflags = val(1,:,:)  ! remaining rinfinity signals need to set
+        setflags = val(1,:,:)  ! remaining flags signals need to set
     endif
 
    
