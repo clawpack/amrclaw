@@ -6,18 +6,19 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-      logical sticksout
+      logical sticksout, found
 c
 c ::::::::::::::::::::::::: SAVEQC :::::::::::::::::::::::::::::::::
-c prepare new fine grids to save fluxes after each integration step
-c for future conservative fix-up on coarse grids.
-c save all boundary fluxes of fine grid (even if on a  phys. bndry.) -
-c but only save space for every intrat of them. 
+c  prepare new fine grids to save fluxes after each integration step
+c  for future conservative fix-up on coarse grids.
+c  save all boundary fluxes of fine grid (even if on a  phys. bndry.) -
+c  but only save space for every intrat of them. 
 c:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
       levc = level - 1
       hxc  = hxposs(levc)
       hyc  = hyposs(levc)
+      ng   = 0  ! no ghost cells on coarsened enlarged patch
 
       mkid = lstart(level)
  10   if (mkid .eq. 0) go to 99
@@ -68,6 +69,17 @@ c         make coarsened enlarged patch for conservative fixup
              call icall(alloc(loctmp),alloc(loctx),nrow,ncol,nvar,naux,
      .                   iclo,ichi,jclo,jchi,level-1,1,1)
           endif
+!         in case any part sticks out of domain still need to set remaining aux cells
+          if (naux .gt. 0 .and. sticksout) then  
+             call setaux(ng,nrow,ncol,xl,yb,hxc,hyc,naux,alloc(loctx))
+          endif
+!--          found = .false.
+!--          do i = 1, naux*nrow*ncol, naux
+!--             if (alloc(loctx+i-1) .eq. NEEDS_TO_BE_SET) then
+!--                 found = .true.
+!--             endif
+!--          end do
+!--          if (found)  write(*,*) "still have unset aux vals in qad"
           call bc2amr(alloc(loctmp),alloc(loctx),nrow,ncol,nvar,naux,
      .                hxc,hyc,level,time,
      .                xl,xr,yb,yt,

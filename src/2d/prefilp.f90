@@ -20,7 +20,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
 
 
 
-    use amr_module, only: iregsz, jregsz, nghost, xlower, ylower
+    use amr_module, only: iregsz, jregsz, nghost, xlower, ylower, xperdom, yperdom
     use amr_module, only: spheredom, hxposs, hyposs, NEEDS_TO_BE_SET
     implicit none
 
@@ -45,33 +45,58 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
 !     # will divide patch into 9 possibilities (some empty): 
 !       x sticks out left, x interior, x sticks out right
 !       same for y. for example, the max. would be
-!       i from (fill_indices(1),-1), (0,iregsz(level)-1), (iregsz(level),fill_indices(2))
-        
-!--        write(dbugunit,*)" entering prefilrecur with level ",level
-!--        write(dbugunit,*)"     and patch indices fill_indices ",
-!--     &             fill_indices
+!       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
 
-    ist(1)  = ilo
-    ist(2)  = 0
-    ist(3)  = iregsz(level)
-    iend(1) = -1
-    iend(2) = iregsz(level)-1
-    iend(3) = ihi
+    if (xperdom) then       
+       ist(1)    = ilo
+       ist(2)    = 0
+       ist(3)    = iregsz(level)
+       iend(1)   = -1
+       iend(2)   = iregsz(level)-1
+       iend(3)   = ihi
+       ishift(1) = iregsz(level)
+       ishift(2) = 0
+       ishift(3) = -iregsz(level)
+    else  ! if not periodic, set vals to only have nonnull intersection for interior regoin
+       ist(1)    = iregsz(level)
+       ist(2)    = 0
+       ist(3)    = iregsz(level)
+       iend(1)   = -1
+       iend(2)   = iregsz(level)-1
+       iend(3)   = -1
+       ishift(1) = 0
+       ishift(2) = 0
+       ishift(3) = 0
+    endif
 
-    jst(1)  = jlo
-    jst(2)  = 0
-    jst(3)  = jregsz(level)
-    jend(1) = -1
-    jend(2) = jregsz(level)-1
-    jend(3) = jhi
+    if (yperdom .or. spheredom) then
+       jst(1)  = jlo
+       jst(2)  = 0
+       jst(3)  = jregsz(level)
+       jend(1) = -1
+       jend(2) = jregsz(level)-1
+       jend(3) = jhi
+       jshift(1) = jregsz(level)
+       jshift(2) = 0
+       jshift(3) = -jregsz(level)
+    else
+       jst(1)    = jregsz(level)
+       jst(2)    = 0
+       jst(3)    = jregsz(level)
+       jend(1)   = -1
+       jend(2)   = jregsz(level)-1
+       jend(3)   = -1
+       jshift(1) = 0
+       jshift(2) = 0
+       jshift(3) = 0
+    endif
 
-    ishift(1) = iregsz(level)
-    ishift(2) = 0
-    ishift(3) = -iregsz(level)
-    jshift(1) = jregsz(level)
-    jshift(2) = 0
-    jshift(3) = -jregsz(level)
-
+!   ## loop over the 9 regions (in 2D) of the patch - the interior is i=j=2 plus
+!   ## the ghost cell regions.  If any parts stick out of domain and are periodic
+!   ## map indices periodically, but stick the values in the correct place
+!   ## in the orig grid (indicated by iputst,jputst.
+!   ## if a region sticks out of domain  but is not periodic, not handled in (pre)-icall 
+!   ## but in setaux/bcamr (not called from here).
     do i = 1, 3
         i1 = max(ilo,  ist(i))
         i2 = min(ihi, iend(i))

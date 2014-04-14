@@ -12,6 +12,7 @@ c
       dimension aux(naux,nrow,ncol)
 
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
+      logical   xint, yint
 c
 c NEW INDEXING - ORDER SWITCHED
       iadd   (ivar,i,j)  = locflip    + ivar-1 + nvar*((j-1)*nc+i-1)
@@ -38,41 +39,70 @@ c
         locflip = 1
         locflipaux = 1 + nvar*(ncol+nrow)
 c
-c     # will divide patch into 9 possibilities (some empty):
-c       x sticks out left, x interior, x sticks out right
-c       same for y. for example, the max. would be
-c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
+c     ## will divide patch into 9 possibilities (some empty):
+c     ## x sticks out left, x interior, x sticks out right
+c     ## same for y. for example, the max. would be
+c     ## i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
 
-        ist(1) = ilo
-        ist(2) = 0
-        ist(3) = iregsz(level)
-        iend(1) = -1
-        iend(2) = iregsz(level)-1
-        iend(3) = ihi
+        if (xperdom) then
+           ist(1)    = ilo
+           ist(2)    = 0
+           ist(3)    = iregsz(level)
+           iend(1)   = -1
+           iend(2)   = iregsz(level)-1
+           iend(3)   = ihi
+           ishift(1) = iregsz(level)
+           ishift(2) = 0
+           ishift(3) = -iregsz(level)
+        else   ! if not periodic, set vals to only have nonnull intersection for interior regoin
+           ist(1)    = iregsz(level)
+           ist(2)    = 0
+           ist(3)    = iregsz(level)
+           iend(1)   = -nghost
+           iend(2)   = iregsz(level)-1
+           iend(3)   = -nghost
+           ishift(1) = 0
+           ishift(2) = 0
+           ishift(3) = 0
+        endif
 
-        jst(1) = jlo
-        jst(2) = 0
-        jst(3) = jregsz(level)
-        jend(1) = -1
-        jend(2) = jregsz(level)-1
-        jend(3) = jhi
 
-        ishift(1) = iregsz(level)
-        ishift(2) = 0
-        ishift(3) = -iregsz(level)
-        jshift(1) = jregsz(level)
-        jshift(2) = 0
-        jshift(3) = -jregsz(level)
+        if (yperdom .or. spheredom) then
+           jst(1)    = jlo
+           jst(2)    = 0
+           jst(3)    = jregsz(level)
+           jend(1)   = -1
+           jend(2)   = jregsz(level)-1
+           jend(3)   = jhi
+           jshift(1) = jregsz(level)
+           jshift(2) = 0
+           jshift(3) = -jregsz(level)
+        else
+           jst(1)    = jregsz(level)
+           jst(2)    = 0
+           jst(3)    = jregsz(level)
+           jend(1)   = -nghost
+           jend(2)   = jregsz(level)-1
+           jend(3)   = -nghost
+           jshift(1) = 0
+           jshift(2) = 0
+           jshift(3) = 0
+        endif
 
+c      ## loop over the 9 regions (in 2D) of the patch - the interior is i=j=2 plus
+c      ## the ghost cell regions.  If any parts stick out of domain and are periodic
+c      ## map indices periodically, but stick the values in the correct place
+c      ## in the orig grid (indicated by iputst,jputst.
+c      ## if a region sticks out of domain  but is not periodic, not handled in (pre)-icall 
+c      ## but in setaux/bcamr (not called from here).
        do 20 i = 1, 3
           i1 = max(ilo,  ist(i))
           i2 = min(ihi, iend(i))
        do 10 j = 1, 3
           j1 = max(jlo,  jst(j))
           j2 = min(jhi, jend(j))
-
-
-          if ((i1 .le. i2) .and. (j1 .le. j2)) then ! part of patch in this region
+ 
+          if (i1 .le. i2 .and. j1 .le. j2) then ! part of patch in this region
 c
 c check if special mapping needed for spherical bc. 
 c (j=2 is interior,nothing special needed)
@@ -114,7 +144,7 @@ c             swap so that smaller one is left index, etc since mapping reflects
                  call setaux(ng,nr,nc,xlwrap,ybwrap,
      1                    hxposs(level),hyposs(level),naux,
      2                    fliparray(locflipaux))
-              endif
+              endif 
 
 c             write(dbugunit,101) i1,i2,j1,j2
 c             write(dbugunit6,102) iwrap1,iwrap2,j1+jbump,j2+jbump
