@@ -38,36 +38,62 @@ c       x sticks out left, x interior, x sticks out right
 c       same for y. for example, the max. would be
 c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
         
-        ist(1) = ilo
-        ist(2) = 0
-        ist(3) = iregsz(level)
-        iend(1) = -1
-        iend(2) = iregsz(level)-1
-        iend(3) = ihi
+        if (xperdom) then
+           ist(1) = ilo
+           ist(2) = 0
+           ist(3) = iregsz(level)
+           iend(1) = -1
+           iend(2) = iregsz(level)-1
+           iend(3) = ihi
+           ishift(1) = iregsz(level)
+           ishift(2) = 0
+           ishift(3) = -iregsz(level)
+        else    ! if not periodic, set vals to only have nonnull intersection for interior region
+           ist(1)    = iregsz(level)
+           ist(2)    = ilo
+           ist(3)    = iregsz(level)
+           iend(1)   = -1
+           iend(2)   = ihi
+           iend(3)   = -1
+           ishift(1) = 0
+           ishift(2) = 0
+           ishift(3) = 0
+        endif
 
-        jst(1) = jlo
-        jst(2) = 0
-        jst(3) = jregsz(level)
-        jend(1) = -1
-        jend(2) = jregsz(level)-1
-        jend(3) = jhi
 
-        ishift(1) = iregsz(level)
-        ishift(2) = 0
-        ishift(3) = -iregsz(level)
-        jshift(1) = jregsz(level)
-        jshift(2) = 0
-        jshift(3) = -jregsz(level)
+        if (yperdom .or. spheredom) then
+           jst(1) = jlo
+           jst(2) = 0
+           jst(3) = jregsz(level)
+           jend(1) = -1
+           jend(2) = jregsz(level)-1
+           jend(3) = jhi
+           jshift(1) = jregsz(level)
+           jshift(2) = 0
+           jshift(3) = -jregsz(level)
+        else
+           jst(1)    = jregsz(level)
+           jst(2)    = jlo
+           jst(3)    = jregsz(level)
+           jend(1)   = -1
+           jend(2)   = jhi
+           jend(3)   = -1
+           jshift(1) = 0
+           jshift(2) = 0
+           jshift(3) = 0
+        endif
+
 
        do 20 i = 1, 3
           i1 = max(ilo,  ist(i))
           i2 = min(ihi, iend(i))
+          if (i1 .gt. i2) go to 20
        do 10 j = 1, 3
           j1 = max(jlo,  jst(j))
           j2 = min(jhi, jend(j))
 
 
-          if ((i1 .le. i2) .and. (j1 .le. j2)) then ! part of patch in this region
+          if (j1 .le. j2) then ! part of patch in this region
 c
 c check if special mapping needed for spherical bc. 
 c(j=2 is interior,nothing special needed)

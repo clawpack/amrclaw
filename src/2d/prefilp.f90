@@ -59,10 +59,10 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
        ishift(3) = -iregsz(level)
     else  ! if not periodic, set vals to only have nonnull intersection for interior regoin
        ist(1)    = iregsz(level)
-       ist(2)    = 0
+       ist(2)    = ilo
        ist(3)    = iregsz(level)
        iend(1)   = -1
-       iend(2)   = iregsz(level)-1
+       iend(2)   = ihi
        iend(3)   = -1
        ishift(1) = 0
        ishift(2) = 0
@@ -81,10 +81,10 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
        jshift(3) = -jregsz(level)
     else
        jst(1)    = jregsz(level)
-       jst(2)    = 0
+       jst(2)    = jlo
        jst(3)    = jregsz(level)
        jend(1)   = -1
-       jend(2)   = jregsz(level)-1
+       jend(2)   = jhi
        jend(3)   = -1
        jshift(1) = 0
        jshift(2) = 0
@@ -97,15 +97,16 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
 !   ## in the orig grid (indicated by iputst,jputst.
 !   ## if a region sticks out of domain  but is not periodic, not handled in (pre)-icall 
 !   ## but in setaux/bcamr (not called from here).
-    do i = 1, 3
+    do 20 i = 1, 3
         i1 = max(ilo,  ist(i))
         i2 = min(ihi, iend(i))
-        do j = 1, 3
+        if (i1 .gt. i2) go to 20
+        do 10 j = 1, 3
             j1 = max(jlo,  jst(j))
             j2 = min(jhi, jend(j))
 
             ! part of patch in this region
-            if ((i1 <= i2) .and. (j1 <= j2)) then 
+            if (j1 <= j2) then 
 
                 ! there is something to fill. j=2 case is interior, no special
                 ! mapping needed even if spherical bc
@@ -162,8 +163,8 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
                     end do 
                 endif
             endif
-        end do
-    end do
+ 10     continue
+ 20   continue
 
 contains
 

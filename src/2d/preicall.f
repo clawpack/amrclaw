@@ -56,10 +56,10 @@ c     ## i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
            ishift(3) = -iregsz(level)
         else   ! if not periodic, set vals to only have nonnull intersection for interior regoin
            ist(1)    = iregsz(level)
-           ist(2)    = 0
+           ist(2)    = ilo
            ist(3)    = iregsz(level)
            iend(1)   = -nghost
-           iend(2)   = iregsz(level)-1
+           iend(2)   = ihi
            iend(3)   = -nghost
            ishift(1) = 0
            ishift(2) = 0
@@ -79,10 +79,10 @@ c     ## i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
            jshift(3) = -jregsz(level)
         else
            jst(1)    = jregsz(level)
-           jst(2)    = 0
+           jst(2)    = jlo
            jst(3)    = jregsz(level)
            jend(1)   = -nghost
-           jend(2)   = jregsz(level)-1
+           jend(2)   = jhi
            jend(3)   = -nghost
            jshift(1) = 0
            jshift(2) = 0
@@ -98,11 +98,12 @@ c      ## but in setaux/bcamr (not called from here).
        do 20 i = 1, 3
           i1 = max(ilo,  ist(i))
           i2 = min(ihi, iend(i))
+          if (i1 .gt. i2) go to 20 ! non-empty intersection not possible
        do 10 j = 1, 3
           j1 = max(jlo,  jst(j))
           j2 = min(jhi, jend(j))
  
-          if (i1 .le. i2 .and. j1 .le. j2) then ! part of patch in this region
+          if (j1 .le. j2) then ! part of patch in this region
 c
 c check if special mapping needed for spherical bc. 
 c (j=2 is interior,nothing special needed)
