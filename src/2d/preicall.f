@@ -7,7 +7,7 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-      dimension fliparray((nrow+ncol)*(nvar+naux))
+      dimension fliparray((nrow+ncol)*nghost*(nvar+naux))
       dimension val(nvar,nrow,ncol)
       dimension aux(naux,nrow,ncol)
 

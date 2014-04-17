@@ -7,7 +7,7 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-      dimension fliparray((mitot+mjtot)*nvar)
+      dimension fliparray((mitot+mjtot)*nghost*nvar)
       dimension val(nvar,mitot,mjtot)
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
 
@@ -146,6 +146,9 @@ c    1                            nc-jj+j1
  100          format(" filling loc ",2i5," with ",2i5)
 
               do 15 ivar = 1, nvar
+                 iindex = nr-(ii-i1)
+                 jindex = nc-(jj-j1)
+                 index = iadd(ivar,nr-(ii-i1),nc-(jj-j1))
                  val(ivar,nrowst+(ii-ilo),ncolst+(jj-jlo)) = 
      1                  fliparray(iadd(ivar,nr-(ii-i1),nc-(jj-j1)))
  15           continue

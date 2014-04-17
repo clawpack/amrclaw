@@ -7,6 +7,8 @@ c
       implicit double precision (a-h,o-z)
 
       logical sticksout, found
+!     make fliparray largest possible grid size
+      dimension fliparray(2*max1d*nghost*(nvar+naux))
 c
 c ::::::::::::::::::::::::: SAVEQC :::::::::::::::::::::::::::::::::
 c  prepare new fine grids to save fluxes after each integration step
@@ -60,11 +62,13 @@ c         make coarsened enlarged patch for conservative fixup
           endif
 
           if (sticksout .and. (xperdom.or.yperdom.or.spheredom)) then
-             iperim = nrow+ncol
-             locflip = igetsp(iperim*(nvar+naux))
+             !iperim = nrow+ncol 
+             !locflip = igetsp(iperim*nghost*(nvar+naux))
              call preicall(alloc(loctmp),alloc(loctx),nrow,ncol,nvar,
-     .                     naux,iclo,ichi,jclo,jchi,level-1,locflip)
-             call reclam(locflip,iperim*(nvar+naux))
+     .                     naux,iclo,ichi,jclo,jchi,level-1,
+     .                     fliparray)
+!     .                     alloc(locflip))
+!             call reclam(locflip,iperim*nghost*(nvar+naux))
           else 
              call icall(alloc(loctmp),alloc(loctx),nrow,ncol,nvar,naux,
      .                   iclo,ichi,jclo,jchi,level-1,1,1)

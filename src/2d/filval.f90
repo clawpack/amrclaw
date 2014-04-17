@@ -34,7 +34,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     real(kind=8) :: valc(nvar,mic,mjc), auxc(naux,mic,mjc)
     real(kind=8) :: dx_coarse, dy_coarse, xl, xr, yb, yt, area
     real(kind=8) :: s1m, s1p, slopex, slopey, xoff, yoff
-    real(kind=8) :: fliparray((mitot+mjtot)*(nvar+naux))
+    real(kind=8) :: fliparray((mitot+mjtot)*nghost*(nvar+naux))
     real(kind=8) :: setflags(mitot,mjtot),maxauxdif,aux2(naux,mitot,mjtot)
     integer :: mjb
 
@@ -131,7 +131,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
         val(1,:,:) = NEEDS_TO_BE_SET
         if (xperdom .or. yperdom .or. spheredom) then
             call preintcopy(val,mitot,mjtot,nvar,ilo-nghost,ihi+nghost,     &
-                            jlo-nghost,jhi+nghost,level,1,1,fliparray)
+                            jlo-nghost,jhi+nghost,level,fliparray)
         else
             call intcopy(val,mitot,mjtot,nvar,ilo-nghost,ihi+nghost,  &
                          jlo-nghost,jhi+nghost,level,1,1)   
