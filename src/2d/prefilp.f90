@@ -15,14 +15,18 @@
 !     directly into the enlarged valbig array for this piece.
 !
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nrowst,ncolst,fill_indices)
+recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nrowst,ncolst,  &  
+                                  ilo,ihi,jlo,jhi)
 
-    use amr_module, only: iregsz, jregsz, nghost, xlower, ylower
-    use amr_module, only: spheredom, hxposs, hyposs
+
+
+    use amr_module, only: iregsz, jregsz, nghost, xlower, ylower, xperdom, yperdom
+    use amr_module, only: spheredom, hxposs, hyposs, NEEDS_TO_BE_SET
     implicit none
 
     ! Input
-    integer, intent(in) :: level, nvar, naux, mitot, mjtot, nrowst, ncolst, fill_indices(4)
+    integer, intent(in) :: level, nvar, naux, mitot, mjtot, nrowst, ncolst
+    integer, intent(in) :: ilo,ihi,jlo,jhi
     real(kind=8), intent(in) :: time
 
     ! Output
@@ -41,51 +45,77 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
 !     # will divide patch into 9 possibilities (some empty): 
 !       x sticks out left, x interior, x sticks out right
 !       same for y. for example, the max. would be
-!       i from (fill_indices(1),-1), (0,iregsz(level)-1), (iregsz(level),fill_indices(2))
-        
-!--        write(dbugunit,*)" entering prefilrecur with level ",level
-!--        write(dbugunit,*)"     and patch indices fill_indices ",
-!--     &             fill_indices
+!       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
 
-    ist(1)  = fill_indices(1)
-    ist(2)  = 0
-    ist(3)  = iregsz(level)
-    iend(1) = -1
-    iend(2) = iregsz(level)-1
-    iend(3) = fill_indices(2)
+    if (xperdom) then       
+       ist(1)    = ilo
+       ist(2)    = 0
+       ist(3)    = iregsz(level)
+       iend(1)   = -1
+       iend(2)   = iregsz(level)-1
+       iend(3)   = ihi
+       ishift(1) = iregsz(level)
+       ishift(2) = 0
+       ishift(3) = -iregsz(level)
+    else  ! if not periodic, set vals to only have nonnull intersection for interior regoin
+       ist(1)    = iregsz(level)
+       ist(2)    = ilo
+       ist(3)    = iregsz(level)
+       iend(1)   = -1
+       iend(2)   = ihi
+       iend(3)   = -1
+       ishift(1) = 0
+       ishift(2) = 0
+       ishift(3) = 0
+    endif
 
-    jst(1)  = fill_indices(3)
-    jst(2)  = 0
-    jst(3)  = jregsz(level)
-    jend(1) = -1
-    jend(2) = jregsz(level)-1
-    jend(3) = fill_indices(4)
+    if (yperdom .or. spheredom) then
+       jst(1)  = jlo
+       jst(2)  = 0
+       jst(3)  = jregsz(level)
+       jend(1) = -1
+       jend(2) = jregsz(level)-1
+       jend(3) = jhi
+       jshift(1) = jregsz(level)
+       jshift(2) = 0
+       jshift(3) = -jregsz(level)
+    else
+       jst(1)    = jregsz(level)
+       jst(2)    = jlo
+       jst(3)    = jregsz(level)
+       jend(1)   = -1
+       jend(2)   = jhi
+       jend(3)   = -1
+       jshift(1) = 0
+       jshift(2) = 0
+       jshift(3) = 0
+    endif
 
-    ishift(1) = iregsz(level)
-    ishift(2) = 0
-    ishift(3) = -iregsz(level)
-    jshift(1) = jregsz(level)
-    jshift(2) = 0
-    jshift(3) = -jregsz(level)
-
-    do i = 1, 3
-        i1 = max(fill_indices(1),  ist(i))
-        i2 = min(fill_indices(2), iend(i))
-        do j = 1, 3
-            j1 = max(fill_indices(3),  jst(j))
-            j2 = min(fill_indices(4), jend(j))
+!   ## loop over the 9 regions (in 2D) of the patch - the interior is i=j=2 plus
+!   ## the ghost cell regions.  If any parts stick out of domain and are periodic
+!   ## map indices periodically, but stick the values in the correct place
+!   ## in the orig grid (indicated by iputst,jputst.
+!   ## if a region sticks out of domain  but is not periodic, not handled in (pre)-icall 
+!   ## but in setaux/bcamr (not called from here).
+    do 20 i = 1, 3
+        i1 = max(ilo,  ist(i))
+        i2 = min(ihi, iend(i))
+        if (i1 .gt. i2) go to 20
+        do 10 j = 1, 3
+            j1 = max(jlo,  jst(j))
+            j2 = min(jhi, jend(j))
 
             ! part of patch in this region
-            if ((i1 <= i2) .and. (j1 <= j2)) then 
+            if (j1 <= j2) then 
 
                 ! there is something to fill. j=2 case is interior, no special
                 ! mapping needed even if spherical bc
                 if (.not. spheredom .or. j == 2 ) then
-                    iputst = (i1 - fill_indices(1)) + nrowst
-                    jputst = (j1 - fill_indices(3)) + ncolst
-                    rect = [i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j)]
+                    iputst = (i1 - ilo) + nrowst
+                    jputst = (j1 - jlo) + ncolst
+!                    rect = [i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j)]
                     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                                  iputst,jputst,rect)
+                                  iputst,jputst,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j))
                 else
                     nr = i2 - i1 + 1
                     nc = j2 - j1 + 1
@@ -111,11 +141,13 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
                     ybwrap = ylower + jwrap1*hyposs(level)
               
                     if (naux>0) then
+                        scratchaux = NEEDS_TO_BE_SET  !flag all cells with signal since dimensioned strangely
                         call setaux(ng,nr,nc,xlwrap,ybwrap,hxposs(level),hyposs(level),naux,scratchaux)
-                    endif
+                    endif 
+
                     rect = [iwrap1,iwrap2,j1+jbump,j2+jbump]
                     call filrecur(level,nvar,scratch,scratchaux,naux,time,nr, &
-                                  nc,1,1,rect)
+                                  nc,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump)
 
                     ! copy back using weird mapping for spherical folding
                     do ii = i1, i2
@@ -123,7 +155,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
                             ! write(dbugunit,'(" filling loc ",2i5," with ",2i5)') nrowst+ii-fill_indices(1),ncolst+jj-fill_indices(3),nr-(ii-i1),nc-jj+j1
 
                             do ivar = 1, nvar
-                                valbig(ivar,nrowst+(ii-fill_indices(1)),ncolst+(jj-fill_indices(3))) = &
+                                valbig(ivar,nrowst+(ii-ilo),ncolst+(jj-jlo)) = &
                                     scratch(iaddscratch(ivar,nr-(ii-i1),nc-(jj-j1)))
                             end do
                             ! write(dbugunit,'(" new val is ",4e15.7)')(valbig(ivar,nrowst+(ii-fill_indices(1)),ncolst+(jj-fill_indices(3))),ivar=1,nvar)
@@ -131,8 +163,8 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
                     end do 
                 endif
             endif
-        end do
-    end do
+ 10     continue
+ 20   continue
 
 contains
 

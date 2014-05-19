@@ -13,8 +13,10 @@ c
 
       dimension valbig(nvar,mitot,mjtot,mktot)
       dimension    aux(naux,mitot,mjtot,mktot)
-      dimension ist(3), iend(3), jst(3), jend(3), kst(3), kend(3)
-      dimension ishift(3), jshift(3), kshift(3)
+      dimension ist(3), iend(3), ishift(3)
+      dimension jst(3), jend(3), jshift(3)
+      dimension kst(3), kend(3), kshift(3)
+  
 
 c     dimension scratch(max(mitot,mjtot,mktot)*nghost*nvar)
 c     dimension scratchaux(max(mitot,mjtot,mktot)*nghost*naux)
@@ -48,49 +50,88 @@ c       x sticks out left, x interior, x sticks out right
 c       same for y and z. for example, the max. would be
 c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
 
-        ist(1)  = ilo
-        ist(2)  = 0
-        ist(3)  = iregsz(level)
-        iend(1) = -1
-        iend(2) = iregsz(level)-1
-        iend(3) = ihi
+      if (xperdom) then
+         ist(1)  = ilo
+         ist(2)  = 0
+         ist(3)  = iregsz(level)
+         iend(1) = -1
+         iend(2) = iregsz(level)-1
+         iend(3) = ihi
+         ishift(1) = iregsz(level)
+         ishift(2) = 0
+         ishift(3) = -iregsz(level)
+      else
+         ist(1)    = iregsz(level)
+         ist(2)    = ilo
+         ist(3)    = iregsz(level)
+         iend(1)   = -1
+         iend(2)   = ihi
+         iend(3)   = -1
+         ishift(1) = 0
+         ishift(2) = 0
+         ishift(3) = 0
+      endif
 
-        jst(1)  = jlo
-        jst(2)  = 0
-        jst(3)  = jregsz(level)
-        jend(1) = -1
-        jend(2) = jregsz(level)-1
-        jend(3) = jhi
+      if (yperdom) then
+         jst(1)  = jlo
+         jst(2)  = 0
+         jst(3)  = jregsz(level)
+         jend(1) = -1
+         jend(2) = jregsz(level)-1
+         jend(3) = jhi
+         jshift(1) = jregsz(level)
+         jshift(2) = 0
+         jshift(3) = -jregsz(level)
+      else
+         jst(1)    = jregsz(level)
+         jst(2)    = jlo
+         jst(3)    = jregsz(level)
+         jend(1)   = -1
+         jend(2)   = jhi
+         jend(3)   = -1
+         jshift(1) = 0
+         jshift(2) = 0
+         jshift(3) = 0
+      endif
 
-        kst(1)  = klo
-        kst(2)  = 0
-        kst(3)  = kregsz(level)
-        kend(1) = -1
-        kend(2) = kregsz(level)-1
-        kend(3) = khi
+      if (zperdom) then
+         kst(1)  = klo
+         kst(2)  = 0
+         kst(3)  = kregsz(level)
+         kend(1) = -1
+         kend(2) = kregsz(level)-1
+         kend(3) = khi
+         kshift(1) = kregsz(level)
+         kshift(2) = 0
+         kshift(3) = -kregsz(level)
+      else
+         kst(1)    = kregsz(level)
+         kst(2)    = klo
+         kst(3)    = kregsz(level)
+         kend(1)   = -1
+         kend(2)   = khi
+         kend(3)   = -1
+         kshift(1) = 0
+         kshift(2) = 0
+         kshift(3) = 0
+      endif
 
-        ishift(1) = iregsz(level)
-        ishift(2) = 0
-        ishift(3) = -iregsz(level)
-        jshift(1) = jregsz(level)
-        jshift(2) = 0
-        jshift(3) = -jregsz(level)
-        kshift(1) = kregsz(level)
-        kshift(2) = 0
-        kshift(3) = -kregsz(level)
 
-
-        do i = 1, 3
+        do 30 i = 1, 3
          i1 = max(ilo,  ist(i))
          i2 = min(ihi, iend(i))
-         do j = 1, 3
+         if (i1 .gt. i2) go to 30
+
+         do 20 j = 1, 3
            j1 = max(jlo,  jst(j))
            j2 = min(jhi, jend(j))
-           do k = 1, 3
+           if (j1 .gt. j2) go to 20
+
+           do 10 k = 1, 3
              k1 = max(klo,  kst(k))
              k2 = min(khi, kend(k))
 
-           if ((i1 <= i2) .and. (j1 <= j2) .and. (k1 <= k2)) then ! part of patch in this region
+           if (k1 <= k2) then ! part of patch in this region
               iputst = (i1 - ilo) + nrowst
               jputst = (j1 - jlo) + ncolst
               kputst = (k1 - klo) + nfilst
@@ -104,13 +145,12 @@ c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
      3                      i1+ishift(i),i2+ishift(i),
      4                      j1+jshift(j),j2+jshift(j),
      5                      kuse1,kuse2)               
-c    5                      k1+kshift(k),k2+kshift(k))
 
            end if
 
-           end do
-         end do
-        end do
+ 10      end do
+ 20     end do
+ 30    end do
 
-        return
-        end
+       return
+       end

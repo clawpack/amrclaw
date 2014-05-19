@@ -4,7 +4,7 @@ c
        subroutine icall(val,aux,nrow,ncol,nvar,naux,
      .                  ilo,ihi,jlo,jhi,level,iputst,jputst)
 
-      use amr_module
+       use amr_module
        implicit double precision (a-h, o-z)
 
        dimension val(nvar,nrow,ncol)
@@ -79,72 +79,9 @@ c  that have been primed with bcs to be advanced.
 
  99   continue
 
-c
-c if enlarged patch sticks out but isnt periodic just stick values
-c in there so qad and src1d doesnt complain. the values wont be used 
-c dont fill using values where debuggers might complain about uninitialized values
-      if (ilo .lt. 0 .or. ihi .ge. iregsz(level) .or.
-     &    jlo .lt. 0 .or. jhi .ge. jregsz(level)) then
-	sticksout = .true.
-      else
-	sticksout = .false.
-      endif
+c   if cells stick out of domain but not periodic then set elsewhere 
+c   either setaux  and bc2amr. (called from routine that called this, e.g.
+c   saveqc or filval)
 
-      if (sticksout) then  
-         if (xperdom .or. yperdom .or. spheredom) then
-           write(*,*)" should not be in this code with periodic bc"
-           write(*,*)"not writing into val correctly using mapping "
-	   stop
-         endif
-         if (ilo .eq. -1) then
-            do j = max(jlo,0), min(jhi,jregsz(level)-1)
-              jj = jputst + j - jlo
-              do ivar = 1, nvar
-c               it has got to be the first row that sticks out
-c               since called from filval with enlarged patch and
-c               no ghost cells
-                val(ivar,1,jj) = val(ivar,2,jj) 
-              end do
-              do iaux = 1, naux
-c                do same for aux arrays
-                 aux(iaux,1,jj) = aux(iaux,2,jj) 
-              end do
-            end do
-         endif
-         if (ihi .eq. iregsz(level)) then
-            do j = max(jlo,0), min(jhi,jregsz(level)-1)
-              jj = jputst + j - jlo
-              do ivar = 1, nvar
-                 val(ivar,nrow,jj) = val(ivar,nrow-1,jj) 
-              end do
-              do iaux = 1, naux
-                 aux(iaux,nrow,jj) = aux(iaux,nrow-1,jj) 
-              end do
-            end do
-         endif
-         if (jlo .eq. -1) then
-            do i = max(ilo,0), min(ihi,iregsz(level)-1)
-              ii = iputst + i - ilo
-              do ivar = 1, nvar
-                val(ivar,ii,1) = val(ivar,ii,2) 
-              end do
-              do iaux = 1, naux
-                aux(iaux,ii,1) = aux(iaux,ii,2) 
-              end do
-            end do
-         endif
-         if (jhi .eq. jregsz(level)) then
-            do i = max(ilo,0), min(ihi,iregsz(level)-1)
-              ii = iputst + i - ilo
-              do ivar = 1, nvar
-                 val(ivar,ii,ncol) = val(ivar,ii,ncol-1) 
-              end do
-              do iaux = 1, naux
-                 aux(iaux,ii,ncol) = aux(iaux,ii,ncol-1) 
-              end do
-            end do
-         endif
-      endif
-
-      return
-      end
+        return
+        end

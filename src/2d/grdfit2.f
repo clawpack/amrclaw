@@ -1,11 +1,13 @@
 c
 c ---------------------------------------------------------
 c
-      subroutine grdfit (lbase,lcheck,nvar,naux,cut,time,start_time)
+      subroutine grdfit (lbase,lcheck,nvar,naux,cut,time,
+     1                   start_time)
 c
       use amr_module
       implicit double precision (a-h,o-z)
-
+      integer clock_start, clock_finish, clock_rate
+      integer clock_start1
 c
       dimension  corner(nsize,maxcl)
       integer    numptc(maxcl), prvptr
@@ -19,6 +21,8 @@ c         on each level. lcheck is the level being error estimated
 c         so that lcheck+1 will be the level of the new grids.
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
+      call system_clock(clock_start,clock_rate)
+
 
 c ### initialize region start and end indices for new level grids
       iregst(lcheck+1) = iinfinity
@@ -31,7 +35,10 @@ c     ## npts is number of points actually colated - some
 c     ## flagged points turned off due to proper nesting requirement.
 c     ## (storage based on nptmax calculation however).
 
+      call system_clock(clock_start1,clock_rate)
       call flglvl2(nvar,naux,lcheck,nptmax,index,lbase,npts,start_time)
+      call system_clock(clock_finish,clock_rate)
+      timeFlglvl = timeFlglvl + clock_finish - clock_start1
 
       if (npts .eq. 0) go to 99
 c
@@ -125,6 +132,8 @@ c    ## the array was still allocated, so need to test further to see if colatin
 c    ## array space needs to be reclaimed
       if (nptmax .gt. 0) call reclam(index, 2*nptmax) 
 c
+      call system_clock(clock_finish,clock_rate)
+      timeGrdfitAll = timeGrdfitAll + clock_finish - clock_start
 
       return
       end

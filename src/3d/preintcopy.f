@@ -9,8 +9,10 @@ c
 
 
       dimension val(nvar,mitot,mjtot,mktot)
-      dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
-      dimension kst(3), kend(3),                  kshift(3)
+      dimension ist(3), iend(3), ishift(3)
+      dimension jst(3), jend(3), jshift(3)
+      dimension kst(3), kend(3), kshift(3)
+
 
 c
 c  :::::::::::::: PREINTCOPY :::::::::::::::::::::::::::::::::::::::::::
@@ -35,46 +37,88 @@ c       x sticks out left, x interior, x sticks out right;
 c       same for y, same for z. for example, the max. would be
 c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
         
-        ist(1)    =  ilo
-        ist(2)    =  0
-        ist(3)    =  iregsz(level)
-        iend(1)   = -1
-        iend(2)   =  iregsz(level)-1
-        iend(3)   =  ihi
-        jst(1)    =  jlo
-        jst(2)    =  0
-        jst(3)    =  jregsz(level)
-        jend(1)   = -1
-        jend(2)   =  jregsz(level)-1
-        jend(3)   =  jhi
-        kst(1)    =  klo
-        kst(2)    =  0
-        kst(3)    =  kregsz(level)
-        kend(1)   = -1
-        kend(2)   =  kregsz(level)-1
-        kend(3)   =  khi
-        ishift(1) =  iregsz(level)
-        ishift(2) =  0
-        ishift(3) = -iregsz(level)
-        jshift(1) =  jregsz(level)
-        jshift(2) =  0
-        jshift(3) = -jregsz(level)
-        kshift(1) =  kregsz(level)
-        kshift(2) =  0
-        kshift(3) = -kregsz(level)
+      if (xperdom) then
+         ist(1)  = ilo
+         ist(2)  = 0
+         ist(3)  = iregsz(level)
+         iend(1) = -1
+         iend(2) = iregsz(level)-1
+         iend(3) = ihi
+         ishift(1) = iregsz(level)
+         ishift(2) = 0
+         ishift(3) = -iregsz(level)
+      else
+         ist(1)    = iregsz(level)
+         ist(2)    = ilo
+         ist(3)    = iregsz(level)
+         iend(1)   = -1
+         iend(2)   = ihi
+         iend(3)   = -1
+         ishift(1) = 0
+         ishift(2) = 0
+         ishift(3) = 0
+      endif
+
+      if (yperdom) then
+         jst(1)  = jlo
+         jst(2)  = 0
+         jst(3)  = jregsz(level)
+         jend(1) = -1
+         jend(2) = jregsz(level)-1
+         jend(3) = jhi
+         jshift(1) = jregsz(level)
+         jshift(2) = 0
+         jshift(3) = -jregsz(level)
+      else
+         jst(1)    = jregsz(level)
+         jst(2)    = jlo
+         jst(3)    = jregsz(level)
+         jend(1)   = -1
+         jend(2)   = jhi
+         jend(3)   = -1
+         jshift(1) = 0
+         jshift(2) = 0
+         jshift(3) = 0
+      endif
+
+      if (zperdom) then
+         kst(1)  = klo
+         kst(2)  = 0
+         kst(3)  = kregsz(level)
+         kend(1) = -1
+         kend(2) = kregsz(level)-1
+         kend(3) = khi
+         kshift(1) = kregsz(level)
+         kshift(2) = 0
+         kshift(3) = -kregsz(level)
+      else
+         kst(1)    = kregsz(level)
+         kst(2)    = klo
+         kst(3)    = kregsz(level)
+         kend(1)   = -1
+         kend(2)   = khi
+         kend(3)   = -1
+         kshift(1) = 0
+         kshift(2) = 0
+         kshift(3) = 0
+      endif
+
 
        do 30 i = 1, 3
           i1 = max(ilo,  ist(i))
           i2 = min(ihi, iend(i))
+          if (i1 .gt. i2) go to 30
+ 
        do 20 j = 1, 3
           j1 = max(jlo,  jst(j))
           j2 = min(jhi, jend(j))
+          if (j1 .gt. j2) go to 20
+
        do 10 k = 1, 3
           k1 = max(klo,  kst(k))
           k2 = min(khi, kend(k))
 
-
-          if (((i1 .le. i2) .and. (j1 .le. j2)) .and. (k1 .le. k2)) then
+          if (k1 .le. k2) then  ! part of patch in this region
             iputst = (i1 - ilo) + 1
             jputst = (j1 - jlo) + 1
             kputst = (k1 - klo) + 1

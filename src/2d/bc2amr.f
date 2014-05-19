@@ -28,7 +28,7 @@ c     #            =  3  for solid walls, assuming this can be implemented
 c     #                  by reflecting the data about the boundary and then
 c     #                  negating the 2'nd (for k=1,2) or 3'rd (for k=3,4)
 c     #                  component of q.
-c     #            =  4  sphere bcs (left half maps to right half of same 
+c     #            =  5  sphere bcs (left half maps to right half of same 
 c     #                  side, and vice versa), as if domain folded in half
 c     ------------------------------------------------
 c

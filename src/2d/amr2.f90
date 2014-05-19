@@ -66,7 +66,7 @@ program amr2
 
     use amr_module, only: max1d, maxvar, maxlv
 
-    use amr_module, only: method, mthlim, use_fwaves
+    use amr_module, only: method, mthlim, use_fwaves, numgrids
     use amr_module, only: nghost, mwaves, mcapa, auxtype
     use amr_module, only: tol, tolsp, flag_richardson, flag_gradient
 
@@ -80,6 +80,7 @@ program amr2
 
     use amr_module, only: lfine, lentot, iregridcount, avenumgrids
     use amr_module, only: tvoll, rvoll, rvol, mstart, possk, ibuff
+    use amr_module, only: timeRegridding,timeUpdating, timeValout
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
@@ -564,15 +565,18 @@ program amr2
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
     ! --------------------------------------------------------
+
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
 
     call system_clock(clock_finish,clock_rate)
-    format_string = "('Total time to solution = ',1f16.8,' s')"
+    write(*,*) " "
+    write(outunit,*) " "
+    format_string = "('Total time to solution = ',1f16.8,' s, using ',i3,' threads')"
     write(outunit,format_string) &
-            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
+            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), maxthreads
     write(*,format_string) &
-            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
+            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), maxthreads
 
     do level = 1, mxnest            
       format_string = "('Total advanc time on level ',i3,' = ',1f16.8,' s')"
@@ -581,6 +585,22 @@ program amr2
       write(*,format_string) level, &
              real(tvoll(level),kind=8) / real(clock_rate,kind=8)
     end do
+    write(*,*) " "
+    write(outunit,*)" "
+
+    format_string = "('Total updating   time            ',1f16.8,' s')"
+    write(outunit,format_string)  real(timeUpdating,kind=8) / real(clock_rate,kind=8)
+    write(*,format_string) real(timeUpdating,kind=8) / real(clock_rate,kind=8)
+
+    format_string = "('Total valout     time            ',1f16.8,' s')"
+    write(outunit,format_string)  real(timeValout,kind=8) / real(clock_rate,kind=8)
+    write(*,format_string) real(timeValout,kind=8) / real(clock_rate,kind=8)
+
+    format_string = "('Total regridding time            ',1f16.8,' s')"
+    write(outunit,format_string)  &
+             real(timeRegridding,kind=8) / real(clock_rate,kind=8)
+    write(*,format_string)  &
+             real(timeRegridding,kind=8) / real(clock_rate,kind=8)
 
     ! Done with computation, cleanup:
     lentotsave = lentot
@@ -605,6 +625,8 @@ program amr2
         write(outunit,801) i,avenumgrids(i)/iregridcount(i),iregridcount(i)
  801    format("for level ",i3, " average num. grids = ",f10.2," over ",i10,  &
                " regridding steps")
+        write(outunit,802) i,numgrids(i)
+ 802    format("for level ",i3,"  current num. grids = ",i7)
       endif
     end do
 

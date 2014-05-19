@@ -233,8 +233,8 @@ c
      5               nghost,delt,hx,hy)
       endif
 c
-         write(outunit,969) mythread,delt, dtnew
- 969     format(" thread ",i4," updated by ",e15.7, " new dt ",e15.7)
+c        write(outunit,969) mythread,delt, dtnew
+c969     format(" thread ",i4," updated by ",e15.7, " new dt ",e15.7)
          rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
 c
       return

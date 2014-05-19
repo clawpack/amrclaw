@@ -1,6 +1,8 @@
-c
+
+c ------------------------------------------------------------------
+
         subroutine fixcapaq(val,aux,mitot,mjtot,valc,auxc,mic,mjc,
-     &                      nvar,naux,levc)
+     &                      nvar,naux,levc,setflags)
 
       use amr_module
       implicit double precision (a-h,o-z)
@@ -14,6 +16,7 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
       dimension   val(nvar,mitot,mjtot), valc(nvar,mic,mjc)
       dimension   aux(naux,mitot,mjtot), auxc(naux,mic,mjc)
+      dimension   setflags(mitot,mjtot)
 
       dcapamax = 0.d0
       lratiox  = intratx(levc)
@@ -43,8 +46,12 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
        ifine = (ic-2)*lratiox + nghost + ico
        do 30 jco = 1, lratioy
          jfine = (jc-2)*lratioy + nghost + jco
-         val(ivar,ifine,jfine) = val(ivar,ifine,jfine) +
-     &                           dcapaq/aux(mcapa,ifine,jfine)
+
+         if (setflags(ifine,jfine) .eq. NEEDS_TO_BE_SET) then 
+         ! was set by coarsegrid, need to check for adjustment
+           val(ivar,ifine,jfine) = val(ivar,ifine,jfine) +
+     &                             dcapaq/aux(mcapa,ifine,jfine)
+         endif
 30     continue
 
 15     continue

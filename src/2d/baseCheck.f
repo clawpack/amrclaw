@@ -8,7 +8,6 @@ c
 
        logical debug/.false./
        integer ist(3),iend(3),jst(3),jend(3),ishift(3),jshift(3)
-       ixproj(kk,ll) = (kk + ll*iabs(kk))/ll - iabs(kk)
 
 c      index into alloc from iclo:ichi and jclo:jchi, not 0..leni/j. 
        iadd(i,j) = locm + i - iclo + leni*(j-jclo) 
