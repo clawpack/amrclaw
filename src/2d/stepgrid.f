@@ -155,7 +155,7 @@ c
 c
       if (method(5).eq.1) then
 c        # with source term:   use Godunov splitting
-         call src2(mx,my,nvar,mbc,mx,my,xlowmbc,ylowmbc,dx,dy,
+         call src2(nvar,mbc,mx,my,xlowmbc,ylowmbc,dx,dy,
      &             q,maux,aux,time,dt)
          endif
 c
