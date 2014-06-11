@@ -117,7 +117,7 @@ c65   if (level .gt. lfine) go to 90
             enddo
             write(matunit1,109)
      &            (alloc(iadd(ivar,i,j,k)), ivar=1,nvar)
-  109       format(10e26.16)
+  109       format(50e26.16)
    77       continue
             write(matunit1,*) ' '
    76       continue
