@@ -84,8 +84,6 @@ module amr_module
             numgrids(maxlv),numcells(maxlv), &
             iorder,mxnest,kcheck
 
-    integer ngrids
-
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ! ::::  for alloc array/memory
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
