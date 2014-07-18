@@ -1,6 +1,6 @@
 
 
-.. _amrclaw_examples_acoustics_2d_radial_1drad
+.. _amrclaw_examples_acoustics_2d_radial_1drad:
 
 One-dimensional acoustics with radially symmetric initial data
 ==============================================================
