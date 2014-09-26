@@ -16,7 +16,7 @@
 !
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nrowst,ncolst,  &  
-                                  ilo,ihi,jlo,jhi)
+                                  ilo,ihi,jlo,jhi,fullGrid)
 
 
 
@@ -28,6 +28,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
     integer, intent(in) :: level, nvar, naux, mitot, mjtot, nrowst, ncolst
     integer, intent(in) :: ilo,ihi,jlo,jhi
     real(kind=8), intent(in) :: time
+    logical  :: fullGrid  ! true first time called, false for recursive coarse sub-patches
 
     ! Output
     real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
@@ -113,9 +114,9 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
                 if (.not. spheredom .or. j == 2 ) then
                     iputst = (i1 - ilo) + nrowst
                     jputst = (j1 - jlo) + ncolst
-!                    rect = [i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j)]
+
                     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                                  iputst,jputst,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j))
+                                  iputst,jputst,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.false.)
                 else
                     nr = i2 - i1 + 1
                     nc = j2 - j1 + 1
@@ -147,7 +148,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
 
                     rect = [iwrap1,iwrap2,j1+jbump,j2+jbump]
                     call filrecur(level,nvar,scratch,scratchaux,naux,time,nr, &
-                                  nc,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump)
+                                  nc,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump,.false.)
 
                     ! copy back using weird mapping for spherical folding
                     do ii = i1, i2

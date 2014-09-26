@@ -34,6 +34,8 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     ! Locals
     integer :: ilo, ihi, jlo, jhi, level,i,j  ! rect(4)
     real(kind=8) :: xleft, xright, ybot, ytop, hx, hy, xl, xr, yb, yt
+    real(kind=8) :: xloWithGhost,  xhiWithGhost,  yloWithGhost, yhiWithGhost
+    logical      :: fullGrid
 
     xleft  = rnode(cornxlo, mptr)
     xright = rnode(cornxhi, mptr)
@@ -47,6 +49,11 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     hx     = hxposs(level)
     hy     = hyposs(level)
 
+    xloWithGhost = xleft  - ng*hx
+    xhiWithGhost = xright + ng*hx
+    yloWithGhost =  ybot  - ng*hy
+    yhiWithGhost =  ytop  + ng*hy
+    fullGrid = .true.  ! used in filaptch for bc2amr
 
     ! left boundary
     xl = xleft - ng*hx
@@ -57,9 +64,9 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     !rect = [ilo-ng,ilo-1,jlo,jhi]
     if ((xl < xlower) .and. xperdom) then
         call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1, &
-                          ilo-ng,ilo-1,jlo,jhi)
+                          ilo-ng,ilo-1,jlo,jhi,fullGrid)
     else
-        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1,ilo-ng,ilo-1,jlo,jhi)
+        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1,ilo-ng,ilo-1,jlo,jhi,fullGrid)
     endif
 
     ! right boundary
@@ -71,10 +78,10 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     !rect = [ihi+1,ihi+ng,jlo,jhi]
     if ((xr .gt. xupper) .and. xperdom) then
         call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                          mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi)
+                          mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,fullGrid)
     else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                      mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi)
+                      mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,fullGrid)
     endif
 
 
@@ -87,9 +94,9 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     !rect = [ilo-ng,ihi+ng,jlo-ng,jlo-1]
     if ( ((yb < ylower) .and. (yperdom .or. spheredom)) .or. &
         ( ((xl < xlower) .or. (xr > xupper)) .and. xperdom) ) then
-       call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1)
+       call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,fullGrid)
     else
-        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1)
+        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,fullGrid)
     endif
 
     ! top boundary
@@ -102,14 +109,16 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
     if ( ((yt .gt. yupper) .and. (yperdom .or. spheredom)) .or. &
          (((xl .lt. xlower) .or. (xr .gt. xupper)) .and. xperdom) ) then
         call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                         1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng)
+                         1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,fullGrid)
     else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                      1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng)
+                      1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,fullGrid)
     endif
 
-! external boundary conditions   THIS IS NOW DONE IN THE FILPATCHES 
-! (in the recursive filrecur.f, since filpatches had to call bc2amr, have them 
-! all do it).
+    ! set all exterior (physical)  boundary conditions for this grid at once
+    ! used to be done from filpatch, but now only for recursive calls with new patch
+    ! where the info matches. more efficient to do whole grid at once, and avoid copying
+    call bc2amr(valbig,aux,mitot,mjtot,nvar,naux,hx,hy,level,time,xloWithGhost,xhiWithGHost, &
+                yloWithGhost,yhiWithGhost,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
 
 end subroutine bound
