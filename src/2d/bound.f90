@@ -18,107 +18,109 @@
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
 
-    use amr_module, only: rnode, node, hxposs, hyposs, cornxlo, cornxhi
-    use amr_module, only: cornylo, cornyhi, ndilo, ndihi, ndjlo, ndjhi
-    use amr_module, only: nestlevel, xlower, xupper, ylower, yupper
-    use amr_module, only: xperdom, yperdom, spheredom
-    
-    implicit none
+  use amr_module, only: rnode, node, hxposs, hyposs, cornxlo, cornxhi
+  use amr_module, only: cornylo, cornyhi, ndilo, ndihi, ndjlo, ndjhi
+  use amr_module, only: nestlevel, xlower, xupper, ylower, yupper
+  use amr_module, only: xperdom, yperdom, spheredom
 
-    ! Input
-    integer, intent(in) :: nvar, ng, mitot, mjtot, mptr, naux
-    real(kind=8), intent(in) :: time
-    real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
-    real(kind=8), intent(in out) :: aux(naux,mitot,mjtot)
+  implicit none
 
-    ! Locals
-    integer :: ilo, ihi, jlo, jhi, level,i,j  ! rect(4)
-    real(kind=8) :: xleft, xright, ybot, ytop, hx, hy, xl, xr, yb, yt
-    real(kind=8) :: xloWithGhost,  xhiWithGhost,  yloWithGhost, yhiWithGhost
-    logical      :: fullGrid
+  ! Input
+  integer, intent(in) :: nvar, ng, mitot, mjtot, mptr, naux
+  real(kind=8), intent(in) :: time
+  real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
+  real(kind=8), intent(in out) :: aux(naux,mitot,mjtot)
 
-    xleft  = rnode(cornxlo, mptr)
-    xright = rnode(cornxhi, mptr)
-    ybot   = rnode(cornylo, mptr)
-    ytop   = rnode(cornyhi, mptr)
-    ilo    = node(ndilo, mptr)
-    ihi    = node(ndihi, mptr)
-    jlo    = node(ndjlo, mptr)
-    jhi    = node(ndjhi, mptr)
-    level  = node(nestlevel, mptr)
-    hx     = hxposs(level)
-    hy     = hyposs(level)
+  ! Locals
+  integer :: ilo, ihi, jlo, jhi, level,i,j  ! rect(4)
+  real(kind=8) :: xleft, xright, ybot, ytop, hx, hy, xl, xr, yb, yt
+  real(kind=8) :: xloWithGhost,  xhiWithGhost,  yloWithGhost, yhiWithGhost
+  logical      :: patchOnly
 
-    xloWithGhost = xleft  - ng*hx
-    xhiWithGhost = xright + ng*hx
-    yloWithGhost =  ybot  - ng*hy
-    yhiWithGhost =  ytop  + ng*hy
-    fullGrid = .true.  ! used in filaptch for bc2amr
+  xleft  = rnode(cornxlo, mptr)
+  xright = rnode(cornxhi, mptr)
+  ybot   = rnode(cornylo, mptr)
+  ytop   = rnode(cornyhi, mptr)
+  ilo    = node(ndilo, mptr)
+  ihi    = node(ndihi, mptr)
+  jlo    = node(ndjlo, mptr)
+  jhi    = node(ndjhi, mptr)
+  level  = node(nestlevel, mptr)
+  hx     = hxposs(level)
+  hy     = hyposs(level)
 
-    ! left boundary
-    xl = xleft - ng*hx
-    xr = xleft
-    yb = ybot 
-    yt = ytop
-
-    !rect = [ilo-ng,ilo-1,jlo,jhi]
-    if ((xl < xlower) .and. xperdom) then
-        call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1, &
-                          ilo-ng,ilo-1,jlo,jhi,fullGrid)
-    else
-        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1,ilo-ng,ilo-1,jlo,jhi,fullGrid)
-    endif
-
-    ! right boundary
-    xl = xright
-    xr = xright + ng*hx
-    yb = ybot
-    yt = ytop
-
-    !rect = [ihi+1,ihi+ng,jlo,jhi]
-    if ((xr .gt. xupper) .and. xperdom) then
-        call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                          mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,fullGrid)
-    else
-        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                      mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,fullGrid)
-    endif
+  xloWithGhost = xleft  - ng*hx
+  xhiWithGhost = xright + ng*hx
+  yloWithGhost =  ybot  - ng*hy
+  yhiWithGhost =  ytop  + ng*hy
+  ! used in filaptch for bc2amr: for patches it is called. for full grids called from bound below
+  patchOnly = .false.  
 
 
-    ! bottom boundary
-    xl = xleft  - ng*hx
-    xr = xright + ng*hx
-    yb = ybot - ng*hy
-    yt = ybot
-    
-    !rect = [ilo-ng,ihi+ng,jlo-ng,jlo-1]
-    if ( ((yb < ylower) .and. (yperdom .or. spheredom)) .or. &
-        ( ((xl < xlower) .or. (xr > xupper)) .and. xperdom) ) then
-       call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,fullGrid)
-    else
-        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,fullGrid)
-    endif
 
-    ! top boundary
-    xl = xleft - ng*hx
-    xr = xright + ng*hx
-    yb = ytop
-    yt = ytop + ng*hy
 
-    !rect = [ilo-ng,ihi+ng,jhi+1,jhi+ng]
-    if ( ((yt .gt. yupper) .and. (yperdom .or. spheredom)) .or. &
-         (((xl .lt. xlower) .or. (xr .gt. xupper)) .and. xperdom) ) then
-        call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                         1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,fullGrid)
-    else
-        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-                      1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,fullGrid)
-    endif
+  ! left boundary
+  xl = xleft - ng*hx
+  xr = xleft
+  yb = ybot 
+  yt = ytop
+  if ((xl < xlower) .and. xperdom) then
+     call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1, &
+          ilo-ng,ilo-1,jlo,jhi,ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
+  else
+     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1,ilo-ng,ilo-1,jlo,jhi,patchOnly)
+  endif
 
-    ! set all exterior (physical)  boundary conditions for this grid at once
-    ! used to be done from filpatch, but now only for recursive calls with new patch
-    ! where the info matches. more efficient to do whole grid at once, and avoid copying
-    call bc2amr(valbig,aux,mitot,mjtot,nvar,naux,hx,hy,level,time,xloWithGhost,xhiWithGHost, &
-                yloWithGhost,yhiWithGhost,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
+  ! right boundary
+  xl = xright
+  xr = xright + ng*hx
+  yb = ybot
+  yt = ytop
+
+  if ((xr .gt. xupper) .and. xperdom) then
+     call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
+          mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
+  else
+     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
+          mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,patchOnly)
+  endif
+
+  ! bottom boundary
+  xl = xleft  - ng*hx
+  xr = xright + ng*hx
+  yb = ybot - ng*hy
+  yt = ybot
+
+  if ( ((yb < ylower) .and. (yperdom .or. spheredom)) .or. &
+       ( ((xl < xlower) .or. (xr > xupper)) .and. xperdom) ) then
+     call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,   &
+                      1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,                &
+                      ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
+  else
+     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,patchOnly)
+  endif
+
+
+  ! top boundary
+  xl = xleft - ng*hx
+  xr = xright + ng*hx
+  yb = ytop
+  yt = ytop + ng*hy
+
+  if ( ((yt .gt. yupper) .and. (yperdom .or. spheredom)) .or. &
+       (((xl .lt. xlower) .or. (xr .gt. xupper)) .and. xperdom) ) then
+     call prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
+          1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
+  else
+     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
+          1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,patchOnly)
+  endif
+
+
+  ! set all exterior (physical)  boundary conditions for this grid at once
+  ! used to be done from filpatch, but now only for recursive calls with new patch
+  ! where the info matches. more efficient to do whole grid at once, and avoid copying
+  call bc2amr(valbig,aux,mitot,mjtot,nvar,naux,hx,hy,level,time,xloWithGhost,xhiWithGHost, &
+       yloWithGhost,yhiWithGhost,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
 
 end subroutine bound

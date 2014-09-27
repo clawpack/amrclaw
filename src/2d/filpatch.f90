@@ -13,7 +13,7 @@
 ! :::::::::::::::::::::::::::::::::::::::;:::::::::::::::::::::::;
 !
 recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
-                              nrowst,ncolst,ilo,ihi,jlo,jhi,fullGrid)
+                              nrowst,ncolst,ilo,ihi,jlo,jhi,patchOnly)
 
     use amr_module, only: hxposs, hyposs, xlower, ylower, xupper, yupper
     use amr_module, only: outunit, nghost, xperdom, yperdom, spheredom
@@ -25,7 +25,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
     integer, intent(in) :: level, nvar, naux, mitot, mjtot, nrowst, ncolst
     integer, intent(in) :: ilo,ihi,jlo,jhi
     real(kind=8), intent(in) :: t
-    logical  :: fullGrid
+    logical  :: patchOnly
 
     ! Output
     real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
@@ -166,13 +166,15 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
                         dx_coarse,dy_coarse,naux,auxcrse)
         endif
 
-        ! Fill in the edges of the coarse grid
+        ! Fill in the edges of the coarse grid. for recursive calls, patch indices and
+        ! 'coarse grid' indices are the same (no actual coarse grid here, so cant use mptr
+        ! must pass indices. patchOnly argument  is thus true
         if ((xperdom .or. (yperdom .or. spheredom)) .and. sticksout(iplo,iphi,jplo,jphi)) then
             call prefilrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,mjtot_coarse,1,1,   &
-                             iplo,iphi,jplo,jphi,.false.)
+                             iplo,iphi,jplo,jphi,iplo,iphi,jplo,jphi,.true.)
         else
             call filrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,mjtot_coarse,1,1,   &
-                          iplo,iphi,jplo,jphi,.false.)
+                          iplo,iphi,jplo,jphi,.true.)
         endif
 
         do i_fine = 1,mitot_patch
@@ -227,7 +229,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
     yhi_fine = ylower + (jhi + 1) * dy_fine
     ! only call if a small coarser recursive patch
     ! otherwise whole grid bcs done from bound
-    if (.not. fullGrid) then
+    if (patchOnly) then
        call bc2amr(valbig,aux,mitot,mjtot,nvar,naux,dx_fine,dy_fine,level,t,xlow_fine,xhi_fine, &
                    ylow_fine,yhi_fine,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
     endif                   
