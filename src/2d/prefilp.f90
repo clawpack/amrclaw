@@ -15,7 +15,7 @@
 !     directly into the enlarged valbig array for this piece.
 !
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,  &  
+recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,  &  
                                  nrowst,ncolst,ilo,ihi,jlo,jhi,iglo,ighi,jglo,jghi,patchOnly)
 
 
@@ -34,10 +34,10 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,  &
 
     ! Output
     real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
-    real(kind=8), intent(in out) :: aux(naux,mitot,mjtot)
+    real(kind=8), intent(in out) :: auxbig(naux,mitot,mjtot)
     
     ! Local storage
-    integer :: i, j, ii, jj, ivar, nr, nc, ng, i1, i2, j1, j2, nrowst, ncolst
+    integer :: i, j, ii, jj, ivar, ng, i1, i2, j1, j2, nrowst, ncolst
     integer :: iputst, jputst, mi, mj, locpatch, locpaux, igetsp
     integer :: jbump, iwrap1, iwrap2, jwrap1, tmp, locflip, rect(4)
     real(kind=8) :: xlwrap, ybwrap
@@ -107,31 +107,105 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,  &
         i1 = max(ilo,  ist(i))
         i2 = min(ihi, iend(i))
         if (i1 .gt. i2) go to 20
+
         do 10 j = 1, 3
             j1 = max(jlo,  jst(j))
             j2 = min(jhi, jend(j))
+
             ! part of patch in this region
             if (j1 <= j2) then 
-                 ! make temp patch of just the right size. 
-                 mi = i2 - i1 + 1
-                 mj = j2 - j1 + 1
-                 locpatch = igetsp(mi*mj*(nvar+naux))
-                 locpaux  = locpatch + nvar*mi*mj   !XXXX copy in vals for this
-                 call filrecur(level,nvar,alloc(locpatch),alloc(locpaux),naux,time,mi,mj, &
-                               1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.false.)
-                 ! copy it back to proper place in valbig 
-                 call patchCopy(nvar,alloc(locpatch),mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2, &
-                                iglo,ighi,jglo,jghi)
-                 call reclam(locpatch,mi*mj*(nvar+naux))
-            endif
+                if (.not. spheredom .or. j .eq. 2) then
+                    ! make temp patch of just the right size. 
+                    mi = i2 - i1 + 1
+                    mj = j2 - j1 + 1
+                    ! if getting and freeing space is slow, get biggest chunk poss. and reuse
+                    locpatch = igetsp(mi*mj*(nvar+naux))
+                    locpaux  = locpatch + nvar*mi*mj   !XXXX copy in vals for this
+                    if (naux .gt. 0)                                                               &
+                        call auxCopyIn(alloc(locpaux),mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,   &
+                                       iglo,ighi,jglo,jghi)
+                    call filrecur(level,nvar,alloc(locpatch),alloc(locpaux),naux,time,mi,mj,       &
+                                  1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.false.)
+                    ! copy it back to proper place in valbig 
+                    call patchCopyOut(nvar,alloc(locpatch),mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,   &
+                                      iglo,ighi,jglo,jghi)
+                    call reclam(locpatch,mi*mj*(nvar+naux))
+
+                else
+                   
+                    mi = i2 - i1 + 1
+                    mj = j2 - j1 + 1
+                    ng = 0    ! no ghost cells in this little patch. fill everything.
+
+                    jbump = 0
+                    if (j1 < 0)   jbump = abs(j1)  ! bump up so new bottom is 0
+                    if (j2 >= jregsz(level)) jbump = -(j2+1-jregsz(level)) ! bump down
+
+                    ! next 2 lines would take care of periodicity in x
+                    iwrap1 = i1 + ishift(i)
+                    iwrap2 = i2 + ishift(i)
+                    ! next 2 lines take care of mapped sphere bcs
+                    iwrap1 = iregsz(level) - iwrap1 -1
+                    iwrap2 = iregsz(level) - iwrap2 -1
+                    ! swap so that smaller one is left index, etc since mapping reflects
+                    tmp = iwrap1
+                    iwrap1 = iwrap2
+                    iwrap2 = tmp
+
+                    jwrap1 = j1 + jbump
+                    xlwrap = xlower + iwrap1*hxposs(level)
+                    ybwrap = ylower + jwrap1*hyposs(level)
+
+                    if (naux>0) then
+                        scratchaux = NEEDS_TO_BE_SET  !flag all cells with signal since dimensioned strangely
+                        call setaux(ng,mi,mj,xlwrap,ybwrap,hxposs(level),hyposs(level),naux,scratchaux)
+                    endif 
+
+                    rect = [iwrap1,iwrap2,j1+jbump,j2+jbump]
+                    call filrecur(level,nvar,scratch,scratchaux,naux,time,mi, &
+                                  mj,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump,.false.)
+
+                    ! copy back using weird mapping for spherical folding (so cant call copy subr below)
+                    do ii = i1, i2
+                        do jj = j1, j2
+                            ! write(dbugunit,'(" filling loc ",2i5," with ",2i5)') & 
+                            ! nrowst+ii-fill_indices(1),ncolst+jj-fill_indices(3),mi-(ii-i1),mj-jj+j1
+
+                            do ivar = 1, nvar
+                                valbig(ivar,nrowst+(ii-ilo),ncolst+(jj-jlo)) = &
+                                    scratch(iaddscratch(ivar,mi-(ii-i1),mj-(jj-j1)))
+                            end do
+                            ! write(dbugunit,'(" new val is ",4e15.7)')(valbig(ivar,  &
+                            ! nrowst+(ii-fill_indices(1)),ncolst+(jj-fill_indices(3))),ivar=1,nvar)
+                        end do
+                    end do 
+                endif ! end if not spherical or j == 2
+            endif ! end if region not empty
+
  10     continue
  20 continue
-                 
+           
+contains
+
+    integer pure function iadd(n,i,j)
+        implicit none
+        integer, intent(in) :: n, i, j
+        iadd = locflip + n-1 + nvar*((j-1)*mi+i-1)
+    end function iadd
+
+    integer pure function iaddscratch(n,i,j)
+        implicit none
+        integer, intent(in) :: n, i, j
+        iaddscratch = n + nvar*((j-1)*mi+i-1)  ! no subtract 1
+
+    end function iaddscratch
+
+
 end subroutine prefilrecur
 
 ! ============================================================================================
 
-subroutine patchCopy(nvar,valpatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,iglo,ighi,jglo,jghi)
+subroutine patchCopyOut(nvar,valpatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,iglo,ighi,jglo,jghi)
  
     ! the patch was filled from a possibly periodically wrapped place.
     ! put it back where it should go in original grids solution array
@@ -158,86 +232,35 @@ subroutine patchCopy(nvar,valpatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,iglo,igh
 
     valbig(:,ist:ist+mi-1, jst:jst+mj-1) = valpatch
 
-end subroutine patchCopy
+end subroutine patchCopyOut
 
-!!$
-!!$
-!!$
-!!$
-!!$
-!!$
-!!$
-!!$
-!!$                ! there is something to fill. j=2 case is interior, no special
-!!$                ! mapping needed even if spherical bc
-!!$                if (.not. spheredom .or. j == 2 ) then
-!!$                    iputst = (i1 - ilo) + nrowst
-!!$                    jputst = (j1 - jlo) + ncolst
-!!$
-!!$                    call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-!!$                                  iputst,jputst,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.false.)
-!!$                else
-!!$                    nr = i2 - i1 + 1
-!!$                    nc = j2 - j1 + 1
-!!$                    ng = 0    ! no ghost cells in this little patch. fill everything.
-!!$
-!!$                    jbump = 0
-!!$                    if (j1 < 0)   jbump = abs(j1)  ! bump up so new bottom is 0
-!!$                    if (j2 >= jregsz(level)) jbump = -(j2+1-jregsz(level)) ! bump down
-!!$
-!!$                    ! next 2 lines would take care of periodicity in x
-!!$                    iwrap1 = i1 + ishift(i)
-!!$                    iwrap2 = i2 + ishift(i)
-!!$                    ! next 2 lines take care of mapped sphere bcs
-!!$                    iwrap1 = iregsz(level) - iwrap1 -1
-!!$                    iwrap2 = iregsz(level) - iwrap2 -1
-!!$                    ! swap so that smaller one is left index, etc since mapping reflects
-!!$                    tmp = iwrap1
-!!$                    iwrap1 = iwrap2
-!!$                    iwrap2 = tmp
-!!$
-!!$                    jwrap1 = j1 + jbump
-!!$                    xlwrap = xlower + iwrap1*hxposs(level)
-!!$                    ybwrap = ylower + jwrap1*hyposs(level)
-!!$              
-!!$                    if (naux>0) then
-!!$                        scratchaux = NEEDS_TO_BE_SET  !flag all cells with signal since dimensioned strangely
-!!$                        call setaux(ng,nr,nc,xlwrap,ybwrap,hxposs(level),hyposs(level),naux,scratchaux)
-!!$                    endif 
-!!$
-!!$                    rect = [iwrap1,iwrap2,j1+jbump,j2+jbump]
-!!$                    call filrecur(level,nvar,scratch,scratchaux,naux,time,nr, &
-!!$                                  nc,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump,.false.)
-!!$
-!!$                    ! copy back using weird mapping for spherical folding
-!!$                    do ii = i1, i2
-!!$                        do jj = j1, j2
-!!$                            ! write(dbugunit,'(" filling loc ",2i5," with ",2i5)') nrowst+ii-fill_indices(1),ncolst+jj-fill_indices(3),nr-(ii-i1),nc-jj+j1
-!!$
-!!$                            do ivar = 1, nvar
-!!$                                valbig(ivar,nrowst+(ii-ilo),ncolst+(jj-jlo)) = &
-!!$                                    scratch(iaddscratch(ivar,nr-(ii-i1),nc-(jj-j1)))
-!!$                            end do
-!!$                            ! write(dbugunit,'(" new val is ",4e15.7)')(valbig(ivar,nrowst+(ii-fill_indices(1)),ncolst+(jj-fill_indices(3))),ivar=1,nvar)
-!!$                        end do
-!!$                    end do 
-!!$                endif
-!!$            endif
-!!$ 10     continue
-!!$ 20   continue
-!!$
-!!$contains
-!!$
-!!$    integer pure function iadd(n,i,j)
-!!$        implicit none
-!!$        integer, intent(in) :: n, i, j
-!!$        iadd = locflip + n-1 + nvar*((j-1)*nr+i-1)
-!!$    end function iadd
-!!$
-!!$    integer pure function iaddscratch(n,i,j)
-!!$        implicit none
-!!$        integer, intent(in) :: n, i, j
-!!$        iaddscratch = n + nvar*((j-1)*nr+i-1)  ! no subtract 1
-!!$    end function iaddscratch
+! ============================================================================================
+
+subroutine auxCopyIn(auxPatch,mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,iglo,ighi,jglo,jghi)
+
+    ! set the aux array for the patch  to go with the soln vals to  be filled in filpatch,
+    ! by copying from valbig's auxbig array
+
+    use amr_module
+    implicit none
+
+    ! Input
+    integer :: mi, mj, naux, mitot, mjtot, i1, i2,j1, j2, iglo, ighi, jglo, jghi
+
+    ! Output
+    real(kind=8), intent(in out) :: auxbig(naux,mitot,mjtot)
+    real(kind=8), intent(in out) :: auxPatch(naux,mi,mj)
+
+    ! Local storage
+    integer :: ist, jst 
 
 
+    ! this ghost cell patch subset goes from (i1,j1) to (i2,j2) in integer index space
+    ! the grid (including ghost cells) is from (iglo,jglo) to (ighi,jghi)
+    ! figure out where to copy
+    ist = i1 - iglo + 1   ! offset 1 since aux arrays are 1-based
+    jst = j1 - jglo + 1
+
+    auxPatch(:,1:mi,1:mj) = auxbig(:,ist:ist+mi-1, jst:jst+mj-1)
+
+end subroutine auxCopyIn
