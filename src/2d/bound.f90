@@ -121,6 +121,6 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
   ! used to be done from filpatch, but now only for recursive calls with new patch
   ! where the info matches. more efficient to do whole grid at once, and avoid copying
   call bc2amr(valbig,aux,mitot,mjtot,nvar,naux,hx,hy,level,time,xloWithGhost,xhiWithGHost, &
-       yloWithGhost,yhiWithGhost,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
+       yloWithGhost,yhiWithGhost,xperdom,yperdom,spheredom)
 
 end subroutine bound

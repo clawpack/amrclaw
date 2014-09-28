@@ -5,7 +5,6 @@ c
       subroutine bc2amr(val,aux,nrow,ncol,meqn,naux,
      1                  hx, hy, level, time, 
      2                  xleft,  xright,  ybot, ytop,
-     3                  xlower, ylower,xupper,yupper,
      4                  xperiodic, yperiodic,spheredom)
  
 c
@@ -75,7 +74,7 @@ c     Don't overwrite ghost cells in periodic directions!
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
-      use amr_module, only: mthbc
+      use amr_module, only: mthbc, xlower, ylower, xupper, yupper
 
       implicit double precision (a-h,o-z)
 
