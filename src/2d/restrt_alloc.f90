@@ -15,11 +15,13 @@ subroutine restrt_alloc(isize)
     integer :: isize
 
 
-    if (.not.allocated(storage)) then
+!    if (.not.allocated(storage)) then
+    if (.not.allocated(alloc)) then
         write(6,*)"allocating ",isize," -sized alloc array"
 	memsize = isize
-        allocate(storage(memsize))
-        alloc => storage
+!        allocate(storage(memsize))
+        allocate(alloc(memsize))
+!        alloc => storage
         print *, "Storage allocated of size ",memsize," at restart"
     else
         print *, "Storage already allocated!"

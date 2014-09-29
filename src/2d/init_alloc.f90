@@ -13,10 +13,12 @@ subroutine init_alloc()
     use amr_module
     implicit none
     
-    if (.not.allocated(storage)) then
+!    if (.not.allocated(storage)) then
+    if (.not.allocated(alloc)) then
         memsize = 1000000
-        allocate(storage(memsize))
-        alloc => storage
+!        allocate(storage(memsize))
+        allocate(alloc(memsize))
+!        alloc => storage
         print *, "Storage allocated..."
     else
         print *, "Storage already allocated!"

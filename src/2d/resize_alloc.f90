@@ -31,11 +31,13 @@ subroutine resize_storage(new_size,status)
         if (status > 0) then
             return
         endif
-        new_storage(1:memsize) = storage
+!        new_storage(1:memsize) = storage
+        new_storage(1:memsize) = alloc
 
-        call move_alloc(new_storage,storage)
+!        call move_alloc(new_storage,storage)
+        call move_alloc(new_storage,alloc)
 
-        alloc => storage
+!        alloc => storage
         memsize = new_size
     else
         print *,'new_size < memsize,'
