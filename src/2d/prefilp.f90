@@ -122,12 +122,14 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
                     ! make temp patch of just the right size. 
                     mi = i2 - i1 + 1
                     mj = j2 - j1 + 1
-
+                    if (mi .gt. (ihi-ilo+1) .or.  mj .gt. (jhi-jlo+1))  then
+                       write(*,*)" prefilp: not big enough dimension"
+                    endif
                     if (naux .gt. 0)                                                               &
                         call auxCopyIn(auxPatch,mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,   &
                                        iglo,ighi,jglo,jghi)
                     call filrecur(level,nvar,valPatch,auxPatch,naux,time,mi,mj,       &
-                                  1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.false.)
+                                  1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.true.)
                     ! copy it back to proper place in valbig 
                     call patchCopyOut(nvar,valPatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,   &
                                       iglo,ighi,jglo,jghi)
