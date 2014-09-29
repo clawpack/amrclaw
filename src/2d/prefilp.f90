@@ -46,6 +46,10 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
     real(kind=8) :: scratch(max(mitot,mjtot)*nghost*nvar)
     real(kind=8) :: scratchaux(max(mitot,mjtot)*nghost*naux)
 
+    ! dimension at largest possible
+    real(kind=8) :: valPatch((ihi-ilo+1) * (jhi-jlo+1) * nvar)  
+    real(kind=8) :: auxPatch((ihi-ilo+1) * (jhi-jlo+1) * naux)  
+
 !     # will divide patch  (from ilo,jlo to ihi,jhi)  into 9 possibilities (some empty): 
 !       x sticks out left, x interior, x sticks out right
 !       same for y. for example, the max. would be
@@ -118,19 +122,16 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
                     ! make temp patch of just the right size. 
                     mi = i2 - i1 + 1
                     mj = j2 - j1 + 1
-                    ! if getting and freeing space is slow, get biggest chunk poss. and reuse
-                    locpatch = igetsp(mi*mj*(nvar+naux))
-                    locpaux  = locpatch + nvar*mi*mj   !XXXX copy in vals for this
+
                     if (naux .gt. 0)                                                               &
-                        call auxCopyIn(alloc(locpaux),mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,   &
+                        call auxCopyIn(auxPatch,mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,   &
                                        iglo,ighi,jglo,jghi)
-                    call filrecur(level,nvar,alloc(locpatch),alloc(locpaux),naux,time,mi,mj,       &
+                    call filrecur(level,nvar,valPatch,auxPatch,naux,time,mi,mj,       &
                                   1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.false.)
                     ! copy it back to proper place in valbig 
-                    call patchCopyOut(nvar,alloc(locpatch),mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,   &
+                    call patchCopyOut(nvar,valPatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,   &
                                       iglo,ighi,jglo,jghi)
-                    call reclam(locpatch,mi*mj*(nvar+naux))
-
+ 
                 else
                    
                     mi = i2 - i1 + 1
