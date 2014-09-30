@@ -13,10 +13,10 @@ subroutine init_alloc()
     use amr_module
     implicit none
     
-!    if (.not.allocated(storage)) then
-    if (.not.allocated(alloc)) then
+!    if (.not.allocated(storage)) then   ! old way, changed mjb sept. 2014
+    if (.not.allocated(alloc)) then      ! new way, use allocatable arrays, not pointers
         memsize = 1000000
-!        allocate(storage(memsize))
+!        allocate(storage(memsize)) 
         allocate(alloc(memsize))
 !        alloc => storage
         print *, "Storage allocated..."

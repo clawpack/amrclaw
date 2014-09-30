@@ -38,7 +38,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
     
     ! Local storage
     integer :: i, j, ii, jj, ivar, ng, i1, i2, j1, j2, nrowst, ncolst
-    integer :: iputst, jputst, mi, mj, locpatch, locpaux, igetsp
+    integer :: iputst, jputst, mi, mj, locpatch, locpaux
     integer :: jbump, iwrap1, iwrap2, jwrap1, tmp, locflip, rect(4)
     real(kind=8) :: xlwrap, ybwrap
 
@@ -127,12 +127,12 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
                     endif
                     if (naux .gt. 0)                                                               &
                         call auxCopyIn(auxPatch,mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,   &
-                                       iglo,ighi,jglo,jghi)
+                                       iglo,jglo)
                     call filrecur(level,nvar,valPatch,auxPatch,naux,time,mi,mj,       &
                                   1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.true.)
                     ! copy it back to proper place in valbig 
                     call patchCopyOut(nvar,valPatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,   &
-                                      iglo,ighi,jglo,jghi)
+                                      iglo,jglo)
  
                 else
                    
@@ -208,7 +208,7 @@ end subroutine prefilrecur
 
 ! ============================================================================================
 
-subroutine patchCopyOut(nvar,valpatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,iglo,ighi,jglo,jghi)
+subroutine patchCopyOut(nvar,valpatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,iglo,jglo)
  
     ! the patch was filled from a possibly periodically wrapped place.
     ! put it back where it should go in original grids solution array
@@ -239,7 +239,7 @@ end subroutine patchCopyOut
 
 ! ============================================================================================
 
-subroutine auxCopyIn(auxPatch,mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,iglo,ighi,jglo,jghi)
+subroutine auxCopyIn(auxPatch,mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,iglo,jglo)
 
     ! set the aux array for the patch  to go with the soln vals to  be filled in filpatch,
     ! by copying from valbig's auxbig array

@@ -64,6 +64,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
     ! the +3 is to expand on coarse grid to enclose fine
     real(kind=8) :: valcrse((ihi-ilo+3) * (jhi-jlo+3) * nvar)  
     real(kind=8) :: auxcrse((ihi-ilo+3) * (jhi-jlo+3) * naux)  
+
     ! We begin by filling values for grids at level level. If all values can be
     ! filled in this way, we return;
     mitot_patch = ihi-ilo + 1 ! nrowp
@@ -190,7 +191,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
                 if (flaguse(i_fine,j_fine) == 0) then
 
                     do n=1,nvar
-
+                       ! write(*,*)n,i_coarse+1,j_coarse,coarse_index(n,i_coarse + 1,j_coarse)
                         valp10 = valcrse(coarse_index(n,i_coarse + 1,j_coarse))
                         valm10 = valcrse(coarse_index(n,i_coarse - 1,j_coarse))
                         valc   = valcrse(coarse_index(n,i_coarse    ,j_coarse))

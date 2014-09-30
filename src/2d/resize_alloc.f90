@@ -31,8 +31,8 @@ subroutine resize_storage(new_size,status)
         if (status > 0) then
             return
         endif
-!        new_storage(1:memsize) = storage
-        new_storage(1:memsize) = alloc
+!       new_storage(1:memsize) = storage   !old way, changed mjb sept. 2014
+        new_storage(1:memsize) = alloc     ! new way, use allocatable, not pointer       
 
 !        call move_alloc(new_storage,storage)
         call move_alloc(new_storage,alloc)

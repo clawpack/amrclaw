@@ -54,10 +54,10 @@ c
         ycent  = ylow + (jindex-.5)*hy
         xoff   = (xgauge(i)-xcent)/hx
         yoff   = (ygauge(i)-ycent)/hy
-	if (xoff .lt. 0. .or. xoff .gt. 1. or. 
-     .	    yoff .lt. 0. .or. yoff .gt. 1.) then
-	       write(6,*)" BIG PROBLEM in DUMPGAUGE", i
-	endif
+        if (xoff .lt. 0. .or. xoff .gt. 1. or. 
+     .      yoff .lt. 0. .or. yoff .gt. 1.) then
+           write(6,*)" BIG PROBLEM in DUMPGAUGE", i
+        endif
 
 c       ## bilinear interpolation
         do ivar = 1, nvar
@@ -162,13 +162,13 @@ c
       mid = (indexlo + indexhi)/2
 
       if (mptr .gt. mbestsrc(mbestorder(mid))) then
-	   indexlo = mid+1
-	   go to 5
+         indexlo = mid+1
+         go to 5
       else if (mptr .lt. mbestsrc(mbestorder(mid))) then
-	   indexhi = mid-1
-	   go to 5
+         indexhi = mid-1
+         go to 5
       else    ! found the grid. find its first use in the array
-	 istart = mid
+         istart = mid
 
 
  10      if (istart .gt. 1) then
@@ -183,4 +183,3 @@ c
 
  99   return
       end
-	 
