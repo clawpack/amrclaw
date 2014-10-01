@@ -11,7 +11,7 @@ c
 
       dimension valbig(nvar,mitot,mjtot,mktot)
       dimension aux   (naux,mitot,mjtot,mktot)
-      logical   xsticksout, ysticksout
+      logical   xsticksout, ysticksout, patchOnly
 c
 c  :::::::::::::: BOUND :::::::::::::::::::::::::::::::::::::::::::
 c     This routine sets the boundary values for a given grid
@@ -48,6 +48,15 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       hy     = hyposs(level)
       hz     = hzposs(level)
 
+      xloWithGhost = xlo  - ng*hx
+      xhiWithGhost = xhi  + ng*hx
+      yloWithGhost = ylo  - ng*hy
+      yhiWithGhost = yhi  + ng*hy
+      zloWithGhost = zlo  - ng*hz
+      zhiWithGhost = zhi  + ng*hz
+      ! used in filaptch for bc2amr: for patches it is called. for full grids called from bound below
+      patchOnly = .false.  
+
 c     left boundary
 
       xl = xlo - ng*hx
@@ -63,11 +72,13 @@ c     left boundary
 	      call  prefilrecur(level,nvar,valbig,aux,naux,time,
      1                    mitot,mjtot,mktot,
      2                    1,1,ng+1,
-     3                    ilo-ng,ilo-1,jlo-ng,jhi+ng,klo,khi)
+     3                    ilo-ng,ilo-1,jlo-ng,jhi+ng,klo,khi,
+     4                    ilo-ng,ilo+ng,jlo-ng,jhi+ng,klo-ng,khi+ng,
+     5                    patchOnly)
       else
       	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                1,1,ng+1,
-     2                ilo-ng,ilo-1,jlo-ng,jhi+ng,klo,khi)
+     2                ilo-ng,ilo-1,jlo-ng,jhi+ng,klo,khi,patchOnly)
       endif
 
 
@@ -86,11 +97,13 @@ c     right boundary
       	call  prefilrecur(level,nvar,valbig,aux,naux,time,
      1                    mitot,mjtot,mktot,
      2                    mitot-ng+1,1,ng+1,
-     3                    ihi+1,ihi+ng,jlo-ng,jhi+ng,klo,khi)
+     3                    ihi+1,ihi+ng,jlo-ng,jhi+ng,klo,khi,
+     4                    ilo-ng,ilo+ng,jlo-ng,jhi+ng,klo-ng,khi+ng,
+     5                    patchOnly)
       else
       	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                mitot-ng+1,1,ng+1,
-     2                ihi+1,ihi+ng,jlo-ng,jhi+ng,klo,khi)
+     2                ihi+1,ihi+ng,jlo-ng,jhi+ng,klo,khi,patchOnly)
       endif
 
 
@@ -105,11 +118,13 @@ c     front boundary
         call prefilrecur(level,nvar,valbig,aux,naux,time,
      1                   mitot,mjtot,mktot,
      2                   ng+1,1,ng+1,
-     3                   ilo,ihi,jlo-ng,jlo-1,klo,khi)
+     3                   ilo,ihi,jlo-ng,jlo-1,klo,khi,
+     4                   ilo-ng,ilo+ng,jlo-ng,jhi+ng,klo-ng,khi+ng,
+     5                    patchOnly)
       else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                ng+1,1,ng+1,
-     2                ilo,ihi,jlo-ng,jlo-1,klo,khi)
+     2                ilo,ihi,jlo-ng,jlo-1,klo,khi,patchOnly)
       endif
 
 c     rear boundary
@@ -123,11 +138,13 @@ c     rear boundary
       	call prefilrecur(level,nvar,valbig,aux,naux,time,
      1                   mitot,mjtot,mktot,
      2                   ng+1,mjtot-ng+1,ng+1,
-     3                   ilo,ihi,jhi+1,jhi+ng,klo,khi)
+     3                   ilo,ihi,jhi+1,jhi+ng,klo,khi,
+     4                   ilo-ng,ilo+ng,jlo-ng,jhi+ng,klo-ng,khi+ng,
+     5                   patchOnly)
       else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                ng+1,mjtot-ng+1,ng+1,
-     2                ilo,ihi,jhi+1,jhi+ng,klo,khi)
+     2                ilo,ihi,jhi+1,jhi+ng,klo,khi,patchOnly)
       endif
 
 c     bottom boundary
@@ -146,11 +163,14 @@ c     bottom boundary
         call prefilrecur(level,nvar,valbig,aux,naux,time,
      1                   mitot,mjtot,mktot,
      2                   1,1,1,
-     3                   ilo-ng,ihi+ng,jlo-ng,jhi+ng,klo-ng,klo-1)
+     3                   ilo-ng,ihi+ng,jlo-ng,jhi+ng,klo-ng,klo-1,
+     4                   ilo-ng,ilo+ng,jlo-ng,jhi+ng,klo-ng,khi+ng,
+     5                   patchOnly)
       else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                1,1,1,
-     2                ilo-ng,ihi+ng,jlo-ng,jhi+ng,klo-ng,klo-1)
+     2                ilo-ng,ihi+ng,jlo-ng,jhi+ng,klo-ng,klo-1,
+     3                patchOnly)
       end if
 
 c     top boundary
@@ -169,14 +189,26 @@ c     top boundary
         call prefilrecur(level,nvar,valbig,aux,naux,time,
      1                   mitot,mjtot,mktot,
      2                   1,1,mktot-ng+1,
-     3                   ilo-ng,ihi+ng,jlo-ng,jhi+ng,khi+1,khi+ng)
+     3                   ilo-ng,ihi+ng,jlo-ng,jhi+ng,khi+1,khi+ng,
+     4                   ilo-ng,ilo+ng,jlo-ng,jhi+ng,klo-ng,khi+ng,
+     5                   patchOnly)
       else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                1,1,mktot-ng+1,
-     2                ilo-ng,ihi+ng,jlo-ng,jhi+ng,khi+1,khi+ng)
+     2                ilo-ng,ihi+ng,jlo-ng,jhi+ng,khi+1,khi+ng,
+     3                patchOnly)
       end if
 
 c
+       ! set all exterior (physical)  boundary conditions for this grid at once
+       ! used to be done from filpatch, but now only for recursive calls with new patch
+       ! where the info matches. more efficient to do whole grid at once, and avoid copying
+      call bc3amr(valbig,aux,mitot,mjtot,mktot,nvar,naux,hx,hy,hz,
+     1            level,time,
+     2            xloWithGhost,xhiWithGHost,
+     3            yloWithGhost,yhiWithGhost,
+     4            zloWithGhost,zhiWithGhost,    
+     5            xperdom,yperdom,spheredom)
 c
       return
       end

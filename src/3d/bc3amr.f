@@ -3,11 +3,8 @@ c ------------------------------------------------------------------
 c
       subroutine bc3amr(val,aux,nrow,ncol,nfil,meqn,naux,
      1                  hx, hy, hz,level, time,
-     2                  xleft,  xright,  yfront, yrear,
-     3                  zbot, ztop,
-     4                  xlower, ylower,zlower,
-     5                  xupper,yupper,zupper,
-     6                  xperiodic, yperiodic,zperiodic)
+     2                  xleft, xright, yfront,yrear,zbot,ztop,
+     3                  xperiodic, yperiodic,zperiodic)
 
 
 c
@@ -80,7 +77,8 @@ c     Don't overwrite ghost cells in periodic directions!
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
-      use amr_module, only:  mthbc
+      use amr_module, only: mthbc,xlower,ylower,zlower
+      use amr_module, only: xupper,yupper,zupper
       implicit double precision (a-h,o-z)
 
       dimension val(meqn,nrow,ncol,nfil)

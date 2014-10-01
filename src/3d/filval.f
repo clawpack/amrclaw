@@ -76,8 +76,7 @@ c 2/28/02 : new call to bc3amr
       call bc3amr(valc,auxc,mic,mjc,mkc,nvar,naux,
      1            hxcrse,hycrse,hzcrse,levc,time,
      2            xl,xr,yf,yr,zb,zt,
-     3            xlower,ylower,zlower,xupper,yupper,zupper,
-     4            xperdom,yperdom,zperdom)
+     3            xperdom,yperdom,zperdom)
 
 
 c

@@ -83,7 +83,6 @@ c
           call bc3amr(alloc(loctmp),alloc(loctx),nrow,ncol,nfil,
      &          nvar,naux,hxc,hyc,hzc,level,time,
      .                xl,xr,yf,yr,zb,zt,
-     .                xlower,ylower,zlower,xupper,yupper,zupper,
      .                xperdom,yperdom,zperdom)
 
        call cstore(alloc(loctmp),nrow,ncol,nfil,nvar,

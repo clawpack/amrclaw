@@ -5,7 +5,9 @@ c
      1                                 valbig,aux,naux,time,
      2                                 mitot,mjtot,mktot,
      3                                 nrowst,ncolst,nfilst,
-     4                                 ilo,ihi,jlo,jhi,klo,khi)
+     4                                 ilo,ihi,jlo,jhi,klo,khi,
+     5                                 iglo,ighi,jglo,jghi,kglo,kghi,
+     6                                 patchOnly)
 
       use amr_module
       implicit double precision (a-h,o-z)
@@ -16,15 +18,11 @@ c
       dimension ist(3), iend(3), ishift(3)
       dimension jst(3), jend(3), jshift(3)
       dimension kst(3), kend(3), kshift(3)
-  
+      logical   patchOnly
 
-c     dimension scratch(max(mitot,mjtot,mktot)*nghost*nvar)
-c     dimension scratchaux(max(mitot,mjtot,mktot)*nghost*naux)
-
-c      iadd(ivar,i,j,k) = locflip + ivar - 1 + nvar*(i-1) + nvar*nr*(j-1)
-c     &                           + nvar*nr*nc*(k-1)
-c      iaddscratch(ivar,i,j,k) = ivar + nvar*(i-1) + nvar*nr*(j-1)
-c     &                               + nvar*nr*nc*(k-1)
+    ! dimension scratch patches at largest possible
+      dimension  valPatch((ihi-ilo+1)*(jhi-jlo+1)*(khi-klo+1)*nvar)  
+      dimension  auxPatch((ihi-ilo+1)*(jhi-jlo+1)*(khi-klo+1)*naux)    
 
 c
 c  :::::::::::::: PREFILRECUR :::::::::::::::::::::::::::::::::::::::::::
@@ -38,10 +36,14 @@ c     Inputs to this routine:
 c     xl, xr, yb, yt, zf, zr = the location in physical space of
 c     corners of a patch.
 c     ilo,ihi,jlo,jhi,klo,khi = the location in index space of this patch.
+c     iglo,ighi,jglo,jghi,kglo,kghi = the location in index space of the grid
+c                          containing the patch, used to compute where to copy and fill
+c     NB: the patch may actually be the whole grid (if called from filpatch for coarser lev)
 c
 c     Outputs from this routine:
 c     The values around the border of the grid are inserted
-c     directly into the enlarged valbig array for this piece.
+c     directly into the enlarged valbig array for this piece, if called from bound
+c     or entire patch filled if called from filpatch
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -116,6 +118,13 @@ c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
          kshift(3) = 0
       endif
 
+!   ## loop over the 27 regions (in 3D) of the patch - the interior is i=j=k=2 plus
+!   ## the ghost cell regions.  If any parts stick out of domain and are periodic
+!   ## map indices periodically.  use scratch patch storage of exact size to get rid
+!   ## of the iputst, stuff that broke the variable coefficient boundry condition routines.
+
+!   ## if a region sticks out of domain  but is not periodic, not handled in pre-filrecir
+!   ## but in bc3amr, now called from bound
 
         do 30 i = 1, 3
          i1 = max(ilo,  ist(i))
@@ -136,15 +145,27 @@ c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
               jputst = (j1 - jlo) + ncolst
               kputst = (k1 - klo) + nfilst
 
-              kuse1 = k1+kshift(k)
-              kuse2 = k2+kshift(k)
+              mi = i2 - i1 + 1
+              mj = j2 - j1 + 1
+              mk = k2 - k1 + 1
 
-              call filrecur(level,nvar,valbig,aux,naux,time,
-     1                      mitot,mjtot,mktot,
-     2                      iputst,jputst,kputst,
-     3                      i1+ishift(i),i2+ishift(i),
-     4                      j1+jshift(j),j2+jshift(j),
-     5                      kuse1,kuse2)               
+              if (naux .gt. 0)   
+     1            call auxCopyIn(auxPatch,mi,mj,mk,auxbig,
+     2                           mitot,mjtot,mktot,naux,
+     3                           i1,i2,j1,j2,k1,k2,iglo,jglo,kglo)
+
+              call filrecur(level,nvar,valPatch,auxPatch,naux,time,
+     1                      mi,mj,mk,
+     2                      1,1,1,                      
+     3                      i1+ishift(i), i2+ishift(i),
+     4                      j1+jshift(j), j2+jshift(j),
+     5                      k1+kshift(k), k2+kshift(k),.true.)      
+
+                    ! copy it back to proper place in valbig 
+                    call patchCopyOut(nvar,valPatch,mi,mj,mk,valbig,
+     1                                mitot,mjtot,mktot,
+     2                                i1,i2,j1,j2,k1,k2,
+     3                                iglo,jglo,kglo)         
 
            end if
 
@@ -154,3 +175,91 @@ c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
 
        return
        end
+! ============================================================================================
+
+       subroutine patchCopyOut(nvar,valpatch,mi,mj,mk,valbig,
+     1                         mitot,mjtot,mktot,
+     2                         i1,i2,j1,j2,k1,k2,iglo,jglo,kglo)
+ 
+      ! the patch was filled from a possibly periodically wrapped place.
+      ! put it back where it should go in original grids solution array
+          
+      use amr_module
+      implicit none
+
+!     Input
+      integer  mi,mj,mk,nvar,mitot,mjtot,mktot
+      integer  i1,i2,j1,j2,k1,k2,iglo,jglo,kglo
+
+!     Output
+      real*8    valbig(nvar,mitot,mjtot,mktot)
+      real*8  valpatch(nvar,mi,mj,mk)
+
+!      Local storage
+      integer ist, jst, kst, ivar, i, j, k
+
+
+      ! this ghost cell patch subset goes from (i1,j1,k1) to (i2,j2,k2) in integer index space
+      ! the grid (including ghost cells) is from (iglo,jglo,kglo) to (ighi,jghi,kghi)
+      ! figure out where to copy
+      ist = i1 - iglo    ! offset by 1 below when coyp, since soln array is 1-based
+      jst = j1 - jglo 
+      kst = k1 - kglo 
+
+      do k = 1, mk 
+      do j = 1, mj 
+      do i = 1, mi 
+      do ivar = 1, nvar
+         valbig(ivar,ist+i,jst+j,kst+k) = valpatch(ivar,i,j,k)
+      end do
+      end do
+      end do
+      end do
+
+      return
+      end
+
+! ============================================================================================
+
+      subroutine auxCopyIn(auxPatch,mi,mj,mk,auxbig,mitot,mjtot,mktot,
+     1                     naux,i1,i2,j1,j2,k1,k2,iglo,jglo,kglo)
+
+      ! set the aux array for the patch  to go with the soln vals to  be filled in filpatch,
+      ! by copying from valbig's auxbig array
+
+      use amr_module
+      implicit none
+
+!     Input
+      integer mi, mj, mk, naux, mitot, mjtot, mktot
+      integer i1, i2, j1, j2, k1, k2, iglo, jglo, kglo
+
+!     Output
+      real*8  auxbig(naux,mitot,mjtot,mktot)
+      real*8  auxPatch(naux,mi,mj,mk)
+ 
+!     Local storage
+      integer  ist, jst, kst, iaux , i, j, k
+
+
+       ! this ghost cell patch subset goes from (i1,j1,k1) to (i2,j2,k2) in integer index space
+       ! the grid (including ghost cells) is from (iglo,jglo,kglo) to (ighi,jghi,kghi)
+       ! figure out where to copy
+       ist = i1 - iglo    ! offset by 1 below  since aux arrays are 1-based
+       jst = j1 - jglo 
+       kst = k1 - kglo 
+
+      do k = 1, mk 
+      do j = 1, mj 
+      do i = 1, mi 
+      do iaux = 1, naux
+
+       auxPatch(iaux,ist+i,jst+j,kst+k) = auxbig(iaux,i,j,k)
+ 
+      end do
+      end do
+      end do
+      end do
+
+      return
+      end
