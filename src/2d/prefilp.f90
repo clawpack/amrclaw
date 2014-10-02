@@ -125,7 +125,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
                     if (mi .gt. (ihi-ilo+1) .or.  mj .gt. (jhi-jlo+1))  then
                        write(*,*)" prefilp: not big enough dimension"
                     endif
-                    if (naux .gt. 0)                                                               &
+                    if (naux .gt. 0)                                                         &
                         call auxCopyIn(auxPatch,mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,   &
                                        iglo,jglo)
                     call filrecur(level,nvar,valPatch,auxPatch,naux,time,mi,mj,       &
