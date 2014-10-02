@@ -48,12 +48,21 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          kghi = node(ndkhi,mptr) 
 
 c         # does it intersect?
-         ixlo = max(iglo-nghost,ilo)
-         ixhi = min(ighi+nghost,ihi)
-         jxlo = max(jglo-nghost,jlo)
-         jxhi = min(jghi+nghost,jhi)
-         kxlo = max(kglo-nghost,klo)
-         kxhi = min(kghi+nghost,khi)
+!--         ixlo = max(iglo-nghost,ilo)
+!--         ixhi = min(ighi+nghost,ihi)
+!--         jxlo = max(jglo-nghost,jlo)
+!--         jxhi = min(jghi+nghost,jhi)
+!--         kxlo = max(kglo-nghost,klo)
+!--         kxhi = min(kghi+nghost,khi)
+c  how did ghost cells get in the allowable region? They are not filled
+c  (since we may be interpolating from newly filled grids, not just grids
+c  that have been primed with bcs to be advanced.
+         ixlo = max(iglo,ilo)
+         ixhi = min(ighi,ihi)
+         jxlo = max(jglo,jlo)
+         jxhi = min(jghi,jhi)
+         kxlo = max(kglo,klo)
+         kxhi = min(kghi,khi)
 
          if ((ixlo .le. ixhi .and. jxlo .le. jxhi) .and.
      &       (                     kxlo .le. kxhi)) then
