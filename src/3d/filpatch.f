@@ -247,7 +247,9 @@ c    ## otherwise whole grid bcs done from bound
          call bc3amr(valbig,aux,mitot,mjtot,mktot,nvar,naux,
      1               hxf,hyf,hzf,level,time,
      2               xlp,xrp,ybp,ytp,zfp,zrp,
-     4               xperdom,yperdom,zperdom)
+     3               xlower, ylower,zlower,
+     4               xupper,yupper,zupper,
+     5               xperdom,yperdom,zperdom)
       endif
 
       return

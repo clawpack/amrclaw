@@ -208,7 +208,9 @@ c
      2            xloWithGhost,xhiWithGHost,
      3            yloWithGhost,yhiWithGhost,
      4            zloWithGhost,zhiWithGhost,    
-     5            xperdom,yperdom,spheredom)
+     5            xlower,ylower,zlower,
+     6            xupper,yupper,zupper,
+     7            xperdom,yperdom,spheredom)
 c
       return
       end

@@ -81,9 +81,11 @@ c         make coarsened enlarged patch for conservative fixup
           endif
 c
           call bc3amr(alloc(loctmp),alloc(loctx),nrow,ncol,nfil,
-     &          nvar,naux,hxc,hyc,hzc,level,time,
-     .                xl,xr,yf,yr,zb,zt,
-     .                xperdom,yperdom,zperdom)
+     1               nvar,naux,hxc,hyc,hzc,level,time,
+     2                xl,xr,yf,yr,zb,zt,
+     3                xlower,ylower,zlower,
+     4                xupper,yupper,zupper,
+     5                xperdom,yperdom,zperdom)
 
        call cstore(alloc(loctmp),nrow,ncol,nfil,nvar,
      .                alloc(ist+nvar*lenbc),lenbc,naux,alloc(loctx),

@@ -1,9 +1,6 @@
 !
 ! :::::::::::::::::::::::::::::: FILVAL ::::::::::::::::::::::::::
 !
-! create and fill coarser (level-1) patch with one extra coarse cell all
-! around, plus the ghost cells . will interpolate from this patch to grid mptr
-! without needing special boundary code.
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !
@@ -92,7 +89,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
            call setaux(ng,mic,mjc,xl,yb,dx_coarse,dy_coarse,naux,auxc)
     endif
     call bc2amr(valc,auxc,mic,mjc,nvar,naux,dx_coarse,dy_coarse,level-1,time,xl,xr,yb, &
-                yt,xperdom,yperdom,spheredom)
+                yt,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
 
 
 !  NOTE change in order of code.  Since the interp from coarse to fine needs the aux
