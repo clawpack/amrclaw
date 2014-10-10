@@ -108,7 +108,7 @@ c
   100 continue
 c     Test for bc set condition
       do j=1,ncol
-        y = yleft + hy * j
+        y = ybot + hy * (j-0.5d0)
         do i=1,nxl
           if (0.25d0 < y .and. y < 0.75d0) then
             val(1,i,j) = 1.d0
