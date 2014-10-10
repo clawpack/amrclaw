@@ -125,7 +125,7 @@ def setrun(claw_pkg='amrclaw'):
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 1
+        clawdata.output_step_interval = 10
         clawdata.total_steps = 10
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
@@ -236,8 +236,8 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    rundata.gaugedata.gauges.append([1, 0.65, 0.4, 0., 10.])
-    rundata.gaugedata.gauges.append([2, 0.2, 0.8, 0., 10.])
+    rundata.gaugedata.gauges.append([1, 0.08, 0.9, 0., 10.])
+    rundata.gaugedata.gauges.append([2, 0.06, 0.391, 0., 10.])
     
     
     # --------------
