@@ -141,8 +141,26 @@ class RegionData(clawpack.clawutil.data.ClawData):
         self.data_write(value=len(self.regions),alt_name='num_regions')
         if (self.num_dim == 3) and (len(self.regions) > 0):
             raise NotImplementedError("*** Regions not yet implemented in 3d")
-        for regions in self.regions:
-            self._out_file.write(8*"%g  " % tuple(regions) +"\n")
+        for region in self.regions:
+            if (len(region)==5):
+                #this is a polyregion specification style
+                #[minlevel,maxlevle,t1,tend,[(x1,y1),(),(),(xpts,ypts)]]
+                pregion = region
+                pts = len(pregion[4])
+            else:
+                #this is a rectangular specification...turn into pregion
+                pts = 4
+                x1 = region[4]
+                x2 = region[5]
+                y1 = region[6]
+                y2 = region[7]
+                ptlist = [(x1,y1),(x2,y1),(x2,y2),(x1,y2)]
+                pregion = region[0:4]+[ptlist]
+            #write out pregion
+            self._out_file.write("%g " % pts)
+            self._out_file.write(4*"%g  " % tuple(pregion[0:4]) +"\n")
+            for pt in xrange(pts):
+                self._out_file.write(2*"%g  " % tuple(pregion[4][pt]) +"\n")
         self.close_data_file()
 
 
@@ -173,10 +191,15 @@ class RegionData(clawpack.clawutil.data.ClawData):
         self.regions = []
         for n in xrange(num_regions):
             line = data_file.readline().split()
-            self.regions.append([int(line[0]), int(line[1]),
-                                 float(line[2]), float(line[3]), 
-                                 float(line[4]), float(line[5]),
-                                 float(line[6]), float(line[7])])
+            pts = int(line[0])
+            pregion1 =  [int(line[1]),int(line[2]), float(line[3]), float(line[4])]
+            pregionpts = []
+            for pt in xrange(pts):
+                xypt =  data_file.readline().split()
+                pregionpts.append((float(xypt[0]),float(xypt[1])))
+
+            pregion = pregion1+[pregionpts]
+            self.regions.append(pregion)
 
         data_file.close()
 
