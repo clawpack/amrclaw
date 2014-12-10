@@ -97,7 +97,7 @@ def setplot(plotdata):
     plotitem.color = 'r'
     plotitem.kwargs = {'linewidth': 2}
     plotitem.show = True       # show on plot?
-    plotaxes.afteraxes = "pylab.legend(('2d data', '1d reference solution'))"
+    plotaxes.afteraxes = "import pylab; pylab.legend(('2d data', '1d reference solution'))"
     
 
     #-----------------------------------------
