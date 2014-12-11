@@ -222,11 +222,20 @@ c
 
 c     No gauges in 3D (yet).  Would call dumpgauge here if we had them.
 
-         call stepgrid(alloc(locnew),
-     1                fm,fp,gm,gp,hm,hp,
-     4                mitot,mjtot,mktot,nghost,
-     5                delt,dtnew,hx,hy,hz,nvar,
-     6                xlow,ylow,zlow,time,mptr,naux,alloc(locaux))
+         if (dimensional_split) then
+            call stepgrid_dimSplit(alloc(locnew),
+     1                   fm,fp,gm,gp,hm,hp,
+     4                   mitot,mjtot,mktot,nghost,
+     5                   delt,dtnew,hx,hy,hz,nvar,
+     6                   xlow,ylow,zlow,time,mptr,naux,alloc(locaux))
+ 
+         else
+            call stepgrid(alloc(locnew),
+     1                   fm,fp,gm,gp,hm,hp,
+     4                   mitot,mjtot,mktot,nghost,
+     5                   delt,dtnew,hx,hy,hz,nvar,
+     6                   xlow,ylow,zlow,time,mptr,naux,alloc(locaux))
+         endif
 
          if (node(cfluxptr,mptr) .ne. 0) then
             call fluxsv(mptr,fm,fp,gm,gp,hm,hp,

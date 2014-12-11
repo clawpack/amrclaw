@@ -62,8 +62,8 @@ c    :::  mcapa  is the capacity function index
           call preicall(valc,auxc,mic,mjc,mkc,nvar,naux,iclo,ichi,jclo,
      &                  jchi,kclo,kchi,levc)
         else
-          call icall(valc,auxc,mic,mjc,mkc,nvar,naux,iclo,ichi,jclo,jchi,
-     &               kclo,kchi,levc,1,1,1)
+          call icall(valc,auxc,mic,mjc,mkc,nvar,naux,iclo,ichi,jclo,
+     &                  jchi,kclo,kchi,levc,1,1,1)
         endif
       endif
 c      call physbd(valc,auxc,mic,mjc,mkc,nvar,naux,
