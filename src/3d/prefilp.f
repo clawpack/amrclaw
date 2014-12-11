@@ -2,7 +2,7 @@ c
 c --------------------------------------------------------------
 c
       recursive subroutine prefilrecur(level,nvar,
-     1                                 valbig,aux,naux,time,
+     1                                 valbig,auxbig,naux,time,
      2                                 mitot,mjtot,mktot,
      3                                 nrowst,ncolst,nfilst,
      4                                 ilo,ihi,jlo,jhi,klo,khi,
@@ -14,7 +14,7 @@ c
 
 
       dimension valbig(nvar,mitot,mjtot,mktot)
-      dimension    aux(naux,mitot,mjtot,mktot)
+      dimension auxbig(naux,mitot,mjtot,mktot)
       dimension ist(3), iend(3), ishift(3)
       dimension jst(3), jend(3), jshift(3)
       dimension kst(3), kend(3), kshift(3)
