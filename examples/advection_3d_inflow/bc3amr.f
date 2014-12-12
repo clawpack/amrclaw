@@ -112,7 +112,7 @@ c
          do k = 1,nfil
             zcell = zbot + (k-0.5d0)*hz
             do j = 1,ncol
-               ycell = ybot + (j-0.5d0)*hy
+               ycell = yfront + (j-0.5d0)*hy
                do i=1,nxl
                   if ((zcell-0.5d0)**2 +(ycell-0.5d0)**2 
      &                     < 0.09d0) then
