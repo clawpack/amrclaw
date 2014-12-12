@@ -215,7 +215,7 @@ c    should change the way  dumpguage does io - right now is critical section
      .                    nvar,mitot,mjtot,naux,mptr)
 
 c
-      if (dimensional_split) then
+      if (dimensional_split .eq. 1) then
          call stepgrid_dimSplit(alloc(locnew),fm,fp,gm,gp,
      2                  mitot,mjtot,nghost,
      3                  delt,dtnew,hx,hy,nvar,

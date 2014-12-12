@@ -222,7 +222,7 @@ c
 
 c     No gauges in 3D (yet).  Would call dumpgauge here if we had them.
 
-         if (dimensional_split) then
+         if (dimensional_split .eq. 1) then
             call stepgrid_dimSplit(alloc(locnew),
      1                   fm,fp,gm,gp,hm,hp,
      4                   mitot,mjtot,mktot,nghost,
