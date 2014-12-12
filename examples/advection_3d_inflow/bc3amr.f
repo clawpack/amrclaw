@@ -81,12 +81,19 @@ c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       use amr_module, only:  mthbc
-      implicit double precision (a-h,o-z)
-c     implicit none
+c     implicit double precision (a-h,o-z)
+      implicit none
 
-      dimension val(meqn,nrow,ncol,nfil)
-      dimension aux(naux,nrow,ncol,nfil)
+      real*8  val(meqn,nrow,ncol,nfil), aux(naux,nrow,ncol,nfil)
       logical xperiodic, yperiodic, zperiodic
+      integer nrow,ncol,nfil,meqn,naux,level
+      real*8  hx,hy,hz,time
+      real*8  hxmarg,hymarg,hzmarg
+      real*8  xleft,xright,yfront,yrear,zbot,ztop
+      real*8  xcell,ycell,zcell
+      real*8  xlower,ylower,zlower
+      real*8  xupper,yupper,zupper
+      integer i,j,k,m,nxl,nxr,ibeg,nyf,nyr,jbeg,nzb,nzt,kbeg
 
       hxmarg = hx*.01d0
       hymarg = hy*.01d0
