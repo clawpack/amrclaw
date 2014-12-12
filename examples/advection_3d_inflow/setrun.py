@@ -9,6 +9,10 @@ that will be read in by the Fortran code.
 import os
 import numpy as np
 
+# Set which test to do by setting inflow_side to 'x', 'y', or 'z'
+inflow_side = 'x'
+
+
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
 #------------------------------
@@ -36,7 +40,11 @@ def setrun(claw_pkg='amrclaw'):
     # Problem-specific parameters to be written to setprob.data:
     #------------------------------------------------------------------
 
+
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
+    probdata.add_param('u',     1.0,  'ubar advection velocity')
+    probdata.add_param('v',     1.0,  'vbar advection velocity')
+    probdata.add_param('w',     1.0,  'wbar advection velocity')
 
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -227,7 +235,9 @@ def setrun(claw_pkg='amrclaw'):
     #   2 or 'periodic' => periodic (must specify this at both boundaries)
     #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
 
-    clawdata.bc_lower[0] = 'user'   # at xlower
+    # Note: one of these will be changed below based on inflow_side...
+
+    clawdata.bc_lower[0] = 'extrap'   # at xlower
     clawdata.bc_upper[0] = 'extrap'   # at xupper
 
     clawdata.bc_lower[1] = 'extrap'   # at ylower
@@ -236,6 +246,11 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_lower[2] = 'extrap'   # at zlower
     clawdata.bc_upper[2] = 'extrap'   # at zupper
 
+    inflow_index = 'xyz'.find(inflow_side)
+    if inflow_index == -1:  
+        raise ValueError('*** Invalid value of inflow_side')
+
+    clawdata.bc_lower[inflow_index] = 'user'  # at inflow_side
 
 
     # --------------
@@ -270,7 +285,7 @@ def setrun(claw_pkg='amrclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 2
+    amrdata.amr_levels_max = 1
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
     amrdata.refinement_ratios_x = [2, 2, 2, 2]

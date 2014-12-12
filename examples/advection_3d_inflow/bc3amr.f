@@ -82,6 +82,7 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       use amr_module, only:  mthbc
       implicit double precision (a-h,o-z)
+c     implicit none
 
       dimension val(meqn,nrow,ncol,nfil)
       dimension aux(naux,nrow,ncol,nfil)
@@ -226,10 +227,20 @@ c
       go to (300,310,320,330) mthbc(3)+1
 c
   300 continue
-c     # user-specified boundary conditions go here in place of error output
-      write(6,*)
-     &   '*** ERROR *** mthbc(3)=0 and no BCs specified in bc3amr'
-      stop
+         do k = 1,nfil
+            zcell = zbot + (k-0.5d0)*hz
+            do i = 1,nrow
+               xcell = xleft + (i-0.5d0)*hx
+               do j=1,nyf
+                  if ((zcell-0.5d0)**2 +(xcell-0.5d0)**2 
+     &                     < 0.09d0) then
+                      val(1,i,j,k) = 1.d0
+                    else
+                      val(1,i,j,k) = 0.d0
+                    endif
+                  enddo
+               enddo
+            enddo
       go to 399
 c
   310 continue
@@ -334,10 +345,20 @@ c
       go to (500,510,520,530) mthbc(5)+1
 c
   500 continue
-c     # user-specified boundary conditions go here in place of error output
-      write(6,*)
-     &   '*** ERROR *** mthbc(5)=0 and no BCs specified in bc3amr'
-      stop
+         do i = 1,nrow
+            xcell = xleft + (i-0.5d0)*hx
+            do j = 1,ncol
+               ycell = yfront + (j-0.5d0)*hy
+               do k=1,nzb
+                  if ((xcell-0.5d0)**2 +(ycell-0.5d0)**2 
+     &                     < 0.09d0) then
+                      val(1,i,j,k) = 1.d0
+                    else
+                      val(1,i,j,k) = 0.d0
+                    endif
+                  enddo
+               enddo
+            enddo
       go to 599
 c
   510 continue

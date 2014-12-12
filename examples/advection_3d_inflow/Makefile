@@ -40,11 +40,11 @@ SOURCES = \
   qinit.f \
   setaux.f \
   bc3amr.f \
+  setprob.f90 \
   $(CLAW)/riemann/src/rpn3_vc_advection.f90 \
   $(CLAW)/riemann/src/rpt3_vc_advection.f90 \
   $(CLAW)/riemann/src/rptt3_vc_advection.f90 \
   $(AMRLIB)/amr3.f90 \
-  $(AMRLIB)/setprob.f90 \
   $(AMRLIB)/opendatafile.f \
   $(AMRLIB)/b4step3.f90 \
   $(AMRLIB)/qad.f \

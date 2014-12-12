@@ -59,27 +59,30 @@ c
 
       double precision function compute_u(x,y,z)
       implicit none
-      double precision x,y,z,pi, pi2
+      double precision x,y,z,pi, pi2,ubar,vbar,wbar
 
       common /piconstants/ pi, pi2
+      common /cparam/ ubar,vbar,wbar
 
-      compute_u = 1.d0
+      compute_u = ubar
       end
 
       double precision function compute_v(x,y,z)
       implicit none
-      double precision x,y,z,pi, pi2
+      double precision x,y,z,pi, pi2,ubar,vbar,wbar
 
       common /piconstants/ pi, pi2
+      common /cparam/ ubar,vbar,wbar
 
-      compute_v = 0.5d0
+      compute_v = vbar
       end
 
       double precision function compute_w(x,y,z)
       implicit none
-      double precision x,y,z,pi, pi2
+      double precision x,y,z,pi, pi2,ubar,vbar,wbar
 
       common /piconstants/ pi, pi2
+      common /cparam/ ubar,vbar,wbar
 
-      compute_w = 0.5d0
+      compute_w = wbar
       end
