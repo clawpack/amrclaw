@@ -77,12 +77,16 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       use amr_module, only: mthbc
 
-      implicit double precision (a-h,o-z)
+      implicit none
 
-C      common /combc2/ mthbc(4)
-
-      dimension val(meqn,nrow,ncol), aux(naux,nrow,ncol)
+      real*8  val(meqn,nrow,ncol), aux(naux,nrow,ncol)
       logical xperiodic, yperiodic, spheredom
+      integer  nrow,ncol,meqn,naux,level
+      real*8  hx,hy,time, hxmarg, hymarg
+      real*8  xleft,xright,ybot,ytop
+      real*8  xlower,ylower,xupper,yupper
+      integer nxl,nxr,ibeg,nyb,nyt,jbeg,i,j,m
+      
 
       hxmarg = hx*.01
       hymarg = hy*.01
