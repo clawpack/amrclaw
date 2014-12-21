@@ -140,7 +140,15 @@ c             swap so that smaller one is left index, etc since mapping reflects
               jwrap2 = j2 + jbump
 
               if (naux>0) then
-                 fliparray(locflip:locflip+ naux*(ncol+nrow)-1) = 
+!               fliparray(locflipaux:locflipaux+naux*(ncol+nrow)-1) =  
+               iflipChunkSize  = naux*nc*nr - 1 + nvar*(ncol+nrow)
+               idimen = (nrow+ncol)*nghost*(nvar+naux)
+               if (iflipChunkSize .gt. idimen) then
+                  write(*,*) "Error in fliparray size: asking for ",
+     .                       iflipChunkSize," but dimension is",idimen
+                   stop
+                  endif
+                  fliparray(locflipaux:locflipaux+naux*nc*nr - 1) =
      1                     NEEDS_TO_BE_SET
                  call setaux(ng,nr,nc,xlwrap,ybwrap,
      1                    hxposs(level),hyposs(level),naux,

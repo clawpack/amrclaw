@@ -4,7 +4,7 @@ c
         recursive subroutine filrecur(level,nvar,valbig,aux,naux,
      1                                time,mitot,mjtot,mktot,
      2                                nrowst,ncolst,nfilst,
-     3                                ilo,ihi,jlo,jhi,klo,khi)
+     3                                ilo,ihi,jlo,jhi,klo,khi,patchOnly)
 
 c :::::::::::::::::::::::::::: FILPATCH ::::::::::::::::::::::::::
 c
@@ -28,7 +28,7 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       implicit double precision (a-h,o-z)
 
 
-      logical   set, sticksout
+      logical   set, sticksout, patchOnly
       dimension valbig(nvar,mitot,mjtot,mktot)
       dimension    aux(naux,mitot,mjtot,mktot)
 
@@ -169,11 +169,13 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
      &     sticksout(iplo,iphi,jplo,jphi,kplo,kphi)) then
          call prefilrecur(levc,nvar,valcrse,auxcrse,
      1                    naux,time,nrowc,ncolc,nfilc,1,1,1,
-     2                    iplo,iphi,jplo,jphi,kplo,kphi)
+     2                    iplo,iphi,jplo,jphi,kplo,kphi,
+     3                    iplo,iphi,jplo,jphi,kplo,kphi,
+     4                    .true.)
       else
          call filrecur(levc,nvar,valcrse,auxcrse,naux,
      1                 time,nrowc,ncolc,nfilc,1,1,1,
-     2                 iplo,iphi,jplo,jphi,kplo,kphi)
+     2                 iplo,iphi,jplo,jphi,kplo,kphi,.true.)
       endif
 
       do 100 iff = 1,nrowp
@@ -239,13 +241,16 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
 
  90   continue
 c     
-c     set bcs, whether or not recursive calls needed. set any part of patch that stuck out
-c     
-      call bc3amr(valbig,aux,mitot,mjtot,mktot,nvar,naux,
-     1            hxf,hyf,hzf,level,time,
-     2            xlp,xrp,ybp,ytp,zfp,zrp,
-     3            xlower,ylower,zlower,xupper,yupper,zupper,
-     4            xperdom,yperdom,zperdom)
+c    ## only call if a small coarser recursive patch
+c    ## otherwise whole grid bcs done from bound
+      if (patchOnly) then
+         call bc3amr(valbig,aux,mitot,mjtot,mktot,nvar,naux,
+     1               hxf,hyf,hzf,level,time,
+     2               xlp,xrp,ybp,ytp,zfp,zrp,
+     3               xlower, ylower,zlower,
+     4               xupper,yupper,zupper,
+     5               xperdom,yperdom,zperdom)
+      endif
 
       return
       end

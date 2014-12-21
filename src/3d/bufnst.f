@@ -116,7 +116,7 @@ c
          if (iflags(i,j,k) .ne. goodpt) numbad = numbad + 1
  82    continue
        if (eprint) write(outunit,116) numbad, lcheck
- 116   format(i5,' points flagged on level ',i4)
+ 116   format(i9,' points flagged on level ',i4)
 
 c      call reclam(ldom3,(isize+2)*(jsize+2)*(ksize+2))
 

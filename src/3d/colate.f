@@ -71,7 +71,7 @@ c
  99   npts = index 
       if (gprint) then
         write(outunit,100) npts, lcheck
- 100    format( i5,' flagged points colated on level ',i4)
+ 100    format( i9,' flagged points colated on level ',i4)
       endif
 
       return

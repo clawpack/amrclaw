@@ -73,7 +73,8 @@ c         make coarsened enlarged patch for conservative fixup
              call icall(alloc(loctmp),alloc(loctx),nrow,ncol,nvar,naux,
      .                   iclo,ichi,jclo,jchi,level-1,1,1)
           endif
-!         in case any part sticks out of domain still need to set remaining aux cells
+!         in case any part sticks out of domain still need to set remaining aux
+!         cells
           if (naux .gt. 0 .and. sticksout) then  
              call setaux(ng,nrow,ncol,xl,yb,hxc,hyc,naux,alloc(loctx))
           endif

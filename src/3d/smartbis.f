@@ -33,7 +33,7 @@ c
 c
  10   call moment(intcorn(1,icl),badpts(1,ist),numptc(icl),usenew)
       if (gprint) write(outunit,101) icl,numptc(icl),usenew
- 101  format('   testing cluster ',i4,' with ',i5,' pts. use ',e12.4)
+ 101  format('   testing cluster ',i4,' with ',i9,' pts. use ',e12.4)
 c
       if (usenew .lt. cutoff) go to 20
 c
@@ -41,7 +41,7 @@ c  this cluster ok - on to next
 c
       if (.not. gprint) go to 15
          write(outunit,102) icl,numptc(icl),usenew
- 102     format('     accepting smart bisected cluster',i4,' with ',i5,
+ 102     format('     accepting smart bisected cluster',i4,' with ',i9,
      1          ' pts. use = ',e10.3)
  15   icl   = icl + 1
       if (icl .gt. nclust) go to 200

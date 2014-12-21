@@ -35,7 +35,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       dimension fp(nvar,mitot,mjtot),gp(nvar,mitot,mjtot)
       dimension fm(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
       dimension aux(maux,mitot,mjtot)
-C 	  dimension work(mwork)
+c 	  dimension work(mwork)
 
       logical    debug,  dump
       data       debug/.false./,  dump/.false./
@@ -83,7 +83,7 @@ C          write(*      ,*) 'CLAW2 ERROR... mwork must be increased to ',
 C      &               mwork0
 C          stop
 C       endif
-	  
+c  
 c
 c     # partition work array into pieces needed for local storage in 
 c     # step2 routine. Find starting index of each piece:
