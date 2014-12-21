@@ -81,7 +81,7 @@ c
 
 
 !$OMP PARALLEL DO PRIVATE(j,mptr,nx,ny,nz,mitot,mjtot,mktot,
-!$OMP&                    dtnew, mythread),
+!$OMP&                    dtnew, mythread,maxthreads),
 !$OMP&            SHARED(rvol,rvoll,level,nvar,mxnest,alloc,intrat)
 !$OMP&            SHARED(nghost,intratx,intraty,intratz,hx,hy,hz)
 !$OMP&            SHARED(naux,listsp,node,rnode,dtlevnew)
@@ -175,7 +175,6 @@ c
       nz    = node(ndkhi,mptr) - node(ndklo,mptr) + 1
       time  = rnode(timemult,mptr)
 
-!$    mythread = omp_get_thread_num()
 
       locold = node(store2, mptr)
       locnew = node(store1, mptr)

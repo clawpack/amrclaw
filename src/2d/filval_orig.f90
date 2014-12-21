@@ -1,6 +1,9 @@
 !
 ! :::::::::::::::::::::::::::::: FILVAL ::::::::::::::::::::::::::
 !
+! create and fill coarser (level-1) patch with one extra coarse cell all
+! around, plus the ghost cells . will interpolate from this patch to grid mptr
+! without needing special boundary code.
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !
@@ -78,7 +81,8 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
 !!$        do i = 1, mic
 !!$        do j = 1, mjc
 !!$          if (auxc(1,:,:) == NEEDS_TO_BE_SET) then
-!!$             write(*,*)" *** coarsenened new fine grid not completely set from previously"  &
+!!$             write(*,*)" *** coarsenened new fine grid not completely set
+!from previously"  &
 !!$                       "existing coarse grids ***"
 !!$             stop
 !!$          endif
@@ -92,8 +96,10 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
                 yt,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
 
 
-!  NOTE change in order of code.  Since the interp from coarse to fine needs the aux
-!       arrays set already, the fine copy is done first, to set up the aux arrays.
+!  NOTE change in order of code.  Since the interp from coarse to fine needs the
+!  aux
+!       arrays set already, the fine copy is done first, to set up the aux
+!       arrays.
 !       we can do this since we have the flag array to test where to overwrite.
 
 !  SO this is no longer overwriting but setting for the first time.
@@ -111,18 +117,20 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
 
         if (xperdom .or. yperdom .or. spheredom) then
             call preicall(val,aux,mitot,mjtot,nvar,naux,ilo-nghost,ihi+nghost, & 
-                          jlo-nghost,jhi+nghost,level,fliparray)
+                          jlo-nghost,jhi+nghost,level,1,1,fliparray)
         else
             call icall(val,aux,mitot,mjtot,nvar,naux,ilo-nghost,ihi+nghost,  &
                       jlo-nghost,jhi+nghost,level,1,1)   
         endif
         setflags = aux(1,:,:)   ! save since will overwrite in setaux when setting all aux vals
-           ! need this so we know where to use coarse grid to set fine solution w/o overwriting
+           ! need this so we know where to use coarse grid to set fine solution
+           ! w/o overwriting
            ! set remaining aux vals not set by copying from prev existing grids
         call setaux(nghost,nx,ny,xleft,ybot,dx,dy,naux,aux)
     else ! either no aux exists, or cant reuse yet  
          ! so only call intcopy (which copies soln) and not icall.
-         ! in this case flag q(1,:) to NEEDS_TO_BE_SET flag so wont be overwritten
+         ! in this case flag q(1,:) to NEEDS_TO_BE_SET flag so wont be
+         ! overwritten
          ! by coarse grid interp.  this is needed due to reversing order of
          ! work - first copy from fine grids, then interpolate from coarse grids
         val(1,:,:) = NEEDS_TO_BE_SET
@@ -198,7 +206,8 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
 !!$      end do
 !!$      end do
 !!$      if (maxauxdif .gt. 2.d-13) then
-!!$         write(*,*)" maxauxdif = ",maxauxdif," with mitot,mjtot ",mitot,mjtot, &
+!!$         write(*,*)" maxauxdif = ",maxauxdif," with mitot,mjtot
+!",mitot,mjtot, &
 !!$              " on grid ",mptr," level ",level
 !!$      endif
 !!$   endif
