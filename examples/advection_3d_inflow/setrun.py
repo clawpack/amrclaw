@@ -12,6 +12,15 @@ import numpy as np
 # Set which test to do by setting inflow_side to 'x', 'y', or 'z'
 inflow_side = 'x'
 
+# Note: The velocity is set to (u,v,w) = (1,1,1) so the left edge in 
+# each direction is the inflow boundary.  
+# With 
+#   clawdata.transverse_waves = 22
+# this method should be stable up to Courant number 1, but does not
+# currently seem to be stable with cfl_desired = 0.9.
+# This requires more investigation.
+
+
 
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
@@ -175,7 +184,7 @@ def setrun(claw_pkg='amrclaw'):
     #clawdata.dt_max = .045
 
     # Desired Courant number if variable dt used
-    clawdata.cfl_desired = 0.900000
+    clawdata.cfl_desired = 0.7
     # max Courant number to allow without retaking step with a smaller dt:
     clawdata.cfl_max = 1.000000
 
@@ -197,7 +206,7 @@ def setrun(claw_pkg='amrclaw'):
     #  0 or 'none'      ==> donor cell (only normal solver used)
     #  1 or 'increment' ==> corner transport of waves
     #  2 or 'all'       ==> corner transport of 2nd order corrections too
-    clawdata.transverse_waves = 22
+    clawdata.transverse_waves = 2
 
 
     # Number of waves in the Riemann solution:
@@ -285,7 +294,7 @@ def setrun(claw_pkg='amrclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 1
+    amrdata.amr_levels_max = 2
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
     amrdata.refinement_ratios_x = [2, 2, 2, 2]

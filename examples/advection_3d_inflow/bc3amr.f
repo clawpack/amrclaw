@@ -123,7 +123,7 @@ c
                ycell = yfront + (j-0.5d0)*hy
                do i=1,nxl
                   if ((zcell-0.5d0)**2 +(ycell-0.5d0)**2 
-     &                     < 0.09d0) then
+     &                     < 0.01d0) then
                       val(1,i,j,k) = 1.d0
                     else
                       val(1,i,j,k) = 0.d0
@@ -240,7 +240,7 @@ c
                xcell = xleft + (i-0.5d0)*hx
                do j=1,nyf
                   if ((zcell-0.5d0)**2 +(xcell-0.5d0)**2 
-     &                     < 0.09d0) then
+     &                     < 0.01d0) then
                       val(1,i,j,k) = 1.d0
                     else
                       val(1,i,j,k) = 0.d0
@@ -358,7 +358,7 @@ c
                ycell = yfront + (j-0.5d0)*hy
                do k=1,nzb
                   if ((xcell-0.5d0)**2 +(ycell-0.5d0)**2 
-     &                     < 0.09d0) then
+     &                     < 0.01d0) then
                       val(1,i,j,k) = 1.d0
                     else
                       val(1,i,j,k) = 0.d0
