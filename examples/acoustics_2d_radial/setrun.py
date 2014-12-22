@@ -66,8 +66,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[1] = 1.000000e+00          # yupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 20      # mx
-    clawdata.num_cells[1] = 20      # my
+    clawdata.num_cells[0] = 50      # mx
+    clawdata.num_cells[1] = 50      # my
     
 
     # ---------------
@@ -180,8 +180,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.order = 2
     
     # Use dimensional splitting? (not yet available for AMR)
-    #clawdata.dimensional_split = 'unsplit'
-    clawdata.dimensional_split = 1
+    clawdata.dimensional_split = 'unsplit'
     
     # For unsplit method, transverse_waves can be 
     #  0 or 'none'      ==> donor cell (only normal solver used)
@@ -276,7 +275,7 @@ def setrun(claw_pkg='amrclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 1
+    amrdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
     amrdata.refinement_ratios_x = [2, 2]
