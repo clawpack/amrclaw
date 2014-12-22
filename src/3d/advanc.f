@@ -221,20 +221,27 @@ c
 
 c     No gauges in 3D (yet).  Would call dumpgauge here if we had them.
 
-         if (dimensional_split .eq. 1) then
-            call stepgrid_dimSplit(alloc(locnew),
-     1                   fm,fp,gm,gp,hm,hp,
-     4                   mitot,mjtot,mktot,nghost,
-     5                   delt,dtnew,hx,hy,hz,nvar,
-     6                   xlow,ylow,zlow,time,mptr,naux,alloc(locaux))
- 
-         else
+         if (dimensional_split .eq. 0) then
+c           # Unsplit method
             call stepgrid(alloc(locnew),
      1                   fm,fp,gm,gp,hm,hp,
      4                   mitot,mjtot,mktot,nghost,
      5                   delt,dtnew,hx,hy,hz,nvar,
      6                   xlow,ylow,zlow,time,mptr,naux,alloc(locaux))
+ 
+         else if (dimensional_split .eq. 1) then
+c           # Godunov splitting
+            call stepgrid_dimSplit(alloc(locnew),
+     1                   fm,fp,gm,gp,hm,hp,
+     4                   mitot,mjtot,mktot,nghost,
+     5                   delt,dtnew,hx,hy,hz,nvar,
+     6                   xlow,ylow,zlow,time,mptr,naux,alloc(locaux))
+         else 
+c           # should never get here due to check in amr2
+            write(6,*) '*** Strang splitting not supported'
+            stop
          endif
+
 
          if (node(cfluxptr,mptr) .ne. 0) then
             call fluxsv(mptr,fm,fp,gm,gp,hm,hp,

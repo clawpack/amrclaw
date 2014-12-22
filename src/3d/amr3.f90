@@ -225,11 +225,11 @@ program amr3
     read(inunit,*) method(3)  ! order_trans
 
     read(inunit,*) dimensional_split
-    !if (dimensional_split > 0) then
-    !    print *, '*** ERROR ***  dimensional_split = ', dimensional_split
-    !    print *, ' dimensional splitting not supported in amrclaw'
-    !    stop
-    !endif
+    if (dimensional_split > 1) then
+        print *, '*** ERROR ***  dimensional_split = ', dimensional_split
+        print *, ' Strang splitting not supported in amrclaw'
+        stop
+    endif
 
     read(inunit,*) method(4)   ! verbosity
     read(inunit,*) method(5)   ! src_split
