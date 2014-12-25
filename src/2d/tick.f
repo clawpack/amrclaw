@@ -5,6 +5,7 @@ c
      &                rest,dt_max)
 c
       use amr_module
+      use gauges_module
 
       implicit double precision (a-h,o-z)
 c     include  "call.i"

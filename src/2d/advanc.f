@@ -133,6 +133,7 @@ c
       subroutine par_advanc (mptr,mitot,mjtot,nvar,naux,dtnew)
 c
       use amr_module
+      use gauges_module
       implicit double precision (a-h,o-z)
 
 
