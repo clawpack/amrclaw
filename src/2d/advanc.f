@@ -133,7 +133,7 @@ c
       subroutine par_advanc (mptr,mitot,mjtot,nvar,naux,dtnew)
 c
       use amr_module
-      use gauges_module
+      use gauges_module, only: print_gauges
       implicit double precision (a-h,o-z)
 
 
@@ -211,8 +211,8 @@ c        # called that isn't "real" is in the initial setting
 c        # up of grids (setgrd), but source grids are 0 there so
 c        # nothing will be output.
 
-c    should change the way  dumpguage does io - right now is critical section
-           call dumpgauge(alloc(locnew),alloc(locaux),xlow,ylow,
+c    should change the way  print_gauges does io - right now is critical section
+           call print_gauges(alloc(locnew),alloc(locaux),xlow,ylow,
      .                    nvar,mitot,mjtot,naux,mptr)
 
 c

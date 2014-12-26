@@ -4,14 +4,24 @@
 
 ! Contains:
 !   subroutine set_gauges
+!     Called initially to read from gauges.data
 !   subroutine setbestsrc
-!   subroutine dumpgauge
+!     Called each time regridding is done to determine which patch to 
+!     use for interpolating to each gauge location.
+!   subroutine print_gauges
+!     Called each time step for each grid patch.
+!     Refactored dumpgauge routine to interpolate for all gauges on patch.
+!
+!     Note: by default all components of q are printed at each gauge.
+!     To print something different or a different precision, modify 
+!     format statement 100 and/or the write statement that uses it.
 !   
 ! Note: Updated for Clawpack 5.3.0:
 !   - the dumpgauge and setbestsrc subroutines have been moved to this module 
-!     so dumpgauge.f must be removed from Makefiles.
+!     and the dumpgauge subroutine has been refactored and renamed print_gauges.
+!   - dumpgauge.f must be removed from Makefiles.
 !   - setbestsrc no longer uses quicksort to sort gauge numbers and
-!     dumpgauge no longer uses binary search to locate first gauge handled
+!     print_gauges no longer uses binary search to locate first gauge handled
 !     by a grid.  Instead loop over all gauges and skip those not needed.
 !     This may cause the gauges to be printed in a different order at some
 !     time steps, but values printed should be the same as in previous code.
@@ -64,8 +74,9 @@ contains
         ! initialize for starters
         mbestsrc = 0
 
-        ! open file for output of gauge data all data is output in one binary 
-        ! file with format gauge number, level, time, depth by dumpgauge.
+        ! open file for output of gauge data 
+        ! ascii file with format determined by the write(OUTGAUGEUNIT,100)
+        ! statement in print_gauges
         open(unit=OUTGAUGEUNIT, file='fort.gauge', status='unknown', &
                                 form='formatted')
 
@@ -90,7 +101,7 @@ contains
       integer :: lev, mptr, i
 
 !
-! ##  set source grid for each loc fromcoarsest level to finest.
+! ##  set source grid for each loc from coarsest level to finest.
 ! ##  that way finest src grid left and old ones overwritten
 ! ##  this code uses fact that grids do not overlap
 
@@ -121,16 +132,16 @@ contains
             write(6,*)"ERROR in setting grid src for gauge data",i
       end do
 
-!
-!     sort the source arrays for easy testing during integration
-!     call qsorti(mbestorder,num_gauges,mbestsrc)
+!     Removed this call since easy just to loop over all gauges:
+!       sort the source arrays for easy testing during integration
+!       call qsorti(mbestorder,num_gauges,mbestsrc)
 
       end subroutine setbestsrc
 
 !
 ! -------------------------------------------------------------------------
 !
-      subroutine dumpgauge(q,aux,xlow,ylow,nvar,mitot,mjtot,naux,mptr)
+      subroutine print_gauges(q,aux,xlow,ylow,nvar,mitot,mjtot,naux,mptr)
 !
 !     This routine is called each time step for each grid patch, to output
 !     gauge values for all gauges for which this patch is the best one to 
@@ -145,8 +156,9 @@ contains
 !     The array mbestsrc is reset after each regridding to indicate which
 !     grid patch is best to use for each gauge.
 
-!     This is a refactoring of dumpgauge.f that does not assume list
-!     is sorted.
+!     This is a refactoring of dumpgauge.f from Clawpack 5.2 
+!     that does not assume list is sorted.  Loops over all gauges rather
+!     than doing a binary search.
 
       use amr_module
 
@@ -162,7 +174,7 @@ contains
       real(kind=8) :: xcent,ycent,xoff,yoff,tgrid,hx,hy
       integer :: level,i,j,ioff,joff,iindex,jindex,ivar
 
-!     write(*,*) 'in dumpgauge with num_gauges, mptr = ',num_gauges,mptr
+!     write(*,*) 'in print_gauges with num_gauges, mptr = ',num_gauges,mptr
 !     write(*,*) 'mbestscr = ',(mbestsrc(j),j=1,num_gauges)
 
       if (num_gauges == 0) then
@@ -181,11 +193,11 @@ contains
       do 10 i = 1, num_gauges
         if (mptr .ne. mbestsrc(i)) go to 10  ! this patch not used
         if (tgrid.lt.t1gauge(i) .or. tgrid.gt.t2gauge(i)) then
-!          # dont output at this time for gauge i
+!          # don't output at this time for gauge i
            go to 10
            endif
 !
-!
+!    ## if we did not skip to line 10, we need to output gauge i:
 !    ## prepare to do bilinear interp at gauge location to get vars
 !
 !    *** Note: changed 0.5 to  0.5d0 etc. ****************************
@@ -228,8 +240,8 @@ contains
 !$OMP END CRITICAL (gaugeio)
 
 
- 10     continue
+ 10     continue  ! end of loop over all gauges
  
-      end subroutine dumpgauge
+      end subroutine print_gauges
 
 end module gauges_module
