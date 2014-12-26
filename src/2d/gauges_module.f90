@@ -1,6 +1,21 @@
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-! ::::: Parameters and variables related to gauges
+! ::::: Parameters, variables, subroutines related to gauges
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+! Contains:
+!   subroutine set_gauges
+!   subroutine setbestsrc
+!   subroutine dumpgauge
+!   
+! Note: Updated for Clawpack 5.3.0:
+!   - the dumpgauge and setbestsrc subroutines have been moved to this module 
+!     so dumpgauge.f must be removed from Makefiles.
+!   - setbestsrc no longer uses quicksort to sort gauge numbers and
+!     dumpgauge no longer uses binary search to locate first gauge handled
+!     by a grid.  Instead loop over all gauges and skip those not needed.
+!     This may cause the gauges to be printed in a different order at some
+!     time steps, but values printed should be the same as in previous code.
+
 module gauges_module
 
     implicit none
@@ -55,6 +70,62 @@ contains
                                 form='formatted')
 
     end subroutine set_gauges
+
+
+!
+! --------------------------------------------------------------------
+!
+      subroutine setbestsrc()
+!
+!     Called every time grids change, to set the best source grid patch
+!     for each gauge, i.e. the finest level patch that includes the gauge.
+!
+!     lbase is grid level that didn't change, but since fine
+!     grid may have disappeared, we still have to look starting
+!     at coarsest level 1.
+!
+      use amr_module
+      implicit none
+
+      integer :: lev, mptr, i
+
+!
+! ##  set source grid for each loc fromcoarsest level to finest.
+! ##  that way finest src grid left and old ones overwritten
+! ##  this code uses fact that grids do not overlap
+
+! # for debugging, initialize sources to 0 then check that all set
+      do i = 1, num_gauges
+         mbestsrc(i) = 0
+      end do
+
+ 
+      do 20 lev = 1, lfine  
+          mptr = lstart(lev)
+ 5        do 10 i = 1, num_gauges
+            if ((xgauge(i) .ge. rnode(cornxlo,mptr)) .and. &
+                (xgauge(i) .le. rnode(cornxhi,mptr)) .and. &  
+                (ygauge(i) .ge. rnode(cornylo,mptr)) .and. &
+                (ygauge(i) .le. rnode(cornyhi,mptr)) ) then
+               mbestsrc(i) = mptr
+            endif
+ 10       continue
+
+          mptr = node(levelptr, mptr)
+          if (mptr .ne. 0) go to 5
+ 20   continue
+
+
+      do i = 1, num_gauges
+        if (mbestsrc(i) .eq. 0) &
+            write(6,*)"ERROR in setting grid src for gauge data",i
+      end do
+
+!
+!     sort the source arrays for easy testing during integration
+!     call qsorti(mbestorder,num_gauges,mbestsrc)
+
+      end subroutine setbestsrc
 
 !
 ! -------------------------------------------------------------------------
@@ -117,7 +188,7 @@ contains
 !
 !    ## prepare to do bilinear interp at gauge location to get vars
 !
-!   *** changed 0.5 to  0.5d0 etc? ****************************
+!    *** Note: changed 0.5 to  0.5d0 etc. ****************************
 !
         iindex =  int(.5d0 + (xgauge(i)-xlow)/hx)
         jindex =  int(.5d0 + (ygauge(i)-ylow)/hy)
@@ -160,61 +231,5 @@ contains
  10     continue
  
       end subroutine dumpgauge
-
-
-!
-! --------------------------------------------------------------------
-!
-      subroutine setbestsrc()
-!
-!     Called every time grids change, to set the best source grid patch
-!     for each gauge, i.e. the finest level patch that includes the gauge.
-!
-!     lbase is grid level that didn't change, but since fine
-!     grid may have disappeared, we still have to look starting
-!     at coarsest level 1.
-!
-      use amr_module
-      implicit none
-
-      integer :: lev, mptr, i
-
-!
-! ##  set source grid for each loc fromcoarsest level to finest.
-! ##  that way finest src grid left and old ones overwritten
-! ##  this code uses fact that grids do not overlap
-
-! # for debugging, initialize sources to 0 then check that all set
-      do i = 1, num_gauges
-         mbestsrc(i) = 0
-      end do
-
- 
-      do 20 lev = 1, lfine  
-          mptr = lstart(lev)
- 5        do 10 i = 1, num_gauges
-            if ((xgauge(i) .ge. rnode(cornxlo,mptr)) .and. &
-                (xgauge(i) .le. rnode(cornxhi,mptr)) .and. &  
-                (ygauge(i) .ge. rnode(cornylo,mptr)) .and. &
-                (ygauge(i) .le. rnode(cornyhi,mptr)) ) then
-               mbestsrc(i) = mptr
-            endif
- 10       continue
-
-          mptr = node(levelptr, mptr)
-          if (mptr .ne. 0) go to 5
- 20   continue
-
-
-      do i = 1, num_gauges
-        if (mbestsrc(i) .eq. 0) &
-            write(6,*)"ERROR in setting grid src for gauge data",i
-      end do
-
-!
-!     sort the source arrays for easy testing during integration
-!     call qsorti(mbestorder,num_gauges,mbestsrc)
-
-      end subroutine setbestsrc
 
 end module gauges_module
