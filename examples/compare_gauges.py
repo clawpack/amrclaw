@@ -1,35 +1,23 @@
+"""
+Compare gauges between two different runs, useful for regression testing.
 
-from clawpack.visclaw.data import ClawPlotData
+Requires visclaw@c3bc5aab82 or later for gaugetools.compare_gauges.
+"""
+
 from clawpack.visclaw import gaugetools
-from pylab import *
-    
-setgauges = gaugetools.read_setgauges('.')
-gaugenos = setgauges.gauge_numbers
-if len(gaugenos)==0:
-    print "No gauges found in gauges.data"
-else:
-    plotdata1 = ClawPlotData()
-    plotdata1.outdir = '_output'
-    plotdata2 = ClawPlotData()
-    plotdata2.outdir = '_output_old_gauges'
-    for gaugeno in gaugenos:
-        g1 = plotdata1.getgauge(gaugeno)
-        q1 = g1.q
-        g2 = plotdata2.getgauge(gaugeno)
-        q2 = g2.q
-        figure(gaugeno)
-        clf()
-        meqn = q1.shape[0]
-        for m in range(meqn):
-            subplot(meqn,1,m+1)
-            dq = abs(q1[m,:]-q2[m,:]).max()
-            print  "Max difference in q[%s] at gauge %s is %g" % (m,gaugeno,dq)
-            plot(g1.t,g1.q[m,:],'b',label='1')
-            plot(g2.t,g2.q[m,:],'r',label='2')
-            legend()
-        subplot(1,1,1)
-        title('Comparison of gauge number %s' % gaugeno)
-        
 
+outdir1 = '_output_original'
+outdir2 = '_output'
+
+tol = 0.  # tolerance for comparison
+    
+matches = gaugetools.compare_gauges(outdir1, outdir2, 
+            gaugenos='all', q_components='all',
+            tol=tol, verbose=True, plot=False)
+
+if not matches:
+    print "*** Warning: results to not all match to tol = %g" % tol
+    print "*** You might want to call gaugetools.compare_gauges with "
+    print "    plot=True to view differences."
 
 
