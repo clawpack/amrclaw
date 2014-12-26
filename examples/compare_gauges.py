@@ -27,6 +27,7 @@ else:
             plot(g1.t,g1.q[m,:],'b',label='1')
             plot(g2.t,g2.q[m,:],'r',label='2')
             legend()
+        subplot(1,1,1)
         title('Comparison of gauge number %s' % gaugeno)
         
 
