@@ -227,8 +227,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_lower[0] = 'user'   # at xlower
     clawdata.bc_upper[0] = 'extrap'   # at xupper
 
-    clawdata.bc_lower[1] = 'periodic'   # at ylower
-    clawdata.bc_upper[1] = 'periodic'   # at yupper
+    clawdata.bc_lower[1] = 'user'   # at ylower
+    clawdata.bc_upper[1] = 'extrap'   # at yupper
                          
 
     # ---------------
@@ -236,7 +236,8 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    rundata.gaugedata.gauges.append([1, 0.6, 0.4, 0., 10.])
+    rundata.gaugedata.gauges.append([1, 0.6, 0.6, 0., 10.])
+    rundata.gaugedata.gauges.append([2, 0.7, 0.3, 0., 10.])
     
     
     # --------------
@@ -275,9 +276,9 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    amrdata.refinement_ratios_x = [2,2]
-    amrdata.refinement_ratios_y = [2,2]
-    amrdata.refinement_ratios_t = [2,2]
+    amrdata.refinement_ratios_x = [2,4]
+    amrdata.refinement_ratios_y = [2,4]
+    amrdata.refinement_ratios_t = [2,4]
 
 
     # Specify type of each aux variable in amrdata.auxtype.
@@ -291,7 +292,7 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.flag_richardson_tol = 0.1  # Richardson tolerance
     
     # Flag for refinement using routine flag2refine:
-    amrdata.flag2refine = True      # use this?
+    amrdata.flag2refine = True       # use this?
     amrdata.flag2refine_tol = 0.05  # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check max-norm of difference between q in a cell and 
@@ -315,9 +316,12 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     # Regions:
     # ---------------
-    rundata.regiondata.regions = []
+    regions = rundata.regiondata.regions
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
+    #regions.append([1,2,0,1e9,0.0,1.0,0.0,1.0])
+    #regions.append([1,3,0,1e9,0.0,0.8,0.6,1.0])
+    #regions.append([1,3,0,1e9,0.6,0.8,0.3,0.5])
 
 
     #  ----- For developers ----- 

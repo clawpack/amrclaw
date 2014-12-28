@@ -60,7 +60,7 @@ def setplot(plotdata):
     plotitem = plotaxes.new_plotitem(plot_type='2d_contour')
     plotitem.plot_var = 0
     plotitem.contour_nlevels = 20
-    plotitem.contour_min = 0.01
+    plotitem.contour_min = -0.99
     plotitem.contour_max = 0.99
     plotitem.amr_contour_colors = ['r','g','b']  # color on each level
     plotitem.amr_patch_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
@@ -81,7 +81,7 @@ def setplot(plotdata):
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_patch')
     plotitem.amr_patch_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
-    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_celledges_show = [1,0,0]
     plotitem.amr_patchedges_show = [1]
 
     #-----------------------------------------
