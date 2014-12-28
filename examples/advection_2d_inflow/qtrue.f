@@ -19,7 +19,7 @@ c     # evaluate desired initial data at (x0,y0):
         endif
 
       r = dsqrt((x0-0.3d0)**2 + (y0-0.1d0)**2)
-      qtrue = qtrue - dexp(-10.d0*r**2)
+      qtrue = qtrue - dexp(-15.d0*r**2)
 
       return
       end
