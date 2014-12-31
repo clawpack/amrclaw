@@ -122,14 +122,14 @@ c
              tau1 = hx / (2.d0*ubar)
              t1 = time + tau1         ! time at which to evaluate BC 
              y1 = ycell + vbar*tau1   ! y at which to evaluate BC
-             val(1,nxl,j) = qbc(y1,t1)
+             val(1,nxl,j) = qtrue(0.d0,y1,t1)
              endif
          if (nxl == 2) then
              ! second ghost cell:
              tau2 = 3.d0 * hx / (2.d0*ubar)
              t2 = time + tau2         ! time at which to evaluate BC 
              y2 = ycell + vbar*tau2   ! y at which to evaluate BC
-             val(1,1,j) = qbc(y2,t2)
+             val(1,1,j) = qtrue(0.d0,y2,t2)
              endif
           enddo
       
@@ -232,10 +232,27 @@ c
       go to (300,310,320,330) mthbc(3)+1
 c
   300 continue
-c     # user-specified boundary conditions go here in place of error output
-      write(6,*) 
-     &   '*** ERROR *** mthbc(3)=0 and no BCs specified in bc2amr'
-      stop
+      if (vbar < 0.1d0*ubar) then
+         write(6,*) 'inflow BCs at bottom assume vbar >= ubar/10'
+         stop
+         endif
+      do i = 1,nrow
+         xcell = xleft + (i-0.5d0)*hx
+         if (nyb >= 1) then
+             ! first ghost cell:
+             tau1 = hy / (2.d0*vbar)
+             t1 = time + tau1         ! time at which to evaluate BC 
+             x1 = xcell + vbar*tau1   ! x at which to evaluate BC
+             val(1,i,nyb) = qtrue(x1,0.d0,t1)
+             endif
+         if (nyb == 2) then
+             ! second ghost cell:
+             tau2 = 3.d0 * hy / (2.d0*vbar)
+             t2 = time + tau2         ! time at which to evaluate BC 
+             x2 = xcell + ubar*tau2   ! x at which to evaluate BC
+             val(1,i,1) = qtrue(x2,0.d0,t2)
+             endif
+          enddo
       go to 399
 c
   310 continue
@@ -318,24 +335,6 @@ c     # negate the normal velocity:
       go to 499
 
   499 continue
-
-      return
-      end
-
-
-
-c     ==================================
-      double precision function qbc(y,t)
-c     ==================================
-      implicit double precision (a-h,o-z)
-      
-      pi = 4.d0*datan(1.d0)
-
-      if ((y >= 0.1d0) .and. (y <= 0.4d0)) then
-         qbc = dsin(10.d0 * t) * dsin((y-0.1d0)*pi/0.3d0)
-        else
-         qbc = 0.d0
-        endif
 
       return
       end

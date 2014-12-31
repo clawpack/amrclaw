@@ -199,7 +199,7 @@ def setrun(claw_pkg='amrclaw'):
     # Order of accuracy:  1 => Godunov,  2 => Lax-Wendroff plus limiters
     clawdata.order = 2
 
-    # Use dimensional splitting? (not yet available for AMR)
+    # Use dimensional splitting?
     clawdata.dimensional_split = 'unsplit'
 
     # For unsplit method, transverse_waves can be

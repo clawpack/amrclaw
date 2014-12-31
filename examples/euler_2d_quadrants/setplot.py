@@ -33,6 +33,7 @@ def setplot(plotdata):
     plotaxes.ylimits = 'auto'
     plotaxes.title = 'Density'
     plotaxes.scaled = True
+    plotaxes.afteraxes = addgauges
 
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
@@ -80,6 +81,25 @@ def setplot(plotdata):
     plotitem.amr_patchedges_show = [1]
 
 
+    #-----------------------------------------
+    # Figures for gauges
+    #-----------------------------------------
+    plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
+                    type='each_gauge')
+    plotfigure.clf_each_gauge = True
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'Density'
+
+    # Plot q as blue curve:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 0
+    plotitem.plotstyle = 'b-'
+
+
     # Parameters used only when creating html and/or latex hardcopy
     # e.g., via clawpack.visclaw.frametools.printframes:
 
@@ -98,3 +118,10 @@ def setplot(plotdata):
     return plotdata
 
     
+# To plot gauge locations on pcolor or contour plot, use this as
+# an afteraxis function:
+
+def addgauges(current_data):
+    from clawpack.visclaw import gaugetools
+    gaugetools.plot_gauge_locations(current_data.plotdata, \
+         gaugenos='all', format_string='ko', add_labels=True)

@@ -254,8 +254,11 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     # Gauges:
     # ---------------
-    rundata.gaugedata.gauges = []
+    gauges = rundata.gaugedata.gauges
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
+    gauges.append([1,0.6,0.6,0.,1e9])
+    gauges.append([2,0.5,0.5,0.,1e9])
+    gauges.append([3,0.4,0.4,0.,1e9])
 
 
     # ---------------

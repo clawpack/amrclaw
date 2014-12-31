@@ -25,7 +25,8 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS ?=  
+FFLAGS  ?= -g -C -CB -CU -fpe0 -ftrapuv
+
 
 # ---------------------------------
 # List of sources for this program:
@@ -55,6 +56,7 @@ SOURCES = \
   $(AMRLIB)/advanc.f \
   $(AMRLIB)/bound.f \
   $(AMRLIB)/stepgrid.f \
+  $(AMRLIB)/stepgrid_dimSplit.f \
   $(AMRLIB)/auxcoarsen.f \
   $(AMRLIB)/fixcapaq.f \
   $(AMRLIB)/estdt.f \
@@ -118,7 +120,11 @@ SOURCES = \
   $(AMRLIB)/icall.f \
   $(AMRLIB)/preicall.f \
   $(AMRLIB)/step3.f \
+  $(AMRLIB)/step3x.f \
+  $(AMRLIB)/step3y.f \
+  $(AMRLIB)/step3z.f \
   $(AMRLIB)/flux3.f \
+  $(AMRLIB)/flux3_dimSplit.f \
   $(AMRLIB)/limiter.f \
   $(AMRLIB)/philim.f \
   $(AMRLIB)/cstore.f \

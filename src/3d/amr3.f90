@@ -68,7 +68,7 @@ program amr3
 
     use amr_module, only: max1d, maxvar, maxlv
 
-    use amr_module, only: method, mthlim, use_fwaves
+    use amr_module, only: method, mthlim, use_fwaves,dimensional_split
     use amr_module, only: nghost, mwaves, mcapa, auxtype
     use amr_module, only: tol, tolsp, flag_richardson, flag_gradient
 
@@ -96,7 +96,7 @@ program amr3
 
     ! Local variables
     integer :: i, iaux, mw, level
-    integer :: ndim, nvar, naux, mcapa1, mindim, dimensional_split
+    integer :: ndim, nvar, naux, mcapa1, mindim
     integer :: nstart, nsteps, nv1, nx, ny, nz, lentotsave
     !integer :: nstart, nsteps, nv1, nx, ny, lentotsave, num_gauge_SAVE
     integer :: omp_get_max_threads, maxthreads
@@ -113,10 +113,10 @@ program amr3
 
     character(len=364) :: format_string
     character(len=*), parameter :: clawfile = 'claw.data'
-    character(len=*), parameter :: amrfile = 'amr.data'
-    character(len=*), parameter :: outfile = 'fort.amr'
+    character(len=*), parameter :: amrfile  = 'amr.data'
+    character(len=*), parameter :: outfile  = 'fort.amr'
     character(len=*), parameter :: dbugfile = 'fort.debug'
-    character(len=*), parameter :: matfile = 'fort.nplot'
+    character(len=*), parameter :: matfile  = 'fort.nplot'
     character(len=*), parameter :: parmfile = 'fort.parameters'
 
     ! Open parameter and debug files
@@ -225,9 +225,9 @@ program amr3
     read(inunit,*) method(3)  ! order_trans
 
     read(inunit,*) dimensional_split
-    if (dimensional_split > 0) then
+    if (dimensional_split > 1) then
         print *, '*** ERROR ***  dimensional_split = ', dimensional_split
-        print *, ' dimensional splitting not supported in amrclaw'
+        print *, ' Strang splitting not supported in amrclaw'
         stop
     endif
 

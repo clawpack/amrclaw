@@ -55,6 +55,7 @@ SOURCES = \
   $(AMRLIB)/advanc.f \
   $(AMRLIB)/bound.f \
   $(AMRLIB)/stepgrid.f \
+  $(AMRLIB)/stepgrid_dimSplit.f \
   $(AMRLIB)/auxcoarsen.f \
   $(AMRLIB)/fixcapaq.f \
   $(AMRLIB)/estdt.f \
@@ -118,7 +119,11 @@ SOURCES = \
   $(AMRLIB)/icall.f \
   $(AMRLIB)/preicall.f \
   $(AMRLIB)/step3.f \
+  $(AMRLIB)/step3x.f \
+  $(AMRLIB)/step3y.f \
+  $(AMRLIB)/step3z.f \
   $(AMRLIB)/flux3.f \
+  $(AMRLIB)/flux3_dimSplit.f \
   $(AMRLIB)/limiter.f \
   $(AMRLIB)/philim.f \
   $(AMRLIB)/cstore.f \

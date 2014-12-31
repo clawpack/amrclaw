@@ -1,4 +1,5 @@
-c
+c  DEPRECATED, NOT UPDATED TO NEW ORDER OF INDICES, ETC. 
+c  Functionality with fwaves merged into flux3.f
 c
 c     ==================================================================
       subroutine flux3(ixyz,maxm,meqn,maux,       mbc,mx,
