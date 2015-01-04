@@ -5,6 +5,8 @@ c
      &                rest,dt_max)
 c
       use amr_module
+      use gauges_module, only: setbestsrc
+
       implicit double precision (a-h,o-z)
 
 
@@ -41,8 +43,7 @@ c ::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::
 c
 
       ncycle         = nstart
-c no gauges (yet) in amrclaw, comment out
-c     call setbestsrc()     ! need at very start of run, including restart
+      call setbestsrc()     ! need at very start of run, including restart
       if (iout .eq. 0) then
 c        # output_style 1 or 2
          iout  = iinfinity

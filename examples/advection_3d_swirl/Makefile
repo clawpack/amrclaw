@@ -35,8 +35,8 @@ FFLAGS  ?= -g -C -CB -CU -fpe0 -ftrapuv
 AMRLIB = $(CLAW)/amrclaw/src/3d
 
 MODULES = \
-  $(AMRLIB)/amr_module.f90 
-#$(AMRLIB)/gauges_module.f90 \
+  $(AMRLIB)/amr_module.f90 \
+  $(AMRLIB)/gauges_module.f90
 #$(AMRLIB)/regions_module.f90 \
 
 SOURCES = \
