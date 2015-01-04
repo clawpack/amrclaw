@@ -15,7 +15,7 @@ CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
 CLAW_PKG = amrclaw                  # Clawpack package to use
 EXE = xamr                          # Executable to create
 SETRUN_FILE = setrun.py             # File containing function to make data
-OUTDIR = _output      		        # Directory for output
+OUTDIR = _output      		    # Directory for output
 SETPLOT_FILE = setplot.py           # File containing function to set plots
 PLOTDIR = _plots	                # Directory for plots
 
@@ -25,7 +25,7 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS ?=  
+FFLAGS ?= -g -C -CB -CU -fpe0 -ftrapuv
 
 
 # ---------------------------------
@@ -55,6 +55,7 @@ SOURCES = \
   $(AMRLIB)/advanc.f \
   $(AMRLIB)/bound.f90 \
   $(AMRLIB)/stepgrid.f \
+  $(AMRLIB)/stepgrid_dimSplit.f \
   $(AMRLIB)/auxcoarsen.f \
   $(AMRLIB)/fixcapaq.f \
   $(AMRLIB)/estdt.f \
@@ -122,7 +123,10 @@ SOURCES = \
   $(AMRLIB)/icall.f \
   $(AMRLIB)/preicall.f \
   $(AMRLIB)/step2.f90 \
+  $(AMRLIB)/step2x.f90 \
+  $(AMRLIB)/step2y.f90 \
   $(AMRLIB)/flux2.f \
+  $(AMRLIB)/flux2_dimSplit.f \
   $(AMRLIB)/inlinelimiter.f \
   $(AMRLIB)/cstore.f \
   $(AMRLIB)/saveqc.f \

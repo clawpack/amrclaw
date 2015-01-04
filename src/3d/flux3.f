@@ -237,7 +237,12 @@ c     # compute maximum wave speed for checking Courant number:
          cfl1d = 0.d0
          do 50 mw=1,mwaves
          do 50 i=1,mx+1
-            cfl1d = dmax1(cfl1d,dtdx1d(i)*dabs(s(mw,i)))
+          !  cfl1d = dmax1(cfl1d,dtdx1d(i)*dabs(s(mw,i))) OLD WAY
+ !          # if s>0 use dtdx1d(i) to compute CFL,
+ !          # if s<0 use dtdx1d(i-1) to compute CFL:
+           cfl1d = dmax1(cfl1d,  dtdx1d(i)*s(mw,i),
+     .                          -dtdx1d(i-1)*s(mw,i))
+
  50      continue
 c     
          if (method(2).eq.1) go to 130
@@ -248,22 +253,40 @@ c
 c     # apply limiter to waves:
          if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 c     
+         if (.not. use_fwaves) then
+
          do 120 i = 1, mx+1
 c     
 c     # For correction terms below, need average of dtdx in cell
-c     # i-1 and i.  Compute these and overwrite dtdx1d:
+c     # i-1 and i.  (overwriting dtdx1d(i-1) removed, and code below modified to agree 
+c     # with classic flux3 by mjb, 12/16/2014.
+            dtdxave = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i))
 c     
-         dtdx1d(i-1) = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i))
-c     
-         do 120 m=1,meqn
-            cqxx(m,i) = 0.d0
-            do 119 mw=1,mwaves
-               cqxx(m,i) = cqxx(m,i) + 0.5d0 * dabs(s(mw,i))
-     &          * (1.d0 - dabs(s(mw,i))*dtdx1d(i-1)) * wave(m,mw,i)
- 119        continue
-            faddm(m,i) = faddm(m,i) + cqxx(m,i)
-            faddp(m,i) = faddp(m,i) + cqxx(m,i)
- 120     continue
+            do 120 m=1,meqn
+               cqxx(m,i) = 0.d0
+               do 119 mw=1,mwaves
+                  cqxx(m,i) = cqxx(m,i) + 0.5d0 * dabs(s(mw,i)) *
+     &                 (1.d0 - dabs(s(mw,i))*dtdxave) * wave(m,mw,i)
+ 119           continue
+               faddm(m,i) = faddm(m,i) + cqxx(m,i)
+               faddp(m,i) = faddp(m,i) + cqxx(m,i)
+ 120        continue
+
+         else
+            do 122 i = 1, mx+1
+
+            dtdxave = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i)) 
+c
+            do 122 m=1,meqn
+               cqxx(m,i) = 0.d0
+               do 121 mw=1,mwaves
+                  cqxx(m,i) = cqxx(m,i) + 0.5d0 * dsign(1.d0, s(mw,i)) *
+     &                 (1.d0 - dabs(s(mw,i))*dtdxave) * wave(m,mw,i)
+ 121           continue
+               faddm(m,i) = faddm(m,i) + cqxx(m,i)
+               faddp(m,i) = faddp(m,i) + cqxx(m,i)
+ 122        continue
+         endif
 c     
  130     continue
 c     
@@ -415,9 +438,9 @@ c
             gadd(m,i-1,2,0) = gadd(m,i-1,2,0)
      &                       - 0.5d0*dtdx1d(i-1)*bpamdq(m,i)
             gadd(m,i,1,0)   = gadd(m,i,1,0)
-     &                       - 0.5d0*dtdx1d(i-1)*bmapdq(m,i)
+     &                       - 0.5d0*dtdx1d(i)*bmapdq(m,i)
             gadd(m,i,2,0)   = gadd(m,i,2,0)
-     &                       - 0.5d0*dtdx1d(i-1)*bpapdq(m,i)
+     &                       - 0.5d0*dtdx1d(i)*bpapdq(m,i)
 c     
 c     # Transverse propagation of the increment wave (and the
 c     # correction wave if m4=2) between cells
@@ -427,21 +450,22 @@ c
              if( m4.gt.0 )then
 c     
                 gadd(m,i,2,0) = gadd(m,i,2,0)
-     &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                          + (1.d0/6.d0)*dtdx1d(i)*dtdz
                 gadd(m,i,1,0) = gadd(m,i,1,0)
-     &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                          + (1.d0/6.d0)*dtdx1d(i)*dtdz
      &                          * (bmcpapdq(m,i) - bmcmapdq(m,i))
+
                 gadd(m,i,2,1) = gadd(m,i,2,1)
-     &                          - (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                          - (1.d0/6.d0)*dtdx1d(i)*dtdz
      &                          * bpcpapdq(m,i)
                 gadd(m,i,1,1) = gadd(m,i,1,1)
-     &                           - (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           - (1.d0/6.d0)*dtdx1d(i)*dtdz
      &                           * bmcpapdq(m,i)
                 gadd(m,i,2,-1) = gadd(m,i,2,-1)
-     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           + (1.d0/6.d0)*dtdx1d(i)*dtdz
      &                           * bpcmapdq(m,i)
                 gadd(m,i,1,-1) = gadd(m,i,1,-1)
-     &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                           + (1.d0/6.d0)*dtdx1d(i)*dtdz
      &                           * bmcmapdq(m,i)
 c     
                 gadd(m,i-1,2,0) = gadd(m,i-1,2,0)
@@ -450,6 +474,7 @@ c
                 gadd(m,i-1,1,0) = gadd(m,i-1,1,0)
      &                           + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
      &                           * (bmcpamdq(m,i) - bmcmamdq(m,i))
+
                 gadd(m,i-1,2,1) = gadd(m,i-1,2,1)
      &                           - (1.d0/6.d0)*dtdx1d(i-1)*dtdz
      &                           * bpcpamdq(m,i)
@@ -470,9 +495,9 @@ c     # cells sharing faces. This gives BAAu_{xxy}.
 c     
              if(m3.lt.2) go to 180
                  gadd(m,i,2,0)   = gadd(m,i,2,0)
-     &                             + dtdx1d(i-1)*bpcqxxp(m,i)
+     &                             + dtdx1d(i)*bpcqxxp(m,i)
                  gadd(m,i,1,0)   = gadd(m,i,1,0)
-     &                             + dtdx1d(i-1)*bmcqxxp(m,i)
+     &                             + dtdx1d(i)*bmcqxxp(m,i)
                  gadd(m,i-1,2,0) = gadd(m,i-1,2,0)
      &                             - dtdx1d(i-1)*bpcqxxm(m,i)
                  gadd(m,i-1,1,0) = gadd(m,i-1,1,0)
@@ -535,9 +560,9 @@ c
            hadd(m,i-1,2,0) = hadd(m,i-1,2,0)
      &                      - 0.5d0*dtdx1d(i-1)*cpamdq(m,i)
            hadd(m,i,1,0)   = hadd(m,i,1,0)
-     &                      - 0.5d0*dtdx1d(i-1)*cmapdq(m,i)
+     &                      - 0.5d0*dtdx1d(i)*cmapdq(m,i)
            hadd(m,i,2,0)   = hadd(m,i,2,0)
-     &                      - 0.5d0*dtdx1d(i-1)*cpapdq(m,i)
+     &                      - 0.5d0*dtdx1d(i)*cpapdq(m,i)
 c     
 c     # Transverse propagation of the increment wave (and the
 c     # correction wave if m4=2) between cells
@@ -547,22 +572,23 @@ c
           if( m4.gt.0 )then
 c     
              hadd(m,i,2,0)  = hadd(m,i,2,0)
-     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            + (1.d0/6.d0)*dtdx1d(i)*dtdy
      &                            * (bpcpapdq(m,i) - bpcmapdq(m,i))
              hadd(m,i,1,0)  = hadd(m,i,1,0)
-     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            + (1.d0/6.d0)*dtdx1d(i)*dtdy
      &                            * (bmcpapdq(m,i) - bmcmapdq(m,i))
+
              hadd(m,i,2,1)  = hadd(m,i,2,1)
-     &                            - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            - (1.d0/6.d0)*dtdx1d(i)*dtdy
      &                            * bpcpapdq(m,i)
              hadd(m,i,1,1)  = hadd(m,i,1,1)
-     &                            - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            - (1.d0/6.d0)*dtdx1d(i)*dtdy
      &                            * bmcpapdq(m,i)
              hadd(m,i,2,-1) = hadd(m,i,2,-1)
-     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            + (1.d0/6.d0)*dtdx1d(i)*dtdy
      &                            * bpcmapdq(m,i)
              hadd(m,i,1,-1) = hadd(m,i,1,-1)
-     &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
+     &                            + (1.d0/6.d0)*dtdx1d(i)*dtdy
      &                            * bmcmapdq(m,i)
 c     
              hadd(m,i-1,2,0)  = hadd(m,i-1,2,0)
@@ -571,6 +597,7 @@ c
              hadd(m,i-1,1,0)  = hadd(m,i-1,1,0)
      &                            + (1.d0/6.d0)*dtdx1d(i-1)*dtdy
      &                            * (bmcpamdq(m,i) - bmcmamdq(m,i))
+
              hadd(m,i-1,2,1)  = hadd(m,i-1,2,1)
      &                            - (1.d0/6.d0)*dtdx1d(i-1)*dtdy
      &                            * bpcpamdq(m,i)
@@ -591,9 +618,9 @@ c     # cells sharing faces. This gives CAAu_{xxy}.
 c     
            if(m3.lt.2) go to 200
            hadd(m,i,2,0)   = hadd(m,i,2,0)
-     &                        + dtdx1d(i-1)*cpcqxxp(m,i)
+     &                        + dtdx1d(i)*cpcqxxp(m,i)
            hadd(m,i,1,0)   = hadd(m,i,1,0)
-     &                        + dtdx1d(i-1)*cmcqxxp(m,i)
+     &                        + dtdx1d(i)*cmcqxxp(m,i)
            hadd(m,i-1,2,0) = hadd(m,i-1,2,0)
      &                        - dtdx1d(i-1)*cpcqxxm(m,i)
            hadd(m,i-1,1,0) = hadd(m,i-1,1,0)
