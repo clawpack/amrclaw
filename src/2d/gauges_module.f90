@@ -20,11 +20,11 @@
 !   - the dumpgauge and setbestsrc subroutines have been moved to this module 
 !     and the dumpgauge subroutine has been refactored and renamed print_gauges.
 !   - dumpgauge.f must be removed from Makefiles.
-!   - setbestsrc no longer uses quicksort to sort gauge numbers and
-!     print_gauges no longer uses binary search to locate first gauge handled
-!     by a grid.  Instead loop over all gauges and skip those not needed.
-!     This may cause the gauges to be printed in a different order at some
-!     time steps, but values printed should be the same as in previous code.
+!   - setbestsrc uses quicksort to sort gauge numbers and
+!     then figures out which gauges will be updated by grid, and stores this
+!     information in new module variables mbestg1, mbestg2.
+!   - print_gauges no longer uses binary search to locate first gauge handled
+!     by a grid.  Instead loop over gauges specified by mbestg1, mbestg2.
 
 module gauges_module
 
@@ -34,7 +34,8 @@ module gauges_module
     integer, parameter :: OUTGAUGEUNIT=89
     integer :: num_gauges
     real(kind=8), allocatable :: xgauge(:), ygauge(:), t1gauge(:), t2gauge(:)
-    integer, allocatable ::  mbestsrc(:), igauge(:)
+    integer, allocatable, dimension(:) ::  mbestsrc, mbestorder, &
+                          igauge, mbestg1, mbestg2
 
 contains
 
@@ -62,8 +63,9 @@ contains
 
         allocate(xgauge(num_gauges), ygauge(num_gauges))
         allocate(t1gauge(num_gauges), t2gauge(num_gauges))
-        allocate(mbestsrc(num_gauges))
+        allocate(mbestsrc(num_gauges), mbestorder(num_gauges))
         allocate(igauge(num_gauges))
+        allocate(mbestg1(maxgr), mbestg2(maxgr))
         
         do i=1,num_gauges
             read(iunit,*) igauge(i),xgauge(i),ygauge(i),t1gauge(i),t2gauge(i)
@@ -98,7 +100,7 @@ contains
       use amr_module
       implicit none
 
-      integer :: lev, mptr, i
+      integer :: lev, mptr, i, k1, ki
 
 !
 ! ##  set source grid for each loc from coarsest level to finest.
@@ -132,9 +134,46 @@ contains
             write(6,*)"ERROR in setting grid src for gauge data",i
       end do
 
-!     Removed this call since easy just to loop over all gauges:
-!       sort the source arrays for easy testing during integration
-!       call qsorti(mbestorder,num_gauges,mbestsrc)
+!     Sort the source arrays for easy testing during integration
+      call qsorti(mbestorder,num_gauges,mbestsrc)
+
+!     After sorting,  
+!           mbestsrc(mbestorder(i)) = grid index to be used for gauge i
+!     and mbestsrc(mbestorder(i)) is non-decreasing as i=1,2,..., num_gauges
+
+!     write(6,*) '+++ mbestorder: ',mbestorder
+!     write(6,*) '+++ mbestsrc: ',mbestsrc
+
+!     Figure out the set of gauges that should be handled on each grid:  
+!     after loop below, grid k should handle gauges numbered
+!          mbestorder(i) for i = mbestg1(k), mbestg1(k)+1, ..., mbestg2(k)
+!     This will be used for looping in print_gauges subroutine.
+
+      ! initialize arrays to default indicating grids that contain no gauges:
+      mbestg1 = 0
+      mbestg2 = 0
+
+      k1 = 0
+      do i=1,num_gauges
+          ki = mbestsrc(mbestorder(i))
+          if (ki > k1) then
+              ! new grid number seen for first time in list
+              if (k1 > 0) then
+                  ! mark end of gauges seen by previous grid
+                  mbestg2(k1) = i-1
+!                 write(6,*) '+++ k1, mbestg2(k1): ',k1,mbestg2(k1)
+                  endif
+              mbestg1(ki) = i
+!             write(6,*) '+++ ki, mbestg1(ki): ',ki,mbestg1(ki)
+              endif
+          k1 = ki
+          enddo
+      if (num_gauges > 0) then
+          ! finalize 
+          mbestg2(ki) = num_gauges
+!         write(6,*) '+++ ki, mbestg2(ki): ',ki,mbestg2(ki)
+          endif
+
 
       end subroutine setbestsrc
 
@@ -157,8 +196,8 @@ contains
 !     grid patch is best to use for each gauge.
 
 !     This is a refactoring of dumpgauge.f from Clawpack 5.2 
-!     that does not assume list is sorted.  Loops over all gauges rather
-!     than doing a binary search.
+!     Loops over only the gauges to be handled by this grid, as specified
+!     by indices from mbestg1(mptr) to mbestg2(mptr)
 
       use amr_module
 
@@ -172,15 +211,24 @@ contains
       ! local variables:
       real(kind=8) :: var(maxvar)
       real(kind=8) :: xcent,ycent,xoff,yoff,tgrid,hx,hy
-      integer :: level,i,j,ioff,joff,iindex,jindex,ivar
+      integer :: level,i,j,ioff,joff,iindex,jindex,ivar, ii,i1,i2
 
-!     write(*,*) 'in print_gauges with num_gauges, mptr = ',num_gauges,mptr
-!     write(*,*) 'mbestscr = ',(mbestsrc(j),j=1,num_gauges)
+!     write(*,*) '+++ in print_gauges with num_gauges, mptr = ',num_gauges,mptr
 
       if (num_gauges == 0) then
          return
       endif
 
+      i1 = mbestg1(mptr)
+      i2 = mbestg2(mptr)
+
+      if (i1 == 0) then
+         ! no gauges to be handled by this grid
+         return
+      endif
+
+!     write(6,*) '+++ mbestg1(mptr) = ',mbestg1(mptr)
+!     write(6,*) '+++ mbestg2(mptr) = ',mbestg2(mptr)
 
 !     # this stuff the same for all gauges on this grid
       tgrid = rnode(timemult,mptr)
@@ -190,9 +238,15 @@ contains
 
 !     write(*,*) 'tgrid = ',tgrid
 
-      do 10 i = 1, num_gauges
-        if (mptr .ne. mbestsrc(i)) go to 10  ! this patch not used
-        if (tgrid.lt.t1gauge(i) .or. tgrid.gt.t2gauge(i)) then
+      do 10 i = i1,i2
+        ii = mbestorder(i)
+!       write(6,*) '+++ gauge ', ii
+        if (mptr .ne. mbestsrc(ii)) then !!! go to 10  ! this patch not used
+            write(6,*) '*** should not happen... i, ii, mbestsrc(ii), mptr:'
+            write(6,*) i, ii, mbestsrc(ii), mptr
+            stop
+            endif
+        if (tgrid.lt.t1gauge(ii) .or. tgrid.gt.t2gauge(ii)) then
 !          # don't output at this time for gauge i
            go to 10
            endif
@@ -202,15 +256,16 @@ contains
 !
 !    *** Note: changed 0.5 to  0.5d0 etc. ****************************
 !
-        iindex =  int(.5d0 + (xgauge(i)-xlow)/hx)
-        jindex =  int(.5d0 + (ygauge(i)-ylow)/hy)
+!       write(6,*) '+++ interploting for gauge ', ii
+        iindex =  int(.5d0 + (xgauge(ii)-xlow)/hx)
+        jindex =  int(.5d0 + (ygauge(ii)-ylow)/hy)
         if ((iindex .lt. nghost .or. iindex .gt. mitot-nghost) .or. &
             (jindex .lt. nghost .or. jindex .gt. mjtot-nghost)) &
           write(*,*)"ERROR in output of Gauge Data "
         xcent  = xlow + (iindex-.5d0)*hx
         ycent  = ylow + (jindex-.5d0)*hy
-        xoff   = (xgauge(i)-xcent)/hx
-        yoff   = (ygauge(i)-ycent)/hy
+        xoff   = (xgauge(ii)-xcent)/hx
+        yoff   = (ygauge(ii)-ycent)/hy
         if (xoff .lt. 0.d0 .or. xoff .gt. 1.d0 .or. &
             yoff .lt. 0.d0 .or. yoff .gt. 1.d0) then
            write(6,*)" BIG PROBLEM in DUMPGAUGE", i
@@ -232,7 +287,7 @@ contains
 !       # output values at gauge, along with gauge no, level, time:
 !       # if you want to print out something different at each gauge,
 !       # modify this...
-        write(OUTGAUGEUNIT,100)igauge(i),level, tgrid,(var(j),j=1,nvar)
+        write(OUTGAUGEUNIT,100)igauge(ii),level, tgrid,(var(j),j=1,nvar)
 
 !       # if you want to modify number of digits printed, modify this...
 100     format(2i5,15e15.7)
