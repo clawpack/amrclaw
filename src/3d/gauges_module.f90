@@ -136,8 +136,8 @@ contains
 !           mbestsrc(mbestorder(i)) = grid index to be used for gauge i
 !     and mbestsrc(mbestorder(i)) is non-decreasing as i=1,2,..., num_gauges
 
-!     write(6,*) '+++ mbestorder: ',mbestorder
-!     write(6,*) '+++ mbestsrc: ',mbestsrc
+      write(6,*) '+++ mbestorder: ',mbestorder
+      write(6,*) '+++ mbestsrc: ',mbestsrc
 
 !     Figure out the set of gauges that should be handled on each grid:  
 !     after loop below, grid k should handle gauges numbered
@@ -210,7 +210,7 @@ contains
       integer :: level,i,j,k,ioff,joff,koff,iindex,jindex,kindex, &
                  ivar, ii,i1,i2
 
-!     write(*,*) '+++ in print_gauges with num_gauges, mptr = ',num_gauges,mptr
+      write(*,*) '+++ in print_gauges with num_gauges, mptr = ',num_gauges,mptr
 
       if (num_gauges == 0) then
          return
@@ -224,8 +224,8 @@ contains
          return
       endif
 
-!     write(6,*) '+++ mbestg1(mptr) = ',mbestg1(mptr)
-!     write(6,*) '+++ mbestg2(mptr) = ',mbestg2(mptr)
+      write(6,*) '+++ mbestg1(mptr) = ',mbestg1(mptr)
+      write(6,*) '+++ mbestg2(mptr) = ',mbestg2(mptr)
 
 !     # this stuff the same for all gauges on this grid
       tgrid = rnode(timemult,mptr)
@@ -234,11 +234,11 @@ contains
       hy    =  hyposs(level)
       hz    =  hzposs(level)
 
-!     write(*,*) 'tgrid = ',tgrid
+      write(*,*) 'tgrid = ',tgrid
 
       do 10 i = i1,i2
         ii = mbestorder(i)
-!       write(6,*) '+++ gauge ', ii
+        write(6,*) '+++ gauge ', ii
         if (mptr .ne. mbestsrc(ii)) then !!! go to 10  ! this patch not used
             write(6,*) '*** should not happen... i, ii, mbestsrc(ii), mptr:'
             write(6,*) i, ii, mbestsrc(ii), mptr
@@ -254,14 +254,17 @@ contains
 !
 !    *** Note: changed 0.5 to  0.5d0 etc. ****************************
 !
-!       write(6,*) '+++ interploting for gauge ', ii
+        write(6,*) '+++ interploting for gauge ', ii
         iindex =  int(.5d0 + (xgauge(ii)-xlow)/hx)
         jindex =  int(.5d0 + (ygauge(ii)-ylow)/hy)
         kindex =  int(.5d0 + (zgauge(ii)-zlow)/hz)
         if ((iindex .lt. nghost .or. iindex .gt. mitot-nghost) .or. &
             (jindex .lt. nghost .or. jindex .gt. mjtot-nghost) .or. &
-            (kindex .lt. nghost .or. kindex .gt. mktot-nghost)) &
-          write(*,*)"ERROR in output of Gauge Data "
+            (kindex .lt. nghost .or. kindex .gt. mktot-nghost)) then
+          write(*,*)"ERROR in output of Gauge Data at time ",tgrid
+          write(*,*) 'iindex,jindex,kindex: ',iindex,jindex,kindex
+          write(*,*) 'xlow,ylow,zlow: ',xlow,ylow,zlow
+          endif
         xcent  = xlow + (iindex-.5d0)*hx
         ycent  = ylow + (jindex-.5d0)*hy
         zcent  = zlow + (kindex-.5d0)*hz
