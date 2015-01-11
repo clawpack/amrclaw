@@ -93,8 +93,9 @@ module amr_module
     ! common  /calloc/   alloc(memsize)
 
     ! Dynamic memory: 
-    real(kind=8), allocatable, target, dimension(:) :: storage
-    real(kind=8), pointer, dimension(:) :: alloc
+    !real(kind=8), allocatable, target, dimension(:) :: storage
+    !real(kind=8), pointer, dimension(:) :: alloc
+    real(kind=8), allocatable, dimension(:) :: alloc  ! new way, use alloctable, not pointer
     integer memsize
        
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\
