@@ -114,7 +114,9 @@ contains
             if ((xgauge(i) .ge. rnode(cornxlo,mptr)) .and. &
                 (xgauge(i) .le. rnode(cornxhi,mptr)) .and. &  
                 (ygauge(i) .ge. rnode(cornylo,mptr)) .and. &
-                (ygauge(i) .le. rnode(cornyhi,mptr)) ) then
+                (ygauge(i) .le. rnode(cornyhi,mptr)) .and. &
+                (zgauge(i) .ge. rnode(cornzlo,mptr)) .and. &
+                (zgauge(i) .le. rnode(cornzhi,mptr)) ) then
                mbestsrc(i) = mptr
             endif
  10       continue
