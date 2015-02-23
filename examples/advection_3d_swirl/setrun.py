@@ -116,7 +116,7 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 8
+        clawdata.num_output_times = 5
         clawdata.tfinal = .5
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
@@ -183,8 +183,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.order = 2
 
     # Use dimensional splitting?
-    clawdata.dimensional_split = 1
-    #clawdata.dimensional_split = 'unsplit'
+    #clawdata.dimensional_split = 1
+    clawdata.dimensional_split = 'unsplit'
 
     # For unsplit method, transverse_waves can be
     #  0 or 'none'      ==> donor cell (only normal solver used)
@@ -238,6 +238,14 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_upper[2] = 'extrap'   # at zupper
 
 
+    # ---------------
+    # Gauges:
+    # ---------------
+    gauges = rundata.gaugedata.gauges
+    # for gauges append lines of the form  [gaugeno, x, y, z, t1, t2]
+    gauges.append([1, 0.6, 0.4, 0.4, 0., 1e9])
+    gauges.append([2, 0.7, 0.4, 0.4, 0., 1e9])
+    
 
     # --------------
     # Checkpointing:
@@ -274,10 +282,10 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.amr_levels_max = 2
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    amrdata.refinement_ratios_x = [2, 2, 2, 2]
-    amrdata.refinement_ratios_y = [2, 2, 2, 2]
-    amrdata.refinement_ratios_z = [2, 2, 2, 2]
-    amrdata.refinement_ratios_t = [2, 2, 2, 2]
+    amrdata.refinement_ratios_x = [2]
+    amrdata.refinement_ratios_y = [2]
+    amrdata.refinement_ratios_z = [2]
+    amrdata.refinement_ratios_t = [2]
 
 
     # Specify type of each aux variable in amrdata.auxtype.
