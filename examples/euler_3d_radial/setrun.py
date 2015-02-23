@@ -119,8 +119,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 30
-        clawdata.tfinal = 3.0      # original problem in 4.3 used this
+        clawdata.num_output_times = 5
+        clawdata.tfinal = 0.5      # original problem in 4.3 used this
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
@@ -169,7 +169,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.dt_max = 1.000000e+99
 
     # Desired Courant number if variable dt used
-    clawdata.cfl_desired = 0.850000
+    clawdata.cfl_desired = 0.5
     # max Courant number to allow without retaking step with a smaller dt:
     clawdata.cfl_max = 1.000000
 
@@ -238,6 +238,22 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_lower[2] = 'wall'     # at zlower
     clawdata.bc_upper[2] = 'extrap'   # at zupper
 
+
+    # ---------------
+    # Gauges:
+    # ---------------
+    gauges = rundata.gaugedata.gauges
+    # for gauges append lines of the form  [gaugeno, x, y, z, t1, t2]
+    gauges.append([1, 1.0, 0.1, 0.1, 0., 1e9])
+    gauges.append([2, 0.1, 1.0, 0.1, 0., 1e9])
+    gauges.append([3, 0.1, 0.1, 1.0, 0., 1e9])
+    rg = np.sqrt(1.02/3.)
+    gauges.append([4, rg, rg, rg, 0., 1e9])
+    rg = np.sqrt(1.01/2.)
+    gauges.append([5, 0.1, rg, rg, 0., 1e9])
+    gauges.append([6, rg, 0.1, rg, 0., 1e9])
+    gauges.append([7, rg, rg, 0.1, 0., 1e9])
+    
 
     # --------------
     # Checkpointing:

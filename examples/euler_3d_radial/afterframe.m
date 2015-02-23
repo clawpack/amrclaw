@@ -2,7 +2,11 @@ if (PlotType == 1)
     % Assume presssure is being plotted.
     % rybcolormap;
     axis([0 2 0 2 0 2]);
-    caxis([0.2 0.6]);
+    %caxis([0.2 0.6]);
+
+    % for density:
+    caxis([0.96 1.04]);
+
     daspect([1 1 1]);
     colorbar;
     
