@@ -428,6 +428,8 @@ c
 c     
                 gadd(m,i,2,0) = gadd(m,i,2,0)
      &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                          * (bpcpapdq(m,i) - bpcmapdq(m,i))
+c  added line above
                 gadd(m,i,1,0) = gadd(m,i,1,0)
      &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
      &                          * (bmcpapdq(m,i) - bmcmapdq(m,i))
