@@ -215,10 +215,23 @@ c    should change the way  dumpguage does io - right now is critical section
      .                    nvar,mitot,mjtot,naux,mptr)
 
 c
-      call stepgrid(alloc(locnew),fm,fp,gm,gp,
-     2            mitot,mjtot,nghost,
-     3            delt,dtnew,hx,hy,nvar,
-     4            xlow,ylow,time,mptr,naux,alloc(locaux))
+      if (dimensional_split .eq. 0) then
+c        # Unsplit method
+         call stepgrid(alloc(locnew),fm,fp,gm,gp,
+     2                  mitot,mjtot,nghost,
+     3                  delt,dtnew,hx,hy,nvar,
+     4                  xlow,ylow,time,mptr,naux,alloc(locaux))
+      else if (dimensional_split .eq. 1) then
+c        # Godunov splitting
+         call stepgrid_dimSplit(alloc(locnew),fm,fp,gm,gp,
+     2               mitot,mjtot,nghost,
+     3               delt,dtnew,hx,hy,nvar,
+     4               xlow,ylow,time,mptr,naux,alloc(locaux))
+      else 
+c        # should never get here due to check in amr2
+         write(6,*) '*** Strang splitting not supported'
+         stop
+      endif
 
       if (node(cfluxptr,mptr) .ne. 0)
      2   call fluxsv(mptr,fm,fp,gm,gp,

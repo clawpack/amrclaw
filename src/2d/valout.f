@@ -30,10 +30,10 @@ c
 
 c     # how many aux components requested?
       output_aux_num = 0
-	    do i=1,naux
-		     output_aux_num = output_aux_num + output_aux_components(i)
-		  enddo
-		
+      do i=1,naux
+          output_aux_num = output_aux_num + output_aux_components(i)
+      enddo
+                
 c     # Currently outputs all aux components if any are requested!
       outaux = ((output_aux_num > 0) .and. 
      .         ((.not. output_aux_onlyonce) .or. (time==t0)))
@@ -153,70 +153,70 @@ c       # output aux arrays
 c       -------------------
 
         if (outaux) then
-c        # output aux array to fort.aXXXX
+c     # output aux array to fort.aXXXX
 
-         level = lst
- 165     if (level .gt. lfine) go to 190
-            mptr = lstart(level)
- 170        if (mptr .eq. 0) go to 180
-              nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
-              ny      = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-              locaux  = node(storeaux,mptr)
-              mitot   = nx + 2*nghost
-              mjtot   = ny + 2*nghost
+           level = lst
+ 165       if (level .gt. lfine) go to 190
+           mptr = lstart(level)
+ 170       if (mptr .eq. 0) go to 180
+           nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
+           ny      = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+           locaux  = node(storeaux,mptr)
+           mitot   = nx + 2*nghost
+           mjtot   = ny + 2*nghost
 
 
-		  if (output_format == 1) then
-             open(unit=matunit3,file=fname3,status='unknown',
-     .            form='formatted')
+           if (output_format == 1) then
+              open(unit=matunit3,file=fname3,status='unknown',
+     .             form='formatted')
               if (ny.gt.1) then
-                  write(matunit3,1001) mptr, level, nx, ny
-                else
-c                 # output in 1d format if ny=1:
-                  write(matunit3,1003) mptr, level, nx
-                endif
+                 write(matunit3,1001) mptr, level, nx, ny
+              else
+c     # output in 1d format if ny=1:
+                 write(matunit3,1003) mptr, level, nx
+              endif
               xlow = rnode(cornxlo,mptr)
               ylow = rnode(cornylo,mptr)
               if (ny.gt.1) then
-                  write(matunit3,1002)
-     &              xlow,ylow,hxposs(level),hyposs(level)
-                else
-                  write(matunit3,1004)
-     &              xlow,hxposs(level)
-                endif
+                 write(matunit3,1002)
+     &                xlow,ylow,hxposs(level),hyposs(level)
+              else
+                 write(matunit3,1004)
+     &                xlow,hxposs(level)
+              endif
 
-             do j = nghost+1, mjtot-nghost
-                do i = nghost+1, mitot-nghost
-                   do ivar=1,naux
-                      if (abs(alloc(iaddaux(ivar,i,j))) .lt. 1d-90) 
-     &                   alloc(iaddaux(ivar,i,j)) = 0.d0
-                   enddo
-                   write(matunit3,109) (alloc(iaddaux(ivar,i,j)), 
-     &                              ivar=1,naux)
-                enddo
-                write(matunit3,*) ' '
-             enddo
-			endif
-			
-         if (output_format == 3) then
-c            # binary output          
-             open(unit=matunit3,file=fname3,status='unknown',
-     &               access='stream')
-             i1 = iaddaux(1,1,1)
-             i2 = iaddaux(naux,mitot,mjtot)
-c            # NOTE: we are writing out ghost cell data also, unlike ascii
-             write(matunit3) alloc(i1:i2)
-             endif
+              do j = nghost+1, mjtot-nghost
+                 do i = nghost+1, mitot-nghost
+                    do ivar=1,naux
+                       if (abs(alloc(iaddaux(ivar,i,j))) .lt. 1d-90) 
+     &                      alloc(iaddaux(ivar,i,j)) = 0.d0
+                    enddo
+                    write(matunit3,109) (alloc(iaddaux(ivar,i,j)), 
+     &                   ivar=1,naux)
+                 enddo
+                 write(matunit3,*) ' '
+              enddo
+           endif
+           
+           if (output_format == 3) then
+c     # binary output          
+              open(unit=matunit3,file=fname3,status='unknown',
+     &             access='stream')
+              i1 = iaddaux(1,1,1)
+              i2 = iaddaux(naux,mitot,mjtot)
+c     # NOTE: we are writing out ghost cell data also, unlike ascii
+              write(matunit3) alloc(i1:i2)
+           endif
 
 
-            mptr = node(levelptr, mptr)
-            go to 170
- 180     level = level + 1
-         go to 165
+           mptr = node(levelptr, mptr)
+           go to 170
+ 180       level = level + 1
+           go to 165
 
- 190    continue
-        close(unit=matunit3)
-        endif !# end outputting aux array
+ 190       continue
+           close(unit=matunit3)
+        endif                   !# end outputting aux array
 
 
 c     --------------
