@@ -450,7 +450,8 @@ c
              if( m4.gt.0 )then
 c     
                 gadd(m,i,2,0) = gadd(m,i,2,0)
-     &                          + (1.d0/6.d0)*dtdx1d(i)*dtdz
+     &                          + (1.d0/6.d0)*dtdx1d(i-1)*dtdz
+     &                          * (bpcpapdq(m,i) - bpcmapdq(m,i))
                 gadd(m,i,1,0) = gadd(m,i,1,0)
      &                          + (1.d0/6.d0)*dtdx1d(i)*dtdz
      &                          * (bmcpapdq(m,i) - bmcmapdq(m,i))

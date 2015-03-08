@@ -6,8 +6,8 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-      dimension  val(mitot,mjtot,mktot,nvar)
-      dimension  aux(mitot,mjtot,mktot,naux)
+      dimension  val(nvar,mitot,mjtot,mktot)
+      dimension  aux(naux,mitot,mjtot,mktot)
       logical    outgrd
 
 
