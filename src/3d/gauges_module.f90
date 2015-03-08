@@ -201,15 +201,15 @@ contains
 
       implicit none
 
+      integer, intent(in) ::  nvar,mitot,mjtot,mktot,naux,mptr
       real(kind=8), intent(in) ::  q(nvar,mitot,mjtot,mktot)
       real(kind=8), intent(in) ::  aux(naux,mitot,mjtot,mktot)
       real(kind=8), intent(in) ::  xlow,ylow,zlow
-      integer, intent(in) ::  nvar,mitot,mjtot,mktot,naux,mptr
 
       ! local variables:
       real(kind=8) :: var(maxvar), var1, var2
       real(kind=8) :: xcent,ycent,zcent, xoff,yoff,zoff, tgrid, hx,hy,hz
-      integer :: level,i,j,k,ioff,joff,koff,iindex,jindex,kindex, &
+      integer :: level,i,j,iindex,jindex,kindex, &
                  ivar, ii,i1,i2
 
 !     write(*,*) '+++ in print_gauges with num_gauges, mptr = ',num_gauges,mptr
