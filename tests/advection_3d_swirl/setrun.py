@@ -236,6 +236,13 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_lower[2] = 'extrap'   # at zlower
     clawdata.bc_upper[2] = 'extrap'   # at zupper
 
+    # ---------------
+    # Gauges:
+    # ---------------
+    gauges = rundata.gaugedata.gauges
+    # for gauges append lines of the form  [gaugeno, x, y, z, t1, t2]
+    gauges.append([1, 0.55, 0.4, 0.4, 0., 1e9])
+    gauges.append([2, 0.45, 0.6, 0.4, 0., 1e9])
 
     # --------------
     # Checkpointing:
