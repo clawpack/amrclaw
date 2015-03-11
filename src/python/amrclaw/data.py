@@ -214,10 +214,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
     def write(self,out_file='gauges.data',data_source='setrun.py'):
         r"""Write out gague information data file."""
 
-        if (self.num_dim == 3) and (len(self.gauges) > 0):
-            raise NotImplementedError("*** Gauges not yet implemented in 3d")
-
-        # Check to make sure we have only unique gauge numebrs
+        # Check to make sure we have only unique gauge numbers
         if len(self.gauges) > 0:
             if len(self.gauge_numbers) != len(set(self.gauge_numbers)):
                 raise Exception("Non unique gauge numbers specified.")
@@ -226,7 +223,10 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         self.open_data_file(out_file,data_source)
         self.data_write(name='ngauges',value=len(self.gauges))
         for gauge in self.gauges:
-            self._out_file.write("%4i %19.10e  %17.10e  %13.6e  %13.6e\n" % tuple(gauge))
+            if self.num_dim == 2:
+                self._out_file.write("%4i %17.10e  %17.10e  %13.6e  %13.6e\n" % tuple(gauge))
+            else:
+                self._out_file.write("%4i %17.10e  %17.10e  %17.10e  %13.6e  %13.6e\n" % tuple(gauge))
         self.close_data_file()
 
     def read(self,data_path="./",file_name='gauges.data'):

@@ -31,11 +31,13 @@
            if (status > 0) then
                return
            endif
-            new_storage(1:memsize) = storage
+!           new_storage(1:memsize) = storage  ! old way, changed mjb Jan. 2015
+            new_storage(1:memsize) = alloc    ! new way, use allocatable, not pointer
 
-            call move_alloc(new_storage,storage)
+!           call move_alloc(new_storage,storage)
+            call move_alloc(new_storage,alloc)
 
-           alloc => storage
+!          alloc => storage
            memsize = new_size
        else
            print *,'new_size < memsize,'

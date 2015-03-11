@@ -17,14 +17,7 @@
 !     format statement 100 and/or the write statement that uses it.
 !   
 ! Note: Updated for Clawpack 5.3.0:
-!   - the dumpgauge and setbestsrc subroutines have been moved to this module 
-!     and the dumpgauge subroutine has been refactored and renamed print_gauges.
-!   - dumpgauge.f must be removed from Makefiles.
-!   - setbestsrc uses quicksort to sort gauge numbers and
-!     then figures out which gauges will be updated by grid, and stores this
-!     information in new module variables mbestg1, mbestg2.
-!   - print_gauges no longer uses binary search to locate first gauge handled
-!     by a grid.  Instead loop over gauges specified by mbestg1, mbestg2.
+!   - Introduced in 3d code
 
 module gauges_module
 
@@ -33,9 +26,10 @@ module gauges_module
 
     integer, parameter :: OUTGAUGEUNIT=89
     integer :: num_gauges
-    real(kind=8), allocatable :: xgauge(:), ygauge(:), t1gauge(:), t2gauge(:)
+    real(kind=8), allocatable, dimension(:) :: xgauge, ygauge, zgauge, &
+                  t1gauge, t2gauge
     integer, allocatable, dimension(:) ::  mbestsrc, mbestorder, &
-                          igauge, mbestg1, mbestg2
+                  igauge, mbestg1, mbestg2
 
 contains
 
@@ -61,14 +55,15 @@ contains
 
         read(iunit,*) num_gauges
 
-        allocate(xgauge(num_gauges), ygauge(num_gauges))
+        allocate(xgauge(num_gauges), ygauge(num_gauges), zgauge(num_gauges))
         allocate(t1gauge(num_gauges), t2gauge(num_gauges))
         allocate(mbestsrc(num_gauges), mbestorder(num_gauges))
         allocate(igauge(num_gauges))
         allocate(mbestg1(maxgr), mbestg2(maxgr))
         
         do i=1,num_gauges
-            read(iunit,*) igauge(i),xgauge(i),ygauge(i),t1gauge(i),t2gauge(i)
+            read(iunit,*) igauge(i),xgauge(i),ygauge(i),zgauge(i), &
+                          t1gauge(i),t2gauge(i)
         enddo
 
         close(iunit)
@@ -119,7 +114,9 @@ contains
             if ((xgauge(i) .ge. rnode(cornxlo,mptr)) .and. &
                 (xgauge(i) .le. rnode(cornxhi,mptr)) .and. &  
                 (ygauge(i) .ge. rnode(cornylo,mptr)) .and. &
-                (ygauge(i) .le. rnode(cornyhi,mptr)) ) then
+                (ygauge(i) .le. rnode(cornyhi,mptr)) .and. &
+                (zgauge(i) .ge. rnode(cornzlo,mptr)) .and. &
+                (zgauge(i) .le. rnode(cornzhi,mptr)) ) then
                mbestsrc(i) = mptr
             endif
  10       continue
@@ -180,7 +177,8 @@ contains
 !
 ! -------------------------------------------------------------------------
 !
-      subroutine print_gauges(q,aux,xlow,ylow,nvar,mitot,mjtot,naux,mptr)
+      subroutine print_gauges(q,aux,xlow,ylow,zlow,nvar,mitot,mjtot,mktot, &
+                 naux,mptr)
 !
 !     This routine is called each time step for each grid patch, to output
 !     gauge values for all gauges for which this patch is the best one to 
@@ -203,15 +201,16 @@ contains
 
       implicit none
 
-      real(kind=8), intent(in) ::  q(nvar,mitot,mjtot)
-      real(kind=8), intent(in) ::  aux(naux,mitot,mjtot)
-      real(kind=8), intent(in) ::  xlow,ylow
-      integer, intent(in) ::  nvar,mitot,mjtot,naux,mptr
+      integer, intent(in) ::  nvar,mitot,mjtot,mktot,naux,mptr
+      real(kind=8), intent(in) ::  q(nvar,mitot,mjtot,mktot)
+      real(kind=8), intent(in) ::  aux(naux,mitot,mjtot,mktot)
+      real(kind=8), intent(in) ::  xlow,ylow,zlow
 
       ! local variables:
-      real(kind=8) :: var(maxvar)
-      real(kind=8) :: xcent,ycent,xoff,yoff,tgrid,hx,hy
-      integer :: level,i,j,ioff,joff,iindex,jindex,ivar, ii,i1,i2
+      real(kind=8) :: var(maxvar), var1, var2
+      real(kind=8) :: xcent,ycent,zcent, xoff,yoff,zoff, tgrid, hx,hy,hz
+      integer :: level,i,j,iindex,jindex,kindex, &
+                 ivar, ii,i1,i2
 
 !     write(*,*) '+++ in print_gauges with num_gauges, mptr = ',num_gauges,mptr
 
@@ -235,8 +234,9 @@ contains
       level = node(nestlevel,mptr)
       hx    =  hxposs(level)
       hy    =  hyposs(level)
+      hz    =  hzposs(level)
 
-!     write(*,*) 'tgrid = ',tgrid
+!     write(*,*) '+++ tgrid = ',tgrid
 
       do 10 i = i1,i2
         ii = mbestorder(i)
@@ -259,24 +259,37 @@ contains
 !       write(6,*) '+++ interploting for gauge ', ii
         iindex =  int(.5d0 + (xgauge(ii)-xlow)/hx)
         jindex =  int(.5d0 + (ygauge(ii)-ylow)/hy)
+        kindex =  int(.5d0 + (zgauge(ii)-zlow)/hz)
         if ((iindex .lt. nghost .or. iindex .gt. mitot-nghost) .or. &
-            (jindex .lt. nghost .or. jindex .gt. mjtot-nghost)) &
-          write(*,*)"ERROR in output of Gauge Data "
+            (jindex .lt. nghost .or. jindex .gt. mjtot-nghost) .or. &
+            (kindex .lt. nghost .or. kindex .gt. mktot-nghost)) then
+          write(*,*)"ERROR in output of Gauge Data at time ",tgrid
+          write(*,*) 'iindex,jindex,kindex: ',iindex,jindex,kindex
+          write(*,*) 'xlow,ylow,zlow: ',xlow,ylow,zlow
+          endif
         xcent  = xlow + (iindex-.5d0)*hx
         ycent  = ylow + (jindex-.5d0)*hy
+        zcent  = zlow + (kindex-.5d0)*hz
         xoff   = (xgauge(ii)-xcent)/hx
         yoff   = (ygauge(ii)-ycent)/hy
+        zoff   = (zgauge(ii)-zcent)/hz
         if (xoff .lt. 0.d0 .or. xoff .gt. 1.d0 .or. &
-            yoff .lt. 0.d0 .or. yoff .gt. 1.d0) then
+            yoff .lt. 0.d0 .or. yoff .gt. 1.d0 .or. &
+            zoff .lt. 0.d0 .or. zoff .gt. 1.d0) then
            write(6,*)" BIG PROBLEM in DUMPGAUGE", i
         endif
 
 !       ## bilinear interpolation
         do ivar = 1, nvar
-           var(ivar) = (1.d0-xoff)*(1.d0-yoff)*q(ivar,iindex,jindex) &
-                   + xoff*(1.d0-yoff)*q(ivar,iindex+1,jindex) &
-                   + (1.d0-xoff)*yoff*q(ivar,iindex,jindex+1) &
-                   + xoff*yoff*q(ivar,iindex+1,jindex+1)
+           var1 = (1.d0-xoff)*(1.d0-yoff)*q(ivar,iindex,jindex,kindex) &
+                   + xoff*(1.d0-yoff)*q(ivar,iindex+1,jindex,kindex) &
+                   + (1.d0-xoff)*yoff*q(ivar,iindex,jindex+1,kindex) &
+                   + xoff*yoff*q(ivar,iindex+1,jindex+1,kindex)
+           var2 = (1.d0-xoff)*(1.d0-yoff)*q(ivar,iindex,jindex,kindex+1) &
+                   + xoff*(1.d0-yoff)*q(ivar,iindex+1,jindex,kindex+1) &
+                   + (1.d0-xoff)*yoff*q(ivar,iindex,jindex+1,kindex+1) &
+                   + xoff*yoff*q(ivar,iindex+1,jindex+1,kindex+1)
+           var(ivar) = (1.d0-zoff)*var1 + zoff*var2
 !          # for printing without underflow of exponent:
            if (abs(var(ivar)) .lt. 1.d-90) var(ivar) = 0.d0
         end do

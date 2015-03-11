@@ -142,6 +142,7 @@ c
       subroutine par_advanc (mptr,mitot,mjtot,mktot,nvar,naux,dtnew)
 c
       use amr_module
+      use gauges_module, only: print_gauges, num_gauges
       implicit double precision (a-h,o-z)
 
 
@@ -219,7 +220,17 @@ c
      3             hx,hy,hz,naux,alloc(locaux),alloc(locx1d),delt,mptr)
          endif
 
-c     No gauges in 3D (yet).  Would call dumpgauge here if we had them.
+c        # See if the grid about to be advanced has gauge data to output.
+c        # This corresponds to previous time step, but output done
+c        # now to make linear interpolation easier, since grid
+c        # now has boundary conditions filled in.
+
+c     should change the way print_gauges does io - right now is critical section
+
+      if (num_gauges > 0) then
+         call print_gauges(alloc(locnew),alloc(locaux),xlow,ylow,zlow,
+     .                    nvar,mitot,mjtot,mktot,naux,mptr)
+         endif
 
          if (dimensional_split .eq. 0) then
 c           # Unsplit method

@@ -5,6 +5,8 @@ c
      &                rest,dt_max)
 c
       use amr_module
+      use gauges_module, only: setbestsrc
+
       implicit double precision (a-h,o-z)
 
 
@@ -41,8 +43,7 @@ c ::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::
 c
 
       ncycle         = nstart
-c no gauges (yet) in amrclaw, comment out
-c     call setbestsrc()     ! need at very start of run, including restart
+      call setbestsrc()     ! need at very start of run, including restart
       if (iout .eq. 0) then
 c        # output_style 1 or 2
          iout  = iinfinity
@@ -187,7 +188,7 @@ c
           if (rprint) write(outunit,101) lbase
 101       format(8h  level ,i5,32h  stays fixed during regridding )
           call regrid(nvar,lbase,cut,naux,start_time)
-c         call setbestsrc()     ! need at every grid change
+          call setbestsrc()     ! need at every grid change
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
 c note negative time to signal regridding output in plots
 c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)

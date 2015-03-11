@@ -90,7 +90,7 @@ program amr3
     use amr_module, only: t0, tstart_thisrun
 
     !use regions_module, only: set_regions
-    !use gauges_module, only: set_gauges, num_gauges
+    use gauges_module, only: set_gauges, num_gauges
 
     implicit none
 
@@ -377,7 +377,7 @@ program amr3
 
     ! Read in region and gauge data
     !call set_regions('regions.data')
-    !call set_gauges('gauges.data')
+    call set_gauges('gauges.data')
 
 
     ! Look for capacity function via auxtypes:

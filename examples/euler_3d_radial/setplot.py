@@ -26,7 +26,63 @@ def setplot(plotdata):
     plotdata.clearfigures()  # clear any old figures,axes,items data
     
     print "**** Python plotting tools not yet implemented in 3d"
-    print "**** No plots will be generated."
+    print "**** No frames will be generated."
+
+    #-----------------------------------------
+    # Figures for gauges
+    #-----------------------------------------
+    plotfigure = plotdata.new_plotfigure(figno=300, \
+                    type='each_gauge')
+    plotfigure.clf_each_gauge = False
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'density'
+
+    # Plot q as blue curve:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 0
+    plotitem.plotstyle = 'b-'
+
+    plotfigure = plotdata.new_plotfigure(figno=301, \
+                    type='each_gauge')
+    plotfigure.clf_each_gauge = False
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'energy'
+
+    # Plot q as blue curve:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 4
+    plotitem.plotstyle = 'b-'
+
+    plotfigure = plotdata.new_plotfigure(figno=302, \
+                    type='each_gauge')
+    plotfigure.clf_each_gauge = False
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'speed'
+    def speed(current_data):
+        from numpy import sqrt
+        q = current_data.q
+        s = sqrt(q[1,:]**2 + q[2,:]**2 + q[3,:]**2) / q[0,:]
+        return s
+
+    # Plot q as blue curve:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = speed
+    plotitem.plotstyle = 'b-'
+
+
+
 
     # Parameters used only when creating html and/or latex hardcopy
     # e.g., via clawpack.visclaw.frametools.printframes:

@@ -14,11 +14,13 @@
        implicit none
        integer :: isize
    
-       if (.not.allocated(storage)) then
+!      if (.not.allocated(storage)) then  !old way, changed mjb Jan.  !      2015
+       if (.not.allocated(alloc)) then    ! new way uses allocatable,  not pointer, arrays
            write(6,*)"allocating ",isize," -sized alloc array"
            memsize = isize
-           allocate(storage(memsize))
-           alloc => storage
+!          allocate(storage(memsize))
+           allocate(alloc(memsize))
+!          alloc => storage
            print *, "Storage allocated of size ",memsize," at restart"
        else
            print *, "Storage already allocated!"

@@ -16,7 +16,7 @@ PlotType = 1;                % type of plot to produce:
 			     % 5 = isosurface plot (at given levels)
 
 mq = 1;                      % which component of q to plot
-UserVariable = 1;            % set to 1 to specify a user-defined variable
+UserVariable = 0;            % set to 1 to specify a user-defined variable
 UserVariableFile = 'pressure';      % name of m-file mapping data to q
 MappedGrid = 0;              % set to 1 if mapc2p.m exists for nonuniform grid
 MaxFrames = 1000;            % max number of frames to loop over

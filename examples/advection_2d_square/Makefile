@@ -132,7 +132,6 @@ SOURCES = \
   $(AMRLIB)/valout.f \
   $(AMRLIB)/check.f \
   $(AMRLIB)/restrt.f \
-  $(AMRLIB)/dumpgauge.f \
   $(AMRLIB)/quick_sort1.f \
   $(AMRLIB)/opendatafile.f \
   $(AMRLIB)/addflags.f \
