@@ -119,8 +119,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 5
-        clawdata.tfinal = 0.5      # original problem in 4.3 used this
+        clawdata.num_output_times = 6
+        clawdata.tfinal = 3.0      # original problem in 4.3 used this
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
@@ -169,7 +169,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.dt_max = 1.000000e+99
 
     # Desired Courant number if variable dt used
-    clawdata.cfl_desired = 0.5
+    clawdata.cfl_desired = 0.850000
     # max Courant number to allow without retaking step with a smaller dt:
     clawdata.cfl_max = 1.000000
 
