@@ -118,7 +118,7 @@ c            # with capa array.
 
           q(m,i,j,k) = q(m,i,j,k)
      &              - dtdx * (fm(m,i+1,j,k) - fp(m,i,j,k))
-     &              / aux(i,j,k,mcapa)
+     &              / aux(mcapa,i,j,k)
  51       continue
        endif
 c
@@ -154,7 +154,7 @@ c            # with capa array.
 
           q(m,i,j,k) = q(m,i,j,k)
      &              - dtdy * (gm(m,i,j+1,k) - gp(m,i,j,k))
-     &              / aux(i,j,k,mcapa)
+     &              / aux(mcapa,i,j,k)
  53       continue
        endif
 c
@@ -190,7 +190,7 @@ c            # with capa array.
 
           q(m,i,j,k) = q(m,i,j,k)
      &              - dtdz * (hm(m,i,j,k+1) - hp(m,i,j,k))
-     &              / aux(i,j,k,mcapa)
+     &              / aux(mcapa,i,j,k)
  55       continue
        endif
 c
