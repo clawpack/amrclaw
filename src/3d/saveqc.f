@@ -6,7 +6,7 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-      logical sticksout
+      logical sticksout, perdom3
 c
 c ::::::::::::::::::::::::: SAVEQC :::::::::::::::::::::::::::::::::
 c prepare new fine grids to save fluxes after each integration step
@@ -71,7 +71,8 @@ c         make coarsened enlarged patch for conservative fixup
            sticksout = .false.
        endif
 
-       if (sticksout .and. (xperdom .or. yperdom .or. zperdom)) then
+       perdom3 = xperdom .and. yperdom .and. zperdom
+       if (sticksout .and. perdom3) then
          call preicall(alloc(loctmp),alloc(loctx),nrow,ncol,nfil,
      .                    nvar,naux,
      .                 iclo,ichi,jclo,jchi,kclo,kchi,level-1)
@@ -81,8 +82,8 @@ c         make coarsened enlarged patch for conservative fixup
      .                   iclo,ichi,jclo,jchi,kclo,kchi,level-1,1,1,1)
        endif
 
-       ! still need to set remaining aux cells that stick out of domain
-       if (naux .gt. 0 .and. sticksout) then
+!      still need to set remaining aux cells that stick out of domain
+       if (naux .gt. 0 .and. sticksout .and. .not. perdom3) then
           call setaux(ng,nrow,ncol,nfil,xl,yf,zb,
      .                hxc,hyc,hzc,naux,alloc(loctx))
        endif
