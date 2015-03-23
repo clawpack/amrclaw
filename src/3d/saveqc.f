@@ -6,7 +6,7 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-      logical sticksout
+      logical sticksout, perdom3
 c
 c ::::::::::::::::::::::::: SAVEQC :::::::::::::::::::::::::::::::::
 c prepare new fine grids to save fluxes after each integration step
@@ -19,6 +19,7 @@ c
       hxc  = hxposs(levc)
       hyc  = hyposs(levc)
       hzc  = hzposs(levc)
+      ng   = 0  ! no ghost cells on coarsened enlarged patch
 
       mkid = lstart(level)
  10   if (mkid .eq. 0) go to 99
@@ -70,7 +71,8 @@ c         make coarsened enlarged patch for conservative fixup
            sticksout = .false.
        endif
 
-       if (xperdom .and. yperdom .and. zperdom .and. sticksout) then
+       perdom3 = xperdom .and. yperdom .and. zperdom
+       if (sticksout .and. perdom3) then
          call preicall(alloc(loctmp),alloc(loctx),nrow,ncol,nfil,
      .                    nvar,naux,
      .                 iclo,ichi,jclo,jchi,kclo,kchi,level-1)
@@ -78,7 +80,13 @@ c         make coarsened enlarged patch for conservative fixup
          call icall(alloc(loctmp),alloc(loctx),nrow,ncol,nfil,
      .                 nvar,naux,
      .                   iclo,ichi,jclo,jchi,kclo,kchi,level-1,1,1,1)
-          endif
+       endif
+
+!      still need to set remaining aux cells that stick out of domain
+       if (naux .gt. 0 .and. sticksout .and. .not. perdom3) then
+          call setaux(ng,nrow,ncol,nfil,xl,yf,zb,
+     .                hxc,hyc,hzc,naux,alloc(loctx))
+       endif
 c
           call bc3amr(alloc(loctmp),alloc(loctx),nrow,ncol,nfil,
      1               nvar,naux,hxc,hyc,hzc,level,time,
