@@ -499,10 +499,10 @@ program amr3
         ! Hold off on gauges until grids are set. 
         ! The fake call to advance at the very first timestep 
         ! looks at the gauge array but it is not yet built
-        !num_gauge_SAVE = num_gauges
-        !num_gauges = 0
+        num_gauge_SAVE = num_gauges
+        num_gauges = 0
         call setgrd(nvar,cut,naux,dtinit,t0)
-        !num_gauges = num_gauge_SAVE
+        num_gauges = num_gauge_SAVE
 
 ! commented out to match 4-x version
 !!$        if (possk(1) .gt. dtinit*cflv1/cfl .and. vtime) then
