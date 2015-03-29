@@ -212,7 +212,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         return output
 
     def write(self,out_file='gauges.data',data_source='setrun.py'):
-        r"""Write out gague information data file."""
+        r"""Write out gauge information data file."""
 
         # Check to make sure we have only unique gauge numbers
         if len(self.gauges) > 0:
@@ -250,8 +250,13 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         # Read in each gauge line
         for n in xrange(num_gauges):
             line = gauge_file.readline().split()
-            self.gauges.append([int(line[0]),float(line[1]),float(line[2]),
+            if self.num_dim == 2:
+                self.gauges.append([int(line[0]),float(line[1]),float(line[2]),
                                              float(line[3]),float(line[4])])
+            else:
+                self.gauges.append([int(line[0]),float(line[1]),float(line[2]),
+                                             float(line[3]),float(line[4]),
+                                                            float(line[5])])
 
         gauge_file.close()
 
