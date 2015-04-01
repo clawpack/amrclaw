@@ -195,10 +195,9 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         else:
             return [gauge[0] for gauge in self.gauges]
 
-    def __init__(self, num_dim=2):
+    def __init__(self, num_dim=None):
+        # num_dim is an argument for backward compatibility, but no longer used
         super(GaugeData,self).__init__()
-
-        self.add_attribute('num_dim',num_dim)
         self.add_attribute('gauges',[])
 
     def __str__(self):
@@ -223,10 +222,8 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         self.open_data_file(out_file,data_source)
         self.data_write(name='ngauges',value=len(self.gauges))
         for gauge in self.gauges:
-            if self.num_dim == 2:
-                self._out_file.write("%4i %17.10e  %17.10e  %13.6e  %13.6e\n" % tuple(gauge))
-            else:
-                self._out_file.write("%4i %17.10e  %17.10e  %17.10e  %13.6e  %13.6e\n" % tuple(gauge))
+            format = "%4i" + (len(gauge)-3) * "  %17.10e" + 2 * "  %13.6e" + "\n"
+            self._out_file.write(format % tuple(gauge))
         self.close_data_file()
 
     def read(self,data_path="./",file_name='gauges.data'):
@@ -250,13 +247,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         # Read in each gauge line
         for n in xrange(num_gauges):
             line = gauge_file.readline().split()
-            if self.num_dim == 2:
-                self.gauges.append([int(line[0]),float(line[1]),float(line[2]),
-                                             float(line[3]),float(line[4])])
-            else:
-                self.gauges.append([int(line[0]),float(line[1]),float(line[2]),
-                                             float(line[3]),float(line[4]),
-                                                            float(line[5])])
+            self.gauges.append([int(line[0])] + [float(a) for a in line[1:]])
 
         gauge_file.close()
 
