@@ -195,9 +195,9 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         else:
             return [gauge[0] for gauge in self.gauges]
 
-    def __init__(self):
+    def __init__(self, num_dim=None):
+        # num_dim is an argument for backward compatibility, but no longer used
         super(GaugeData,self).__init__()
-
         self.add_attribute('gauges',[])
 
     def __str__(self):
