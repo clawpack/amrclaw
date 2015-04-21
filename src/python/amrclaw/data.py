@@ -122,7 +122,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
 class RegionData(clawpack.clawutil.data.ClawData):
     r""""""
 
-    def __init__(self,regions=None,num_dim=2):
+    def __init__(self,regions=None,num_dim=None):
 
         super(RegionData,self).__init__()
 
@@ -139,10 +139,8 @@ class RegionData(clawpack.clawutil.data.ClawData):
         self.open_data_file(out_file,data_source)
 
         self.data_write(value=len(self.regions),alt_name='num_regions')
-        if (self.num_dim == 3) and (len(self.regions) > 0):
-            raise NotImplementedError("*** Regions not yet implemented in 3d")
         for regions in self.regions:
-            self._out_file.write(8*"%g  " % tuple(regions) +"\n")
+            self._out_file.write(len(regions)*"%g  " % tuple(regions) +"\n")
         self.close_data_file()
 
 
@@ -173,10 +171,7 @@ class RegionData(clawpack.clawutil.data.ClawData):
         self.regions = []
         for n in xrange(num_regions):
             line = data_file.readline().split()
-            self.regions.append([int(line[0]), int(line[1]),
-                                 float(line[2]), float(line[3]), 
-                                 float(line[4]), float(line[5]),
-                                 float(line[6]), float(line[7])])
+            self.regions.append([int(line[0]), int(line[1])] + [float(a) for a in line[2:]])
 
         data_file.close()
 
