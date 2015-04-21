@@ -60,6 +60,17 @@ contains
         endif
         close(unit)
 
+        if (num_regions > 0) then
+            write(6,*) ' '
+            write(6,*) ' '
+            write(6,*) '*************************************************'
+            write(6,*) '*** Regions not fully implemented in 3d'
+            write(6,*) '*** No refinement will happen unless user defined'
+            write(6,*) '*************************************************'
+            write(6,*) ' '
+            write(6,*) ' '
+        end if
+
     end subroutine set_regions
 
 end module regions_module
