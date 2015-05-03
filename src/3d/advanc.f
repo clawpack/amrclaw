@@ -228,8 +228,10 @@ c        # now has boundary conditions filled in.
 c     should change the way print_gauges does io - right now is critical section
 
       if (num_gauges > 0) then
-         call print_gauges(alloc(locnew),alloc(locaux),xlow,ylow,zlow,
-     .                    nvar,mitot,mjtot,mktot,naux,mptr)
+         call print_gauges(alloc(locnew:locnew+nvar*mitot*mjtot*mktot),
+     .                     alloc(locaux:locaux+nvar*mitot*mjtot*mktot),
+     .                     xlow,ylow,zlow,nvar,mitot,mjtot,mktot,
+     .                     naux,mptr)
          endif
 
          if (dimensional_split .eq. 0) then

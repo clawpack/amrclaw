@@ -107,7 +107,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify at what times the results should be written to fort.q files.
     # Note that the time integration stops after the final output time.
 
-    clawdata.output_style = 3
+    clawdata.output_style = 1
 
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
@@ -124,8 +124,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
         clawdata.output_step_interval = 1
-        #clawdata.total_steps = 10
-        clawdata.total_steps = 3
+        clawdata.total_steps = 10
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
 
@@ -178,9 +177,8 @@ def setrun(claw_pkg='amrclaw'):
     # Order of accuracy:  1 => Godunov,  2 => Lax-Wendroff plus limiters
     clawdata.order = 2
 
-    # Use dimensional splitting?
-    clawdata.dimensional_split = 1
-    #clawdata.dimensional_split = "unsplit"
+    # Use dimensional splitting? (not yet available for AMR)
+    clawdata.dimensional_split = 'unsplit'
 
     # For unsplit method, transverse_waves can be
     #  0 or 'none'      ==> donor cell (only normal solver used)
