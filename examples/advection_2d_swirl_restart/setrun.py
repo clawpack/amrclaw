@@ -244,7 +244,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
-    clawdata.checkpt_style = 2
+    clawdata.checkpt_style = 3
 
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all
@@ -261,7 +261,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.checkpt_style == 3:
         # Checkpoint every checkpt_interval timesteps (on Level 1)
         # and at the final time.
-        clawdata.checkpt_interval = 5
+        clawdata.checkpt_interval = 33
 
     # ---------------
     # AMR parameters:

@@ -97,7 +97,7 @@ def setrun(claw_pkg='amrclaw'):
     # the OUTDIR indicated in Makefile.
 
     clawdata.restart = True                # True to restart from prior results
-    clawdata.restart_file = 'fort.chk00094'  # File to use for restart data
+    clawdata.restart_file = 'fort.chk00066'  # File to use for restart data
 
 
     # -------------
@@ -114,7 +114,7 @@ def setrun(claw_pkg='amrclaw'):
         # Can specify num_output_times = 0 for no output
         clawdata.num_output_times = 16
         clawdata.tfinal = 4.0
-        clawdata.output_t0 = True  # output at initial (or restart) time?
+        clawdata.output_t0 = False  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
         # Specify a list or numpy array of output times:
