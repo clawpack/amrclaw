@@ -41,7 +41,7 @@ c     # need to allocate for dynamic memory:
       read(rstunit) hxposs,hyposs,possk,icheck
       read(rstunit) lfree,lenf
       read(rstunit) rnode,node,lstart,newstl,listsp,tl,
-     1       ibuff,mstart,ndfree,lfine,iorder,mxnold,
+     1       ibuf,mstart,ndfree,lfine,iorder,mxnold,
      2       intrtx,intrty,intrtt,iregsz,jregsz,
      2       iregst,jregst,iregend,jregend,
      3       numgrids,kcheck1,nsteps,time,
