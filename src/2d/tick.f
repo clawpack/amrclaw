@@ -298,17 +298,6 @@ c
           ncycle  = ncycle + 1
           call conck(1,nvar,naux,time,rest)
 
-       if ((checkpt_style.eq.3 .and. 
-     &      mod(ncycle,checkpt_interval).eq.0) .or. dumpchk) then
-                call check(ncycle,time,nvar,naux)
-                dumpchk = .true.
-       endif
-
-       if ((mod(ncycle,iout).eq.0) .or. dumpout) then
-         call valout(1,lfine,time,nvar,naux)
-         if (printout) call outtre(mstart,.true.,nvar,naux)
-       endif
-
       if ( vtime) then
 c
 c         find new dt for next cycle (passed back from integration routine).
@@ -323,6 +312,17 @@ c          make sure not to exceed largest permissible dt
  120         possk(i) = possk(i-1) / kratio(i-1)
 
       endif
+
+       if ((checkpt_style.eq.3 .and. 
+     &      mod(ncycle,checkpt_interval).eq.0) .or. dumpchk) then
+                call check(ncycle,time,nvar,naux)
+                dumpchk = .true.
+       endif
+
+       if ((mod(ncycle,iout).eq.0) .or. dumpout) then
+         call valout(1,lfine,time,nvar,naux)
+         if (printout) call outtre(mstart,.true.,nvar,naux)
+       endif
 
       go to 20
 c
