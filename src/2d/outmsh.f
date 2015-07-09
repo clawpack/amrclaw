@@ -31,7 +31,7 @@ c
 c
       write(outunit,100)
       write(outunit,101) mptr
-101   format(1x,10h! grid no:,i4,62x,1h!)
+101   format(1x,10h! grid no:,i5,61x,1h!)
       write(outunit,102) node(nestlevel,mptr),rnode(timemult,mptr),
      .             node(levelptr,mptr)
 102   format(1x,1h!,11h nestlevel=,i3,12h, time mult=,e25.15,
