@@ -34,3 +34,15 @@ class AMRClawRegressionTest(clawpack.clawutil.test.ClawpackRegressionTest):
 
     __doc__ += clawpack.pyclaw.util.add_parent_doc(
                                   clawpack.clawutil.test.ClawpackRegressionTest)
+
+
+    def build_executable(self, executable_name="xamr"):
+        r"""Build executable by running `make .exe` in test directory.
+
+        Moves the resulting executable to the temporary directory.
+
+
+        """
+
+        super(AMRClawRegressionTest, self).build_executable(
+                                                executable_name=executable_name)
