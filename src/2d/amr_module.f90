@@ -116,6 +116,7 @@ module amr_module
     integer :: timeFlglvl,timeGrdfit2,timeGrdfit3,timeGrdfitAll
     integer :: timeSetaux,timeFilval,timeBound,timeStepgrid,timeFilvalTot
     integer :: timeFlagger, timeBufnst
+    real(kind=8) tvollCPU(maxlv)
 
     integer lentot,lenmax,lendim
 
