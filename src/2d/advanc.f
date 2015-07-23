@@ -12,6 +12,9 @@ c
       integer mythread/0/, maxthreads/1/
       integer listgrids(numgrids(level))
       integer clock_start, clock_finish, clock_rate
+      integer clock_startStepgrid, clock_finishBound
+      real(kind=8) cpu_start, cpu_finish
+      real(kind=8) cpu_startStepgrid, cpu_finishStepgrid
 
 c     maxgr is maximum number of grids  many things are
 c     dimensioned at, so this is overall. only 1d array
@@ -35,6 +38,7 @@ c     this is linear alg.
 c
 c get start time for more detailed timing by level
        call system_clock(clock_start,clock_rate)
+       call cpu_time(cpu_start)
 
 c     maxthreads initialized to 1 above in case no openmp
 !$    maxthreads = omp_get_max_threads()
@@ -61,7 +65,11 @@ c
 
         end do
 !$OMP END PARALLEL DO
-
+      call system_clock(clock_finishBound,clock_rate)
+      call cpu_time(cpu_finishBound)
+      timeBound = timeBound + clock_finishBound - clock_start
+      timeBoundCPU=timeBoundCPU+cpu_finishBound-cpu_start 
+      
 c
 c save coarse level values if there is a finer level for wave fixup
       if (level+1 .le. mxnest) then
@@ -73,6 +81,8 @@ c
       dtlevnew = rinfinity
       cfl_level = 0.d0    !# to keep track of max cfl seen on each level
 c 
+      call system_clock(clock_startStepgrid,clock_rate)
+      call cpu_time(cpu_startStepgrid)
 
 
 !$OMP PARALLEL DO PRIVATE(j,mptr,nx,ny,mitot,mjtot)  
@@ -98,7 +108,12 @@ c
 !$OMP END PARALLEL DO
 c
       call system_clock(clock_finish,clock_rate)
+      call cpu_time(cpu_finish)
       tvoll(level) = tvoll(level) + clock_finish - clock_start
+      tvollCPU(level) = tvollCPU(level) + cpu_finish - cpu_start
+      timeStepgrid = timeStepgrid +clock_finish-clock_startStepgrid
+      timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid      
+      
       cflmax = dmax1(cflmax, cfl_level)
 
 c
