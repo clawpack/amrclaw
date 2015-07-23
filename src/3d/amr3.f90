@@ -81,7 +81,10 @@ program amr3
     use amr_module, only: output_aux_onlyonce, matlabu
 
     use amr_module, only: lfine, lentot, iregridcount, avenumgrids
-    use amr_module, only: tvoll, rvoll, rvol, mstart, possk, ibuff
+    use amr_module, only: tvoll,tvollCPU, rvoll, rvol, mstart, possk, ibuff
+    use amr_module, only: timeRegridding,timeRegriddingCPU
+    use amr_module, only: timeBound,timeStepgrid
+    use amr_module, only: timeBoundCPU,timeStepgridCPU
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
@@ -106,6 +109,7 @@ program amr3
 
     ! Timing variables
     integer :: clock_start, clock_finish, clock_rate
+    real(kind=8) :: cpu_start, cpu_finish
 
     ! Common block variables
     real(kind=8) :: dxmin, dymin, dzmin
@@ -585,6 +589,7 @@ program amr3
 
     ! Timing
     call system_clock(clock_start,clock_rate)
+    call cpu_time(cpu_start)
 
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
@@ -593,19 +598,111 @@ program amr3
     ! --------------------------------------------------------
 
     call system_clock(clock_finish,clock_rate)
-    format_string = "('Total time to solution = ',1f16.8,' s')"
+    call cpu_time(cpu_finish)
+    
+    !output timing data
+    write(*,*)
+    format_string="('========================== Timing Data ==========================')"
+    write(outunit,format_string)
+    write(*,format_string)
+    
+    write(*,*)
+    
+    format_string="('Using',i3,' thread(s)')"
+    write(outunit,format_string) maxthreads
+    write(*,format_string) maxthreads
+    
+    write(*,*)
+    
+    write(*,"('Note: The CPU times are for all threads.')")
+    
+    write(*,*)
+    
+    !Total Time
+    format_string="('Total time to solution ')"
+    write(outunit,format_string)
+    write(*,format_string)
+    !wall time
+    format_string="('Wall Time: ',1f16.8,' seconds')"
     write(outunit,format_string) &
             real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
     write(*,format_string) &
             real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
-
-    do level = 1, mxnest            
-      format_string = "('Total advanc time on level ',i3,' = ',1f16.8,' s')"
-      write(outunit,format_string) level, &
-             real(tvoll(level),kind=8) / real(clock_rate,kind=8)
-      write(*,format_string) level, &
-             real(tvoll(level),kind=8) / real(clock_rate,kind=8)
+    !cpu time
+    format_string="('CPU Time:  ',1f16.8,' seconds')"
+    write(outunit,format_string) cpu_finish-cpu_start
+    write(*,format_string) cpu_finish-cpu_start
+    
+    write(*,*)
+    
+    !Integration time
+    format_string="('Integration Time (advanc)')"
+    write(outunit,format_string)
+    write(*,format_string)
+    
+    !Advanc time
+    format_string="('Level                   Wall Time                CPU Time')"
+    write(outunit,format_string)
+    write(*,format_string)
+    do level=1,mxnest
+        format_string="(i3,'           ',1f16.8,' seconds',1f16.8,' seconds')"
+        write(outunit,format_string) level, &
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level)
+        write(*,format_string) level, &
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level)
     end do
+    !bound and stepgrid
+    format_string="('all (bound)   ',1f16.8,' seconds',1f16.8,' seconds')"
+    write(outunit,format_string) &
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
+    write(*,format_string) &
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
+    format_string="('all (stepgrid)',1f16.8,' seconds',1f16.8,' seconds')"
+    write(outunit,format_string) &
+         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
+    write(*,format_string) &
+         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
+    
+    write(*,*)
+    
+    !regridding time
+    format_string="('Total regridding time ')"
+    write(outunit,format_string)
+    write(*,format_string)
+    !wall time
+    format_string="('Wall Time: ',1f16.8,' seconds')"
+    write(outunit,format_string) &
+            real(timeRegridding,kind=8) / real(clock_rate,kind=8)
+    write(*,format_string) &
+            real(timeRegridding,kind=8) / real(clock_rate,kind=8)
+    !cpu time
+    format_string="('CPU Time:  ',1f16.8,' seconds')"
+    write(outunit,format_string) timeRegriddingCPU
+    write(*,format_string) timeRegriddingCPU
+    
+    
+    !end of timing data
+    write(*,*)
+    format_string="('=================================================================')"
+    write(outunit,format_string)
+    write(*,format_string)
+    write(*,*)
+    
+    
+    
+    !format_string = "('Total time to solution = ',1f16.8,' s')"
+    !write(outunit,format_string) &
+    !        real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) &
+    !        real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
+
+    !do level = 1, mxnest            
+    !  format_string = "('Total advanc time on level ',i3,' = ',1f16.8,' s')"
+    !  write(outunit,format_string) level, &
+    !         real(tvoll(level),kind=8) / real(clock_rate,kind=8)
+    !  write(*,format_string) level, &
+    !         real(tvoll(level),kind=8) / real(clock_rate,kind=8)
+    !end do
 
     ! Done with computation, cleanup:
     lentotsave = lentot
