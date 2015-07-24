@@ -83,7 +83,7 @@ program amr2
     use amr_module, only: timeRegridding,timeUpdating, timeValout
     use amr_module, only: timeBound,timeStepgrid, timeFlagger,timeBufnst,timeFilvalTot
     use amr_module, only: timeBoundCPU,timeStepGridCPU,timeSetauxCPU,timeRegriddingCPU
-    use amr_module, only: timeSetaux, timeSetauxCPU
+    use amr_module, only: timeSetaux, timeSetauxCPU, timeValoutCPU
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
@@ -681,13 +681,29 @@ program amr2
     
     
     
+    !valout time
+    format_string="('Total output (valout) time ')"
+    write(outunit,format_string)
+    write(*,format_string)
+    !wall time
+    format_string="('Wall Time: ',1f16.8,' seconds')"
+    write(outunit,format_string) &
+            real(timeValout,kind=8) / real(clock_rate,kind=8)
+    write(*,format_string) &
+            real(timeValout,kind=8) / real(clock_rate,kind=8)
+    !cpu time
+    format_string="('CPU Time:  ',1f16.8,' seconds')"
+    write(outunit,format_string) timeValoutCPU
+    write(*,format_string) timeValoutCPU
+    
+    write(*,*)
+    
+    
+    
     !old format
     format_string = "('Total updating wall time:          ',1f16.8,' s')"
     write(outunit,format_string)  real(timeUpdating,kind=8) / real(clock_rate,kind=8)
     write(*,format_string) real(timeUpdating,kind=8) / real(clock_rate,kind=8)
-    format_string = "('Total valout wall time:            ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeValout,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeValout,kind=8) / real(clock_rate,kind=8)
     
     
     !end of timing data
