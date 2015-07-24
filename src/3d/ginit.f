@@ -7,6 +7,10 @@ c
       implicit double precision (a-h,o-z)
 
       logical first
+      
+      !for setaux timing
+      integer :: clock_start, clock_finish, clock_rate
+      real(kind=8) :: cpu_start, cpu_finish
 
 
 c ::::::::::::::::::::::::::::: GINIT ::::::::::::::::::::::::
@@ -46,8 +50,14 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
          mx = maxmx
          my = maxmy
          mz = maxmz
+         call system_clocK(clock_start, clock_rate)
+         call cpu_time(cpu_start)
          call setaux(nghost,mx,my,mz, corn1,corn2,corn3,
      &               hx,hy,hz,naux,alloc(locaux))
+         call system_clock(clock_finish, clock_rate)
+         call cpu_time(cpu_finish)
+         timeSetaux = timeSetaux + clock_finish - clock_start
+         timeSetauxCPU = timeSetauxCPU + cpu_finish -cpu_start
 
       else
          locaux = 1

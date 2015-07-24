@@ -31,6 +31,10 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       logical   set, sticksout, patchOnly
       dimension valbig(nvar,mitot,mjtot,mktot)
       dimension    aux(naux,mitot,mjtot,mktot)
+      
+      !for setaux timing
+      integer :: clock_start, clock_finish, clock_rate
+      real(kind=8) :: cpu_start, cpu_finish
 
 
 c     Use stack-based scratch arrays instead of alloc for better
@@ -161,8 +165,15 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
          xl = xlc + nghost*hxc
          yb = ybc + nghost*hyc
          zf = zfc + nghost*hzc
+         
+         call system_clock(clock_start, clock_rate)
+         call cpu_time(cpu_start)
          call setaux(nghost,mx,my,mz,xl,yb,zf,
      &               hxc,hyc,hzc,naux,auxcrse)
+         call system_clock(clock_finish, clock_rate)
+         call cpu_time(cpu_finish)
+         timeSetaux = timeSetaux + clock_finish - clock_start
+         timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
       endif
 
       if ((xperdom .or. yperdom .or. zperdom) .and.
