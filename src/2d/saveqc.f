@@ -5,6 +5,11 @@ c  ================================================================
 c
       use amr_module
       implicit double precision (a-h,o-z)
+      
+      !for setaux timing
+      integer :: clock_start, clock_finish, clock_rate
+      real(kind=8) :: cpu_start, cpu_finish
+      
 
       logical sticksout, found
 !     make fliparray largest possible grid size
@@ -76,7 +81,13 @@ c         make coarsened enlarged patch for conservative fixup
 !         in case any part sticks out of domain still need to set remaining aux
 !         cells
           if (naux .gt. 0 .and. sticksout) then  
+             call system_clock(clock_start,clock_rate)
+             call cpu_time(cpu_start)
              call setaux(ng,nrow,ncol,xl,yb,hxc,hyc,naux,alloc(loctx))
+             call system_clock(clock_finish,clock_rate)
+             call cpu_time(cpu_finish)
+             timeSetaux = timeSetaux + clock_finish - clock_start
+             timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
           endif
 !--          found = .false.
 !--          do i = 1, naux*nrow*ncol, naux

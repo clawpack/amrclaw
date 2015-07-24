@@ -83,6 +83,7 @@ program amr2
     use amr_module, only: timeRegridding,timeUpdating, timeValout
     use amr_module, only: timeBound,timeStepgrid, timeFlagger,timeBufnst,timeFilvalTot
     use amr_module, only: timeBoundCPU,timeStepGridCPU,timeSetauxCPU,timeRegriddingCPU
+    use amr_module, only: timeSetaux, timeSetauxCPU
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
@@ -658,6 +659,25 @@ program amr2
     write(*,format_string) timeRegriddingCPU
     
     write(*,*)
+    
+    
+    !setaux time
+    format_string="('Total setaux time ')"
+    write(outunit,format_string)
+    write(*,format_string)
+    !wall time
+    format_string="('Wall Time: ',1f16.8,' seconds')"
+    write(outunit,format_string) &
+            real(timeSetaux,kind=8) / real(clock_rate,kind=8)
+    write(*,format_string) &
+            real(timeSetaux,kind=8) / real(clock_rate,kind=8)
+    !cpu time
+    format_string="('CPU Time:  ',1f16.8,' seconds')"
+    write(outunit,format_string) timeSetauxCPU
+    write(*,format_string) timeSetauxCPU
+    
+    write(*,*)
+    
     
     
     
