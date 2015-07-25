@@ -49,6 +49,9 @@ Notes:
       https://software.intel.com/en-us/forums/topic/328012
    though this is specifically about stdout, not files.
 
+ - Buffering all the output files might slow the code down significantly.
+   This has not yet been tested.
+
 """
 
 import subprocess
