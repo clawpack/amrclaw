@@ -19,12 +19,12 @@ subroutine check4nans(meqn,mbc,mx,my,q,t,ichecknan)
             do m=1,meqn
                 if (.not. (q(m,i,j) == q(m,i,j))) then
                     ! true if q(i,j,m) = NAN
-	                print *, 'SOLUTION ERROR --- ABORTING CALCULATION'
-	                print *, 'At ichecknan = ',ichecknan
+                    print *, 'SOLUTION ERROR --- ABORTING CALCULATION'
+                    print *, 'At ichecknan = ',ichecknan
                     print *, '   mx,my,t:',mx,my,t
                     print *, '   m,i,j:',m,i,j
                     print *, '   q(m,i,j) = ',q(m,i,j)
-	                stop
+                    stop
                 endif
             enddo
         enddo
