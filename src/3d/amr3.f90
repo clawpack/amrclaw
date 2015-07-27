@@ -604,21 +604,25 @@ program amr3
     
     !output timing data
     write(*,*)
+    write(outunit,*)
     format_string="('========================== Timing Data ==========================')"
     write(outunit,format_string)
     write(*,format_string)
     
     write(*,*)
+    write(outunit,*)
     
     format_string="('Using',i3,' thread(s)')"
     write(outunit,format_string) maxthreads
     write(*,format_string) maxthreads
     
     write(*,*)
+    write(outunit,*)
     
     write(*,"('Note: The CPU times are for all threads.')")
     
     write(*,*)
+    write(outunit,*)
     
     !Total Time
     format_string="('Total time to solution ')"
@@ -636,6 +640,7 @@ program amr3
     write(*,format_string) cpu_finish-cpu_start
     
     write(*,*)
+    write(outunit,*)
     
     !Integration time
     format_string="('Integration Time (advanc)')"
@@ -666,6 +671,7 @@ program amr3
          real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
     
     write(*,*)
+    write(outunit,*)
     
     !regridding time
     format_string="('Total regridding time ')"
@@ -683,6 +689,7 @@ program amr3
     write(*,format_string) timeRegriddingCPU
     
     write(*,*)
+    write(outunit,*)
     
     
     
@@ -704,10 +711,12 @@ program amr3
     
     !end of timing data
     write(*,*)
+    write(outunit,*)
     format_string="('=================================================================')"
     write(outunit,format_string)
     write(*,format_string)
     write(*,*)
+    write(outunit,*)
     
     
     
