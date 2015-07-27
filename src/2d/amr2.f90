@@ -605,13 +605,13 @@ program amr2
     write(outunit,format_string)
     write(*,format_string)
     !wall time
-    format_string="('Wall Time: ',1f16.8,' seconds')"
+    format_string="('Wall Time: ',1f16.4,' seconds')"
     write(outunit,format_string) &
             real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
     write(*,format_string) &
             real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
     !cpu time
-    format_string="('CPU Time:  ',1f16.8,' seconds')"
+    format_string="('CPU Time:  ',1f16.4,' seconds')"
     write(outunit,format_string) cpu_finish-cpu_start
     write(*,format_string) cpu_finish-cpu_start
     
@@ -624,27 +624,27 @@ program amr2
     write(*,format_string)
     
     !Advanc time
-    format_string="('Level                   Wall Time                CPU Time')"
+    format_string="('Level                 Wall Time            CPU Time            Cells')"
     write(outunit,format_string)
     write(*,format_string)
     do level=1,mxnest
-        format_string="(i3,'           ',1f16.8,' seconds',1f16.8,' seconds')"
+        format_string="(i3,'           ',1f12.3,' seconds',1f12.3,' seconds', f12.0,' cells')"
         write(outunit,format_string) level, &
-             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level)
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
         write(*,format_string) level, &
-             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level)
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
     end do
     !bound and stepgrid
-    format_string="('all (bound)   ',1f16.8,' seconds',1f16.8,' seconds')"
+    format_string="('all (bound)   ',1f12.3,' seconds',1f12.3,' seconds',f12.0,' cells')"
     write(outunit,format_string) &
-         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU, rvol
     write(*,format_string) &
-         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
-    format_string="('all (stepgrid)',1f16.8,' seconds',1f16.8,' seconds')"
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU, rvol
+    format_string="('all (stepgrid)',1f12.3,' seconds',1f12.3,' seconds',f12.0,' cells')"
     write(outunit,format_string) &
-         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
+         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU, rvol
     write(*,format_string) &
-         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
+         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU, rvol
     
     write(*,*)
     write(outunit,*)
@@ -654,13 +654,13 @@ program amr2
     write(outunit,format_string)
     write(*,format_string)
     !wall time
-    format_string="('Wall Time: ',1f16.8,' seconds')"
+    format_string="('Wall Time: ',1f16.4,' seconds')"
     write(outunit,format_string) &
             real(timeRegridding,kind=8) / real(clock_rate,kind=8)
     write(*,format_string) &
             real(timeRegridding,kind=8) / real(clock_rate,kind=8)
     !cpu time
-    format_string="('CPU Time:  ',1f16.8,' seconds')"
+    format_string="('CPU Time:  ',1f16.4,' seconds')"
     write(outunit,format_string) timeRegriddingCPU
     write(*,format_string) timeRegriddingCPU
     
@@ -675,13 +675,13 @@ program amr2
     write(outunit,format_string)
     write(*,format_string)
     !wall time
-    format_string="('Wall Time: ',1f16.8,' seconds')"
+    format_string="('Wall Time: ',1f16.4,' seconds')"
     write(outunit,format_string) &
             real(timeValout,kind=8) / real(clock_rate,kind=8)
     write(*,format_string) &
             real(timeValout,kind=8) / real(clock_rate,kind=8)
     !cpu time
-    format_string="('CPU Time:  ',1f16.8,' seconds')"
+    format_string="('CPU Time:  ',1f16.4,' seconds')"
     write(outunit,format_string) timeValoutCPU
     write(*,format_string) timeValoutCPU
     
