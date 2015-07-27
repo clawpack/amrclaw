@@ -684,23 +684,6 @@ program amr3
     
     write(*,*)
     
-    !setaux time
-    format_string="('Total setaux time ')"
-    write(outunit,format_string)
-    write(*,format_string)
-    !wall time
-    format_string="('Wall Time: ',1f16.8,' seconds')"
-    write(outunit,format_string) &
-            real(timeSetaux,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) &
-            real(timeSetaux,kind=8) / real(clock_rate,kind=8)
-    !cpu time
-    format_string="('CPU Time:  ',1f16.8,' seconds')"
-    write(outunit,format_string) timeSetauxCPU
-    write(*,format_string) timeSetauxCPU
-    
-    
-    write(*,*)
     
     
     !valout time
