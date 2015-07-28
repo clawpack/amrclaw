@@ -595,7 +595,7 @@ program amr2
     write(*,*)
     write(outunit,*)
     
-    write(*,"('Note: The CPU times are for all threads.')")
+    write(*,"('Note: The CPU times are summed over all threads.')")
     
     write(*,*)
     write(outunit,*)
