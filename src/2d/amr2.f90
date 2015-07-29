@@ -635,11 +635,11 @@ program amr2
              real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
     end do
     !bound and stepgrid
-    format_string="('all (bound)   ',1f12.3,' seconds',1f12.3,' seconds',f12.0,' cells')"
+    format_string="('all (bound)   ',1f12.3,' seconds',1f12.3,' seconds')"
     write(outunit,format_string) &
-         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU, rvol
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
     write(*,format_string) &
-         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU, rvol
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
     format_string="('all (stepgrid)',1f12.3,' seconds',1f12.3,' seconds',f12.0,' cells')"
     write(outunit,format_string) &
          real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU, rvol
