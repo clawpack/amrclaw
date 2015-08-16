@@ -651,7 +651,7 @@ program amr3
          real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU, rvol
     
     !bound
-    format_string="('BCs / ghost cells',1f9.3,' seconds',1f12.3,' seconds')"
+    format_string="('BC/ghost cells',1f12.3,' seconds',1f12.3,' seconds')"
     write(outunit,format_string) &
          real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
     write(*,format_string) &
