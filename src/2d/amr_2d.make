@@ -8,6 +8,8 @@ COMMON_MODULES += \
   $(AMRLIB)/regions_module.f90 \
 
 COMMON_SOURCES += \
+  $(AMRLIB)/qinit.f \
+  $(AMRLIB)/setprob.f \
   $(AMRLIB)/setaux.f90 \
   $(AMRLIB)/amr2.f90 \
   $(AMRLIB)/bc2amr.f \
