@@ -605,39 +605,9 @@ program amr3
     !output timing data
     write(*,*)
     write(outunit,*)
-    format_string="('========================== Timing Data ==========================')"
+    format_string="('============================== Timing Data ==============================')"
     write(outunit,format_string)
     write(*,format_string)
-    
-    write(*,*)
-    write(outunit,*)
-    
-    format_string="('Using',i3,' thread(s)')"
-    write(outunit,format_string) maxthreads
-    write(*,format_string) maxthreads
-    
-    write(*,*)
-    write(outunit,*)
-    
-    write(*,"('Note: The CPU times are summed over all threads.')")
-    
-    write(*,*)
-    write(outunit,*)
-    
-    !Total Time
-    format_string="('Total time to solution ')"
-    write(outunit,format_string)
-    write(*,format_string)
-    !wall time
-    format_string="('Wall Time: ',1f16.4,' seconds')"
-    write(outunit,format_string) &
-            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) &
-            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
-    !cpu time
-    format_string="('CPU Time:  ',1f16.4,' seconds')"
-    write(outunit,format_string) cpu_finish-cpu_start
-    write(*,format_string) cpu_finish-cpu_start
     
     write(*,*)
     write(outunit,*)
@@ -658,61 +628,80 @@ program amr3
         write(*,format_string) level, &
              real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
     end do
-    !bound and stepgrid
-    format_string="('all (bound)   ',1f12.3,' seconds',1f12.3,' seconds')"
-    write(outunit,format_string) &
-         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
-    write(*,format_string) &
-         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
-    format_string="('all (stepgrid)',1f12.3,' seconds',1f12.3,' seconds',f12.0,' cells')"
+    
+    
+    write(*,*)
+    write(outunit,*)
+    
+    
+    format_string="('All levels:')"
+    write(*,format_string)
+    write(outunit,format_string)
+    
+    
+    write(*,*)
+    write(outunit,*)
+    
+    
+    !stepgrid
+    format_string="('stepgrid      ',1f12.3,' seconds',1f12.3,' seconds',f12.0,' cells')"
     write(outunit,format_string) &
          real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU, rvol
     write(*,format_string) &
          real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU, rvol
     
-    write(*,*)
-    write(outunit,*)
+    !bound
+    format_string="('BCs / ghost cells',1f9.3,' seconds',1f12.3,' seconds')"
+    write(outunit,format_string) &
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
+    write(*,format_string) &
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
     
     !regridding time
-    format_string="('Total regridding time ')"
-    write(outunit,format_string)
-    write(*,format_string)
-    !wall time
-    format_string="('Wall Time: ',1f16.4,' seconds')"
+    format_string="('Regridding    ',1f12.3,' seconds',1f12.3,' seconds')"
     write(outunit,format_string) &
-            real(timeRegridding,kind=8) / real(clock_rate,kind=8)
+    		real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
     write(*,format_string) &
-            real(timeRegridding,kind=8) / real(clock_rate,kind=8)
-    !cpu time
-    format_string="('CPU Time:  ',1f16.4,' seconds')"
-    write(outunit,format_string) timeRegriddingCPU
-    write(*,format_string) timeRegriddingCPU
+    		real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
+    
+    !output time
+    format_string="('Output (valout)',1f11.3,' seconds',1f12.3,' seconds')"
+    write(outunit,format_string) &
+    		real(timeValout,kind=8) / real(clock_rate,kind=8), timeValoutCPU
+    write(*,format_string) &
+    		real(timeValout,kind=8) / real(clock_rate,kind=8), timeValoutCPU
+    
+    write(*,*)
+    write(outunit,*)
+    
+    !Total Time
+    format_string="('Total time:   ',1f12.3,' seconds',1f12.3,' seconds')"
+    write(outunit,format_string) &
+    		real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
+    		cpu_finish-cpu_start
+    write(*,format_string) &
+    		real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
+    		cpu_finish-cpu_start
+    
+    format_string="('Using',i3,' thread(s)')"
+    write(outunit,format_string) maxthreads
+    write(*,format_string) maxthreads
+    
     
     write(*,*)
     write(outunit,*)
     
     
-    
-    !valout time
-    format_string="('Total output (valout) time ')"
-    write(outunit,format_string)
-    write(*,format_string)
-    !wall time
-    format_string="('Wall Time: ',1f16.4,' seconds')"
-    write(outunit,format_string) &
-            real(timeValout,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) &
-            real(timeValout,kind=8) / real(clock_rate,kind=8)
-    !cpu time
-    format_string="('CPU Time:  ',1f16.4,' seconds')"
-    write(outunit,format_string) timeValoutCPU
-    write(*,format_string) timeValoutCPU
+    write(*,"('Note: The CPU times are summed over all threads.')")
+    write(outunit,"('Note: The CPU times are summed over all threads.')")
+    write(*,"('      Total time includes more than the subroutines listed above')")
+    write(outunit,"('      Total time includes more than the subroutines listed above')")
     
     
     !end of timing data
     write(*,*)
     write(outunit,*)
-    format_string="('=================================================================')"
+    format_string="('=========================================================================')"
     write(outunit,format_string)
     write(*,format_string)
     write(*,*)
