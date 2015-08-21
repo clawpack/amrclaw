@@ -38,7 +38,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
     integer :: refinement_ratio_x, refinement_ratio_y
     integer :: unset_indices(4)
     real(kind=8) :: dx_fine, dy_fine, dx_coarse, dy_coarse
-    real(kind=8) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine   
+    real(kind=8) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine
+    real(kind=8) :: xcent_fine, xcent_coarse, ycent_fine, ycent_coarse    
 
     ! Interpolation variables
     real(kind=8) :: eta1, eta2, valp10, valm10, valc, valp01, valm01, dupc, dumc
@@ -183,10 +184,19 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
             eta1 = (-0.5d0 + real(mod(i_fine - 1, refinement_ratio_x),kind=8)) &
                                 / real(refinement_ratio_x,kind=8)
 
+
+            xcent_coarse = xlow_coarse + (i_coarse-.5d0)*dx_coarse
+            xcent_fine =  xlower + (i_fine-1+ilo + .5d0)*dx_fine
+            eta1 = (xcent_fine-xcent_coarse)
+
             do j_fine  = 1,mjtot_patch
                 j_coarse = 2 + (j_fine - (unset_indices(3) - jlo) - 1) / refinement_ratio_y
                 eta2 = (-0.5d0 + real(mod(j_fine - 1, refinement_ratio_y),kind=8)) &
                                     / real(refinement_ratio_y,kind=8)
+
+            ycent_coarse = ylow_coarse + (j_coarse-.5d0)*dy_coarse
+            ycent_fine =  ylower + (j_fine-1+jlo + .5d0)*dy_fine
+            eta2 = (ycent_fine-ycent_coarse)
 
                 if (flaguse(i_fine,j_fine) == 0) then
 
