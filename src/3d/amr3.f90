@@ -618,13 +618,13 @@ program amr3
     write(*,format_string)
     
     !Advanc time
-    format_string="('Level                 Wall Time            CPU Time          Total Cell Updates')"
+    format_string="('Level           Wall Time (seconds)    CPU Time (seconds)   Total Cell Updates')"
     write(outunit,format_string)
     write(*,format_string)
     ttotalcpu=0.d0
     ttotal=0
     do level=1,mxnest
-        format_string="(i3,'           ',1f12.3,' seconds',1f12.3,' seconds', e17.3,' cells')"
+        format_string="(i3,'           ',1f15.3,'        ',1f15.3,'    ', e17.3)"
         write(outunit,format_string) level, &
              real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
         write(*,format_string) level, &
@@ -633,7 +633,7 @@ program amr3
     	ttotal=ttotal+tvoll(level)
     end do
     
-    format_string="('total         ',1f12.3,' seconds',1f12.3,' seconds', e17.3,' cells')"
+    format_string="('total         ',1f15.3,'        ',1f15.3,'    ', e17.3)"
 	write(outunit,format_string) &
              real(ttotal,kind=8) / real(clock_rate,kind=8), ttotalCPU, rvol
     write(*,format_string) &
@@ -650,28 +650,28 @@ program amr3
     
     
     !stepgrid
-    format_string="('stepgrid      ',1f12.3,' seconds',1f12.3,' seconds')"
+    format_string="('stepgrid      ',1f15.3,'        ',1f15.3,'    ',e17.3)"
     write(outunit,format_string) &
          real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
     write(*,format_string) &
          real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
     
     !bound
-    format_string="('BC/ghost cells',1f12.3,' seconds',1f12.3,' seconds')"
+    format_string="('BC/ghost cells',1f15.3,'        ',1f15.3)"
     write(outunit,format_string) &
          real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
     write(*,format_string) &
          real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
     
     !regridding time
-    format_string="('Regridding    ',1f12.3,' seconds',1f12.3,' seconds')"
+    format_string="('Regridding    ',1f15.3,'        ',1f15.3,'  ')"
     write(outunit,format_string) &
     		real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
     write(*,format_string) &
     		real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
     
     !output time
-    format_string="('Output (valout)',1f11.3,' seconds',1f12.3,' seconds')"
+    format_string="('Output (valout)',1f14.3,'        ',1f15.3,'  ')"
     write(outunit,format_string) &
     		real(timeValout,kind=8) / real(clock_rate,kind=8), timeValoutCPU
     write(*,format_string) &
@@ -681,7 +681,7 @@ program amr3
     write(outunit,*)
     
     !Total Time
-    format_string="('Total time:   ',1f12.3,' seconds',1f12.3,' seconds')"
+    format_string="('Total time:   ',1f15.3,'        ',1f15.3,'  ')"
     write(outunit,format_string) &
     		real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
     		cpu_finish-cpu_start
