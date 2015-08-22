@@ -109,12 +109,12 @@ c                 # output in 1d format if ny=1:
                   write(matunit1,1004)
      &              xlow,hxposs(level)
                 endif
- 1002 format(e18.8,'    xlow', /,
-     &       e18.8,'    ylow', /,
-     &       e18.8,'    dx', /,
-     &       e18.8,'    dy',/)
- 1004 format(e18.8,'    xlow', /,
-     &       e18.8,'    dx', /)
+ 1002 format(e26.16,'    xlow', /,
+     &       e26.16,'    ylow', /,
+     &       e26.16,'    dx', /,
+     &       e26.16,'    dy',/)
+ 1004 format(e26.16,'    xlow', /,
+     &       e26.16,'    dx', /)
 
 
         if (output_format == 1) then
