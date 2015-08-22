@@ -6,6 +6,10 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
       logical first
+      
+      !for setaux timing
+      integer :: clock_start, clock_finish, clock_rate
+      real(kind=8) :: cpu_start, cpu_finish
 
 
 c ::::::::::::::::::::::::::::: GINIT ::::::::::::::::::::::::
@@ -37,9 +41,15 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
                 do k = 1, mitot*mjtot*naux,naux  ! set first component of aux to signal that it
                    alloc(locaux+k-1) = NEEDS_TO_BE_SET ! needs val, wasnt copied from other grids
                 end do
-
+                
+                call system_clock(clock_start,clock_rate)
+                call cpu_time(cpu_start)
                 call setaux(nghost,nx,ny,corn1,corn2,hx,hy,
      &                    naux,alloc(locaux))
+                call system_clock(clock_finish,clock_rate)
+                call cpu_time(cpu_finish)
+                timeSetaux = timeSetaux + clock_finish - clock_start
+                timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
               else 
                 locaux = 1
               endif

@@ -12,6 +12,9 @@ c
       integer mythread/0/, maxthreads/1/
       integer listgrids(numgrids(level))
       integer clock_start, clock_finish, clock_rate
+      integer clock_startStepgrid,clock_startBound,clock_finishBound
+      real(kind=8) cpu_start,cpu_finish,cpu_startBound
+      real(kind=8) cpu_startStepgrid,cpu_finishBound
 
 c     maxgr is maximum number of grids  many things are
 c     dimensioned at, so this is overall. only 1d array
@@ -27,6 +30,10 @@ c                  advancing the solution on the grid
 c                  adjusting fluxes for flux conservation step later
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
+c get start time for more detailed timing by level
+      call system_clock(clock_start,clock_rate)
+      call cpu_time(cpu_start)
+       
       hx   = hxposs(level)
       hy   = hyposs(level)
       hz   = hzposs(level)
@@ -34,9 +41,10 @@ c
 c     Lay out linked list into array for easier parallelization
       call prepgrids(listgrids,numgrids(level),level)
 c
-c get start time for more detailed timing by level
-       call system_clock(clock_start,clock_rate)
 
+      call system_clock(clock_startBound,clock_rate)
+      call cpu_time(cpu_startBound)
+      
 c     maxthreads initialized to 1 above in case no openmp
 !$    maxthreads = omp_get_max_threads()
 
@@ -64,7 +72,11 @@ c
 
        end do
 !$OMP END PARALLEL DO
-
+      call system_clock(clock_finishBound,clock_rate)
+      call cpu_time(cpu_finishBound)
+      timeBound=timeBound+clock_finishBound-clock_startBound
+      timeBoundCPU=timeBoundCPU+cpu_finishBound-cpu_startBound
+      
 c
 c save coarse level values if there is a finer level for wave fixup
       if (level+1 .le. mxnest) then
@@ -78,7 +90,8 @@ c
       cflmax = 0.d0    !# added by rjl 6/17/05 to keep track of cfl on level
 c
 
-
+      call system_clock(clock_startStepgrid,clock_rate)
+      call cpu_time(cpu_startStepgrid)
 
 !$OMP PARALLEL DO PRIVATE(j,mptr,nx,ny,nz,mitot,mjtot,mktot,
 !$OMP&                    dtnew, mythread,maxthreads),
@@ -107,7 +120,13 @@ c
 !$OMP END PARALLEL DO
 c
       call system_clock(clock_finish,clock_rate)
+      call cpu_time(cpu_finish)
       tvoll(level) = tvoll(level) + clock_finish - clock_start
+      tvollCPU(level)=tvollCPU(level)+cpu_finish-cpu_start
+      timeStepgrid=timeStepgrid+clock_finish-clock_startStepgrid
+      timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid
+      
+      
       cflmax = dmax1(cflmax,cfl_level)
 
 c
