@@ -105,8 +105,8 @@ program amr2
     logical :: vtime, rest, output_t0    
 
     ! Timing variables
-    integer :: clock_start, clock_finish, clock_rate
-    real(kind=8) :: cpu_start, cpu_finish
+    integer :: clock_start, clock_finish, clock_rate, ttotal
+    real(kind=8) :: cpu_start, cpu_finish,ttotalcpu
 
     ! Common block variables
     real(kind=8) :: dxmin, dymin
@@ -589,22 +589,31 @@ program amr2
     write(outunit,*)
     
     !Integration time
-    format_string="('Integration Time (advanc)')"
+    format_string="('Integration Time (stepgrid + BC + overhead)')"
     write(outunit,format_string)
     write(*,format_string)
     
     !Advanc time
-    format_string="('Level                 Wall Time            CPU Time            Cells')"
+    format_string="('Level           Wall Time (seconds)    CPU Time (seconds)   Total Cell Updates')"
     write(outunit,format_string)
     write(*,format_string)
+    ttotalcpu=0.d0
+    ttotal=0
     do level=1,mxnest
-        format_string="(i3,'           ',1f12.3,' seconds',1f12.3,' seconds', f12.0,' cells')"
+        format_string="(i3,'           ',1f15.3,'        ',1f15.3,'    ', e17.3)"
         write(outunit,format_string) level, &
              real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
         write(*,format_string) level, &
              real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
+    	ttotalcpu=ttotalcpu+tvollCPU(level)
+    	ttotal=ttotal+tvoll(level)
     end do
     
+    format_string="('total         ',1f15.3,'        ',1f15.3,'    ', e17.3)"
+	write(outunit,format_string) &
+             real(ttotal,kind=8) / real(clock_rate,kind=8), ttotalCPU, rvol
+    write(*,format_string) &
+             real(ttotal,kind=8) / real(clock_rate,kind=8), ttotalCPU, rvol
     
     write(*,*)
     write(outunit,*)
@@ -615,33 +624,30 @@ program amr2
     write(outunit,format_string)
     
     
-    write(*,*)
-    write(outunit,*)
-    
     
     !stepgrid
-    format_string="('stepgrid      ',1f12.3,' seconds',1f12.3,' seconds',f12.0,' cells')"
+    format_string="('stepgrid      ',1f15.3,'        ',1f15.3,'    ',e17.3)"
     write(outunit,format_string) &
-         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU, rvol
+         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
     write(*,format_string) &
-         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU, rvol
+         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
     
     !bound
-    format_string="('BC/ghost cells',1f12.3,' seconds',1f12.3,' seconds')"
+    format_string="('BC/ghost cells',1f15.3,'        ',1f15.3)"
     write(outunit,format_string) &
          real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
     write(*,format_string) &
          real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
     
     !regridding time
-    format_string="('Regridding    ',1f12.3,' seconds',1f12.3,' seconds')"
+    format_string="('Regridding    ',1f15.3,'        ',1f15.3,'  ')"
     write(outunit,format_string) &
     		real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
     write(*,format_string) &
     		real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
     
     !output time
-    format_string="('Output (valout)',1f11.3,' seconds',1f12.3,' seconds')"
+    format_string="('Output (valout)',1f14.3,'        ',1f15.3,'  ')"
     write(outunit,format_string) &
     		real(timeValout,kind=8) / real(clock_rate,kind=8), timeValoutCPU
     write(*,format_string) &
@@ -651,7 +657,7 @@ program amr2
     write(outunit,*)
     
     !Total Time
-    format_string="('Total time:   ',1f12.3,' seconds',1f12.3,' seconds')"
+    format_string="('Total time:   ',1f15.3,'        ',1f15.3,'  ')"
     write(outunit,format_string) &
     		real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
     		cpu_finish-cpu_start
