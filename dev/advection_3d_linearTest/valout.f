@@ -74,7 +74,6 @@ c         # binary output
 
       level = lst
       ngrids = 0
-c65   if (level .gt. lfine) go to 90
  65   if (level .gt. lend) go to 90
          mptr = lstart(level)
  70      if (mptr .eq. 0) go to 80
@@ -87,6 +86,7 @@ c65   if (level .gt. lfine) go to 90
            mitot   = nx + 2*nghost
            mjtot   = ny + 2*nghost
            mktot   = nz + 2*nghost
+           call lookat(alloc(loc),nx,ny,nz,nghost)
            write(matunit1,1001) mptr, level, nx, ny, nz
  1001 format(i5,'                 grid_number',/,
      &       i5,'                 AMR_level',/,
@@ -110,21 +110,23 @@ c65   if (level .gt. lfine) go to 90
 
          if (output_format == 1) then
             do 75 k = nghost+1, mktot-nghost
-            z = zlow + (k-.5d0)*hzposs(level)
+            z = zlow + (k-.5d0-nghost)*hzposs(level)
             do 76 j = nghost+1, mjtot-nghost
-            y = ylow + (j-.5d0)*hyposs(level)
+            y = ylow + (j-.5d0-nghost)*hyposs(level)
             do 77 i = nghost+1, mitot-nghost
-            x = xlow + (i-.5d0)*hxposs(level)
+            x = xlow + (i-.5d0-nghost)*hxposs(level)
             do ivar=1,nvar
                if (dabs(alloc(iadd(ivar,i,j,k))) < 1d-90) then
                   alloc(iadd(ivar,i,j,k)) = 0.d0
                endif
             enddo
-            err =  (alloc(iadd(1,i,j,k)) - qtrue(x,y,z,time))  ! error plot instead
+            exact = qtrue(x,y,z,time)
+            approx = alloc(iadd(1,i,j,k))
+            err =  abs(approx-exact)  ! error plot instead
             errmax = max(err, errmax)
             write(matunit1,109)
 !    &            (alloc(iadd(ivar,i,j,k)), ivar=1,nvar)
-     &            (alloc(iadd(1,i,j,k)) - qtrue(x,y,z,time))  ! error plot instead
+     &            err ! error plot instead
   109       format(50e26.16)
    77       continue
             write(matunit1,*) ' '
@@ -149,6 +151,7 @@ c            # NOTE: we are writing out ghost cell data also, unlike ascii
       go to 65
 
    90 continue
+      write(*,*) "max error found at time", time," is ",errmax
 
 c       -------------------
 c       # output aux arrays
@@ -255,6 +258,20 @@ c
           close(unit=matunit4)
           endif
 
-      write(*,*) "max error found at time", time," is ",errmax
+      return
+      end
+
+c ---------------
+
+      subroutine lookat(val,mx,my,mz,nghost)
+      implicit double precision (a-h,o-z)
+      
+      dimension val(1-nghost:mx+nghost,1-nghost:my+nghost,
+     .          1-nghost:mz+nghost)
+      i=10
+      J=10
+      K=10
+
+      !write(*,*) val(i,j,k)
       return
       end

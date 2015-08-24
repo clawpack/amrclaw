@@ -10,7 +10,7 @@ import os
 import numpy as np
 
 # Set which test to do by setting inflow_side to 'x', 'y', or 'z'
-inflow_side = 'x'
+#inflow_side = 'x'
 
 # Note: The velocity is set to (u,v,w) = (1,1,1) so the left edge in 
 # each direction is the inflow boundary.  
@@ -51,9 +51,11 @@ def setrun(claw_pkg='amrclaw'):
 
 
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('u',     1.0,  'ubar advection velocity')
-    probdata.add_param('v',     1.0,  'vbar advection velocity')
-    probdata.add_param('w',     1.0,  'wbar advection velocity')
+    probdata.add_param('u',     0.5,  'ubar advection velocity')
+    #probdata.add_param('v',     0.0,  'vbar advection velocity')
+    #probdata.add_param('w',     0.0,  'wbar advection velocity')
+    probdata.add_param('v',     0.7,  'vbar advection velocity')
+    probdata.add_param('w',     0.9,  'wbar advection velocity')
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -76,16 +78,16 @@ def setrun(claw_pkg='amrclaw'):
     
     # Lower and upper edge of computational domain:
     clawdata.lower[0] = 0.000000e+00          # xlower
-    clawdata.upper[0] = 1.000000e+00          # xupper
+    clawdata.upper[0] = 50.000000e+00          # xupper
     clawdata.lower[1] = 0.000000e+00          # ylower
-    clawdata.upper[1] = 1.000000e+00          # yupper
+    clawdata.upper[1] = 50.000000e+00          # yupper
     clawdata.lower[2] = 0.000000e+00          # zlower
-    clawdata.upper[2] = 1.000000e+00          # zupper
+    clawdata.upper[2] = 50.000000e+00          # zupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 40      # mx
-    clawdata.num_cells[1] = 40      # my
-    clawdata.num_cells[2] = 40      # mz
+    clawdata.num_cells[0] = 50      # mx
+    clawdata.num_cells[1] = 50      # my
+    clawdata.num_cells[2] = 50      # mz
     
 
     # ---------------
@@ -144,7 +146,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
         clawdata.output_step_interval = 1
-        clawdata.total_steps = 10
+        clawdata.total_steps = 5
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
@@ -292,13 +294,13 @@ def setrun(claw_pkg='amrclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 2
+    amrdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    amrdata.refinement_ratios_x = [4, 2, 2, 2]
-    amrdata.refinement_ratios_y = [4, 2, 2, 2]
-    amrdata.refinement_ratios_z = [4, 2, 2, 2]
-    amrdata.refinement_ratios_t = [4, 2, 2, 2]
+    amrdata.refinement_ratios_x = [2, 4, 2, 2]
+    amrdata.refinement_ratios_y = [2, 4, 2, 2]
+    amrdata.refinement_ratios_z = [2, 4, 2, 2]
+    amrdata.refinement_ratios_t = [2, 4, 2, 2]
 
 
     # Specify type of each aux variable in amrdata.auxtype.
@@ -319,7 +321,7 @@ def setrun(claw_pkg='amrclaw'):
     # each of its neighbors.
 
     # steps to take on each level L between regriddings of level L+1:
-    amrdata.regrid_interval = 400000
+    amrdata.regrid_interval = 4
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
