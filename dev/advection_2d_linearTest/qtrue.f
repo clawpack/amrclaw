@@ -23,8 +23,8 @@ c     # evaluate desired initial data at (x0,y0):
 
 
 c linear test function to see if ghost cell interpolation exact
-      !qtrue = 2.d0*x0 + 1.0d0*y0
-      qtrue = 1.d0*x0 + 1.0d0*y0
+      qtrue = 2.d0*x0 + 1.0d0*y0
+      !qtrue = 1.d0*x0 + 1.0d0*y0
 
       return
       end

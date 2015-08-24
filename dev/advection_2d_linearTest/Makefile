@@ -68,6 +68,7 @@ SOURCES = \
   $(AMRLIB)/colate2.f \
   $(AMRLIB)/bufnst2.f \
   $(AMRLIB)/spest2.f \
+  $(AMRLIB)/valout.f \
   $(AMRLIB)/flagregions2.f90 \
   $(AMRLIB)/errest.f \
   $(AMRLIB)/errf1.f \
@@ -130,7 +131,6 @@ SOURCES = \
   $(AMRLIB)/inlinelimiter.f \
   $(AMRLIB)/cstore.f \
   $(AMRLIB)/saveqc.f \
-  $(AMRLIB)/valout.f \
   $(AMRLIB)/check.f \
   $(AMRLIB)/restrt.f \
   $(AMRLIB)/quick_sort1.f \

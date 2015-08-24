@@ -59,7 +59,7 @@ def setplot(plotdata):
         y = current_data.y
         t = current_data.t
         q = current_data.q
-        qtrue = (x - ubar*t) + (y - vbar*t)
+        qtrue = 2*(x - ubar*t) + (y - vbar*t)
         e = q[0,:,:] - qtrue
         #import pdb; pdb.set_trace()
         return e
