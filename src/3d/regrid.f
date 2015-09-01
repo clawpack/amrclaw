@@ -91,6 +91,9 @@ c
      &            " cells at level ", i3)
          endif
 72     continue
+c
+c      set up array of grids instead of recomputing at each step
+       call makeGridList(lbase)
 
       return
       end
@@ -103,7 +106,7 @@ c
       implicit double precision (a-h,o-z)
       integer listgrids(numg), cost(numg), index(numg), prevptr
 c
-c   slow sort for now, putting most expensive grids first on lstart list
+c   put most expensive grids first on lstart list
 c   measure cost by number of cells
 c
        mptr = lstart(level)
@@ -115,7 +118,7 @@ c
          mptr = node(levelptr, mptr)
        end do
 c
-c        write(*,*)" before sorting"
+c       write(*,*)" before sorting"
 c       write(*,*) index
 c
        call  qsorti(index, numg, cost)

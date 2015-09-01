@@ -224,5 +224,14 @@ c          # add new info. to spatial and counting arrays
 c
 c
  199   continue
+
+c
+c     save array of grids to avoid copying each advanc or update step
+c     lbase is 1 here, to start building from level 1
+c     only for level 1 is listStart set outside of makeGridList
+c     call with lbase 0 to make level 1
+      listStart(1) = 1
+      call makeGridList(0)
+c
       return
       end

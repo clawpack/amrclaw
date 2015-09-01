@@ -64,6 +64,13 @@ c parallelization
        write(*,100) ngrids,ncells
  100   format("there are ",i4," grids with ",i8," cells at level   1")
 
+c      set lbase to 1 here, to put domain 1 grids in lsit
+c      once and for all.  Only here, this once, (and if restarting)
+c      does listStart have to be set outside of makeGridList
+c      but call it with lbase 0 to make grid 1
+       listStart(1) = 1
+       write(*,*) "calling gridlist with 0"
+       call makeGridList(0)
 c
 c  set stable initial time step using coarse grid data
 c

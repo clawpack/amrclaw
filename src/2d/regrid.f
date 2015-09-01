@@ -111,6 +111,9 @@ c        balancing, but doesn't help locality
      &            " cells at level ", i3)
          endif
 72     continue
+c
+c      set up array of grids instead of recomputing at each step
+       call makeGridList(lbase)
 
       return
       end

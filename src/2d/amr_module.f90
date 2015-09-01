@@ -66,6 +66,10 @@ module amr_module
     integer, parameter :: maxaux = 20
     integer, parameter :: maxwave = 10
 
+
+    ! note use of sentinel in listStart
+    integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
+
     real(kind=8) hxposs(maxlv), hyposs(maxlv),possk(maxlv),rnode(rsize, maxgr) 
 
 

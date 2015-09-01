@@ -213,3 +213,39 @@ c  so I didnt want to have to deal with it
 
        return
        end
+c
+c -----------------------------------------------------------------
+c
+      subroutine makeGridList(lbase)
+c
+      use amr_module
+      implicit none
+
+      integer lbase, levSt, lev, mptr, n
+
+c :::::::::::::::::::::::::::: make_gridList :::::::::::::::::::::::::
+c     make array of grid numbers (after sorting them so in decreasing
+c     order of workload, done in arrangeGrid and put back into linked 
+c     list. Done every time there is regridding, initial gridding,
+c     or restarting.  Most often finest level is regridded, so
+c     put it last in array. lbase is the level that didnt change, so 
+c     only redo from lbase+1 to lfine.
+c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+      write(*,*)"mgl: lbase,lfine",lbase,lfine
+      do lev = lbase+1, lfine
+         levSt = listStart(lev) 
+         write(*,*)"mgl: level ",lev," starts at ",levSt
+         mptr = lstart(lev)
+c        traverse linked list into array. list already sorted by arrangegrids
+         do n = 1, numgrids(lev)
+            listOfGrids(levSt+n-1) = mptr
+            mptr = node(levelptr,mptr)
+         end do
+c        next level starts one after where this one ends.
+c        Using a sentinel in dimension of
+c        listStart so no need to test if level = mxnest
+         listStart(lev+1) = levSt + numgrids(lev)
+      end do
+      return
+      end

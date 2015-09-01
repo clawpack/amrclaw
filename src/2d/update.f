@@ -50,15 +50,16 @@ c 20   if (mptr .eq. 0) go to 85
 !$OMP&                    ilo,jlo,ihi,jhi,mkid,iclo,jclo,
 !$OMP&                    ichi,jchi,mi,mj,locf,locfaux,
 !$OMP&                    iplo,jplo,iphi,jphi,iff,jff,totrat,i,j,
-!$OMP&                    ivar,ico,jco,capa),
+!$OMP&                    ivar,ico,jco,capa,levSt),
 !$OMP&         SHARED(lget,numgrids,listgrids,listsp,alloc,nvar,naux,
 !$OMP&                   intratx,intraty,nghost,uprint,mcapa,node,
-!$OMP&                   lstart,level),
+!$OMP&   listOfGrids,listStart,lstart,level),
 !$OMP&         DEFAULT(none)
 
        do ng = 1, numgrids(lget)
-c         mptr = mget(ng,level)
-         mptr    = listgrids(ng)
+         !mptr    = listgrids(ng)
+         levSt   = listStart(lget)
+         mptr    = listOfGrids(levSt + ng - 1)
          loc     = node(store1,mptr)
          loccaux = node(storeaux,mptr)
          nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
