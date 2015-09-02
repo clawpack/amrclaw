@@ -31,7 +31,7 @@ c
       hy   = hyposs(level)
       delt = possk(level)
 c     this is linear alg.
-      call prepgrids(listgrids,numgrids(level),level)
+c     call prepgrids(listgrids,numgrids(level),level)
 c
 c get start time for more detailed timing by level
        call system_clock(clock_start,clock_rate)
@@ -50,7 +50,7 @@ c We want to do this regardless of the threading type
          !mptr   = listgrids(j)
          levSt = listStart(level)
          mptr   = listOfGrids(levSt+j-1)
-         write(*,*)"old ",listgrids(j)," new",mptr
+         !write(*,*)"old ",listgrids(j)," new",mptr
          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
          mitot  = nx + 2*nghost
