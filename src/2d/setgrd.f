@@ -87,6 +87,10 @@ c
      &               " cells at level ", i3)
           endif 
 c
+c     need to make gridList here before calling again to make finer grids.
+c     This is because ths list if used in advanc. level 1 is called from domain
+      call makeGridList(lbase)
+c
       levnew = levnew + 1
       go to 10
  30   continue
@@ -123,11 +127,7 @@ c
          call prepc(level,nvar)
  70   continue
 c
-c     set lbase is 1 here, since level 1 done from subroutine domain
-c     that is because setgrd not called if no refinement
-c     only put in grids at level 2 or higher
-      write(*,*) "calling makeGridlist with 1 lfine:",lfine
-      call makeGridList(1)
+c
 c
 c
  99   continue

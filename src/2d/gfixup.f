@@ -232,10 +232,10 @@ c     put it last in array. lbase is the level that didnt change, so
 c     only redo from lbase+1 to lfine.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-      write(*,*)"mgl: lbase,lfine",lbase,lfine
+      !write(*,*)"mgl: lbase,lfine",lbase,lfine
       do lev = lbase+1, lfine
          levSt = listStart(lev) 
-         write(*,*)"mgl: level ",lev," starts at ",levSt
+         !write(*,*)"mgl: level ",lev," starts at ",levSt
          mptr = lstart(lev)
 c        traverse linked list into array. list already sorted by arrangegrids
          do n = 1, numgrids(lev)

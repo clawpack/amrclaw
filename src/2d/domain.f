@@ -43,9 +43,9 @@ c
       call  birect(mstart)
       call  ginit (mstart, .true., nvar, naux, start_time)
 c
-c compute number of grids at level 1 (may have been bi-rected above)
-c needs to be done here since this is used hwen calling advnac for
-c parallelization
+c  compute number of grids at level 1 (may have been bi-rected above)
+c  needs to be done here since this is used when calling advanc for
+c  parallelization
       ngrids = 0
       ncells = 0
        mptr = lstart(1)
@@ -69,7 +69,6 @@ c      once and for all.  Only here, this once, (and if restarting)
 c      does listStart have to be set outside of makeGridList
 c      but call it with lbase 0 to make grid 1
        listStart(1) = 1
-       write(*,*) "calling gridlist with 0"
        call makeGridList(0)
 c
 c  set stable initial time step using coarse grid data
