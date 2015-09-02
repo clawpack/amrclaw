@@ -10,6 +10,10 @@ c
       character*14  fname
       character*13 qname2
       character*9  qname
+      
+      !timing variables
+      integer :: clock_start, clock_finish, clock_rate
+      real(kind=8) :: cpu_start, cpu_finish
 c
 c     # HDF: Declare variables that describe datasets and HDF files.
 c
@@ -56,7 +60,11 @@ c valout = graphics output of soln values for contour or surface plots.
 c          can output for matlab or ncar graphics post-processing
 c :::::::::::::::::::::::::::::::::::::;:::::::::::::::::::::::::::::::;
 c
-
+      
+      !timing
+      call system_clock(clock_start, clock_rate)
+      call cpu_time(cpu_start)
+      
 c     ### NCAR graphics output
 
       if (ncarout) then
@@ -289,6 +297,11 @@ c
 
          matlabu = matlabu + 1
       endif
+      
+      call system_clock(clock_finish,clock_rate)
+      call cpu_time(cpu_finish)
+      timeValout = timeValout + clock_finish - clock_start
+      timeValoutCPU = timeValoutCPU + cpu_finish - cpu_start
 
       return
       end

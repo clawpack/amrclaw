@@ -17,6 +17,10 @@ c     # set outaux = .true. to also output the aux arrays to fort.a<iframe>
 
       logical outaux
       integer output_aux_num
+      
+      !for timing
+      integer :: clock_start, clock_finish, clock_rate
+      real(kind=8) cpu_start, cpu_finish
 
 
       iadd(ivar,i,j,k)   = loc     +    (ivar-1)
@@ -27,7 +31,12 @@ c     # set outaux = .true. to also output the aux arrays to fort.a<iframe>
      &                             +    (i-1)*naux
      &                             +    (j-1)*naux*mitot
      &                             +    (k-1)*naux*mitot*mjtot
-
+      
+      !timing
+      call system_clock(clock_start,clock_rate)
+      call cpu_time(cpu_start)
+      
+      
       output_aux_num = 0
       do i = 1, naux
         output_aux_num = output_aux_num + output_aux_components(i)
@@ -246,6 +255,11 @@ c
       if (output_format == 3) then
           close(unit=matunit4)
           endif
+
+      call system_clock(clock_finish,clock_rate)
+      call cpu_time(cpu_finish)
+      timeValout = timeValout + clock_finish - clock_start
+      timeValoutCPU = timeValoutCPU + cpu_finish - cpu_start
 
       return
       end

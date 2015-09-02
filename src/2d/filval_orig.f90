@@ -17,6 +17,9 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     use amr_module, only: xlower, ylower, intratx, intraty, nghost, xperdom
     use amr_module, only: yperdom, spheredom, xupper, yupper, alloc
     use amr_module, only: outunit, NEEDS_TO_BE_SET, mcapa
+    
+    !for setaux timing
+    use amr_module, only: timeSetaux, timeSetauxCPU
 
     implicit none
 
@@ -37,6 +40,10 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     real(kind=8) :: fliparray((mitot+mjtot)*nghost*(nvar+naux))
     real(kind=8) :: setflags(mitot,mjtot),maxauxdif,aux2(naux,mitot,mjtot)
     integer :: mjb
+    
+    !for timing
+    integer :: clock_start, clock_finish, clock_rate
+    real(kind=8) cpu_start, cpu_finish
 
 
     ! External function definitions
@@ -90,7 +97,13 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
 !!$        end do
            ! no ghost cells on coarse enlarged patch. set any remaining
            ! vals. should only be bcs that stick out of domain.
+           call system_clock(clock_start,clock_rate)
+           call cpu_time(cpu_start)
            call setaux(ng,mic,mjc,xl,yb,dx_coarse,dy_coarse,naux,auxc)
+           call system_clock(clock_finish,clock_rate)
+           call cpu_time(cpu_finish)
+           timeSetAux=timeSetAux+clock_finish-clock_start
+           timeSetAuxCPU=timeSetAuxCPU+cpu_finish-cpu_start
     endif
     call bc2amr(valc,auxc,mic,mjc,nvar,naux,dx_coarse,dy_coarse,level-1,time,xl,xr,yb, &
                 yt,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
@@ -126,7 +139,13 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
            ! need this so we know where to use coarse grid to set fine solution
            ! w/o overwriting
            ! set remaining aux vals not set by copying from prev existing grids
+        call system_clock(clock_start,clock_rate)
+        call cpu_time(cpu_start)
         call setaux(nghost,nx,ny,xleft,ybot,dx,dy,naux,aux)
+        call system_clock(clock_finish,clock_rate)
+        call cpu_time(cpu_finish)
+        timeSetaux=timeSetaux+clock_finish-clock_start
+        timeSetauxCPU=timeSetauxCPU+cpu_finish-cpu_start
     else ! either no aux exists, or cant reuse yet  
          ! so only call intcopy (which copies soln) and not icall.
          ! in this case flag q(1,:) to NEEDS_TO_BE_SET flag so wont be

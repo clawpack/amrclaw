@@ -18,6 +18,9 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     use amr_module, only: hxposs, hyposs, xlower, ylower, xupper, yupper
     use amr_module, only: outunit, nghost, xperdom, yperdom, spheredom
     use amr_module, only: iregsz, jregsz, intratx, intraty, NEEDS_TO_BE_SET
+    
+    !for setaux timing
+    use amr_module, only: timeSetaux, timeSetauxCPU
 
     implicit none
 
@@ -38,7 +41,11 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     integer :: refinement_ratio_x, refinement_ratio_y
     integer :: unset_indices(4)
     real(kind=8) :: dx_fine, dy_fine, dx_coarse, dy_coarse
-    real(kind=8) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine   
+    real(kind=8) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine 
+    
+    !for setaux timing
+    integer :: clock_start, clock_finish, clock_rate
+    real(kind=8) :: cpu_start, cpu_finish  
 
     ! Interpolation variables
     real(kind=8) :: eta1, eta2, valp10, valm10, valc, valp01, valm01, dupc, dumc
@@ -175,9 +182,15 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
             do k = 1, lencrse, naux
               auxcrse(k) = NEEDS_TO_BE_SET ! new system checks initialization before setting aux vals
             end do
+            call system_clock(clock_start, clock_rate)
+            call cpu_time(cpu_start)
             call setaux(nghost_patch, mx_coarse,my_coarse,  &
                        xlow_coarse, ylow_coarse,            &
                         dx_coarse,dy_coarse,naux,auxcrse)
+            call system_clock(clock_finish, clock_rate)
+            call cpu_time(cpu_finish)
+            timeSetaux = timeSetaux + clock_finish - clock_start
+            timeSetauxCPU = timeSetaux + cpu_finish - cpu_start
         endif
 
         ! Fill in the edges of the coarse grid

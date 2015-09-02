@@ -14,6 +14,7 @@ c     include  "call.i"
       logical    rest, dump_final
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
       integer clock_start, clock_finish, clock_rate
+      real(kind=8) cpu_start, cpu_finish
 
 c
 c :::::::::::::::::::::::::::: TICK :::::::::::::::::::::::::::::
@@ -190,9 +191,12 @@ c
 101       format(8h  level ,i5,32h  stays fixed during regridding )
 
           call system_clock(clock_start,clock_rate)
+          call cpu_time(cpu_start)
           call regrid(nvar,lbase,cut,naux,start_time)
           call system_clock(clock_finish,clock_rate)
+          call cpu_time(cpu_finish)
           timeRegridding = timeRegridding + clock_finish - clock_start
+          timeRegriddingCPU=timeRegriddingCPU+cpu_finish-cpu_start
 
           call setbestsrc()     ! need at every grid change
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
