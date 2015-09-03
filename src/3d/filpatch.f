@@ -197,21 +197,21 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
          eta1 = (xcent_fine-xcent_coarse)
 
          do 100 jf  = 1,ncolp
-         jc = 2 + (jf -(jsb-jlo)-1)/lratioy
-         !eta2 = (-0.5d0+dble(mod(jf -1,lratioy)))/dble(lratioy)
-         ycent_coarse = ybc + (jc-.5d0)*hyc
-         ycent_fine =  ylower + (jf-1+jlo + .5d0)*hyf
-         eta2 = (ycent_fine-ycent_coarse)
+          jc = 2 + (jf -(jsb-jlo)-1)/lratioy
+          !eta2 = (-0.5d0+dble(mod(jf -1,lratioy)))/dble(lratioy)
+          ycent_coarse = ybc + (jc-.5d0)*hyc
+          ycent_fine =  ylower + (jf-1+jlo + .5d0)*hyf
+          eta2 = (ycent_fine-ycent_coarse)
 
-         do 100 kf = 1,nfilp
-         kc = 2 + (kf - (ksf-klo)-1)/lratioz
-         !eta3 = (-0.5d0+dble(mod(kf-1, lratioz)))/dble(lratioz)
-         zcent_coarse = zfc + (kc-.5d0)*hzc
-         zcent_fine =  zlower + (kf-1+klo + .5d0)*hzf
-         eta3 = (zcent_fine-zcent_coarse)
+          do 100 kf = 1,nfilp
+            kc = 2 + (kf - (ksf-klo)-1)/lratioz
+           !eta3 = (-0.5d0+dble(mod(kf-1, lratioz)))/dble(lratioz)
+           zcent_coarse = zfc + (kc-.5d0)*hzc
+           zcent_fine =  zlower + (kf-1+klo + .5d0)*hzf
+           eta3 = (zcent_fine-zcent_coarse)
 
-         flag = flaguse(iff,jf,kf)
-         if (flag .eq. 0.0) then
+           flag = flaguse(iff,jf,kf)
+           if (flag .eq. 0.0) then
 
             do 101 ivar = 1,nvar
 
