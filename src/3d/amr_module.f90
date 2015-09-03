@@ -8,7 +8,7 @@ module amr_module
     ! :::::   data structure info.
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     integer, parameter :: rsize = 7
-    integer, parameter :: nsize = 21
+    integer, parameter :: nsize = 19
 
     !  :::::::   integer part of node descriptor
     integer, parameter :: levelptr  = 1
@@ -30,8 +30,6 @@ module amr_module
     integer, parameter :: numflags  = 17
     integer, parameter :: domflags_base  = 18
     integer, parameter :: domflags2  = 19
-    integer, parameter :: bndListSt  = 20
-    integer, parameter :: bndListNum = 21
 
     ! :::::::  real part of node descriptor
     integer, parameter :: cornxlo  = 1
@@ -70,7 +68,9 @@ module amr_module
     integer, parameter :: maxwave = 10
     integer, parameter :: maxout = 50  !until change amr to f90 and allocate
 
-    ! note use of sentinel in listStart
+    ! put linked list of grids into array and save.
+    ! order is coarsest level to finest. is redone after regridding
+    ! and on restarting.  note use of sentinel in listStart
     integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
 
     real(kind=8) hxposs(maxlv),hyposs(maxlv),hzposs(maxlv), &
