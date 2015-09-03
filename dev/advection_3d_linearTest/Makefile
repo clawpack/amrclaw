@@ -45,7 +45,6 @@ SOURCES = \
   setaux.f \
   valout.f \
   flag2refine2.f90 \
-  domup.f \
   $(CLAW)/riemann/src/rpn3_vc_advection.f90 \
   $(CLAW)/riemann/src/rpt3_vc_advection.f90 \
   $(CLAW)/riemann/src/rptt3_vc_advection.f90 \
@@ -112,6 +111,7 @@ SOURCES = \
   $(AMRLIB)/shiftset.f \
   $(AMRLIB)/conck.f \
   $(AMRLIB)/domshrink.f \
+  $(AMRLIB)/domup.f \
   $(AMRLIB)/domprep.f \
   $(AMRLIB)/domcopy.f \
   $(AMRLIB)/coarsen.f \
