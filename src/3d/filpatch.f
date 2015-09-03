@@ -82,14 +82,15 @@ c     can be filled this way, return.
 
 c Trimbd returns set = true if all of the entries are filled (=1.).
 c set = false, otherwise. If set = true, then no other levels are
-c are required to interpolate, and we return.
+c are required to interpolate, and we return. If false, the minimum
+c enclosing rectangle is returned in (il,jl,kl) x (ir,jr,kr)
 c
 c Note that the used array is filled entirely in intfil, i.e. the
 c marking done there also takes into account the points filled by
 c the boundary conditions. physbd will be called later (from bound), after
 c all 4 boundary pieces filled.
 
-      call trimbd(flaguse, set, il, ir, jb, jt, kf, kr,
+      call trimbd(flaguse, set, il, ir, jl, jr, kl, kr,
      &            ilo, ihi, jlo, jhi, klo, khi)
 
       if (set) go to 90    ! All done except for BCs
@@ -117,31 +118,21 @@ c purely recursive formulation for interpolating.
       hyc  = hyposs(levc)
       hzc  = hzposs(levc)
 
-      isl  = il + ilo - 1
-      isr  = ir + ilo - 1
-      jsb  = jb + jlo - 1
-      jst  = jt + jlo - 1
-      ksf  = kf + klo - 1
-      ksr  = kr + klo - 1
-
 c
 c     coarsen
       lratiox = intratx(levc)
       lratioy = intraty(levc)
       lratioz = intratz(levc)
-      iplo   = (isl-lratiox+nghost*lratiox)/lratiox - nghost
-      jplo   = (jsb-lratioy+nghost*lratioy)/lratioy - nghost
-      kplo   = (ksf-lratioz+nghost*lratioz)/lratioz - nghost
-      iphi   = (isr+lratiox)/lratiox
-      jphi   = (jst+lratioy)/lratioy
-      kphi   = (ksr+lratioz)/lratioz
+      iplo   = (il-lratiox+nghost*lratiox)/lratiox - nghost
+      jplo   = (jl-lratioy+nghost*lratioy)/lratioy - nghost
+      kplo   = (kl-lratioz+nghost*lratioz)/lratioz - nghost
+      iphi   = (ir+lratiox)/lratiox
+      jphi   = (jr+lratioy)/lratioy
+      kphi   = (kr+lratioz)/lratioz
 
       xlc  =  xlower + iplo*hxc
       ybc  =  ylower + jplo*hyc
       zfc  =  zlower + kplo*hzc
-c$$$      xrc  =  xlower + (iphi+1)*hxc
-c$$$      ytc  =  ylower + (jphi+1)*hyc
-c$$$      zrc  =  zlower + (kphi+1)*hzc
 
       nrowc = iphi - iplo + 1
       ncolc = jphi - jplo + 1
@@ -190,21 +181,21 @@ c$$$      zrc  =  zlower + (kphi+1)*hzc
       endif
 
       do 100 iff = 1,nrowp
-         ic = 2 + (iff-(isl-ilo)-1)/lratiox
+         ic = 2 + (iff-(il-ilo)-1)/lratiox
          !eta1 = (-0.5d0+dble(mod(iff-1,lratiox)))/dble(lratiox)
          xcent_coarse = xlc + (ic-.5d0)*hxc
          xcent_fine =  xlower + (iff-1+ilo + .5d0)*hxf
          eta1 = (xcent_fine-xcent_coarse)
 
          do 100 jf  = 1,ncolp
-          jc = 2 + (jf -(jsb-jlo)-1)/lratioy
+          jc = 2 + (jf -(jl-jlo)-1)/lratioy
           !eta2 = (-0.5d0+dble(mod(jf -1,lratioy)))/dble(lratioy)
           ycent_coarse = ybc + (jc-.5d0)*hyc
           ycent_fine =  ylower + (jf-1+jlo + .5d0)*hyf
           eta2 = (ycent_fine-ycent_coarse)
 
           do 100 kf = 1,nfilp
-            kc = 2 + (kf - (ksf-klo)-1)/lratioz
+            kc = 2 + (kf - (kl-klo)-1)/lratioz
            !eta3 = (-0.5d0+dble(mod(kf-1, lratioz)))/dble(lratioz)
            zcent_coarse = zfc + (kc-.5d0)*hzc
            zcent_fine =  zlower + (kf-1+klo + .5d0)*hzf
