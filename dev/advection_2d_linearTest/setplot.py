@@ -12,6 +12,14 @@ probdata.read('setprob.data', force=True)
 ubar = probdata.u
 vbar = probdata.v
 
+#import os
+#import clawpack.clawutil.data as clawutil
+#clawdata = clawutil.ClawInputData(2)
+#clawdata.read(os.path.join(plotdata.outdir,'claw.data'))
+#xlimits = [clawdata.lower[0],clawdata.upper[0]]
+#ylimits = [clawdata.lower[1],clawdata.upper[1]]
+xlimits = [0, 26]
+ylimits = [0, 28]
 #--------------------------
 def setplot(plotdata):
 #--------------------------
@@ -34,8 +42,8 @@ def setplot(plotdata):
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = [0,50]
-    plotaxes.ylimits = [0,50]
+    plotaxes.xlimits = xlimits
+    plotaxes.ylimits = ylimits
     plotaxes.title = 'Solution'
     plotaxes.scaled = True
 
@@ -66,8 +74,8 @@ def setplot(plotdata):
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = [0,50]
-    plotaxes.ylimits = [0,50]
+    plotaxes.xlimits = xlimits
+    plotaxes.ylimits = ylimits
     plotaxes.title = 'Error'
     plotaxes.scaled = True
 
@@ -88,8 +96,8 @@ def setplot(plotdata):
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = [0,50]
-    plotaxes.ylimits = [0,50]
+    plotaxes.xlimits = xlimits
+    plotaxes.ylimits = ylimits
     plotaxes.title = 'Solution'
     plotaxes.scaled = True
     plotaxes.afteraxes = addgauges
@@ -111,8 +119,8 @@ def setplot(plotdata):
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = [0,50]
-    plotaxes.ylimits = [0,50]
+    plotaxes.xlimits = xlimits
+    plotaxes.ylimits = ylimits
     plotaxes.title = 'Grid patches'
     plotaxes.scaled = True
 

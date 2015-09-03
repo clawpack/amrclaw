@@ -61,13 +61,13 @@ def setrun(claw_pkg='amrclaw'):
     
     # Lower and upper edge of computational domain:
     clawdata.lower[0] = 0.          # xlower
-    clawdata.upper[0] = 50.          # xupper
+    clawdata.upper[0] = 26.          # xupper
     clawdata.lower[1] = 0.          # ylower
-    clawdata.upper[1] = 50.          # yupper
+    clawdata.upper[1] = 28.          # yupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 50      # mx
-    clawdata.num_cells[1] = 50      # my
+    clawdata.num_cells[0] = 52      # mx
+    clawdata.num_cells[1] = 56      # my
     
 
     # ---------------
@@ -99,7 +99,7 @@ def setrun(claw_pkg='amrclaw'):
     # the OUTDIR indicated in Makefile.
 
     clawdata.restart = False               # True to restart from prior results
-    clawdata.restart_file = 'fort.chk00006'  # File to use for restart data
+    clawdata.restart_file = 'fort.chk00016'  # File to use for restart data
     
     
     # -------------
@@ -125,8 +125,8 @@ def setrun(claw_pkg='amrclaw'):
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 1
-        clawdata.total_steps =  100
+        clawdata.output_step_interval = 5
+        clawdata.total_steps =  20
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
@@ -264,7 +264,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.checkpt_style == 3:
         # Checkpoint every checkpt_interval timesteps (on Level 1)
         # and at the final time.
-        clawdata.checkpt_interval = 5
+        clawdata.checkpt_interval = 1
 
     # ---------------
     # AMR parameters:
@@ -276,9 +276,9 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    amrdata.refinement_ratios_x = [6,4,2,8]
-    amrdata.refinement_ratios_y = [6,4,2,8]
-    amrdata.refinement_ratios_t = [6,4,2,8]
+    amrdata.refinement_ratios_x = [4,6,2,8]
+    amrdata.refinement_ratios_y = [4,6,2,8]
+    amrdata.refinement_ratios_t = [4,6,2,8]
 
 
     # Specify type of each aux variable in amrdata.auxtype.
@@ -299,7 +299,7 @@ def setrun(claw_pkg='amrclaw'):
     # each of its neighbors.
 
     # steps to take on each level L between regriddings of level L+1:
-    amrdata.regrid_interval = 40
+    amrdata.regrid_interval = 4
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
@@ -329,9 +329,9 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.gprint = False      # grid bisection/clustering
     amrdata.nprint = False      # proper nesting output
     amrdata.pprint = False      # proj. of tagged points
-    amrdata.rprint = True       # print regridding summary
+    amrdata.rprint = False      # print regridding summary
     amrdata.sprint = False      # space/memory output
-    amrdata.tprint = True       # time step reporting each level
+    amrdata.tprint = False      # time step reporting each level
     amrdata.uprint = False      # update/upbnd reporting
     
     return rundata

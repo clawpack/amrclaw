@@ -185,21 +185,21 @@ c     coarsen
          !eta1 = (-0.5d0+dble(mod(iff-1,lratiox)))/dble(lratiox)
          xcent_coarse = xlc + (ic-.5d0)*hxc
          xcent_fine =  xlower + (iff-1+ilo + .5d0)*hxf
-         eta1 = (xcent_fine-xcent_coarse)
+         eta1 = (xcent_fine-xcent_coarse)/hxc
 
          do 100 jf  = 1,ncolp
           jc = 2 + (jf -(jl-jlo)-1)/lratioy
           !eta2 = (-0.5d0+dble(mod(jf -1,lratioy)))/dble(lratioy)
           ycent_coarse = ybc + (jc-.5d0)*hyc
           ycent_fine =  ylower + (jf-1+jlo + .5d0)*hyf
-          eta2 = (ycent_fine-ycent_coarse)
+          eta2 = (ycent_fine-ycent_coarse)/hyc
 
           do 100 kf = 1,nfilp
             kc = 2 + (kf - (kl-klo)-1)/lratioz
            !eta3 = (-0.5d0+dble(mod(kf-1, lratioz)))/dble(lratioz)
            zcent_coarse = zfc + (kc-.5d0)*hzc
            zcent_fine =  zlower + (kf-1+klo + .5d0)*hzf
-           eta3 = (zcent_fine-zcent_coarse)
+           eta3 = (zcent_fine-zcent_coarse)/hzc
 
            flag = flaguse(iff,jf,kf)
            if (flag .eq. 0.0) then
@@ -221,7 +221,7 @@ c     coarsen
                du   = dmin1(dabs(dupc),dabs(dumc))
                du   = dmin1(2.d0*du,.5d0*dabs(ducc))
                fu   = dmax1(0.d0,dsign(1.d0,dupc*dumc))
-               uslope = du*sign(1.d0,ducc)*fu/hxc
+               uslope = du*sign(1.d0,ducc)*fu ! not really-should divide by h
 
                dvpc = valp010 - valc
                dvmc = valc    - valm010
@@ -229,7 +229,7 @@ c     coarsen
                dv   = dmin1(dabs(dvpc),dabs(dvmc))
                dv   = dmin1(2.d0*dv,.5d0*dabs(dvcc))
                fv   = dmax1(0.d0,dsign(1.d0,dvpc*dvmc))
-               vslope = dv*sign(1.d0,dvcc)*fv/hyc
+               vslope = dv*sign(1.d0,dvcc)*fv  ! but faster to put with eta above
 
                dwpc = valp001 - valc
                dwmc = valc    - valm001
@@ -237,7 +237,7 @@ c     coarsen
                dw   = dmin1(dabs(dwpc),dabs(dwmc))
                dw   = dmin1(2.d0*dw,.5d0*dabs(dwcc))
                fw   = dmax1(0.d0,dsign(1.d0,dwpc*dwmc))
-               wslope = dw*sign(1.d0,dwcc)*fw/hzc
+               wslope = dw*sign(1.d0,dwcc)*fw ! instead of recomputing
 
                valint = valc + eta1*uslope
      &                       + eta2*vslope

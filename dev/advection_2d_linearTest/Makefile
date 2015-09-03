@@ -68,13 +68,13 @@ SOURCES = \
   $(AMRLIB)/colate2.f \
   $(AMRLIB)/bufnst2.f \
   $(AMRLIB)/spest2.f \
-  $(AMRLIB)/valout.f \
+  ./valout.f \
   $(AMRLIB)/flagregions2.f90 \
   $(AMRLIB)/errest.f \
   $(AMRLIB)/errf1.f \
   $(AMRLIB)/gfixup.f \
   $(AMRLIB)/filval.f90 \
-  $(AMRLIB)/filpatch2.f90 \
+  $(AMRLIB)/filpatch.f90 \
   $(AMRLIB)/prefilp.f90 \
   $(AMRLIB)/flglvl2.f \
   $(AMRLIB)/flagger.f \

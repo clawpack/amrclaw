@@ -25,7 +25,7 @@ c     # At each boundary  k = 1 (left),  2 (right),  3 (bottom), 4 (top):
 c     #   mthbc(k) =  0  for user-supplied BC's (must be inserted!)
 c     #            =  1  for zero-order extrapolation
 c     #            =  2  for periodic boundary conditions
-c     #            =  3  for solid walls, assuming this can be implemented
+c     #            =  3  for solid walls, assuming this can be implementedsrt
 c     #                  by reflecting the data about the boundary and then
 c     #                  negating the 2'nd (for k=1,2) or 3'rd (for k=3,4)
 c     #                  component of q.
@@ -116,27 +116,25 @@ c
 !        write(6,*) 'inflow BCs at left boundary assume ubar >= vbar/10'
 !        stop
 !        endif
-      xcell1 = xleft + (0.5d0)*hx
-      xcell2 = xleft + (1.5d0)*hx
-      do j = 1,ncol
-         ycell = ybot + (j-0.5d0)*hy
-         if (nxl >= 1) then
-             ! first ghost cell:
-             !tau1 = hx / (2.d0*ubar)
-             !t1 = time + tau1         ! time at which to evaluate BC 
-             !y1 = ycell + vbar*tau1   ! y at which to evaluate BC
-             !val(1,nxl,j) = qtrue(0.d0,y1,t1)
-             val(1,nxl,j) = qtrue(xcell2,ycell,time)
-             endif
-         if (nxl == 2) then
-             ! second ghost cell:
-             !tau2 = 3.d0 * hx / (2.d0*ubar)
-             !t2 = time + tau2         ! time at which to evaluate BC 
-             !y2 = ycell + vbar*tau2   ! y at which to evaluate BC
-             !val(1,1,j) = qtrue(0.d0,y2,t2)
-             val(1,1,j) = qtrue(xcell1,ycell,time)
-             endif
+       do i=1,nxl
+         xcell = xleft +(i-0.5d0)*hx
+         do j = 1,ncol
+           ycell = ybot + (j-0.5d0)*hy
+           val(1,i,j) = qtrue(xcell,ycell,time)
+!          if (nxl >= 1) then
+!             ! first ghost cell:
+!             tau1 = hx / (2.d0*ubar)
+!             t1 = time + tau1         ! time at which to evaluate BC 
+!             y1 = ycell + vbar*tau1   ! y at which to evaluate BC
+!             endif
+!         if (nxl == 2) then
+!             ! second ghost cell:
+!             tau2 = 3.d0 * hx / (2.d0*ubar)
+!             t2 = time + tau2         ! time at which to evaluate BC 
+!             y2 = ycell + vbar*tau2   ! y at which to evaluate BC
+!             endif
           enddo
+      enddo
       
       go to 199
 c
@@ -193,7 +191,7 @@ c     # user-specified boundary conditions go here in place of error output
       go to 299
 
   210 continue
-c     # zero-order extrapolation:
+c     # first-order extrapolation:
       do 215 j = 1,ncol
          do 215 i=ibeg,nrow
             do 215 m=1,meqn
@@ -242,27 +240,26 @@ c
 !        write(6,*) 'inflow BCs at bottom assume vbar >= ubar/10'
 !        stop
 !        endif
-      ycell1 = ybot + .5d0*hy 
-      ycell2 = ybot + 1.5d0*hy 
       do i = 1,nrow
-         xcell = xleft + (i-0.5d0)*hx
-         if (nyb >= 1) then
+        xcell = xleft + (i-0.5d0)*hx
+        do j = 1, nyb
+          ycell = ybot + (j-0.5d0)*hy 
+          val(1,i,nyb) = qtrue(xcell,ycell,time)
+
+ !         if (nyb >= 1) then
              ! first ghost cell:
              !tau1 = hy / (2.d0*vbar)
              !t1 = time + tau1         ! time at which to evaluate BC 
              !x1 = xcell + vbar*tau1   ! x at which to evaluate BC
-             !val(1,i,nyb) = qtrue(x1,0.d0,t1)
-             val(1,i,nyb) = qtrue(xcell,ycell2,time)
-             endif
-         if (nyb == 2) then
+!             endif
+ !        if (nyb == 2) then
              ! second ghost cell:
              !tau2 = 3.d0 * hy / (2.d0*vbar)
              !t2 = time + tau2         ! time at which to evaluate BC 
              !x2 = xcell + ubar*tau2   ! x at which to evaluate BC
-             !val(1,i,1) = qtrue(x2,0.d0,t2)
-             val(1,i,1) = qtrue(xcell,ycell1,time)
-             endif
+!             endif
           enddo
+      enddo
       go to 399
 c
   310 continue
@@ -318,7 +315,7 @@ c     # user-specified boundary conditions go here in place of error output
       go to 499
 
   410 continue
-c     # zero-order extrapolation:
+c     # first-order extrapolation:
       do 415 j=jbeg,ncol
          do 415 i=1,nrow
             do 415 m=1,meqn
