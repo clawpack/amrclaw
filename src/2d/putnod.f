@@ -33,7 +33,7 @@ c  return bndry list node to the linked list
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
-      bndList(nextfree, mcell) = ndfree_bnd
+      bndList(mcell, nextfree) = ndfree_bnd
       ndfree_bnd               = mcell
 c
       return

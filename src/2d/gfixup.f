@@ -155,6 +155,7 @@ c
           mold   = mptr
           mptr   = node(levelptr,mptr)
           call putnod(mold)
+          call freeBndryList(mold)
           go to 85
  90   lstart(lcheck) = newstl(lcheck)
       lcheck = lcheck + 1
@@ -307,6 +308,31 @@ c     traverse linked list into array. list already sorted by arrangegrids
 !        save final count
          node(bndListNum,mptr) = nborcount
       end do
+
+      return
+      end
+c
+c -----------------------------------------------------------------
+c
+      subroutine freeBndryList(mold)
+c
+      use amr_module
+      implicit none
+
+      integer nborCount, mold,nextSpot, i, nextnext
+
+c :::::::::::::::::::::::::::: freeBndryList :::::::::::::::::::::::::
+c     free the linked list of intersecting "boundary" grids for grid 'mold'
+c     that is no longer active
+c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+           nborCount = node(bndListNum,mold) ! count for this grid
+           nextSpot  = node(bndListSt,mold)  ! first index of this grids nbors
+           do i = 1, nborCount
+               nextnext = bndList(nextSpot,nextfree)
+               call putnod_bnd(nextSpot)
+               nextSpot = nextnext
+           end do
 
       return
       end

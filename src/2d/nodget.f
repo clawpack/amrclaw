@@ -50,6 +50,20 @@ c
           write(outunit,100) bndListSize
           write(*,100)       bndListSize
 100       format(' out of bndry space - allowed ',i5,' bndry grids')
+          ! calc average number of bndry nbors per grid
+          nborTotal = 0
+          numGridsTotal = 0
+          do lev = 1, lfine
+            numGridsTotal = numGridsTotal + numgrids(lev)
+            do mptr = 1, numgrids(lev)
+               nborTotal = nborTotal + node(bndListNum,mptr)  
+            end do
+          end do
+          avgNbors = float(nborTotal)/numgridsTotal
+          write(*,101) numGridsTotal,nborTotal,avgNbors
+ 101      format(" There are ",i7," total grids", i8," bndry nbors",
+     .           " average num/grid ",f10.3)
+
           stop
 c
  10   nodget_bnd      = ndfree_bnd
