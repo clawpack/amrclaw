@@ -84,6 +84,7 @@ SOURCES = \
   $(AMRLIB)/ginit.f \
   $(AMRLIB)/grdfit2.f \
   $(AMRLIB)/intfil.f \
+  $(AMRLIB)/intfilList.f \
   $(AMRLIB)/moment.f \
   $(AMRLIB)/nestck2.f \
   $(AMRLIB)/prepf.f \
