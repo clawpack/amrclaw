@@ -114,6 +114,9 @@ c        balancing, but doesn't help locality
 c
 c      set up array of grids instead of recomputing at each step
        call makeGridList(lbase)
+       do levnew = lbase+1, lfine
+          call makeBndryList(levnew)   ! does one level at a time
+       end do
 
       return
       end

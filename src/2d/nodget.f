@@ -33,3 +33,31 @@ c
 c
       return
       end
+c
+c ------------------------------------------------------------
+c
+      integer function nodget_bnd(dummy)
+c
+      use amr_module
+      implicit double precision (a-h,o-z)
+
+c
+c ::::::::::::::::: NODGET_BND ::::::::::::::::::::::::::::::::::::;
+c nodget_bnd =  same as above but for bndry list
+c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
+c
+      if (ndfree_bnd .ne. null) go to 10
+          write(outunit,100) bndListSize
+          write(*,100)       bndListSize
+100       format(' out of bndry space - allowed ',i5,' bndry grids')
+          stop
+c
+ 10   nodget_bnd      = ndfree_bnd
+      ndfree_bnd      = bndList(ndfree_bnd,nextfree)
+c
+c     ##  initialize to 0
+      bndList(nodget_bnd,1) = 0
+      bndList(nodget_bnd,2) = 0
+c
+      return
+      end

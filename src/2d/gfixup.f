@@ -249,3 +249,64 @@ c        listStart so no need to test if level = mxnest
       end do
       return
       end
+c
+c -----------------------------------------------------------------
+c
+      subroutine makeBndryList(level)
+c
+      use amr_module
+      implicit none
+
+      integer level, n, levSt, k, nborCount
+      integer nodget_bnd, nextSpot, prevNbor, msrc, mptr
+      integer imin, imax, jmin, jmax
+      integer imlo, imhi, jmlo, jmhi
+      integer ixlo, ixhi, jxlo, jxhi
+
+c :::::::::::::::::::::::::::: makeBndryList :::::::::::::::::::::::::
+c     preprocess each grid to have linked list of other grids at
+c     same level that supply ghost cells.
+c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+c     traverse linked list into array. list already sorted by arrangegrids
+      levSt = listStart(level) 
+      do n = 1, numgrids(level)
+         mptr = listOfGrids(levSt+n-1)
+         imin = node(ndilo,mptr) - nghost  ! ghost cells included since
+         imax = node(ndihi,mptr) + nghost  ! this is what you want to fill
+         jmin = node(ndjlo,mptr) - nghost  ! may also use for filval stuff,
+         jmax = node(ndjhi,mptr) + nghost  ! change nghost to mbuff, etc
+         nborCount = 0
+         
+         do k = 1, numgrids(level)  ! loop over all other grids once to find touching ones 
+            if (k .eq. n) cycle     ! dont count yourself as source grid
+            msrc = listOfgrids(levSt+k-1)
+
+            ! Check if grid mptr and patch intersect
+            imlo = node(ndilo, msrc)
+            jmlo = node(ndjlo, msrc)
+            imhi = node(ndihi, msrc)
+            jmhi = node(ndjhi, msrc)
+
+            ixlo = max(imlo,imin)
+            ixhi = min(imhi,imax)
+            jxlo = max(jmlo,jmin)
+            jxhi = min(jmhi,jmax)
+
+            if (ixlo .le. ixhi .and. jxlo .le. jxhi) then ! put on bnd list for mptr
+               nborCount = nborCount + 1
+               nextSpot = nodget_bnd()   
+               bndList(nextSpot,gridNbor) = msrc
+               ! get spot in bnd list. insert next grid at front to avoid traversing
+               bndList(nextSpot,nextfree) =  node(bndListSt,mptr)
+               node(bndListSt,mptr) = nextSpot
+            endif
+
+         end do
+
+!        save final count
+         node(bndListNum,mptr) = nborcount
+      end do
+
+      return
+      end

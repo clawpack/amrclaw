@@ -70,6 +70,7 @@ c      does listStart have to be set outside of makeGridList
 c      but call it with lbase 0 to make grid 1
        listStart(1) = 1
        call makeGridList(0)
+       call makeBndryList(1)  ! 1 means level 1
 c
 c  set stable initial time step using coarse grid data
 c

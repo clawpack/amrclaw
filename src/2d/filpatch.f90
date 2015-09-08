@@ -13,7 +13,7 @@
 ! :::::::::::::::::::::::::::::::::::::::;:::::::::::::::::::::::;
 !
 recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
-     nrowst,ncolst,ilo,ihi,jlo,jhi,patchOnly)
+     nrowst,ncolst,ilo,ihi,jlo,jhi,patchOnly,msrc)
 
   use amr_module, only: hxposs, hyposs, xlower, ylower, xupper, yupper
   use amr_module, only: outunit, nghost, xperdom, yperdom, spheredom
@@ -26,7 +26,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
 
   ! Input
   integer, intent(in) :: level, nvar, naux, mitot, mjtot, nrowst, ncolst
-  integer, intent(in) :: ilo,ihi,jlo,jhi
+  integer, intent(in) :: ilo,ihi,jlo,jhi, msrc
   real(kind=8), intent(in) :: t
   logical  :: patchOnly
 
@@ -86,8 +86,16 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   ylow_fine = ylower + jlo * dy_fine
 
   ! Fill in the patch as much as possible using values at this level
-  call intfil(valbig,mitot,mjtot,t,flaguse,nrowst,ncolst, ilo,  &
-              ihi,jlo,jhi,level,nvar,naux)
+  ! note that if only a patch, msrc = -1, otherwise a real grid and intfil
+  ! uses its boundary list
+  if (msrc .eq. -1) then
+     call intfil(valbig,mitot,mjtot,t,flaguse,nrowst,ncolst, ilo,  &
+                 ihi,jlo,jhi,level,nvar,naux)
+  else  ! new version uses boundary lists instead of looping over all grids
+     call intfilList(valbig,mitot,mjtot,t,flaguse,nrowst,ncolst, ilo,  &
+                 ihi,jlo,jhi,level,nvar,naux,msrc)
+  endif
+ 
 
 
   ! Trimbd returns set = true if all of the entries are filled (=1.).
@@ -189,7 +197,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
              iplo,iphi,jplo,jphi,iplo,iphi,jplo,jphi,.true.)
      else
         call filrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,mjtot_coarse,1,1,   &
-             iplo,iphi,jplo,jphi,.true.)
+             iplo,iphi,jplo,jphi,.true.,-1)  ! when going to coarser patch, no source grid (for now at least)
      endif
 
      do i_fine = 1,mitot_patch

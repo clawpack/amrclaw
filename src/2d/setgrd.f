@@ -96,6 +96,7 @@ c
 c     need to make gridList here before calling again to make finer grids.
 c     This is because ths list if used in advanc. level 1 is called from domain
       call makeGridList(lbase)
+      call makeBndryList(levnew)
 c
       levnew = levnew + 1
       go to 10

@@ -68,7 +68,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
      call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1, &
           ilo-ng,ilo-1,jlo,jhi,ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
   else
-     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1,ilo-ng,ilo-1,jlo,jhi,patchOnly)
+     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1,ilo-ng,ilo-1,jlo,jhi,patchOnly,mptr)
   endif
 
   ! right boundary
@@ -82,7 +82,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
           mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
   else
      call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-          mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,patchOnly)
+          mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,patchOnly,mptr)
   endif
 
   ! bottom boundary
@@ -97,7 +97,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
                       1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,                &
                       ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
   else
-     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,patchOnly)
+     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,patchOnly,mptr)
   endif
 
 
@@ -113,7 +113,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
           1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
   else
      call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-          1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,patchOnly)
+          1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,patchOnly,mptr)
   endif
 
 
