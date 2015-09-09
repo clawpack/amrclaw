@@ -48,6 +48,7 @@ c            mptr = listgrids(jg)
 !$OMP&            PRIVATE(locold,mbuff,mibuff,mjbuff,locamrflags,i),
 !$OMP&            PRIVATE(locuse),
 !$OMP&            SHARED(numgrids,listgrids,lcheck,nghost,nvar,naux),
+!$OMP&            SHARED(levSt,listStart,listOfGrids),
 !$OMP&            SHARED(tolsp,alloc,node,rnode,hxposs,hyposs,ibuff),
 !$OMP&            SHARED(start_time,possk,flag_gradient,flag_richardson)
 !$OMP&            DEFAULT(none),
@@ -55,7 +56,7 @@ c            mptr = listgrids(jg)
        do  jg = 1, numgrids(lcheck)
 c          mptr = listgrids(jg)
           levSt  = listStart(lcheck)
-          mptr   = listOfgrids(levSt+jg-1)
+          mptr   = listOfGrids(levSt+jg-1)
           nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
           ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
           mitot  = nx + 2*nghost
