@@ -77,8 +77,8 @@ c     left boundary
      5                    patchOnly)
       else
       	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1                1,1,ng+1,
-     2                ilo-ng,ilo-1,jlo-ng,jhi+ng,klo,khi,patchOnly)
+     1                1,1,ng+1,ilo-ng,ilo-1,
+     2                jlo-ng,jhi+ng,klo,khi,patchOnly,mptr)
       endif
 
 
@@ -102,8 +102,8 @@ c     right boundary
      5                    patchOnly)
       else
       	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1                mitot-ng+1,1,ng+1,
-     2                ihi+1,ihi+ng,jlo-ng,jhi+ng,klo,khi,patchOnly)
+     1                mitot-ng+1,1,ng+1,ihi+1,ihi+ng,
+     2                jlo-ng,jhi+ng,klo,khi,patchOnly,mptr)
       endif
 
 
@@ -123,8 +123,8 @@ c     front boundary
      5                    patchOnly)
       else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1                ng+1,1,ng+1,
-     2                ilo,ihi,jlo-ng,jlo-1,klo,khi,patchOnly)
+     1                ng+1,1,ng+1,ilo,ihi,
+     2                jlo-ng,jlo-1,klo,khi,patchOnly,mptr)
       endif
 
 c     rear boundary
@@ -143,8 +143,8 @@ c     rear boundary
      5                   patchOnly)
       else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1                ng+1,mjtot-ng+1,ng+1,
-     2                ilo,ihi,jhi+1,jhi+ng,klo,khi,patchOnly)
+     1                ng+1,mjtot-ng+1,ng+1,ilo,ihi,
+     2                jhi+1,jhi+ng,klo,khi,patchOnly,mptr)
       endif
 
 c     bottom boundary
@@ -168,9 +168,8 @@ c     bottom boundary
      5                   patchOnly)
       else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1                1,1,1,
-     2                ilo-ng,ihi+ng,jlo-ng,jhi+ng,klo-ng,klo-1,
-     3                patchOnly)
+     1                1,1,1,ilo-ng,ihi+ng,
+     2                jlo-ng,jhi+ng,klo-ng,klo-1,patchOnly,mptr)
       end if
 
 c     top boundary
@@ -194,9 +193,8 @@ c     top boundary
      5                   patchOnly)
       else
         call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
-     1                1,1,mktot-ng+1,
-     2                ilo-ng,ihi+ng,jlo-ng,jhi+ng,khi+1,khi+ng,
-     3                patchOnly)
+     1                1,1,mktot-ng+1,ilo-ng,ihi+ng,
+     2                jlo-ng,jhi+ng,khi+1,khi+ng,patchOnly,mptr)
       end if
 
 c

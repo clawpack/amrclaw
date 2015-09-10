@@ -88,13 +88,9 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   ! Fill in the patch as much as possible using values at this level
   ! note that if only a patch, msrc = -1, otherwise a real grid and intfil
   ! uses its boundary list
-  if (msrc .eq. -1) then
-     call intfil(valbig,mitot,mjtot,t,flaguse,nrowst,ncolst, ilo,  &
-                 ihi,jlo,jhi,level,nvar,naux)
-  else  ! new version uses boundary lists instead of looping over all grids
-     call intfilList(valbig,mitot,mjtot,t,flaguse,nrowst,ncolst, ilo,  &
-                 ihi,jlo,jhi,level,nvar,naux,msrc)
-  endif
+  ! msrc either -1 (for a patch) or the real grid number
+  call intfil(valbig,mitot,mjtot,t,flaguse,nrowst,ncolst, ilo,  &
+              ihi,jlo,jhi,level,nvar,naux,msrc)
  
 
 

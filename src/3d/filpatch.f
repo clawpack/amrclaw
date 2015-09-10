@@ -3,8 +3,8 @@ c ---------------------------------------------------------------
 c
         recursive subroutine filrecur(level,nvar,valbig,aux,naux,
      1                                time,mitot,mjtot,mktot,
-     2                                nrowst,ncolst,nfilst,
-     3                                ilo,ihi,jlo,jhi,klo,khi,patchOnly)
+     2                                nrowst,ncolst,nfilst,ilo,ihi,
+     3                                jlo,jhi,klo,khi,patchOnly,msrc)
 
 c :::::::::::::::::::::::::::: FILPATCH ::::::::::::::::::::::::::
 c
@@ -78,7 +78,7 @@ c     can be filled this way, return.
       call intfil
      & (valbig, mitot, mjtot, mktot, time, flaguse,
      &  nrowst, ncolst, nfilst, ilo, ihi, jlo, jhi, klo, khi,
-     &  level, nvar, naux)
+     &  level, nvar, naux,msrc)
 
 c Trimbd returns set = true if all of the entries are filled (=1.).
 c set = false, otherwise. If set = true, then no other levels are
@@ -174,10 +174,10 @@ c     coarsen
      2                    iplo,iphi,jplo,jphi,kplo,kphi,
      3                    iplo,iphi,jplo,jphi,kplo,kphi,
      4                    .true.)
-      else
+      else  !-1 indicates not a real grid in this next call to filpatch
          call filrecur(levc,nvar,valcrse,auxcrse,naux,
      1                 time,nrowc,ncolc,nfilc,1,1,1,
-     2                 iplo,iphi,jplo,jphi,kplo,kphi,.true.)
+     2                 iplo,iphi,jplo,jphi,kplo,kphi,.true.,-1)
       endif
 
       do 100 iff = 1,nrowp

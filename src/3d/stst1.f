@@ -50,6 +50,14 @@ c
       lfree(2,1) = 1
       lfree(2,2) =memsize
       lenf       = 3
+
+
+c  need to manage the boundary List too
+      do i = 1, bndListSize
+         bndList(i,nextfree) = i+1
+      end do
+      bndList(bndListSize,nextfree) = null
+      ndfree_bnd = 1
 c
 c after kcheck integrations of parent grid, move its refinements.
 c finest level grid never needs to have its finer subgrids moved.

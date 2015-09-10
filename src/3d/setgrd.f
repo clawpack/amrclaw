@@ -64,10 +64,10 @@ c  init new level. after each iteration. fix the data structure
 c  also reinitalize coarser grids so fine grids can be advanced
 c  and interpolate correctly for their bndry vals from coarser grids.
 c
-         call ginit(newstl(levnew),.true., nvar, naux, start_time)
+         call ginit(newstl(levnew),.true., nvar, naux,start_time)
          lstart(levnew) = newstl(levnew)
          lfine = lfnew
-         call ginit(lstart(levold),.false., nvar, naux, start_time)
+         call ginit(lstart(levold),.false., nvar, naux,start_time)
 c
 c count number of grids on newly created levels (needed for openmp
 c parallelization). this is also  done in regridding.
@@ -96,6 +96,7 @@ c
 c     need to make gridList here before calling again to make finer grids.
 c     This is because ths list if used in advanc. level 1 is called from domain
       call makeGridList(lbase)
+      call makeBndryList(levnew)
 c
       levnew = levnew + 1
       go to 10
