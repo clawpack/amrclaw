@@ -54,7 +54,7 @@ c  ## at initial time want to use initial conditions (so retain symmetry for exa
  10            alloc(locbig+i-1) = alloc(locnew+i-1)
 
             call bound(time,nvar,nghost,alloc(locbig),mitot,mjtot,mktot,
-     1               mptr,alloc(locaux),naux)
+     1               mptr,alloc(locaux),naux,mptr)
 !         else   ! boundary values already in locold
 !             locold = node(store2,mptr)
 !             do 11 i = 1, mitot*mjtot*nvar
