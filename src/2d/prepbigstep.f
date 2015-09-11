@@ -60,9 +60,8 @@ c
           endif
 
 c         # fill it - use enlarged (before coarsening) aux arrays
-c          call bound(tpre,nvar,ng2,alloc(locdub),midub,mjdub,mptr,
           call bound(tpre,nvar,ng2,valdub,midub,mjdub,mptr,
-     1               auxdub,naux)
+     1               auxdub,naux,-1)
 
 c         coarsen by 2 in every direction
           call coarsen(valdub,midub,mjdub,
