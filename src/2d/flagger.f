@@ -80,7 +80,7 @@ c         ## at initial time want to use initial conditions (so retain symmetry 
 c            do in other order in case user messes up locbig in flag2refine, already have
 c            them in locnew
              call bound(time,nvar,nghost,alloc(locnew),mitot,mjtot,mptr,
-     1                  alloc(locaux),naux,mptr)
+     1                  alloc(locaux),naux)
              locuse = locnew ! flag based on newest vals
              if (flag_richardson) then
                do 10 i = 1, mitot*mjtot*nvar

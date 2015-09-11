@@ -61,7 +61,7 @@ c
 
 c         # fill it - use enlarged (before coarsening) aux arrays
           call bound(tpre,nvar,ng2,valdub,midub,mjdub,mptr,
-     1               auxdub,naux,-1)
+     1               auxdub,naux)
 
 c         coarsen by 2 in every direction
           call coarsen(valdub,midub,mjdub,
