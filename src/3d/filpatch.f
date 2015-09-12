@@ -181,25 +181,38 @@ c     coarsen
       endif
 
       do 100 iff = 1,nrowp
-         ic = 2 + (iff-(il-ilo)-1)/lratiox
+         !ic = 2 + (iff-(il-ilo)-1)/lratiox
+         ic =(iff+ilo-1)/lratiox - iplo + 1
          !eta1 = (-0.5d0+dble(mod(iff-1,lratiox)))/dble(lratiox)
          xcent_coarse = xlc + (ic-.5d0)*hxc
          xcent_fine =  xlower + (iff-1+ilo + .5d0)*hxf
          eta1 = (xcent_fine-xcent_coarse)/hxc
+         if (abs(eta1) .gt. .5) then
+            write(*,*)" filpatch x indices wrong: eta1 = ",eta1
+         endif
+
 
          do 100 jf  = 1,ncolp
-          jc = 2 + (jf -(jl-jlo)-1)/lratioy
+          !jc = 2 + (jf -(jl-jlo)-1)/lratioy
+          jc =(jf+jlo-1)/lratioy - jplo + 1
           !eta2 = (-0.5d0+dble(mod(jf -1,lratioy)))/dble(lratioy)
           ycent_coarse = ybc + (jc-.5d0)*hyc
           ycent_fine =  ylower + (jf-1+jlo + .5d0)*hyf
           eta2 = (ycent_fine-ycent_coarse)/hyc
+         if (abs(eta2) .gt. .5) then
+            write(*,*)" filpatch y indices wrong: eta2 = ",eta2
+         endif
 
           do 100 kf = 1,nfilp
-            kc = 2 + (kf - (kl-klo)-1)/lratioz
+           !kc = 2 + (kf - (kl-klo)-1)/lratioz
+           kc =(kf+klo-1)/lratioz - kplo + 1
            !eta3 = (-0.5d0+dble(mod(kf-1, lratioz)))/dble(lratioz)
            zcent_coarse = zfc + (kc-.5d0)*hzc
            zcent_fine =  zlower + (kf-1+klo + .5d0)*hzf
            eta3 = (zcent_fine-zcent_coarse)/hzc
+           if (abs(eta3) .gt. .5) then
+              write(*,*)" filpatch z indices wrong: eta3 = ",eta3
+           endif
 
            flag = flaguse(iff,jf,kf)
            if (flag .eq. 0.0) then

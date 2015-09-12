@@ -197,23 +197,31 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
      endif
 
      do i_fine = 1,mitot_patch
-        i_coarse = 2 + (i_fine - (unset_indices(1) - ilo) - 1) / refinement_ratio_x
+        !i_coarse = 2 + (i_fine - (unset_indices(1) - ilo) - 1) / refinement_ratio_x
         !eta1 = (-0.5d0 + real(mod(i_fine - 1, refinement_ratio_x),kind=8)) &
         !                    / real(refinement_ratio_x,kind=8)
 
-
+        ! new coarse indexing
+        i_coarse =(i_fine+ilo-1)/refinement_ratio_x - iplo + 1
         xcent_coarse = xlow_coarse + (i_coarse-.5d0)*dx_coarse
         xcent_fine =  xlower + (i_fine-1+ilo + .5d0)*dx_fine
         eta1 = (xcent_fine-xcent_coarse)/dx_coarse
+        if (abs(eta1) .gt. .5) then
+          write(*,*)" filpatch x indices wrong: eta1 = ",eta1
+        endif
 
         do j_fine  = 1,mjtot_patch
            j_coarse = 2 + (j_fine - (unset_indices(3) - jlo) - 1) / refinement_ratio_y
            !eta2 = (-0.5d0 + real(mod(j_fine - 1, refinement_ratio_y),kind=8)) &
            !                    / real(refinement_ratio_y,kind=8)
 
+           j_coarse =(j_fine+jlo-1)/refinement_ratio_y - jplo + 1
            ycent_coarse = ylow_coarse + (j_coarse-.5d0)*dy_coarse
            ycent_fine =  ylower + (j_fine-1+jlo + .5d0)*dy_fine
            eta2 = (ycent_fine-ycent_coarse)/dy_coarse
+           if (abs(eta2) .gt. .5) then
+             write(*,*)" filpatch y indices wrong: eta2 = ",eta2
+           endif
 
            if (flaguse(i_fine,j_fine) == 0) then
 
