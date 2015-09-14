@@ -44,7 +44,8 @@ c41   continue
 !$OMP&            PRIVATE(locdomflags,locdom2),
 !$OMP&            SHARED(numgrids, listgrids,nghost,flag_richardson),
 !$OMP&            SHARED(nvar,eprint,maxthreads,node,rnode,lbase,ibuff),
-!$OMP&            SHARED(alloc,lcheck,numpro,mxnest,dx,dy,time,levSt),
+!$OMP&            SHARED(alloc,lcheck,numpro,mxnest,dx,dy,time),
+!$OMP&            SHARED(levSt,listOfGrids),
 !$OMP&            DEFAULT(none),      
 !$OMP&            SCHEDULE (DYNAMIC,1)
       do  jg = 1, numgrids(lcheck)
