@@ -201,7 +201,7 @@ c
           call setbestsrc()     ! need at every grid change
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
 c note negative time to signal regridding output in plots
-c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
+          call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
 c
 c  maybe finest level in existence has changed. reset counters.
 c

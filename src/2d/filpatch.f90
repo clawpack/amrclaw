@@ -42,7 +42,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   integer :: unset_indices(4)
   real(kind=8) :: dx_fine, dy_fine, dx_coarse, dy_coarse
   real(kind=8) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine
-  real(kind=8) :: xcent_fine, xcent_coarse, ycent_fine, ycent_coarse    
+  real(kind=8) :: xcent_fine, xcent_coarse, ycent_fine, ycent_coarse,ratiox,ratioy,floor    
 
   !for timing
   integer :: clock_start, clock_finish, clock_rate
@@ -196,13 +196,18 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
              iplo,iphi,jplo,jphi,.true.,-1)  ! when going to coarser patch, no source grid (for now at least)
      endif
 
+     ! convert to real for use below
+     ratiox = float(refinement_ratio_x)
+     ratioy = float(refinement_ratio_y)
+
      do i_fine = 1,mitot_patch
         !i_coarse = 2 + (i_fine - (unset_indices(1) - ilo) - 1) / refinement_ratio_x
         !eta1 = (-0.5d0 + real(mod(i_fine - 1, refinement_ratio_x),kind=8)) &
         !                    / real(refinement_ratio_x,kind=8)
 
         ! new coarse indexing
-        i_coarse =(i_fine+ilo-1)/refinement_ratio_x - iplo + 1
+        !i_coarse =(i_fine+ilo-1)/refinement_ratio_x - iplo + 1
+        i_coarse = floor((i_fine+ilo-1)/ratiox) - iplo + 1
         xcent_coarse = xlow_coarse + (i_coarse-.5d0)*dx_coarse
         xcent_fine =  xlower + (i_fine-1+ilo + .5d0)*dx_fine
         eta1 = (xcent_fine-xcent_coarse)/dx_coarse
@@ -215,7 +220,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
            !eta2 = (-0.5d0 + real(mod(j_fine - 1, refinement_ratio_y),kind=8)) &
            !                    / real(refinement_ratio_y,kind=8)
 
-           j_coarse =(j_fine+jlo-1)/refinement_ratio_y - jplo + 1
+           j_coarse =floor((j_fine+jlo-1)/ratioy) - jplo + 1
            ycent_coarse = ylow_coarse + (j_coarse-.5d0)*dy_coarse
            ycent_fine =  ylower + (j_fine-1+jlo + .5d0)*dy_fine
            eta2 = (ycent_fine-ycent_coarse)/dy_coarse

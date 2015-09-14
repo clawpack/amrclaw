@@ -39,6 +39,7 @@ c get start time for more detailed timing by level
       hx   = hxposs(level)
       hy   = hyposs(level)
       delt = possk(level)
+      levSt = listStart(level)
 c     this is linear alg.
 c     call prepgrids(listgrids,numgrids(level),level)
 c
@@ -52,14 +53,13 @@ c     maxthreads initialized to 1 above in case no openmp
 
 c We want to do this regardless of the threading type
 !$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot
-!$OMP&                    ,mjtot,time,levSt),
-!$OMP&            SHARED(level, nvar, naux, alloc, intrat, delt,
+!$OMP&                    ,mjtot,time),
+!$OMP&            SHARED(level, nvar, levSt, naux, alloc, intrat, delt,
 !$OMP& listOfGrids,listStart,nghost,node,rnode,numgrids,listgrids),
 !$OMP&            SCHEDULE (dynamic,1)
 !$OMP&            DEFAULT(none)
       do j = 1, numgrids(level)
          !mptr   = listgrids(j)
-         levSt = listStart(level)
          mptr   = listOfGrids(levSt+j-1)
          !write(*,*)"old ",listgrids(j)," new",mptr
          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
@@ -97,16 +97,15 @@ c
 
 
 !$OMP PARALLEL DO PRIVATE(j,mptr,nx,ny,mitot,mjtot)  
-!$OMP&            PRIVATE(mythread,dtnew,levSt)
+!$OMP&            PRIVATE(mythread,dtnew)
 !$OMP&            SHARED(rvol,rvoll,level,nvar,mxnest,alloc,intrat)
 !$OMP&            SHARED(nghost,intratx,intraty,hx,hy,naux,listsp)
 !$OMP&            SHARED(node,rnode,dtlevnew,numgrids,listgrids)
-!$OMP&            SHARED(listOfGrids,listStart)
+!$OMP&            SHARED(listOfGrids,listStart,levSt)
 !$OMP&            SCHEDULE (DYNAMIC,1)
 !$OMP&            DEFAULT(none)
       do j = 1, numgrids(level)
          !mptr   = listgrids(j)
-         levSt = listStart(level)
          mptr = listOfGrids(levSt+j-1)
          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
