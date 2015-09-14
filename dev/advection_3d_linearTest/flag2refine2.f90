@@ -97,17 +97,18 @@ subroutine flag2refine(mx,my,mz,mbc,meqn,maux,xlower,ylower,zlower,    &
                 dq = max(dq,dqi,dqj,dqk)
 
                 ! default checks all components of undivided difference:
-                do m=1,meqn
-                    if (dq(m) > tolsp) then
+                !do m=1,meqn
+                !    if (dq(m) > tolsp) then
+                     if (abs(x_c-25.) .lt. dx) then
                         amrflags(i,j,k) = DOFLAG
                         cycle x_loop
-                    endif
-                enddo
+                     endif
+                !enddo
 
         enddo x_loop
       enddo y_loop
     enddo z_loop
-    amrflags(mx/2,my/2,mz/2) = DOFLAG
+    !amrflags(mx/2,my/2,mz/2) = DOFLAG
     !if (level .eq. lfine .and. t .gt. 1.) amrflags(mx/2,my/2,mz/2) = DOFLAG
    
 end subroutine flag2refine

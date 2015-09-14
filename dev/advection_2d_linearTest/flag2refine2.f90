@@ -101,7 +101,7 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
 
         enddo x_loop
     enddo y_loop
-    amrflags(mx/2,my/2) = DOFLAG
+    !amrflags(mx/2,my/2) = DOFLAG
     !if (level .eq. lfine .and. t .gt. 1.) amrflags(mx/2,my/2) = DOFLAG
    
 end subroutine flag2refine2

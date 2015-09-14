@@ -125,8 +125,8 @@ def setrun(claw_pkg='amrclaw'):
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 5
-        clawdata.total_steps =  20
+        clawdata.output_step_interval = 1
+        clawdata.total_steps =  1
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
@@ -276,9 +276,9 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    amrdata.refinement_ratios_x = [4,6,2,8]
-    amrdata.refinement_ratios_y = [4,6,2,8]
-    amrdata.refinement_ratios_t = [4,6,2,8]
+    amrdata.refinement_ratios_x = [4,4,2,8]
+    amrdata.refinement_ratios_y = [4,4,2,8]
+    amrdata.refinement_ratios_t = [4,4,2,8]
 
 
     # Specify type of each aux variable in amrdata.auxtype.
@@ -303,7 +303,8 @@ def setrun(claw_pkg='amrclaw'):
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
-    amrdata.regrid_buffer_width  = 7  
+    # donna amrdata.regrid_buffer_width  = 7  
+    amrdata.regrid_buffer_width  = 0  
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)
@@ -319,6 +320,9 @@ def setrun(claw_pkg='amrclaw'):
     regions = rundata.regiondata.regions
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
+    regions.append([3,3,-1.0,1,.149625,.359375,0,1])
+    regions.append([2,3,-1.0,1,0.0,.5625,0,1])
+
 
 
     #  ----- For developers ----- 

@@ -315,7 +315,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True       # use this?
-    amrdata.flag2refine_tol = 100.55  # tolerance used in this routine
+    amrdata.flag2refine_tol = 1000.55  # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check max-norm of difference between q in a cell and 
     # each of its neighbors.
@@ -325,7 +325,7 @@ def setrun(claw_pkg='amrclaw'):
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
-    amrdata.regrid_buffer_width  = 7  
+    amrdata.regrid_buffer_width  = 2  
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)

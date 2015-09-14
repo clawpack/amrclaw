@@ -49,6 +49,7 @@ SOURCES = \
   $(CLAW)/riemann/src/rpt2_advection.f \
   $(AMRLIB)/amr2.f90 \
   $(AMRLIB)/setaux.f90 \
+  $(AMRLIB)/domain.f  \
   $(AMRLIB)/b4step2.f90 \
   $(AMRLIB)/qad.f \
   $(AMRLIB)/src2.f90 \
@@ -110,7 +111,6 @@ SOURCES = \
   $(AMRLIB)/outvar.f \
   $(AMRLIB)/outmsh.f \
   $(AMRLIB)/outtre.f \
-  $(AMRLIB)/domain.f  \
   $(AMRLIB)/setflags.f \
   $(AMRLIB)/shiftset2.f \
   $(AMRLIB)/conck.f \
