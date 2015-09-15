@@ -197,8 +197,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
      endif
 
      ! convert to real for use below
-     ratiox = float(refinement_ratio_x)
-     ratioy = float(refinement_ratio_y)
+     ratiox = real(refinement_ratio_x,kind=8)
+     ratioy = real(refinement_ratio_y,kind=8)
 
      do j_fine  = 1,mjtot_patch
         !j_coarse = 2 + (j_fine - (unset_indices(3) - jlo) - 1) / refinement_ratio_y
