@@ -253,9 +253,9 @@ c
 
       integer level, n, levSt, k, nborCount
       integer nodget_bnd, nextSpot, prevNbor, msrc, mptr
-      integer imin, imax, jmin, jmax
-      integer imlo, imhi, jmlo, jmhi
-      integer ixlo, ixhi, jxlo, jxhi
+      integer imin, imax, jmin, jmax, kmin, kmax
+      integer imlo, imhi, jmlo, jmhi, kmlo, kmhi
+      integer ixlo, ixhi, jxlo, jxhi, kxlo, kxhi
 
 c :::::::::::::::::::::::::::: makeBndryList :::::::::::::::::::::::::
 c     preprocess each grid to have linked list of other grids at
@@ -270,6 +270,8 @@ c     traverse linked list into array. list already sorted by arrangegrids
          imax = node(ndihi,mptr) + nghost  ! this is what you want to fill
          jmin = node(ndjlo,mptr) - nghost  ! may also use for filval stuff,
          jmax = node(ndjhi,mptr) + nghost  ! change nghost to mbuff, etc
+         kmin = node(ndklo,mptr) - nghost  ! may also use for filval stuff,
+         kmax = node(ndkhi,mptr) + nghost  ! change nghost to mbuff, etc
          nborCount = 0
          
          do k = 1, numgrids(level)  ! loop over all other grids once to find touching ones 
@@ -279,15 +281,20 @@ c     traverse linked list into array. list already sorted by arrangegrids
             ! Check if grid mptr and patch intersect
             imlo = node(ndilo, msrc)
             jmlo = node(ndjlo, msrc)
+            kmlo = node(ndklo, msrc)
             imhi = node(ndihi, msrc)
             jmhi = node(ndjhi, msrc)
+            kmhi = node(ndkhi, msrc)
 
             ixlo = max(imlo,imin)
             ixhi = min(imhi,imax)
             jxlo = max(jmlo,jmin)
             jxhi = min(jmhi,jmax)
+            kxlo = max(kmlo,kmin)
+            kxhi = min(kmhi,kmax)
 
-            if (ixlo .le. ixhi .and. jxlo .le. jxhi) then ! put on bnd list for mptr
+            if (ixlo .le. ixhi .and. jxlo .le. jxhi
+     .                         .and. kxlo .le. kxhi) then ! put on bnd list for mptr
                nborCount = nborCount + 1
                nextSpot = nodget_bnd()   
                bndList(nextSpot,gridNbor) = msrc
