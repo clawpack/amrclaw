@@ -107,6 +107,7 @@ c
 !$OMP&            DEFAULT(none)
       do j = 1, numgrids(level)
          !mptr   = listgrids(j)
+         levSt = listStart(level)
          mptr = listOfGrids(levSt+j-1)
          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
