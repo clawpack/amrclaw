@@ -6,9 +6,6 @@ Script to run a code or restart it from a checkpoint file automatically.
 
 Needs to be cleaned up and made more general.
 
-This is a 2d example, but will work fine in 3d once check_twofiles.f
-is ported (easy to do).
-
 Assumes code is compiled already.
 
     python run_with_restart.py
@@ -38,19 +35,12 @@ Notes:
  - The setrun.py file is used also for the restart.  The clawdata.restart
    value is set to True and written to claw.data explicitly from this script.
 
+ - check_twofiles.f also flushes buffers for output to fort.gauge,
+   fort.amr, fort.debug so output is not lost.
+
  - Before restarting, it moves any fort.gauge file to fort.gauge_<datetime>
    so that eventually these can be catenated together (after editing out
    repeated entries).
-
- - If writing to output files is buffered, then if the code dies there may
-   be missing info in fort.gauge, fort.amr.  With gfortran this is avoided
-   by the environment variable set below.  This doesn't work with the
-   Intel compiler, see 
-      https://software.intel.com/en-us/forums/topic/328012
-   though this is specifically about stdout, not files.
-
- - Buffering all the output files might slow the code down significantly.
-   This has not yet been tested.
 
 """
 
@@ -67,15 +57,6 @@ env = os.environ
 
 # runtime environment variables:
 env['OMP_NUM_THREADS'] = '3'
-
-# The next line insures that stdout is not buffered so if the code dies
-# the output sent to run_output.txt so the error message is visible:
-env['GFORTRAN_UNBUFFERED_PRECONNECTED'] = 'y'  
-
-# Also make all writes to files unbuffered, so that data written to fort.gauge 
-# isn't lost if machine crashes.  This may make the code slower!
-# There doesn't seem to be a way to selectively unbuffered this one file.
-env['GFORTRAN_UNBUFFERED_ALL'] = 'y'  
 
 
 def examine_outdir(outdir='_output'):

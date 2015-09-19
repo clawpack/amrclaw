@@ -8,6 +8,15 @@ To test 2d version...
     python ../run_with_restart.py
     Ctrl-C
     python ../run_with_restart.py
+    [repeat this process as many times as desired until it finishes]
+
+Then check the following:
+    run_output.txt  contains stdout output from each run and info about restarts
+    _output/fort.gauge  has final set of gauge data from last execution
+    _output/fort.gauge_DATETIME  files contain fort.gauge from earlier
+            
+All fort.gauge* files need to be catenated together, but there may be some
+overlapping times (after last checkpoint and before code died).
 
 Similary in 3d.
 
