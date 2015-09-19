@@ -117,6 +117,11 @@ module amr_module
     real(kind=8)  rvoll(maxlv),evol,rvol,avenumgrids(maxlv)
     integer iregridcount(maxlv), tvoll(maxlv)
     integer lentot,lenmax,lendim
+    integer timeRegridding, timeValout
+    integer timeBound, timeStepgrid, timeSetaux
+    real(kind=8) tvollCPU(maxlv)
+    real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU,timeSetauxCPU
+    real(kind=8) timeValoutCPU
 
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ! :::::  method parameters

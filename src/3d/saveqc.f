@@ -7,6 +7,10 @@ c
       implicit double precision (a-h,o-z)
 
       logical sticksout, perdom3
+      
+      !for setaux timing
+      integer :: clock_start, clock_finish, clock_rate
+      real(kind=8) :: cpu_start, cpu_finish
 c
 c ::::::::::::::::::::::::: SAVEQC :::::::::::::::::::::::::::::::::
 c prepare new fine grids to save fluxes after each integration step
@@ -84,8 +88,14 @@ c         make coarsened enlarged patch for conservative fixup
 
 !      still need to set remaining aux cells that stick out of domain
        if (naux .gt. 0 .and. sticksout .and. .not. perdom3) then
+          call system_clock(clock_start, clock_rate)
+          call cpu_time(cpu_start)
           call setaux(ng,nrow,ncol,nfil,xl,yf,zb,
      .                hxc,hyc,hzc,naux,alloc(loctx))
+          call system_clock(clock_finish, clock_rate)
+          call cpu_time(cpu_finish)
+          timeSetaux = timeSetaux + clock_finish - clock_start
+          timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
        endif
 c
           call bc3amr(alloc(loctmp),alloc(loctx),nrow,ncol,nfil,

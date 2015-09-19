@@ -5,6 +5,10 @@ c
 c
       use amr_module
       implicit double precision (a-h,o-z)
+      
+      !for timing setaux
+      integer :: clock_start, clock_finish, clock_rate
+      real(kind=8) :: cpu_start, cpu_finish
 
 c
 c     #   no sense computing new time step if just for error estimation,
@@ -79,9 +83,15 @@ c
 c	      xl     = rnode(cornxlo, mptr)-2*nghost*hx
 c	      yf     = rnode(cornylo, mptr)-2*nghost*hy
 c	      zb     = rnode(cornzlo, mptr)-2*nghost*hz
+              call system_clock(clock_start, clock_rate)
+              call cpu_time(cpu_start)
               call setaux(2*nghost,nx,ny,nz,
      &              xlowmbc,ylowmbc,zlowmbc ,hx,hy,hz,
      &              naux,alloc(locaxb))
+              call system_clock(clock_finish, clock_rate)
+              call cpu_time(cpu_finish)
+              timeSetaux = timeSetaux + clock_finish - clock_start
+              timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
 
               call auxcoarsen(alloc(locaxb),midub ,mjdub ,mkdub ,
      1                        alloc(locaxc),mi2tot,mj2tot,mk2tot,
