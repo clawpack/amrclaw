@@ -58,6 +58,9 @@ env = os.environ
 # runtime environment variables:
 env['OMP_NUM_THREADS'] = '3'
 
+# The next line insures that stdout is not buffered so if the code dies
+# the output sent to run_output.txt so the error message is visible:
+env['GFORTRAN_UNBUFFERED_PRECONNECTED'] = 'y'  
 
 def examine_outdir(outdir='_output'):
     """
