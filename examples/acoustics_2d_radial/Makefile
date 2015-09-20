@@ -54,7 +54,7 @@ SOURCES = \
   qinit.f \
   setprob.f \
   $(CLAW)/riemann/src/rpn2_acoustics.f \
-  $(CLAW)/riemann/src/rpt2_acoustics.f \
+  $(CLAW)/riemann/src/rpt2_acoustics.f
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
