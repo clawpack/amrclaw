@@ -33,7 +33,7 @@ FFLAGS ?=
 # ---------------------------------
 
 AMRLIB = $(CLAW)/amrclaw/src/3d
-include $(AMRLIB)/amr_3d.make
+include $(AMRLIB)/Makefile.amr_3d
 
 # ---------------------------------------
 # package sources specifically to exclude

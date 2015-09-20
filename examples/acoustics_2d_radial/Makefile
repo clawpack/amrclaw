@@ -32,7 +32,7 @@ FFLAGS ?=
 # ---------------------------------
 
 AMRLIB = $(CLAW)/amrclaw/src/2d
-include $(AMRLIB)/amr_2d.make
+include $(AMRLIB)/Makefile.amr_2d
 
 # ---------------------------------------
 # package sources specifically to exclude
