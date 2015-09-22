@@ -53,11 +53,12 @@ c
 
 
 c  need to manage the boundary List too
-      do i = 1, bndListSize
-         bndList(i,nextfree) = i+1
-      end do
-      bndList(bndListSize,nextfree) = null
-      ndfree_bnd = 1
+c     do i = 1, bndListSize
+c        bndList(i,nextfree) = i+1
+c     end do
+c     bndList(bndListSize,nextfree) = null
+c     ndfree_bnd = 1
+      call initBndryList()
 c
 c after kcheck integrations of parent grid, move its refinements.
 c finest level grid never needs to have its finer subgrids moved.

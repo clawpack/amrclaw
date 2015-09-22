@@ -68,19 +68,19 @@ c
      .       (intraty(i) .ne. intrty(i)) .or.
      .       (intratz(i) .ne. intrtz(i)) ) then
 !    .       (kratio(i) .ne.  intrtt(i)) ) then
-         write(outunit,*) 
-     .   " not allowed to change existing refinement ratios on Restart"
-         write(outunit,*)" Old ratios:"
-         write(*,*)      " Old ratios:"
-         write(outunit,903)(intrtx(j),j=1,mxnold-1)
-         write(*,903)      (intrtx(j),j=1,mxnold-1)
-         write(outunit,903)(intrty(j),j=1,mxnold-1)
-         write(*,903)      (intrty(j),j=1,mxnold-1)
+        write(outunit,*) 
+     .  " not allowed to change existing refinement ratios on Restart"
+        write(outunit,*)" Old ratios:"
+        write(*,*)      " Old ratios:"
+        write(outunit,903)(intrtx(j),j=1,mxnold-1)
+        write(*,903)      (intrtx(j),j=1,mxnold-1)
+        write(outunit,903)(intrty(j),j=1,mxnold-1)
+        write(*,903)      (intrty(j),j=1,mxnold-1)
          write(outunit,903)(intrtz(j),j=1,mxnold-1)
          write(*,903)      (intrtz(j),j=1,mxnold-1)
- 903     format(6i3)
-         stop
-        endif
+ 903    format(6i3)
+        stop
+       endif
       end do
 
 c     if (varRefTime) then  ! reset intrat to previously saved ratios, not input ratios
@@ -232,6 +232,12 @@ c     only for level 1 is listStart set outside of makeGridList
 c     call with lbase 0 to make level 1
       listStart(1) = 1
       call makeGridList(0)
+c
+c     bndry list for faster ghost cell filling
+      call initBndryList()
+      do level = 1, lfine
+         call makeBndryList(level)
+      end do
 c
       return
       end

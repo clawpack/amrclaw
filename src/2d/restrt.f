@@ -223,5 +223,11 @@ c     call with lbase 0 to make level 1
       listStart(1) = 1
       call makeGridList(0)
 c
+c     bndry list for faster ghost cell filling
+      call initBndryList()
+      do level = 1, lfine
+         call makeBndryList(level)
+      end do
+c
       return
       end
