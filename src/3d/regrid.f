@@ -103,7 +103,7 @@ c        balancing, but doesn't help locality
          if (verbosity_regrid .ge. levnew) then
            write(*,100) ngrids,ncells,levnew
            write(outunit,100) ngrids,ncells,levnew
- 100       format("there are ",i4," grids with ",i8,
+ 100       format("there are ",i6," grids with ",i8,
      &            " cells at level ", i3)
          endif
 72     continue
