@@ -35,7 +35,7 @@ c
       write(outunit,102) node(nestlevel,mptr),rnode(timemult,mptr),
      .             node(levelptr,mptr)
 102   format(1x,1h!,11h nestlevel=,i3,12h, time mult=,f8.5,
-     1       13h, level ptr =,i4,24x,1h!)
+     1       13h, level ptr =,i6,22x,1h!)
       write(outunit,103) node(store1,mptr),node(store2,mptr),
      1                   node(cfluxptr,mptr),node(ffluxptr,mptr)
  103  format(1x,'! storage locs =',2i12,'  bndry locs =',2i11,1h!)
