@@ -61,7 +61,7 @@ c
           end do
           avgNbors = float(nborTotal)/numgridsTotal
           write(*,101) numGridsTotal,nborTotal,avgNbors
- 101      format(" There are ",i7," total grids", i8," bndry nbors",
+ 101      format(" There are ",i8," total grids", i10," bndry nbors",
      .           " average num/grid ",f10.3)
 
           stop
