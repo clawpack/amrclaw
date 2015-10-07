@@ -15,7 +15,7 @@ c
       if (ndfree .ne. null) go to 10
           write(outunit,100) maxgr
           write(*,100)       maxgr
-100       format(' out of nodal space - allowed ',i5,' grids')
+100       format(' out of nodal space - allowed ',i8,' grids')
           stop
 c
  10     nodget         = ndfree
