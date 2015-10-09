@@ -39,9 +39,10 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
     real(kind=8), intent(in) :: DOFLAG
     
     ! Locals
-    integer :: i,j,m,i1,i2,j1,j2
-    real(kind=8) :: x_low,y_low,x_hi,y_hi, xupper,yupper
+    integer :: i,j,m,i1,i2,j1,j2,ip0,intersections
+    real(kind=8) :: x,y,xp0,yp0,xp1,yp1,xupper,yupper
     integer, allocatable :: minlevel(:,:), maxlevel(:,:)
+    logical :: isinside
 
     allocate(minlevel(mx,my), maxlevel(mx,my))
     
@@ -72,8 +73,36 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
 
         do j=j1,j2
             do i=i1,i2
-                minlevel(i,j) = max(minlevel(i,j), regions(m)%min_level)
-                maxlevel(i,j) = max(maxlevel(i,j), regions(m)%max_level)
+                ! we are in the bounding box of the arbitrary polygon
+                ! now check point(i,j), may be in bounding box but not polygon
+                x = xlower + (i-0.5d0)*dx
+                y = ylower + (j-0.5d0)*dy
+                ! ray casting
+                isinside = .false. !alternated with each intersection
+                do ip0 = 1, regions(m)%num_points
+                !looping over edges of polygon
+                    xp0 = regions(m)%xpoints(ip0)
+                    yp0 = regions(m)%ypoints(ip0)
+                    xp1 = regions(m)%xpoints(ip0+1)
+                    yp1 = regions(m)%ypoints(ip0+1)
+                    !ray casting from point (x,y), horizontal ray to + infinity
+                    if (yp0==yp1) then !dismiss horizontal intersection of any kind
+                        cycle !ray on top of horizontal segement...do not count as intersection
+                    elseif ((y>max(yp0,yp1)).or.(y<min(yp0,yp1)).or.(x>max(xp0,xp1))) then
+                        cycle !no intersection ...ray above/below or to the right of segment
+                    elseif (x<=min(xp0,xp1)) then !intersection. 
+                        !point is to left of segement. ray must intersect
+                        isinside = .not.isinside !intesection...change isinside
+                    elseif (x<=((xp1-xp0)*(y-yp0)/(yp1-yp0) + xp0)) then
+                        !checked actual intersection...x to the left of segment...must intersect
+                        isinside = .not.isinside !intesection...change isinside
+                    endif
+                enddo
+
+                if (isinside) then
+                    minlevel(i,j) = max(minlevel(i,j), regions(m)%min_level)
+                    maxlevel(i,j) = max(maxlevel(i,j), regions(m)%max_level)
+                endif
             enddo
          enddo
     enddo rloop
