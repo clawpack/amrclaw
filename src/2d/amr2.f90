@@ -62,7 +62,7 @@ program amr2
     use amr_module, only: cfl, cflv1, cflmax, evol
 
     use amr_module, only: checkpt_style, checkpt_interval, tchk, nchkpt
-    use amr_module, only: rstfile
+    use amr_module, only: rstfile, check_a
 
     use amr_module, only: max1d, maxvar, maxlv
 
@@ -440,6 +440,7 @@ program amr2
         matlabu   = 1
     endif
 
+    check_a = .true.
     if (rest) then
 
         open(outunit, file=outfile, status='unknown', position='append', &

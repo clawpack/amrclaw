@@ -73,7 +73,7 @@ module amr_module
 
     ! note use of sentinel in listStart
     integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
-    integer,parameter :: bndListSize = 4*maxgr
+    integer,parameter :: bndListSize = 8*maxgr
     integer :: bndList(bndListSize,2)  ! guess size, average # nbors 4? manage as linked list
 
     real(kind=8) hxposs(maxlv), hyposs(maxlv),possk(maxlv),rnode(rsize, maxgr) 
@@ -193,5 +193,6 @@ module amr_module
 
     ! Restart file name:
     character(len=200) :: rstfile
+    logical :: check_a
 
 end module amr_module
