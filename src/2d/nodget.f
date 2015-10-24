@@ -24,20 +24,20 @@ c
           write(*,*)" level if regridding/birecting"
           stop
 c
+c  update pointers
+c
+ 10     nodget         = ndfree
+        ndfree         = node(nextfree,ndfree)
+c
 c  initialize new  block
 c
- 10     do 20 i        = 1, nsize
-           node(i,ndfree) = 0
+        do 20 i        = 1, nsize
+           node(i,nodget) = 0
  20     continue
 c
         do 30 i         = 1, rsize
-           rnode(i,ndfree) = 0.0d0
+           rnode(i,nodget) = 0.0d0
  30     continue
-c
-c  update pointers
-c
-        nodget         = ndfree
-        ndfree         = node(nextfree,ndfree)
 c
       return
       end
@@ -74,15 +74,15 @@ c
 
           stop
 c
-c     ##  initialize to 0
-c
- 10   bndList(ndfree,1) = 0
-      bndList(ndfree,2) = 0
-c
 c     ## adjust pointers
 c
-      nodget_bnd      = ndfree_bnd
+ 10   nodget_bnd      = ndfree_bnd
       ndfree_bnd      = bndList(ndfree_bnd,nextfree)
+c
+c     ##  initialize to 0
+c
+      bndList(nodget_bnd,1) = 0
+      bndList(nodget_bnd,2) = 0
 c
       return
       end
