@@ -12,7 +12,7 @@ c
 c  allocate initial coarse grid domain. set node info & initialize grid
 c  initial space and time step set here too
 c
-      mstart = nodget(dummy)
+      mstart = nodget()
 c
 c code assumes in many places that lower left corner at (0,0)
 c this initial code sets the domain - assumed rectangular

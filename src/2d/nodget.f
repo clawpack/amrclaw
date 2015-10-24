@@ -1,7 +1,7 @@
 c
 c ------------------------------------------------------------
 c
-      integer function nodget(dummy)
+      integer function nodget()
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -24,25 +24,27 @@ c
           write(*,*)" level if regridding/birecting"
           stop
 c
- 10     nodget         = ndfree
-        ndfree         = node(nextfree,ndfree)
+c  initialize new  block
 c
-c  initialize nodal block
-c
-        do 20 i        = 1, nsize
-           node(i,nodget) = 0
+ 10     do 20 i        = 1, nsize
+           node(i,ndfree) = 0
  20     continue
 c
         do 30 i         = 1, rsize
-           rnode(i,nodget) = 0.0d0
+           rnode(i,ndfree) = 0.0d0
  30     continue
+c
+c  update pointers
+c
+        nodget         = ndfree
+        ndfree         = node(nextfree,ndfree)
 c
       return
       end
 c
 c ------------------------------------------------------------
 c
-      integer function nodget_bnd(dummy)
+      integer function nodget_bnd()
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -72,12 +74,15 @@ c
 
           stop
 c
- 10   nodget_bnd      = ndfree_bnd
-      ndfree_bnd      = bndList(ndfree_bnd,nextfree)
-c
 c     ##  initialize to 0
-      bndList(nodget_bnd,1) = 0
-      bndList(nodget_bnd,2) = 0
+c
+ 10   bndList(ndfree,1) = 0
+      bndList(ndfree,2) = 0
+c
+c     ## adjust pointers
+c
+      nodget_bnd      = ndfree_bnd
+      ndfree_bnd      = bndList(ndfree_bnd,nextfree)
 c
       return
       end
@@ -110,11 +115,14 @@ c        traverse linked list into array. list already sorted by arrangegrids
             listOfGrids(levSt+n-1) = mptr
             mptr = node(levelptr,mptr)
          end do
+c
 c        next level starts one after where this one ends.
 c        Using a sentinel in dimension of
 c        listStart so no need to test if level = mxnest
+c
          listStart(lev+1) = levSt + numgrids(lev)
       end do
+
       return
       end
 c
@@ -126,13 +134,13 @@ c
       implicit none
       
       integer i
-
-
-
+c
 c  need to manage the boundary List too
+c
       do i = 1, bndListSize
          bndList(i,nextfree) = i+1
       end do
+
       bndList(bndListSize,nextfree) = null
       ndfree_bnd = 1
 
