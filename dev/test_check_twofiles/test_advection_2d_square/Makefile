@@ -130,7 +130,7 @@ SOURCES = \
   $(AMRLIB)/cstore.f \
   $(AMRLIB)/saveqc.f \
   $(AMRLIB)/valout.f \
-  $(AMRLIB)/check_twofiles.f \
+  $(AMRLIB)/check.f \
   $(AMRLIB)/restrt.f \
   $(AMRLIB)/quick_sort1.f \
   $(AMRLIB)/opendatafile.f \
