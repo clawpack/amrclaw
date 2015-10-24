@@ -44,7 +44,6 @@ SOURCES = \
   $(CLAW)/riemann/src/rpn3_burgers.f90 \
   $(CLAW)/riemann/src/rpt3_burgers.f90 \
   $(CLAW)/riemann/src/rptt3_burgers.f90 \
-  $(AMRLIB)/check_twofiles.f \
   $(AMRLIB)/amr3.f90 \
   $(AMRLIB)/setaux.f90 \
   $(AMRLIB)/bc3amr.f \
@@ -130,6 +129,7 @@ SOURCES = \
   $(AMRLIB)/cstore.f \
   $(AMRLIB)/saveqc.f \
   $(AMRLIB)/valout.f \
+  $(AMRLIB)/check.f \
   $(AMRLIB)/restrt.f \
   $(AMRLIB)/quick_sort1.f \
   $(AMRLIB)/init_alloc.f90 \

@@ -255,21 +255,21 @@ def setrun(claw_pkg='amrclaw'):
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
-    clawdata.checkpt_style = 3
+    clawdata.checkpt_style = -3
 
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all
         pass
 
-    elif clawdata.checkpt_style == 1:
+    elif clawdata.checkpt_style in [-1,1]:
         # Checkpoint only at tfinal.
         pass
 
-    elif clawdata.checkpt_style == 2:
+    elif clawdata.checkpt_style in [-2,2]:
         # Specify a list of checkpoint times.  
         clawdata.checkpt_times = [0.7]
 
-    elif clawdata.checkpt_style == 3:
+    elif clawdata.checkpt_style in [-3,3]:
         # Checkpoint every checkpt_interval timesteps (on Level 1)
         # and at the final time.
         clawdata.checkpt_interval = 5
