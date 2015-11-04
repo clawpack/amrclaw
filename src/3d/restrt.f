@@ -21,6 +21,13 @@ c
 c     !! Now allow user-specified file name !!
 c     rstfile  = 'restart.data'
 
+      ! If checkpt_style < 0 then alternating between two checkpoint files.
+      ! Set which one to use for the first checkpoint after this restart.
+      ! Set check_a to .true. unless fort.chkaaaaa is the file being read.
+      ! When alternating checkpoint files used, this keeps proper sequence going
+      ! otherwise (checkpt_style > 0) check_a is not used elsewhere.
+      check_a = .not. (rstfile == 'fort.chkaaaaa')
+
       write(6,*) 'Attempting to restart computation using '
       write(6,*) '  checkpoint file: ',trim(rstfile)
       inquire(file=trim(rstfile),exist=foundFile)
