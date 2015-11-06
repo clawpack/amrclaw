@@ -23,7 +23,7 @@ class Advection2DSquareTest(test.AMRClawRegressionTest):
 
         # Perform tests
         self.check_gauges(save=save,
-                          regression_data_path='regression_data_test2.txt')
+                          regression_data_path='regression_data_test_gauge.txt')
 
         self.success = True
 
