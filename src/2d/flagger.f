@@ -20,11 +20,13 @@ c the two approaches share an array with boundary ghost values
 c
 c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-      call prepgrids(listgrids,numgrids(lcheck),lcheck)
+c      call prepgrids(listgrids,numgrids(lcheck),lcheck)
          mbuff = max(nghost,ibuff+1)  
 c before parallel loop give grids the extra storage they need for error estimation
          do  jg = 1, numgrids(lcheck)
-            mptr = listgrids(jg)
+c            mptr = listgrids(jg)
+            levSt  = listStart(lcheck)
+            mptr   = listOfgrids(levSt+jg-1)
             nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
             ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
             mitot  = nx + 2*nghost
@@ -46,12 +48,15 @@ c before parallel loop give grids the extra storage they need for error estimati
 !$OMP&            PRIVATE(locold,mbuff,mibuff,mjbuff,locamrflags,i),
 !$OMP&            PRIVATE(locuse),
 !$OMP&            SHARED(numgrids,listgrids,lcheck,nghost,nvar,naux),
+!$OMP&            SHARED(levSt,listStart,listOfGrids),
 !$OMP&            SHARED(tolsp,alloc,node,rnode,hxposs,hyposs,ibuff),
 !$OMP&            SHARED(start_time,possk,flag_gradient,flag_richardson)
 !$OMP&            DEFAULT(none),
 !$OMP&            SCHEDULE(DYNAMIC,1)
        do  jg = 1, numgrids(lcheck)
-          mptr = listgrids(jg)
+c          mptr = listgrids(jg)
+          levSt  = listStart(lcheck)
+          mptr   = listOfGrids(levSt+jg-1)
           nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
           ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
           mitot  = nx + 2*nghost

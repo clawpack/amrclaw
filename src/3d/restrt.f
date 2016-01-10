@@ -48,7 +48,7 @@ c     # need to allocate for dynamic memory:
       read(rstunit) hxposs,hyposs,hzposs,possk,icheck
       read(rstunit) lfree,lenf
       read(rstunit) rnode,node,lstart,newstl,listsp,tl,
-     1       ibuf,mstart,ndfree,lfine,iorder,mxnold,
+     1       ibuf,mstart,ndfree,ndfree_bnd,lfine,iorder,mxnold,
      2      intrtx,intrty,intrtz,intrtt,iregsz,jregsz,kregsz,
      3      iregst,jregst,kregst,iregend,jregend,kregend,
      4      numgrids,kcheck1,nsteps,time,matlabu
@@ -75,19 +75,19 @@ c
      .       (intraty(i) .ne. intrty(i)) .or.
      .       (intratz(i) .ne. intrtz(i)) ) then
 !    .       (kratio(i) .ne.  intrtt(i)) ) then
-         write(outunit,*) 
-     .   " not allowed to change existing refinement ratios on Restart"
-         write(outunit,*)" Old ratios:"
-         write(*,*)      " Old ratios:"
-         write(outunit,903)(intrtx(j),j=1,mxnold-1)
-         write(*,903)      (intrtx(j),j=1,mxnold-1)
-         write(outunit,903)(intrty(j),j=1,mxnold-1)
-         write(*,903)      (intrty(j),j=1,mxnold-1)
+        write(outunit,*) 
+     .  " not allowed to change existing refinement ratios on Restart"
+        write(outunit,*)" Old ratios:"
+        write(*,*)      " Old ratios:"
+        write(outunit,903)(intrtx(j),j=1,mxnold-1)
+        write(*,903)      (intrtx(j),j=1,mxnold-1)
+        write(outunit,903)(intrty(j),j=1,mxnold-1)
+        write(*,903)      (intrty(j),j=1,mxnold-1)
          write(outunit,903)(intrtz(j),j=1,mxnold-1)
          write(*,903)      (intrtz(j),j=1,mxnold-1)
- 903     format(6i3)
-         stop
-        endif
+ 903    format(6i3)
+        stop
+       endif
       end do
 
 c     if (varRefTime) then  ! reset intrat to previously saved ratios, not input ratios
@@ -231,5 +231,20 @@ c          # add new info. to spatial and counting arrays
 c
 c
  199   continue
+
+c
+c     save array of grids to avoid copying each advanc or update step
+c     lbase is 1 here, to start building from level 1
+c     only for level 1 is listStart set outside of makeGridList
+c     call with lbase 0 to make level 1
+      listStart(1) = 1
+      call makeGridList(0)
+c
+c     bndry list for faster ghost cell filling
+      call initBndryList()
+      do level = 1, lfine
+         call makeBndryList(level)
+      end do
+c
       return
       end

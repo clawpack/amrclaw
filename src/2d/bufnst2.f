@@ -26,7 +26,7 @@ c
 c
 c
 !$    maxthreads = omp_get_max_threads()
-      call prepgrids(listgrids,numgrids(lcheck),lcheck)
+c     call prepgrids(listgrids,numgrids(lcheck),lcheck)
 
       numpro = 0 
       numbad = 0 
@@ -35,6 +35,7 @@ c
       dy = hyposs(lcheck)
 
 c      mptr = lstart(lcheck)
+       levSt = listStart(lcheck)
 c41   continue
 !$OMP PARALLEL DO REDUCTION(+:numbad)
 !$OMP&            PRIVATE(jg,mptr,ilo,ihi,jlo,jhi,nx,ny,mitot,mjtot),
@@ -44,10 +45,12 @@ c41   continue
 !$OMP&            SHARED(numgrids, listgrids,nghost,flag_richardson),
 !$OMP&            SHARED(nvar,eprint,maxthreads,node,rnode,lbase,ibuff),
 !$OMP&            SHARED(alloc,lcheck,numpro,mxnest,dx,dy,time),
+!$OMP&            SHARED(levSt,listOfGrids),
 !$OMP&            DEFAULT(none),      
 !$OMP&            SCHEDULE (DYNAMIC,1)
       do  jg = 1, numgrids(lcheck)
-         mptr = listgrids(jg)
+c        mptr = listgrids(jg)
+         mptr = listOfGrids(levSt+jg-1)
          ilo    = node(ndilo,mptr)
          ihi    = node(ndihi,mptr)
          jlo    = node(ndjlo,mptr)

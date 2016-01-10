@@ -69,7 +69,7 @@ c
       icl     =  1
       prvptr  =  null
 c
- 70   mnew      = nodget(dummy)
+ 70   mnew      = nodget()
  75   call  moment(node(1,mnew),alloc(index+3*ibase),numptc(icl),
      1             usage)
 

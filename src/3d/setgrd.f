@@ -93,6 +93,11 @@ c
      &               " cells at level ", i3)
           endif 
 c
+c     need to make gridList here before calling again to make finer grids.
+c     This is because ths list if used in advanc. level 1 is called from domain
+      call makeGridList(lbase)
+      call makeBndryList(levnew)
+c
       levnew = levnew + 1
       go to 10
  30   continue
@@ -129,7 +134,9 @@ c
          call prepc(level,nvar)
  70   continue
 c
- 99   continue
 c
+c
+c
+ 99   continue
       return
       end

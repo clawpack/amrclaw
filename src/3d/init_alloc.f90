@@ -15,7 +15,7 @@
 
 !      if (.not.allocated(storage)) then   ! old way, changed mjb jan. 2015
        if (.not.allocated(alloc)) then     ! new way, use allocatable arrays, not pointers
-          memsize = 2000000
+          memsize = 4000000
 !         allocate(storage(memsize))
           allocate(alloc(memsize))
 !          alloc => storage

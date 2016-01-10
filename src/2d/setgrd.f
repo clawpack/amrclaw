@@ -51,7 +51,7 @@ c
 c            dont count it in real integration stats
              do 20 level=1,mxnest
  20             rvoll(level) = 0.d0
-             endif
+          endif
 c
 c  flag, cluster, and make new grids. grdfit set bcs, controls flagging,
 c  colating and making grids. But advanc called above since if using
@@ -89,9 +89,14 @@ c
           if (ngrids .gt. 1) call arrangeGrids(levnew,ngrids)
           if (verbosity_regrid .ge. levnew) then
              write(*,100) ngrids,ncells,levnew
- 100         format("there are ",i4," grids with ",i8,
+ 100         format("there are ",i6," grids with ",i10,
      &               " cells at level ", i3)
           endif 
+c
+c     need to make gridList here before calling again to make finer grids.
+c     This is because ths list if used in advanc. level 1 is called from domain
+      call makeGridList(lbase)
+      call makeBndryList(levnew)
 c
       levnew = levnew + 1
       go to 10
@@ -129,7 +134,9 @@ c
          call prepc(level,nvar)
  70   continue
 c
- 99   continue
 c
+c
+c
+ 99   continue
       return
       end

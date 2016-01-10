@@ -212,7 +212,8 @@ program amr2
     read(inunit,*) nv1        ! steps_max
       
     if (output_style /= 3) then
-        nstop = nv1
+        !nstop = nv1
+        nstop = iinfinity   ! basically disabled this test
     endif
 
     read(inunit,*) vtime      ! dt_variable

@@ -93,13 +93,13 @@ c65      if (level .gt. lfine) go to 90
 c                 # output in 1d format if ny=1:
                   write(matunit1,1003) mptr, level, nx
                 endif
- 1001 format(i5,'                 grid_number',/,
-     &       i5,'                 AMR_level',/,
-     &       i5,'                 mx',/,
-     &       i5,'                 my')
- 1003 format(i5,'                 grid_number',/,
-     &       i5,'                 AMR_level',/,
-     &       i5,'                 mx')
+ 1001 format(i6,'                 grid_number',/,
+     &       i6,'                 AMR_level',/,
+     &       i6,'                 mx',/,
+     &       i6,'                 my')
+ 1003 format(i6,'                 grid_number',/,
+     &       i6,'                 AMR_level',/,
+     &       i6,'                 mx')
 
 
               xlow = rnode(cornxlo,mptr)
@@ -111,12 +111,12 @@ c                 # output in 1d format if ny=1:
                   write(matunit1,1004)
      &              xlow,hxposs(level)
                 endif
- 1002 format(e18.8,'    xlow', /,
-     &       e18.8,'    ylow', /,
-     &       e18.8,'    dx', /,
-     &       e18.8,'    dy',/)
- 1004 format(e18.8,'    xlow', /,
-     &       e18.8,'    dx', /)
+ 1002 format(e26.16,'    xlow', /,
+     &       e26.16,'    ylow', /,
+     &       e26.16,'    dx', /,
+     &       e26.16,'    dy',/)
+ 1004 format(e26.16,'    xlow', /,
+     &       e26.16,'    dx', /)
 
 
         if (output_format == 1) then
@@ -239,11 +239,11 @@ c     # NOTE: we need to print out nghost too in order to strip
 c     #       ghost cells from q when reading in pyclaw.io.binary
       write(matunit2,1000) time,nvar,ngrids,naux,ndim,nghost
  1000 format(e18.8,'    time', /,
-     &       i5,'                 meqn'/,
-     &       i5,'                 ngrids'/,
-     &       i5,'                 naux'/,
-     &       i5,'                 ndim'/,
-     &       i5,'                 nghost'/,/)
+     &       i6,'                 meqn'/,
+     &       i6,'                 ngrids'/,
+     &       i6,'                 naux'/,
+     &       i6,'                 ndim'/,
+     &       i6,'                 nghost'/,/)
 c
 
       write(6,601) matlabu,time

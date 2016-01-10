@@ -7,7 +7,7 @@ c
       implicit double precision (a-h,o-z)
 
 
-      logical vtime
+      logical    vtime
       integer omp_get_thread_num, omp_get_max_threads
       integer mythread/0/, maxthreads/1/
       integer listgrids(numgrids(level))
@@ -40,7 +40,7 @@ c get start time for more detailed timing by level
       hy   = hyposs(level)
       delt = possk(level)
 c     this is linear alg.
-      call prepgrids(listgrids,numgrids(level),level)
+c     call prepgrids(listgrids,numgrids(level),level)
 c
 
       call system_clock(clock_startBound,clock_rate)
@@ -51,26 +51,30 @@ c     maxthreads initialized to 1 above in case no openmp
 !$    maxthreads = omp_get_max_threads()
 
 c We want to do this regardless of the threading type
-!$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot
-!$OMP&                    ,mjtot,time),
-!$OMP&            SHARED(level,nvar,naux,alloc,intrat,delt,
-!$OMP&                   nghost,node,rnode,numgrids,listgrids),
+!$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot,
+!$OMP&                    mjtot,time,levSt),
+!$OMP&            SHARED(level, nvar, naux, alloc, intrat, delt,
+!$OMP&                   listOfGrids,listStart,nghost,
+!$OMP&                   node,rnode,numgrids,listgrids),
 !$OMP&            SCHEDULE (dynamic,1)
 !$OMP&            DEFAULT(none)
-      do  j = 1, numgrids(level)
-          mptr = listgrids(j)
-          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-          mitot  = nx + 2*nghost
-          mjtot  = ny + 2*nghost
-          locnew = node(store1,mptr)
-          locaux = node(storeaux,mptr)
-          time   = rnode(timemult,mptr)
-c
+      do j = 1, numgrids(level)
+         !mptr   = listgrids(j)
+         levSt = listStart(level)
+         mptr   = listOfGrids(levSt+j-1)
+         !write(*,*)"old ",listgrids(j)," new",mptr
+         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+         mitot  = nx + 2*nghost
+         mjtot  = ny + 2*nghost
+         locnew = node(store1,mptr)
+         locaux = node(storeaux,mptr)
+         time   = rnode(timemult,mptr)
+c     
           call bound(time,nvar,nghost,alloc(locnew),mitot,mjtot,mptr,
      1               alloc(locaux),naux)
 
-        end do
+       end do
 !$OMP END PARALLEL DO
       call system_clock(clock_finishBound,clock_rate)
       call cpu_time(cpu_finishBound)
@@ -87,6 +91,7 @@ c save coarse level values if there is a finer level for wave fixup
 c
       dtlevnew = rinfinity
       cfl_level = 0.d0    !# to keep track of max cfl seen on each level
+
 c 
       call system_clock(clock_startStepgrid,clock_rate)
       call cpu_time(cpu_startStepgrid)
@@ -97,14 +102,17 @@ c
 !$OMP&            SHARED(rvol,rvoll,level,nvar,mxnest,alloc,intrat)
 !$OMP&            SHARED(nghost,intratx,intraty,hx,hy,naux,listsp)
 !$OMP&            SHARED(node,rnode,dtlevnew,numgrids,listgrids)
+!$OMP&            SHARED(listOfGrids,listStart,levSt)
 !$OMP&            SCHEDULE (DYNAMIC,1)
 !$OMP&            DEFAULT(none)
-      do  j = 1, numgrids(level)
-          mptr = listgrids(j)
-          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-          mitot  = nx + 2*nghost
-          mjtot  = ny + 2*nghost
+      do j = 1, numgrids(level)
+         !mptr   = listgrids(j)
+         levSt = listStart(level)
+         mptr = listOfGrids(levSt+j-1)
+         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+         mitot  = nx + 2*nghost
+         mjtot  = ny + 2*nghost
 c
           call par_advanc(mptr,mitot,mjtot,nvar,naux,dtnew)
 !$OMP CRITICAL (newdt)
@@ -129,7 +137,7 @@ c
 c
 c -------------------------------------------------------------
 c
-       subroutine prepgrids(listgrids,num, level)
+       subroutine prepgrids(listgrids, num, level)
 
        use amr_module
        implicit double precision (a-h,o-z)
@@ -178,7 +186,7 @@ c
       level = node(nestlevel,mptr)
       hx    = hxposs(level)
       hy    = hyposs(level)
-      delt  =  possk(level)
+      delt  = possk(level)
       nx    = node(ndihi,mptr) - node(ndilo,mptr) + 1
       ny    = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
       time  = rnode(timemult,mptr)
@@ -194,15 +202,15 @@ c  since integrator will overwrite it. only for grids not at
 c  the finest level. finest level grids do not maintain copies
 c  of old and new time solution values.
 c
-          if (level .lt. mxnest) then
+         if (level .lt. mxnest) then
              ntot   = mitot * mjtot * nvar
 cdir$ ivdep
              do 10 i = 1, ntot
  10            alloc(locold + i - 1) = alloc(locnew + i - 1)
-          endif
+         endif
 c
-      xlow = rnode(cornxlo,mptr) - nghost*hx
-      ylow = rnode(cornylo,mptr) - nghost*hy
+         xlow = rnode(cornxlo,mptr) - nghost*hx
+         ylow = rnode(cornylo,mptr) - nghost*hy
 
 !$OMP CRITICAL(rv)
       rvol = rvol + nx * ny
@@ -210,18 +218,18 @@ c
 !$OMP END CRITICAL(rv)
 
 
-      locaux = node(storeaux,mptr)
+         locaux = node(storeaux,mptr)
 c
-      if (node(ffluxptr,mptr) .ne. 0) then
+         if (node(ffluxptr,mptr) .ne. 0) then
          lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-         locsvf = node(ffluxptr,mptr)
-         locsvq = locsvf + nvar*lenbc
-         locx1d = locsvq + nvar*lenbc
+            locsvf = node(ffluxptr,mptr)
+            locsvq = locsvf + nvar*lenbc
+            locx1d = locsvq + nvar*lenbc
          call qad(alloc(locnew),mitot,mjtot,nvar,
-     1            alloc(locsvf),alloc(locsvq),lenbc,
+     1             alloc(locsvf),alloc(locsvq),lenbc,
      2            intratx(level-1),intraty(level-1),hx,hy,
      3            naux,alloc(locaux),alloc(locx1d),delt,mptr)
-      endif
+         endif
 
 c        # See if the grid about to be advanced has gauge data to output.
 c        # This corresponds to previous time step, but output done
@@ -234,39 +242,39 @@ c     should change the way print_gauges does io - right now is critical section
            call print_gauges(alloc(locnew:locnew+nvar*mitot*mjtot),
      .                       alloc(locaux:locaux+nvar*mitot*mjtot),
      .                       xlow,ylow,nvar,mitot,mjtot,naux,mptr)
-           endif
+         endif
 
 c
-      if (dimensional_split .eq. 0) then
-c        # Unsplit method
+         if (dimensional_split .eq. 0) then
+c           # Unsplit method
          call stepgrid(alloc(locnew),fm,fp,gm,gp,
      2                  mitot,mjtot,nghost,
      3                  delt,dtnew,hx,hy,nvar,
      4                  xlow,ylow,time,mptr,naux,alloc(locaux))
-      else if (dimensional_split .eq. 1) then
-c        # Godunov splitting
+         else if (dimensional_split .eq. 1) then
+c           # Godunov splitting
          call stepgrid_dimSplit(alloc(locnew),fm,fp,gm,gp,
      2               mitot,mjtot,nghost,
      3               delt,dtnew,hx,hy,nvar,
      4               xlow,ylow,time,mptr,naux,alloc(locaux))
-      else 
-c        # should never get here due to check in amr2
-         write(6,*) '*** Strang splitting not supported'
-         stop
-      endif
+         else 
+c           # should never get here due to check in amr2
+            write(6,*) '*** Strang splitting not supported'
+            stop
+         endif
 
       if (node(cfluxptr,mptr) .ne. 0)
      2   call fluxsv(mptr,fm,fp,gm,gp,
      3               alloc(node(cfluxptr,mptr)),mitot,mjtot,
      4               nvar,listsp(level),delt,hx,hy)
-      if (node(ffluxptr,mptr) .ne. 0) then
+         if (node(ffluxptr,mptr) .ne. 0) then
          lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-         locsvf = node(ffluxptr,mptr)
+            locsvf = node(ffluxptr,mptr)
          call fluxad(fm,fp,gm,gp,
      2               alloc(locsvf),mptr,mitot,mjtot,nvar,
-     4               lenbc,intratx(level-1),intraty(level-1),
+     4                  lenbc,intratx(level-1),intraty(level-1),
      5               nghost,delt,hx,hy)
-      endif
+         endif
 c
 c        write(outunit,969) mythread,delt, dtnew
 c969     format(" thread ",i4," updated by ",e15.7, " new dt ",e15.7)

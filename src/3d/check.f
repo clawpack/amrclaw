@@ -65,7 +65,7 @@ c
       write(chkunit) hxposs,hyposs,hzposs,possk,icheck
       write(chkunit) lfree,lenf
       write(chkunit) rnode,node,lstart,newstl,listsp,tol,
-     1          ibuff,mstart,ndfree,lfine,iorder,mxnest,
+     1          ibuff,mstart,ndfree,ndfree_bnd,lfine,iorder,mxnest,
      2          intratx,intraty,intratz,kratio,iregsz,jregsz,kregsz,
      3          iregst,jregst,kregst,iregend,jregend,kregend,
      4          numgrids,kcheck,nsteps,time,matlabu

@@ -52,7 +52,7 @@ c
             j = mjtot + 1 - jj
             write(outunit,101) (rctfine(1,i,j),i=nghost+1,mitot-nghost)
 15       continue
-101      format(' ',10e15.7)
+101      format(' ',40e11.3)
 c
 c zero out the exterior locations so they don't affect err.est.
 c
@@ -74,9 +74,9 @@ c         # divide by (aval*order) for relative error
           est   =  dabs((aval-rctcrse(1,i,j))/ order)
           if (est .gt. errmax) errmax = est
           err2 = err2 + est*est
-c          write(outunit,102) i,j,est,rctcrse(1,i,j)
+c         write(outunit,102) i,j,est,rctcrse(1,i,j)
  102      format(' i,j,est ',2i5,2e15.7)
-          write(outunit,104) term1,term2,term3,term4
+c          write(outunit,104) term1,term2,term3,term4
  104      format('   ',4e15.7)
 c         rctcrse(2,i,j) = est
 c
@@ -93,8 +93,8 @@ c  print out intermediate flagged rctcrse (for debugging)
 c
       if (eprint) then
          err2 = dsqrt(err2/dble((mi2tot-2*nghost)*(mj2tot-2*nghost)))
-         write(outunit,103) mptr, levm, errmax, err2
- 103     format(' grid ',i4,' level ',i4,
+         write(outunit,103) mptr, levm, time,errmax, err2
+ 103     format(' grid ',i4,' level ',i4,' time ',e12.5,
      .          ' max. error = ',e15.7,' err2 = ',e15.7)
          if (edebug) then
            write(outunit,*) ' flagged points on coarsened grid ',

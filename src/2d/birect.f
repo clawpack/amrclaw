@@ -47,7 +47,7 @@ c
         nxr    = nx - nxl 
         cxmid  = cxlo + nxl*hx
  
-        mptrnx = nodget(dummy)
+        mptrnx = nodget()
         node(levelptr,mptrnx) = node(levelptr,mptr)
         node(levelptr,mptr)   = mptrnx
  
@@ -82,7 +82,7 @@ c
         nyr    = ny - nyl 
         cymid  =  cylo + nyl*hy
  
-        mptrnx = nodget(dummy)
+        mptrnx = nodget()
         node(levelptr,mptrnx) = node(levelptr,mptr)
         node(levelptr,mptr)   = mptrnx
  

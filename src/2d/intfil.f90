@@ -18,16 +18,18 @@
 !  after intersections at specified level.
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 !
-subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nvar,naux)
+subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nvar,naux,msrc)
 
     use amr_module, only: possk, mxnest, iregsz, jregsz, nghost, outunit, alloc
-    use amr_module, only: node, lstart, store1, store2, levelptr, timemult
-    use amr_module, only: rnode, ndilo, ndihi, ndjlo, ndjhi
+    use amr_module, only: node, lstart, store1, store2, levelptr, timemult,gridNbor
+    use amr_module, only: rnode, ndilo, ndihi, ndjlo, ndjhi, nextfree
+    use amr_module, only: bndListNum, bndListSt
+    use amr_module, only: listStart, listOfGrids, bndList, numgrids
 
     implicit none
 
     ! Input
-    integer, intent(in) :: mi, mj, nrowst, ncolst, ilo, ihi, jlo, jhi, level, nvar, naux
+    integer, intent(in) :: mi, mj, nrowst, ncolst, ilo, ihi, jlo, jhi, level, nvar, naux,msrc
     real(kind=8), intent(in) :: time
 
     ! In/Out
@@ -36,8 +38,9 @@ subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nva
 
     ! Locals
     integer :: imlo, jmlo, imhi, jmhi, nx, ny, mitot, mjtot
-    integer :: ixlo, ixhi, jxlo, jxhi, locold, locnew
-    integer :: ivar, i, j, mptr, mstart, loc
+    integer :: ixlo, ixhi, jxlo, jxhi, locold, locnew, nextSpot
+    integer :: icount, bndNum, bndLoc, levSt
+    integer :: ivar, i, j, mptr, mstart, loc, numg
     real(kind=8) :: dt, alphac, alphai
     logical :: t_interpolate
 
@@ -68,8 +71,25 @@ subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nva
     flaguse = 0
 
     ! Loop through all grids at this level, initialize to first
-    mptr = lstart(level)
-    do while (mptr /= 0)
+!    mptr = lstart(level)
+!    do while (mptr /= 0)
+     if (msrc .eq. -1) then
+         numg = numgrids(level)
+         levSt = listStart(level)
+     else
+         bndLoc = node(bndListSt,msrc)  ! index of first grid in bndList
+         bndNum = node(bndListNum,msrc)
+         nextSpot = node(bndListSt, msrc) ! initialize
+         numg = bndNum
+     endif
+
+     do icount = 1, numg
+
+         if (msrc .eq. -1) then
+            mptr = listOfGrids(levSt+icount-1)
+         else
+            mptr = bndList(nextSpot,gridNbor)
+         endif
 
         ! Check if grid mptr and patch intersect
         imlo = node(ndilo, mptr)
@@ -164,7 +184,11 @@ subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nva
         endif
 
         ! Get next grid
-        mptr = node(levelptr, mptr)
+!        mptr = node(levelptr, mptr)
+         if (msrc .ne. -1) then
+            nextSpot = bndList(nextSpot,nextfree)
+         endif
+
     end do
 
     ! Set used array points which intersect domain boundary to be equal to 1, 

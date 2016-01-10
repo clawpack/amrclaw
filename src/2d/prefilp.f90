@@ -45,6 +45,8 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
     integer :: iputst, jputst, mi, mj, locpatch, locpaux
     integer :: jbump, iwrap1, iwrap2, jwrap1, tmp, locflip, rect(4)
     real(kind=8) :: xlwrap, ybwrap
+    integer ::  msrc = -1  ! this signifies not a real grid, no bndry list with it
+    ! it is possible to preprocess in the periodic case, just more complicated, so postponing
 
     integer :: ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
     real(kind=8) :: scratch(max(mitot,mjtot)*nghost*nvar)
@@ -136,8 +138,9 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
                     if (naux .gt. 0)                                                         &
                         call auxCopyIn(auxPatch,mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,   &
                                        iglo,jglo)
+                                       
                     call filrecur(level,nvar,valPatch,auxPatch,naux,time,mi,mj,       &
-                                  1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.true.)
+                                  1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.true.,msrc)
                     ! copy it back to proper place in valbig 
                     call patchCopyOut(nvar,valPatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,   &
                                       iglo,jglo)
@@ -178,7 +181,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
 
                     rect = [iwrap1,iwrap2,j1+jbump,j2+jbump]
                     call filrecur(level,nvar,scratch,scratchaux,naux,time,mi, &
-                                  mj,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump,.false.)
+                                  mj,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump,.false.,msrc)
 
                     ! copy back using weird mapping for spherical folding (so cant call copy subr below)
                     do ii = i1, i2

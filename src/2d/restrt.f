@@ -48,7 +48,7 @@ c     # need to allocate for dynamic memory:
       read(rstunit) hxposs,hyposs,possk,icheck
       read(rstunit) lfree,lenf
       read(rstunit) rnode,node,lstart,newstl,listsp,tl,
-     1       ibuf,mstart,ndfree,lfine,iorder,mxnold,
+     1       ibuf,mstart,ndfree,ndfree_bnd,lfine,iorder,mxnold,
      2       intrtx,intrty,intrtt,iregsz,jregsz,
      2       iregst,jregst,iregend,jregend,
      3       numgrids,kcheck1,nsteps,time,
@@ -221,5 +221,20 @@ c          # add new info. to spatial and counting arrays
 c
 c
  199   continue
+
+c
+c     save array of grids to avoid copying each advanc or update step
+c     lbase is 1 here, to start building from level 1
+c     only for level 1 is listStart set outside of makeGridList
+c     call with lbase 0 to make level 1
+      listStart(1) = 1
+      call makeGridList(0)
+c
+c     bndry list for faster ghost cell filling
+      call initBndryList()
+      do level = 1, lfine
+         call makeBndryList(level)
+      end do
+c
       return
       end

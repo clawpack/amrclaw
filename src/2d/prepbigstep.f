@@ -9,6 +9,8 @@ c
 
        double precision valdub(nvar,midub,mjdub)
        double precision auxdub(naux,midub,mjdub)
+       double precision valbgc(nvar,mi2tot,mj2tot)
+       double precision auxbgc(nvar,mi2tot,mj2tot)
        dimension fp(nvar,mi2tot,mj2tot),gp(nvar,mi2tot,mj2tot)
        dimension fm(nvar,mi2tot,mj2tot),gm(nvar,mi2tot,mj2tot)
        
@@ -60,7 +62,6 @@ c
           endif
 
 c         # fill it - use enlarged (before coarsening) aux arrays
-c          call bound(tpre,nvar,ng2,alloc(locdub),midub,mjdub,mptr,
           call bound(tpre,nvar,ng2,valdub,midub,mjdub,mptr,
      1               auxdub,naux)
 
