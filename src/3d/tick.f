@@ -66,7 +66,7 @@ c              # restart: make sure output times start after restart time
       endif
 
       nextchk = 1
-      if ((nstart .gt. 0) .and. (checkpt_style.eq.2)) then
+      if ((nstart .gt. 0) .and. (abs(checkpt_style).eq.2)) then
 c        if this is a restart, make sure chkpt times start after restart time
          do ii = 1, nchkpt
            if (tchk(ii) .gt. time) then
@@ -314,7 +314,7 @@ c          make sure not to exceed largest permissible dt
 
       endif
 
-       if ((checkpt_style.eq.3 .and. 
+       if ((abs(checkpt_style).eq.3 .and. 
      &      mod(ncycle,checkpt_interval).eq.0) .or. dumpchk) then
           call check(ncycle,time,nvar,naux)
                 dumpchk = .true.
@@ -358,7 +358,7 @@ c  # checkpoint everything for possible future restart
 c  # (unless we just did it based on dumpchk)
 c
 
-      if ((checkpt_style .gt. 0) .and. (.not. dumpchk)) then
+      if ((checkpt_style .ne. 0) .and. (.not. dumpchk)) then
            call check(ncycle,time,nvar,naux)
          endif
 

@@ -196,5 +196,6 @@ module amr_module
 
     ! Restart file name:
     character(len=200) :: rstfile
+    logical :: check_a
 
 end module amr_module
