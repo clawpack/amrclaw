@@ -294,12 +294,12 @@ program amr2
         ! Never checkpoint:
         checkpt_interval = iinfinity
 
-    else if (checkpt_style == 2) then
+    else if (abs(checkpt_style) == 2) then
         read(inunit,*) nchkpt
         allocate(tchk(nchkpt))
         read(inunit,*) (tchk(i), i=1,nchkpt)
 
-    else if (checkpt_style == 3) then
+    else if (abs(checkpt_style) == 3) then
         ! Checkpoint every checkpt_interval steps on coarse grid
         read(inunit,*) checkpt_interval
     endif
@@ -440,7 +440,11 @@ program amr2
         matlabu   = 1
     endif
 
-    check_a = .true.
+    ! Boolean check_a tells which checkpoint file to use next if alternating
+    ! between only two files via check_twofiles.f, unused otherwise.
+    ! May be reset in call to restrt, otherwise default to using aaaaa file.
+    check_a = .true.   
+
     if (rest) then
 
         open(outunit, file=outfile, status='unknown', position='append', &
