@@ -5,7 +5,7 @@ c
 c
       use amr_module
       implicit double precision (a-h,o-z)
-
+      integer newnumgrids(maxlv)
 c
 c :::::::::::::::::::::::::::: REGRID :::::::::::::::::::::::::::::::
 
@@ -33,6 +33,7 @@ c
       lcheck    = min0(lfine,mxnest-1)
       lfnew     = lbase
       do 10 i   = 1, mxnest
+        newnumgrids(i) = 0
  10     newstl(i) = 0
       time      = rnode(timemult, lstart(lbase))
 c
@@ -49,13 +50,26 @@ c
 c  end of level loop
 c
 c  remaining tasks left in regridding:
+c  1.  count number of new grids at each level  
+      maxnumnewgrids = 0   ! max over all levels. needed for dimensioning
+      do lev = lbase+1,lfnew 
+          ngridcount = 0
+          mptr = newstl(lev)
+ 52       if (mptr .eq. 0) go to 55
+             ngridcount = ngridcount + 1
+             mptr = node(levelptr,mptr)
+             go to 52
+
+ 55       newnumgrids(lev) = ngridcount
+          maxnumnewgrids = max(maxnumnewgrids,ngridcount)
+      end do
 c
-c  interpolate storage for the new grids.  the starting pointers
+c  2. interpolate storage for the new grids.  the starting pointers
 c  for each level are in newstl. also reclaim some space before new
 c  allocations.
       call gfixup(lbase, lfnew, nvar, naux)
 c
-c  merge data structures (newstl and lstart )
+c  3. merge data structures (newstl and lstart )
 c  finish storage allocation, reclaim space, etc. set up boundary
 c  flux conservation arrays
 c
@@ -82,15 +96,23 @@ c
          numcells(levnew) = ncells
          avenumgrids(levnew) = avenumgrids(levnew) + ngrids
          iregridcount(levnew) = iregridcount(levnew) + 1
+c        sort grids to first ones are the most work. this helps load
+c        balancing, but doesn't help locality
          if (ngrids .gt. 1) call arrangeGrids(levnew,ngrids)
 
          if (verbosity_regrid .ge. levnew) then
            write(*,100) ngrids,ncells,levnew
            write(outunit,100) ngrids,ncells,levnew
- 100       format("there are ",i4," grids with ",i8,
+ 100       format("there are ",i6," grids with ",i8,
      &            " cells at level ", i3)
          endif
 72     continue
+c
+c      set up array of grids instead of recomputing at each step
+       call makeGridList(lbase)
+       do levnew = lbase+1, lfine
+          call makeBndryList(levnew)   ! does one level at a time
+       end do
 
       return
       end
@@ -103,7 +125,7 @@ c
       implicit double precision (a-h,o-z)
       integer listgrids(numg), cost(numg), index(numg), prevptr
 c
-c   slow sort for now, putting most expensive grids first on lstart list
+c   put most expensive grids first on lstart list
 c   measure cost by number of cells
 c
        mptr = lstart(level)

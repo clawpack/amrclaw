@@ -8,7 +8,7 @@ module amr_module
     ! :::::   data structure info.
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     integer, parameter :: rsize = 7
-    integer, parameter :: nsize = 19
+    integer, parameter :: nsize = 21
 
     !  :::::::   integer part of node descriptor
     integer, parameter :: levelptr  = 1
@@ -30,6 +30,8 @@ module amr_module
     integer, parameter :: numflags  = 17
     integer, parameter :: domflags_base  = 18
     integer, parameter :: domflags2  = 19
+    integer, parameter :: bndListSt  = 20
+    integer, parameter :: bndListNum = 21
 
     ! :::::::  real part of node descriptor
     integer, parameter :: cornxlo  = 1
@@ -44,6 +46,8 @@ module amr_module
     integer, parameter :: nextfree = 2
     integer, parameter :: null = 0
     integer, parameter :: nil  = 0
+
+    integer, parameter :: gridNbor = 1  ! use first col, 2nd col is nextfee - the link
 
     ! :::::::  for flagging points   
     real(kind=8), parameter :: goodpt = 0.0
@@ -60,13 +64,21 @@ module amr_module
     integer, parameter :: maxcl = 5000
 
     ! The max1d parameter should be changed if using OpenMP grid based 
-    ! looping, usually set to max1d = 60
-    integer, parameter :: max1d = 60 
+    ! looping, suggest setting max1d = 32 for 3d 
+    integer, parameter :: max1d = 32 
 
     integer, parameter :: maxvar = 10
     integer, parameter :: maxaux = 20
     integer, parameter :: maxwave = 10
     integer, parameter :: maxout = 50  !until change amr to f90 and allocate
+
+    ! put linked list of grids into array and save.
+    ! order is coarsest level to finest. is redone after regridding
+    ! and on restarting.  note use of sentinel in listStart
+
+    integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
+    integer, parameter :: bndListSize = 8*maxgr
+    integer :: bndList(bndListSize,2) ! guess size, average # nbors 6? manage as linnked list
 
     real(kind=8) hxposs(maxlv),hyposs(maxlv),hzposs(maxlv), &
                  possk(maxlv),rnode(rsize, maxgr) 
@@ -74,7 +86,7 @@ module amr_module
 
 
     real(kind=8) tol, tolsp
-    integer ibuff,  mstart, ndfree, lfine, node(nsize, maxgr), &
+    integer ibuff, mstart,ndfree,ndfree_bnd,lfine,node(nsize, maxgr), &
             icheck(maxlv),lstart(maxlv),newstl(maxlv), &
             listsp(maxlv),intratx(maxlv),intraty(maxlv), &
             intratz(maxlv),kratio(maxlv), &
@@ -184,5 +196,6 @@ module amr_module
 
     ! Restart file name:
     character(len=200) :: rstfile
+    logical :: check_a
 
 end module amr_module

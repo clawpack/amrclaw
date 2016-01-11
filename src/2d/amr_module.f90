@@ -8,7 +8,7 @@ module amr_module
     ! :::::   data structure info.
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     integer, parameter :: rsize = 5
-    integer, parameter :: nsize = 17
+    integer, parameter :: nsize = 19
 
     !  :::::::   integer part of node descriptor
     integer, parameter :: levelptr  = 1
@@ -28,6 +28,8 @@ module amr_module
     integer, parameter :: numflags  = 15
     integer, parameter :: domflags_base  = 16
     integer, parameter :: domflags2  = 17
+    integer, parameter :: bndListSt  = 18
+    integer, parameter :: bndListNum = 19
 
     ! :::::::  real part of node descriptor
     integer, parameter :: cornxlo  = 1
@@ -40,6 +42,8 @@ module amr_module
     integer, parameter :: nextfree = 2
     integer, parameter :: null = 0
     integer, parameter :: nil  = 0
+
+    integer, parameter :: gridNbor = 1 !use 1st col, 2nd col is nextfree - the link
 
     ! :::::::  for flagging points   
     real(kind=8), parameter :: goodpt = 0.0
@@ -66,12 +70,18 @@ module amr_module
     integer, parameter :: maxaux = 20
     integer, parameter :: maxwave = 10
 
+
+    ! note use of sentinel in listStart
+    integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
+    integer,parameter :: bndListSize = 8*maxgr
+    integer :: bndList(bndListSize,2)  ! guess size, average # nbors 4? manage as linked list
+
     real(kind=8) hxposs(maxlv), hyposs(maxlv),possk(maxlv),rnode(rsize, maxgr) 
 
 
 
     real(kind=8) tol, tolsp
-    integer ibuff,  mstart, ndfree, lfine, node(nsize, maxgr), &
+    integer ibuff,  mstart, ndfree, ndfree_bnd, lfine, node(nsize, maxgr), &
             icheck(maxlv),lstart(maxlv),newstl(maxlv), &
             listsp(maxlv),intratx(maxlv),intraty(maxlv), &
             kratio(maxlv), iregsz(maxlv),jregsz(maxlv), &
@@ -183,5 +193,6 @@ module amr_module
 
     ! Restart file name:
     character(len=200) :: rstfile
+    logical :: check_a
 
 end module amr_module

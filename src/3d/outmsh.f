@@ -31,14 +31,14 @@ c
 c
       write(outunit,100)
       write(outunit,101) mptr
-101   format(1x,10h! grid no:,i4,62x,1h!)
+101   format(1x,10h! grid no:,i6,60x,1h!)
       write(outunit,102) node(nestlevel,mptr),rnode(timemult,mptr),
      .             node(levelptr,mptr)
 102   format(1x,1h!,11h nestlevel=,i3,12h, time mult=,f8.5,
-     1       13h, level ptr =,i4,24x,1h!)
+     1       13h, level ptr =,i6,22x,1h!)
       write(outunit,103) node(store1,mptr),node(store2,mptr),
      1                   node(cfluxptr,mptr),node(ffluxptr,mptr)
- 103  format(1x,'! storage locs =',2i12,'  bndry locs =',2i8,6x,1h!)
+ 103  format(1x,'! storage locs =',2i12,'  bndry locs =',2i11,1h!)
       write(outunit,104)
       write(outunit,111) rnode(cornxhi,mptr),
      2                   rnode(cornyhi,mptr),
