@@ -4,10 +4,7 @@ c
       subroutine bc3amr(val,aux,nrow,ncol,nfil,meqn,naux,
      1                  hx, hy, hz,level, time,
      2                  xleft,  xright,  yfront, yrear,
-     3                  zbot, ztop,
-     4                  xlower,ylower,zlower,
-     5                  xupper,yupper,zupper,
-     6                  xperiodic, yperiodic,zperiodic)
+     3                  zbot, ztop)
 
 
 c
@@ -80,26 +77,25 @@ c     Don't overwrite ghost cells in periodic directions!
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
-      use amr_module, only:  mthbc
-c     implicit double precision (a-h,o-z)
+      use amr_module, only:  mthbc,xlower,ylower,zlower
+      use amr_module, only:  xupper,yupper,zupper
+      use amr_module, only:  xperdom,yperdom,zperdom
+
       implicit none
 
       real*8  val(meqn,nrow,ncol,nfil), aux(naux,nrow,ncol,nfil)
-      logical xperiodic, yperiodic, zperiodic
       integer nrow,ncol,nfil,meqn,naux,level
       real*8  hx,hy,hz,time
       real*8  hxmarg,hymarg,hzmarg
       real*8  xleft,xright,yfront,yrear,zbot,ztop
       real*8  xcell,ycell,zcell
-      real*8  xlower,ylower,zlower
-      real*8  xupper,yupper,zupper
       integer i,j,k,m,nxl,nxr,ibeg,nyf,nyr,jbeg,nzb,nzt,kbeg
 
       hxmarg = hx*.01d0
       hymarg = hy*.01d0
       hzmarg = hz*.01d0
 
-      if (xperiodic .and. yperiodic .and. zperiodic) go to 699
+      if (xperdom .and. yperdom .and. zperdom) go to 699
 c
 c
 c-------------------------------------------------------
