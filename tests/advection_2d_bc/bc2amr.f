@@ -4,9 +4,7 @@ c ------------------------------------------------------------------
 c
       subroutine bc2amr(val,aux,nrow,ncol,meqn,naux,
      1                  hx, hy, level, time, 
-     2                  xleft,  xright,  ybot, ytop,
-     3                  xlower, ylower,xupper,yupper,
-     4                  xperiodic, yperiodic,spheredom)
+     2                  xleft,  xright,  ybot, ytop)
  
 c
 c
@@ -75,19 +73,19 @@ c     Don't overwrite ghost cells in periodic directions!
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
-      use amr_module, only: mthbc
+      use amr_module, only: mthbc,xlower,ylower,xupper,yupper
+      use amr_module, only: xperdom,yperdom,spheredom
 
       implicit double precision (a-h,o-z)
 
 C      common /combc2/ mthbc(4)
 
       dimension val(meqn,nrow,ncol), aux(naux,nrow,ncol)
-      logical xperiodic, yperiodic, spheredom
 
       hxmarg = hx*.01
       hymarg = hy*.01
 
-      if (xperiodic .and. (yperiodic .or. spheredom)) go to 499
+      if (xperdom .and. (yperdom .or. spheredom)) go to 499
 c
 c
 c-------------------------------------------------------
