@@ -73,7 +73,7 @@ c     Don't overwrite ghost cells in periodic directions!
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
-      use amr_module, only: mthbc,xlower,ylower,xupper,yupper,
+      use amr_module, only: mthbc,xlower,ylower,xupper,yupper
       use amr_module, only: xperdom,yperdom,spheredom
 
       implicit none
