@@ -205,10 +205,7 @@ c
      1            level,time,
      2            xloWithGhost,xhiWithGHost,
      3            yloWithGhost,yhiWithGhost,
-     4            zloWithGhost,zhiWithGhost,    
-     5            xlower,ylower,zlower,
-     6            xupper,yupper,zupper,
-     7            xperdom,yperdom,spheredom)
+     4            zloWithGhost,zhiWithGhost)
 c
       return
       end

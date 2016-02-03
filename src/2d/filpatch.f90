@@ -272,8 +272,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   ! only call if a small coarser recursive patch
   ! otherwise whole grid bcs done from bound
   if (patchOnly) then
-     call bc2amr(valbig,aux,mitot,mjtot,nvar,naux,dx_fine,dy_fine,level,t,xlow_fine,xhi_fine, &
-          ylow_fine,yhi_fine,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
+     call bc2amr(valbig,aux,mitot,mjtot,nvar,naux,dx_fine,dy_fine,level,t,    &
+                 xlow_fine,xhi_fine,ylow_fine,yhi_fine)
   endif
 
 contains

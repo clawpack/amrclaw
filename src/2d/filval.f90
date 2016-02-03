@@ -101,8 +101,8 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
            timeSetaux = timeSetaux + clock_finish - clock_start
            timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
     endif
-    call bc2amr(valc,auxc,mic,mjc,nvar,naux,dx_coarse,dy_coarse,level-1,time,xl,xr,yb, &
-                yt,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
+    call bc2amr(valc,auxc,mic,mjc,nvar,naux,dx_coarse,dy_coarse,level-1,   &
+                time,xl,xr,yb,yt)
 
 
 !  NOTE change in order of code.  Since the interp from coarse to fine needs the aux
