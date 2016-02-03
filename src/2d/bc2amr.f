@@ -4,9 +4,7 @@ c ------------------------------------------------------------------
 c
       subroutine bc2amr(val,aux,nrow,ncol,meqn,naux,
      1                  hx, hy, level, time, 
-     2                  xleft,  xright,  ybot, ytop,
-     3                  xlower, ylower,xupper,yupper,
-     4                  xperiodic, yperiodic,spheredom)
+     2                  xleft,  xright,  ybot, ytop)
  
 c
 c
@@ -75,23 +73,22 @@ c     Don't overwrite ghost cells in periodic directions!
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
-      use amr_module, only: mthbc
+      use amr_module, only: mthbc,xlower,ylower,xupper,yupper,
+      use amr_module, only: xperdom,yperdom,spheredom
 
       implicit none
 
       real*8  val(meqn,nrow,ncol), aux(naux,nrow,ncol)
-      logical xperiodic, yperiodic, spheredom
-      integer  nrow,ncol,meqn,naux,level
+      integer nrow,ncol,meqn,naux,level
       real*8  hx,hy,time, hxmarg, hymarg
       real*8  xleft,xright,ybot,ytop
-      real*8  xlower,ylower,xupper,yupper
       integer nxl,nxr,ibeg,nyb,nyt,jbeg,i,j,m
       
 
       hxmarg = hx*.01
       hymarg = hy*.01
 
-      if (xperiodic .and. (yperiodic .or. spheredom)) go to 499
+      if (xperdom .and. (yperdom .or. spheredom)) go to 499
 c
 c
 c-------------------------------------------------------

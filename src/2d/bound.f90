@@ -120,7 +120,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
   ! set all exterior (physical)  boundary conditions for this grid at once
   ! used to be done from filpatch, but now only for recursive calls with new patch
   ! where the info matches. more efficient to do whole grid at once, and avoid copying
-  call bc2amr(valbig,aux,mitot,mjtot,nvar,naux,hx,hy,level,time,xloWithGhost,xhiWithGHost, &
-       yloWithGhost,yhiWithGhost,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
+  call bc2amr(valbig,aux,mitot,mjtot,nvar,naux,hx,hy,level,time,    &
+              xloWithGhost,xhiWithGHost,yloWithGhost,yhiWithGhost)
 
 end subroutine bound

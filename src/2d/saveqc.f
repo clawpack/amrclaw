@@ -98,9 +98,7 @@ c         make coarsened enlarged patch for conservative fixup
 !--          if (found)  write(*,*) "still have unset aux vals in qad"
           call bc2amr(alloc(loctmp),alloc(loctx),nrow,ncol,nvar,naux,
      .                hxc,hyc,level,time,
-     .                xl,xr,yb,yt,
-     .                xlower,ylower,xupper,yupper,
-     .                xperdom,yperdom,spheredom)
+     .                xl,xr,yb,yt)
           call cstore(alloc(loctmp),nrow,ncol,nvar,
      .                alloc(ist+nvar*lenbc),lenbc,naux,alloc(loctx),
      .                alloc(ist+2*nvar*lenbc))
