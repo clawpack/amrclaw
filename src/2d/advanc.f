@@ -163,7 +163,7 @@ c
       subroutine par_advanc (mptr,mitot,mjtot,nvar,naux,dtnew)
 c
       use amr_module
-      use gauges_module, only: print_gauges, num_gauges
+      use gauges_module, only: update_gauges, num_gauges
       implicit double precision (a-h,o-z)
 
 
@@ -221,14 +221,14 @@ c
          locaux = node(storeaux,mptr)
 c
          if (node(ffluxptr,mptr) .ne. 0) then
-         lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
+            lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
             locsvq = locsvf + nvar*lenbc
             locx1d = locsvq + nvar*lenbc
-         call qad(alloc(locnew),mitot,mjtot,nvar,
-     1             alloc(locsvf),alloc(locsvq),lenbc,
-     2            intratx(level-1),intraty(level-1),hx,hy,
-     3            naux,alloc(locaux),alloc(locx1d),delt,mptr)
+            call qad(alloc(locnew),mitot,mjtot,nvar,
+     1               alloc(locsvf),alloc(locsvq),lenbc,
+     2               intratx(level-1),intraty(level-1),hx,hy,
+     3               naux,alloc(locaux),alloc(locx1d),delt,mptr)
          endif
 
 c        # See if the grid about to be advanced has gauge data to output.
@@ -237,9 +237,10 @@ c        # now to make linear interpolation easier, since grid
 c        # now has boundary conditions filled in.
 
 c     should change the way print_gauges does io - right now is critical section
+c     no more,  each gauge has own array.
 
       if (num_gauges > 0) then
-           call print_gauges(alloc(locnew:locnew+nvar*mitot*mjtot),
+           call update_gauges(alloc(locnew:locnew+nvar*mitot*mjtot),
      .                       alloc(locaux:locaux+nvar*mitot*mjtot),
      .                       xlow,ylow,nvar,mitot,mjtot,naux,mptr)
          endif
