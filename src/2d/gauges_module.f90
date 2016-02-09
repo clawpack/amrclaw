@@ -51,7 +51,7 @@ module gauges_module
 
 contains
 
-    subroutine set_gauges(restart, fname)
+    subroutine set_gauges(restart, fname, nvar)
 
         use amr_module
 
@@ -59,7 +59,8 @@ contains
 
         ! Input
         character(len=*), intent(in), optional :: fname
-        logical, intent(in)  :: restart
+        logical, intent(in) :: restart
+        integer, intent(in) :: nvar
 
         ! Locals
         integer :: i, ipos, idigit
@@ -82,7 +83,7 @@ contains
         allocate(mbestg1(maxgr), mbestg2(maxgr))
 
         allocate(nextLoc(num_gauges))
-        allocate(gaugeArray(5,MAXDATA,num_gauges))
+        allocate(gaugeArray(nvar+1,MAXDATA,num_gauges))  ! +1 for time
         allocate(levelArray(MAXDATA,num_gauges))
         
         do i=1,num_gauges
@@ -104,7 +105,7 @@ contains
               inum = inum / 10
            end do
 
-!          status unknown since might be a restart run. maybe need to test and rewind?
+!          status unknown since might be a restart run. might need to rewind
            if (restart) then
               open(unit=OUTGAUGEUNIT, file=fileName, status='old',        &
                    position='append', form='formatted')
@@ -252,7 +253,7 @@ contains
       real(kind=8) :: var(maxvar)
       real(kind=8) :: xcent,ycent,xoff,yoff,tgrid,hx,hy
       integer :: level,i,j,ioff,joff,iindex,jindex,ivar, ii,i1,i2
-      integer :: index
+      integer :: nindex
 
 !     write(*,*) '+++ in print_gauges with num_gauges, mptr = ',num_gauges,mptr
 
@@ -324,12 +325,12 @@ contains
         end do
 
        ! save info for this time
-        index = nextLoc(ii)
+        nindex = nextLoc(ii)
  
-        levelArray(index,ii) = level
-        gaugeArray(1,index,ii) = tgrid
+        levelArray(nindex,ii) = level
+        gaugeArray(1,nindex,ii) = tgrid
         do ivar = 1, nvar
-           gaugeArray(1+ivar,index,ii) = var(ivar)
+           gaugeArray(1+ivar,nindex,ii) = var(ivar)
         end do
         
         nextLoc(ii) = nextLoc(ii) + 1
@@ -383,7 +384,7 @@ contains
       ! nextLoc has already been increment before this subr. called
       do j = 1, nextLoc(gaugeNum)-1
         write(myunit,100) levelArray(j,gaugeNum),      &
-                          (gaugeArray(k,j,gaugeNum),k=1,nvar)
+                          (gaugeArray(k,j,gaugeNum),k=1,nvar+1) ! includes time
       end do
       nextLoc(gaugeNum) = 1                        
 
