@@ -322,7 +322,7 @@ c          make sure not to exceed largest permissible dt
        endif
 
        if ((mod(ncycle,iout).eq.0) .or. dumpout) then
-c         call valout(1,lfine,time,nvar,naux)
+          call valout(1,lfine,time,nvar,naux)
           if (printout) call outtre(mstart,.true.,nvar,naux)
        endif
 
