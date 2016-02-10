@@ -26,8 +26,11 @@ class Advection3DSwirlTest(test.AMRClawRegressionTest):
                          regression_data_path="regression_data_test2.txt")
         self.check_frame(save=save, frame_num=2,
                          regression_data_path="regression_data_test3.txt")
-        self.check_gauges(save=save, gauge_num=[1, 2],
-                          regression_data_path='regression_data_test_gauge.txt')
+        self.check_gauges(save=save, gauge_id=1)
+        self.check_gauges(save=save, gauge_id=2)
+        
+        # self.check_gauges(save=save, gauge_num=[1, 2],
+        #                   regression_data_path='regression_data_test_gauge.txt')
 
         self.success = True
 
