@@ -351,9 +351,9 @@ c
           endif
       
       if (dump_final) then
-c          call valout(1,lfine,time,nvar,naux)
-           if (printout) call outtre(mstart,.true.,nvar,naux)
-         endif
+          call valout(1,lfine,time,nvar,naux)
+          if (printout) call outtre(mstart,.true.,nvar,naux)
+      endif
 
 c  # checkpoint everything for possible future restart
 c  # (unless we just did it based on dumpchk)
