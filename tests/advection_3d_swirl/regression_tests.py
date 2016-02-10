@@ -3,6 +3,7 @@ Regression tests for swril 3D advection.
 """
 
 import sys
+import os
 import unittest
 
 import clawpack.amrclaw.test as test
@@ -22,15 +23,15 @@ class Advection3DSwirlTest(test.AMRClawRegressionTest):
         self.run_code()
 
         # Perform tests
-        self.check_frame(save=save, frame_num=1,
-                         regression_data_path="regression_data_test2.txt")
-        self.check_frame(save=save, frame_num=2,
-                         regression_data_path="regression_data_test3.txt")
+        data_path = os.path.join(self.test_path, "regression_data", 
+                                                 "regression_data_test2.txt")
+        self.check_frame(save=save, frame_num=1, regression_data_path=data_path)
+        data_path = os.path.join(self.test_path, "regression_data", 
+                                                 "regression_data_test3.txt")
+        self.check_frame(save=save, frame_num=2, regression_data_path=data_path)
+
         self.check_gauges(save=save, gauge_id=1)
         self.check_gauges(save=save, gauge_id=2)
-        
-        # self.check_gauges(save=save, gauge_num=[1, 2],
-        #                   regression_data_path='regression_data_test_gauge.txt')
 
         self.success = True
 
