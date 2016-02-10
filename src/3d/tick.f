@@ -350,7 +350,6 @@ c
               endif
           endif
       
-      dump_final = .false.   ! MJB FOR SCALABILITY TESTS
       if (dump_final) then
 c          call valout(1,lfine,time,nvar,naux)
            if (printout) call outtre(mstart,.true.,nvar,naux)
