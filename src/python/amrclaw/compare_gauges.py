@@ -25,7 +25,7 @@ def check_old_gauge_data(path, gauge_id):
 
     fig = plt.figure()
     for i in xrange(gauge.q.shape[0]):
-        axes = fig.add_subplot(1, 3, i + 1)
+        axes = fig.add_subplot(1, gauge.q.shape[0], i + 1)
         axes.plot(q[:, i] - gauge.q[i, :])
         axes.set_title("q[%s, :] comparison" % i)
 
