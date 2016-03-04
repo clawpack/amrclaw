@@ -341,7 +341,7 @@ program amr2
         read(inunit,*) (auxtype(iaux), iaux=1,naux)
     endif
     read(inunit,*)
-              
+
     read(inunit,*) flag_richardson
     read(inunit,*) tol            ! for richardson
     read(inunit,*) flag_gradient
@@ -366,11 +366,6 @@ program amr2
     close(inunit)
     ! Finished with reading in parameters
     ! ==========================================================================
-
-    ! Read in region and gauge data
-    call set_regions('regions.data')
-    call set_gauges(rest,'gauges.data',nvar)
-
 
     ! Look for capacity function via auxtypes:
     mcapa = 0
@@ -409,7 +404,7 @@ program amr2
         print *, 'Error ***   need finer domain >', mindim, ' cells'
         stop
     endif
-    if (mcapa > naux) then     
+    if (mcapa > naux) then
         stop 'Error ***   mcapa > naux in input file'
     endif
 
@@ -460,6 +455,10 @@ program amr2
         ! Call user routine to set up problem parameters:
         call setprob()
 
+        ! Non-user data files
+        call set_regions()
+        call set_gauges(rest, nvar)
+
     else
 
         open(outunit, file=outfile, status='unknown', form='formatted')
@@ -468,6 +467,10 @@ program amr2
 
         ! Call user routine to set up problem parameters:
         call setprob()
+
+        ! Non-user data files
+        call set_regions()
+        call set_gauges(rest, nvar)
 
         cflmax = 0.d0   ! otherwise use previously heckpointed val
 
@@ -510,7 +513,6 @@ program amr2
         time = t0
         nstart = 0
     endif
-
 
     write(parmunit,*) ' '
     write(parmunit,*) '--------------------------------------------'

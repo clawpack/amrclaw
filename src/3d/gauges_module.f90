@@ -31,6 +31,8 @@ module gauges_module
     implicit none
     save
 
+    logical, private :: module_setup = .false.
+
     integer, parameter :: OUTGAUGEUNIT=89
     integer :: num_gauges, inum
     real(kind=8), allocatable, dimension(:) :: xgauge, ygauge, zgauge, &
@@ -44,7 +46,7 @@ module gauges_module
     integer, pointer :: levelArray(:,:)
 contains
 
-    subroutine set_gauges(restart, fname, nvar)
+    subroutine set_gauges(restart, nvar, fname)
 
         use amr_module
 
@@ -60,62 +62,66 @@ contains
         integer, parameter :: iunit = 7
         character*14 :: fileName
 
-        ! Open file
-        if (present(fname)) then
-            call opendatafile(iunit,fname)
-        else
-            call opendatafile(iunit,'gauges.data')
-        endif
+        if (.not. module_setup) then
 
-        read(iunit,*) num_gauges
+            ! Open file
+            if (present(fname)) then
+                call opendatafile(iunit,fname)
+            else
+                call opendatafile(iunit,'gauges.data')
+            endif
 
-        allocate(xgauge(num_gauges), ygauge(num_gauges), zgauge(num_gauges))
-        allocate(t1gauge(num_gauges), t2gauge(num_gauges))
-        allocate(mbestsrc(num_gauges), mbestorder(num_gauges))
-        allocate(igauge(num_gauges))
-        allocate(mbestg1(maxgr), mbestg2(maxgr))
+            read(iunit,*) num_gauges
 
-        allocate(nextLoc(num_gauges))
-        allocate(gaugeArray(nvar+1,MAXDATA,num_gauges))  ! +1 for time
-        allocate(levelArray(MAXDATA,num_gauges))
-        
-        do i=1,num_gauges
-            read(iunit,*) igauge(i),xgauge(i),ygauge(i),zgauge(i), &
-                          t1gauge(i),t2gauge(i)
-        enddo
+            allocate(xgauge(num_gauges), ygauge(num_gauges), zgauge(num_gauges))
+            allocate(t1gauge(num_gauges), t2gauge(num_gauges))
+            allocate(mbestsrc(num_gauges), mbestorder(num_gauges))
+            allocate(igauge(num_gauges))
+            allocate(mbestg1(maxgr), mbestg2(maxgr))
 
-        ! initialize for starters
-        mbestsrc = 0
-        nextLoc  = 1  ! next location to be filled with gauge info
-        close(iunit)
-        
-        do i = 1, num_gauges
-           fileName = 'gaugexxxxx.txt'    ! NB different name convention too
-           inum = igauge(i)
-           do ipos = 10,6,-1              ! do this to replace the xxxxx in the name
-              idigit = mod(inum,10)
-              fileName(ipos:ipos) = char(ichar('0') + idigit)
-              inum = inum / 10
-           end do
+            allocate(nextLoc(num_gauges))
+            allocate(gaugeArray(nvar+1,MAXDATA,num_gauges))  ! +1 for time
+            allocate(levelArray(MAXDATA,num_gauges))
+            
+            do i=1,num_gauges
+                read(iunit,*) igauge(i),xgauge(i),ygauge(i),zgauge(i), &
+                              t1gauge(i),t2gauge(i)
+            enddo
 
-!          status unknown since might be a restart run. 
-           if (restart) then
-              open(unit=OUTGAUGEUNIT, file=fileName, status='old',        &
-                   position='append', form='formatted')
-           else
-              open(unit=OUTGAUGEUNIT, file=fileName, status='unknown',        &
-                   position='append', form='formatted')
-              rewind OUTGAUGEUNIT
-              write(OUTGAUGEUNIT,100) igauge(i), xgauge(i), ygauge(i), nvar
- 100          format("# gauge_id=",i5," location=( ",1e15.7," ",1e15.7," ) num_eqn=",i2)
-              write(OUTGAUGEUNIT,101)
- 101          format("# Columns: level time q(1 ... num_eqn)")
-           endif
+            ! initialize for starters
+            mbestsrc = 0
+            nextLoc  = 1  ! next location to be filled with gauge info
+            close(iunit)
+            
+            do i = 1, num_gauges
+               fileName = 'gaugexxxxx.txt'    ! NB different name convention too
+               inum = igauge(i)
+               do ipos = 10,6,-1              ! do this to replace the xxxxx in the name
+                  idigit = mod(inum,10)
+                  fileName(ipos:ipos) = char(ichar('0') + idigit)
+                  inum = inum / 10
+               end do
 
-           close(OUTGAUGEUNIT)
+    !          status unknown since might be a restart run. 
+               if (restart) then
+                  open(unit=OUTGAUGEUNIT, file=fileName, status='old',        &
+                       position='append', form='formatted')
+               else
+                  open(unit=OUTGAUGEUNIT, file=fileName, status='unknown',        &
+                       position='append', form='formatted')
+                  rewind OUTGAUGEUNIT
+                  write(OUTGAUGEUNIT,100) igauge(i), xgauge(i), ygauge(i), nvar
+ 100              format("# gauge_id=",i5," location=( ",1e15.7," ",1e15.7," ) num_eqn=",i2)
+                  write(OUTGAUGEUNIT,101)
+ 101              format("# Columns: level time q(1 ... num_eqn)")
+               endif
 
-        end do
+               close(OUTGAUGEUNIT)
 
+          end do
+
+          module_setup = .true.
+      end if
 
     end subroutine set_gauges
 

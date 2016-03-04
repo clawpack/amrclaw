@@ -383,10 +383,6 @@ program amr3
     ! Finished with reading in parameters
     ! ==========================================================================
 
-    ! Read in region and gauge data
-    !call set_regions('regions.data')
-    call set_gauges(rest,'gauges.data',nvar)
-
 
     ! Look for capacity function via auxtypes:
     mcapa = 0
@@ -479,6 +475,7 @@ program amr3
         ! Call user routine to set up problem parameters:
         call setprob()
 
+        call set_gauges(rest, nvar)
     else
 
         open(outunit, file=outfile, status='unknown', form='formatted')
@@ -487,6 +484,7 @@ program amr3
 
         ! Call user routine to set up problem parameters:
         call setprob()
+        call set_gauges(rest, nvar)
 
         cflmax = 0.d0   ! otherwise use previously heckpointed val
 
