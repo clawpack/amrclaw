@@ -99,6 +99,14 @@ class GaugeSolution(object):
             self.location = (float(data[4]), float(data[5]))
             num_eqn = int(data[8])
 
+            # Read in one more line to check to make sure there's actually data
+            # in here
+            gauge_file.readline()
+            if len(gauge_file.readline()) == 0:
+                import warnings
+                warnings.warn("Gauge file %s is empty." % gauge_id)
+                return
+
         # Check to see if the gauge file name ID and that inside of the gauge
         # file are the same
         gauge_file_name = os.path.basename(path)
@@ -117,7 +125,7 @@ class GaugeSolution(object):
             data = numpy.loadtxt(gauge_path, comments="#")
             if data.shape[0] == 0:
                 raise IOError("Gauge requested has no data.")
-            self.level = data[:, 0].view('int64')
+            self.level = data[:, 0].astype(numpy.int64)
             self.t = data[:, 1]
             self.q = data[:, 2:].transpose()
 
