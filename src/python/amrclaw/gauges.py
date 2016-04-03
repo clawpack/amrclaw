@@ -123,8 +123,6 @@ class GaugeSolution(object):
             self.q = pandas.DataFrame()
         else:
             data = numpy.loadtxt(gauge_path, comments="#")
-            if data.shape[0] == 0:
-                raise IOError("Gauge requested has no data.")
             self.level = data[:, 0].astype(numpy.int64)
             self.t = data[:, 1]
             self.q = data[:, 2:].transpose()
