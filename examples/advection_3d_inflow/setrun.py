@@ -262,6 +262,15 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_lower[inflow_index] = 'user'  # at inflow_side
 
 
+    # ---------------
+    # Gauges:
+    # ---------------
+    gauges = rundata.gaugedata.gauges
+    # for gauges append lines of the form  [gaugeno, x, y, z, t1, t2]
+    gauges.append([1, 0.1, 0.6, 0.6, 0., 1e9])
+    gauges.append([2, 0.2, 0.7, 0.7, 0., 1e9])
+    
+
     # --------------
     # Checkpointing:
     # --------------

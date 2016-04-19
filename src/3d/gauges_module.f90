@@ -110,8 +110,10 @@ contains
                   open(unit=OUTGAUGEUNIT, file=fileName, status='unknown',        &
                        position='append', form='formatted')
                   rewind OUTGAUGEUNIT
-                  write(OUTGAUGEUNIT,100) igauge(i), xgauge(i), ygauge(i), nvar
- 100              format("# gauge_id= ",i5," location=( ",1e15.7," ",1e15.7," ) num_eqn= ",i2)
+                  write(OUTGAUGEUNIT,100) igauge(i), xgauge(i), &
+                        ygauge(i), zgauge(i), nvar
+ 100              format("# gauge_id= ",i5," location=( ",1e15.7," ", &
+                        1e15.7," ",1e15.7," ) num_eqn= ",i2)
                   write(OUTGAUGEUNIT,101)
  101              format("# Columns: level time q(1 ... num_eqn)")
                endif

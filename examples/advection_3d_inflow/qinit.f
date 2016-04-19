@@ -18,25 +18,7 @@ c     # set concentration profile
 c     ---------------------------
 c
 
-       do i = 1-mbc,mx+mbc
-          x(i) = xlower + (i-0.5d0)*dx
-       enddo
-
-       do i = 1,mx
-          if (x(i) .lt.  0.5d0) then
-             do j = 1,my
-                do k = 1,mz
-                   q(1,i,j,k) = 0.d0
-                enddo
-             enddo
-          else
-             do j = 1,my
-                do k = 1,mz
-                   q(1,i,j,k) = 0.d0
-                enddo
-            enddo
-         endif
-      enddo
+       q(1,:,:,:) = 0.d0
 
       return
       end
