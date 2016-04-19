@@ -5,7 +5,7 @@ import sys
 import numpy
 import matplotlib.pyplot as plt
 
-import clawpack.amrclaw.gauges as gauges
+import clawpack.pyclaw.gauges as gauges
 
 # Load all gauges
 
