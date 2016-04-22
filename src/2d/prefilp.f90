@@ -45,7 +45,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
     integer :: iputst, jputst, mi, mj, locpatch, locpaux
     integer :: jbump, iwrap1, iwrap2, jwrap1, tmp, locflip, rect(4)
     real(kind=8) :: xlwrap, ybwrap
-    integer ::  msrc = -1  ! this signifies not a real grid, no bndry list with it
+    integer ::  msrc    ! this signifies not a real grid, no bndry list with it
     ! it is possible to preprocess in the periodic case, just more complicated, so postponing
 
     integer :: ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
@@ -66,6 +66,8 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
 !       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
 !     # this patch lives in a grid with soln array valbig, which goes from
 !       (iglo,jglo) to (ighi,jghi).
+
+    msrc = -1   ! iitialization indicating whether real src grid so can use faster bc list
 
     if (xperdom) then       
        ist(1)    = ilo
