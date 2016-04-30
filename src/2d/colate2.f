@@ -8,6 +8,7 @@ c
       dimension badpts(2,len)
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
       logical db/.false./
+      integer*8 largestIntEquiv
 
 c
 c    index for flag array now based on integer index space, not 1:mibuff,1:mjbuff
@@ -162,15 +163,19 @@ c
 c
 c colate flagged points into single integer array for quicksorting
 c
-c      call drivesort(npts,badpts,lcheck,nUniquePts,mbuff)
-c  ### bug found in drivesort- integer overflow
-c  ### temp bypass for rnady to run finer grids
-      if (lcheck .ge. 6) then
-          nUniquePts =    npts
+c     sorting uses one dimensional packing of 2D indices
+c     check if domain will fit  in integer*4.
+c     if not, just leave the duplicate, but rememer that efficiency 
+c     of grids won't be correct (since divide by number of flaged pts in grid)
+c     If necessary, do whole process in integer*8 - then will have enough
+c     room, but will have to convert quicksort routine and drivesort
+c     the variable largestIntEquiv already declared integer*8 above.
+      largestIntEquiv =  iregsz(lcheck)+mbuff + 
+     .             (iregsz(lcheck)+2*mbuff)*(jregsz(lcheck)+mbuff)
+      largestSingle = 2**30
+      if (largestSingle .le. largestIntEquiv) then  
+          nUniquePts =  npts  ! bad name - they are not unique
       else
-c         # assume points are unique
-c         # Cannot check for more than 6 levels due to integer overflow
-c         # bug that needs to be fixed!
           call drivesort(npts,badpts,lcheck,nUniquePts,mbuff)
       endif
      
