@@ -199,7 +199,7 @@ c
           timeRegriddingCPU=timeRegriddingCPU+cpu_finish-cpu_start
 
           call setbestsrc()     ! need at every grid change
-c         call outtre(lstart(lbase+1),.true.,nvar,naux)
+c         call outtre(lstart(lbase+1),.false.,nvar,naux)
 c note negative time to signal regridding output in plots
 c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
 c

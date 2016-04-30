@@ -7,13 +7,14 @@
 !
 ! ------------------------------------------------------------------
 !
-subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
-                  mjc, xleft, xright, ybot, ytop, nvar, mptr, ilo, ihi, &
+subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic,          &
+                  mjc, xleft, xright, ybot, ytop, nvar, mptr, ilo, ihi,  &
                   jlo, jhi, aux, naux)
 
     use amr_module, only: xlower, ylower, intratx, intraty, nghost, xperdom
     use amr_module, only: yperdom, spheredom, xupper, yupper, alloc
     use amr_module, only: outunit, NEEDS_TO_BE_SET, mcapa
+    use amr_module, only: newstl, iregsz, jregsz
     
     !for setaux timing
     use amr_module, only: timeSetaux, timeSetauxCPU
@@ -37,6 +38,9 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     real(kind=8) :: fliparray((mitot+mjtot)*nghost*(nvar+naux))
     real(kind=8) :: setflags(mitot,mjtot),maxauxdif,aux2(naux,mitot,mjtot)
     integer :: mjb
+    integer :: jm, im, nm 
+    logical :: sticksoutxfine, sticksoutyfine,sticksoutxcrse,sticksoutycrse
+    logical :: DIAGONAL_CORNER
     
     !for setaux timing
     integer :: clock_start, clock_finish, clock_rate
@@ -45,6 +49,13 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
 
     ! External function definitions
     real(kind=8) :: get_max_speed
+
+
+     DIAGONAL_CORNER(im,jm,mic,mjc) = (im .eq. 1   .and. jm .eq. mjc)  .or.     &
+                                      (im .eq. mic .and. jm .eq. mjc) .or.     &
+                                      (im .eq. 1   .and. jm .eq. 1)    .or.     &
+                                      (im .eq. mic .and. jm .eq. 1)
+     
 
     refinement_ratio_x = intratx(level-1)
     refinement_ratio_y = intraty(level-1)
@@ -67,8 +78,15 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     jchi   = (jhi + 1) / refinement_ratio_y - 1 + 1
     ng     = 0
 
+    valc = 2.22222E+10 ! MJB DEBUG
+
+    sticksoutxfine = ( (ilo .lt. 0) .or. (ihi .ge. iregsz(level)))
+    sticksoutyfine = ( (jlo .lt. 0) .or. (jhi .ge. jregsz(level)))
+    sticksoutxcrse = ((iclo .lt. 0) .or. (ichi .ge. iregsz(level-1)))
+    sticksoutycrse = ((jclo .lt. 0) .or. (jchi .ge. jregsz(level-1)))
+
     if (naux == 0) then
-        if (xperdom .or. yperdom .or. spheredom) then
+        if ((xperdom .and. sticksoutxcrse).or. (yperdom.and.sticksoutycrse)  .or. spheredom) then
             call preintcopy(valc,mic,mjc,nvar,iclo,ichi,jclo,jchi,level-1,fliparray)
         else
             call intcopy(valc,mic,mjc,nvar,iclo,ichi,jclo,jchi,level-1,1,1)
@@ -76,7 +94,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     else  
         ! intersect grids and copy all (soln and aux)
         auxc(1,:,:) = NEEDS_TO_BE_SET
-        if (xperdom .or. yperdom .or. spheredom) then
+        if ((xperdom .and.sticksoutxcrse) .or. (yperdom.and.sticksoutycrse) .or. spheredom) then
             call preicall(valc,auxc,mic,mjc,nvar,naux,iclo,ichi,jclo,jchi, &
                           level-1,fliparray)
         else
@@ -101,8 +119,25 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
            timeSetaux = timeSetaux + clock_finish - clock_start
            timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
     endif
-    call bc2amr(valc,auxc,mic,mjc,nvar,naux,dx_coarse,dy_coarse,level-1,   &
-                time,xl,xr,yb,yt)
+
+    call bc2amr(valc,auxc,mic,mjc,nvar,naux,dx_coarse,dy_coarse,level-1,time,xl,xr,yb, &
+                yt,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
+
+
+   do jm = 1, mjc 
+   do im = 1, mic 
+   do nm = 1, nvar 
+      if  (valc(nm,im,jm) .eq. 2.22222E+10 .and. .not. DIAGONAL_CORNER(im,jm,mic,mjc)) then
+          write(54,*)" not covered by coarser grid"
+          write(*,*)" not covered by coarser grid"
+          write(*,*) "stop here for grid ",mptr
+          write(54,*) "stop here for grid ",mptr
+          call outlev(newstl(level-1),.false.,nvar,naux)
+          stop
+      endif
+   end do
+   end do
+   end do
 
 
 !  NOTE change in order of code.  Since the interp from coarse to fine needs the aux
@@ -122,7 +157,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
 !       ## overwritten with coarse grid interpolation
         aux(1,:,:) = NEEDS_TO_BE_SET  ! indicates fine cells not yet set. 
 
-        if (xperdom .or. yperdom .or. spheredom) then
+        if ((xperdom.and.sticksoutxfine) .or. (yperdom.and.sticksoutyfine) .or. spheredom) then
             call preicall(val,aux,mitot,mjtot,nvar,naux,ilo-nghost,ihi+nghost, & 
                           jlo-nghost,jhi+nghost,level,fliparray)
         else
@@ -145,7 +180,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
          ! by coarse grid interp.  this is needed due to reversing order of
          ! work - first copy from fine grids, then interpolate from coarse grids
         val(1,:,:) = NEEDS_TO_BE_SET
-        if (xperdom .or. yperdom .or. spheredom) then
+        if ((xperdom.and.sticksoutxfine) .or. (yperdom.and.sticksoutyfine) .or. spheredom) then
             call preintcopy(val,mitot,mjtot,nvar,ilo-nghost,ihi+nghost,     &
                             jlo-nghost,jhi+nghost,level,fliparray)
         else

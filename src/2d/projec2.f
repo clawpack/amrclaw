@@ -6,6 +6,9 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
       dimension rectflags(ilo-mbuff:ihi+mbuff,jlo-mbuff:jhi+mbuff)
+      logical borderx, bordery
+      integer ist(3),iend(3),jst(3),jend(3),ishift(3),jshift(3)
+
 c
 c  ::::::::::::::::::::::: PROJEC2 ::::::::::::::::::::::::::::::
 c  for all newly created fine grids, project area onto a coarser
@@ -21,13 +24,14 @@ c output parameters:
 c  numpro = number of additional flagged pts. at 'level'.
 c           (initialized to 0 in flglvl)
 c local variables:
-c     iflags  = holds coarser domain flagged points - receives projection
 c     mkid    = grid doing the projecting
 c  :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
       levpro  =  level + 2
       lrat2x  = intratx(level)*intratx(level+1)
       lrat2y  = intraty(level)*intraty(level+1)
+
+
 c
       mkid = newstl(levpro)
  10   if (mkid .eq. 0) go to 90
@@ -39,55 +43,105 @@ c
 c  project entire region of fine grids onto rectflag array if intersects
 c  possibly take care of buffering.
 c  adjust since grid descriptor (integer indices)  is 0 based, 
-c  iflags indexing is 1 based. 
 c  do not projec the buffer region, only interior needs it
 c  since buffering will take care of rest (unless ibuff=0-see below)
 c
-      ist  = floor(ikidlo/real(lrat2x))
-      jst  = floor(jkidlo/real(lrat2y))
-!--      iend = ikidhi/lrat2x
-!--      jend = jkidhi/lrat2y
-      iend = ceiling((ikidhi+1.d0)/lrat2x) -1
-      jend = ceiling((jkidhi+1.d0)/lrat2y) -1
+c redo formulas using approach of nestck/baseCheck, simplified to 2 levels
+      istc  = ikidlo/intratx(level+1) - 1    ! one level down
+      istc  = istc/intratx(level)      - 1    ! project to second level coords
+      jstc  = jkidlo/intraty(level+1) - 1
+      jstc  = jstc/intraty(level)      - 1
+      iendc = ikidhi/intratx(level+1) + 1  
+      iendc = iendc/intratx(level)     + 1  
+      jendc = jkidhi/intraty(level+1) + 1  
+      jendc = jendc/intraty(level)     + 1  
 
-      if (ibuff .eq. 0) then
-c     ## ensure proper nesting here, since buffering step won't follow when ibuff 0
-        if (ist*lrat2x .eq. ikidlo) ist = ist-1
-        if (jst*lrat2y .eq. jkidlo) jst = jst-1
-        if ((iend+1)*lrat2x .eq. ikidhi+1) iend = iend+1
-        if ((jend+1)*lrat2y .eq. jkidhi+1) jend = jend+1
-      endif
+c   if coarse grid not near edge of domain then periodicity wont affect it
+      borderx = (istc .le. 0 .or. iendc .ge. iregsz(level)-1)  ! subtract 1 to get last cell index
+      bordery = (jstc .le. 0 .or. jendc .ge. jregsz(level)-1)  ! since i/jregsz is num cells
 
-      ixlo = max(ist, ilo-mbuff)
-      ixhi = min(iend,ihi+mbuff)
-      jxlo = max(jst, jlo-mbuff)
-      jxhi = min(jend,jhi+mbuff)
-      if (.not.((ixlo .le. ixhi) .and. (jxlo .le. jxhi))) go to 80 ! grid mkid doesnt intersect with rectflags
 c
-c       do 60 j = jst+1, jend+1   !old code, shift indices by 1
-c       do 60 i = ist+1, iend+1   ! since iflags used 1-based indexing
-c       do 60 j = jst, jend        ! new code into rectflags is 0 based
-c       do 60 i = ist, iend       
-        do 60 j = jxlo, jxhi
-        do 60 i = ixlo, ixhi
-           if (rectflags(i,j) .eq. goodpt) then
+c  take care of indices outside actual domain, in non-periodic case first
+      if (.not. (xperdom .and. borderx) .and.
+     .    .not. (yperdom .and. bordery)) then
+         istc  = max(istc,0)
+         jstc  = max(jstc,0)
+         iendc = min(iendc,iregsz(level))
+         jendc = min(jendc,jregsz(level))
+         
+c  include mbuff in intersection test here since is ok in new alg. to project to buffer region
+         ixlo = max(istc, ilo-mbuff)
+         ixhi = min(iendc,ihi+mbuff)
+         jxlo = max(jstc, jlo-mbuff)
+         jxhi = min(jendc,jhi+mbuff)
+
+c        test if coarsened grid mkid intersects with this grids rectflags 
+         if (.not.((ixlo .le. ixhi) .and. (jxlo .le. jxhi))) go to 80 
+c     
+         do 60 j = jxlo, jxhi
+         do 60 i = ixlo, ixhi
+            if (rectflags(i,j) .eq. goodpt) then
                rectflags(i,j) = badpro
                numpro      = numpro + 1
                if (pprint) write(outunit,101) i,j,mkid
-101            format(' pt.',2i5,' of grid ',i5,' projected' )
-           endif
- 60    continue
+ 101           format(' pt.',2i5,' of grid ',i5,' projected' )
+            endif
+ 60      continue
+         go to 80            ! done with projected this fine grid in non-periodic case
+      endif
+
 c
-c IS THERE SOMETHING TO DO ABOUT PERIODICITY
+c periodic case. compute indics on coarsened level to find grids to project to
+      call setIndices(ist,iend,jst,jend,iclo,ichi,jclo,jhci,
+     .                ishift,jshift,level)
+
+c     compare all regions of coarsened patch with one lbase grid at a time
+      do 25 i = 1, 3
+         i1 = max(istc,  ist(i))
+         i2 = min(iendc, iend(i))
+      do 25 j = 1, 3
+         j1 = max(jstc,  jst(j))
+         j2 = min(jendc, jend(j))
+
+         if (.not. ((i1 .le. i2) .and. (j1 .le. j2))) go to 25
+c
+c        patch (possibly periodically wrapped) not empty.
+c        see if intersects base grid. wrap coords for periodicity
+         i1 = i1 + ishift(i)
+         i2 = i2 + ishift(i)
+         j1 = j1 + jshift(j)
+         j2 = j2 + jshift(j)
+
+         ixlo = max(i1,ilo-mbuff)
+         ixhi = min(i2,ihi+mbuff)
+         jxlo = max(j1,jlo-mbuff)
+         jxhi = min(j2,jhi+mbuff)
+
+         if (.not.((ixlo.le.ixhi) .and. (jxlo.le.jxhi))) go to 25
+
+         do jx = jxlo, jxhi
+         do ix = ixlo, ixhi
+c           project flagged point in intersected regions
+            if (rectflags(ix,jx) .eq. goodpt) then
+               rectflags(ix,jx) = badpro   ! i,j already coarse grid indices
+               numpro      = numpro + 1
+               if (pprint) write(outunit,101) ix,jx,mkid
+            endif
+         end do
+         end do
+
+ 25   continue
+      go to 80   ! down with simple periodic case
 c
 c repeat above procedure for wrapped area if nec. if ibuff > 0
 c this will be caught in shiftset flagging
+c  DID NOT MODIFY THIS SPHEREDOM BLOCK WHEN FIXING OTHER BUGS. NEED TO LOOK AT IT
        if (spheredom .and. ibuff .eq. 0) then 
-          jst  = jkidlo/lrat2y
-          jend = jkidhi/lrat2y
-          if (jst .eq. 0) then
-             iwrap1 = iregsz(level) - iend - 1
-             iwrap2 = iregsz(level) - ist - 1
+          jstc  = jkidlo/lrat2y
+          jendc = jkidhi/lrat2y
+          if (jstc .eq. 0) then
+             iwrap1 = iregsz(level) - iendc - 1
+             iwrap2 = iregsz(level) - istc - 1
 c             do 61 i = iwrap1+1, iwrap2+1
              do 61 i = iwrap1, iwrap2  !changing this WITHOUT CHECKING, AS ABOVE. STILL NEED TO CHECK***
                 if (rectflags(i,1) .eq. goodpt) then
@@ -98,9 +152,9 @@ c             do 61 i = iwrap1+1, iwrap2+1
  61          continue
              
           endif
-          if (jend .eq. jsize-1) then
-             iwrap1 = iregsz(level) - iend - 1
-             iwrap2 = iregsz(level) - ist - 1
+          if (jendc .eq. jsize-1) then
+             iwrap1 = iregsz(level) - iendc - 1
+             iwrap2 = iregsz(level) - istc - 1
 c             do 62 i = iwrap1+1, iwrap2+1
              do 62 i = iwrap1, iwrap2 !CHANGING W/O CHECKING 
                 if (rectflags(i,jsize-1) .eq. goodpt) then
