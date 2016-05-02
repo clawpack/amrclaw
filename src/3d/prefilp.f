@@ -23,7 +23,7 @@ c
     ! dimension scratch patches at largest possible
       dimension  valPatch((ihi-ilo+1)*(jhi-jlo+1)*(khi-klo+1)*nvar)  
       dimension  auxPatch((ihi-ilo+1)*(jhi-jlo+1)*(khi-klo+1)*naux)    
-      integer    msrc = -1  ! indicates not a real grid calling filpatch
+      integer    msrc/ -1/  ! indicates not a real grid calling filpatch
 
 c
 c  :::::::::::::: PREFILRECUR :::::::::::::::::::::::::::::::::::::::::::
