@@ -18,7 +18,7 @@
 !  after intersections at specified level.
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 !
-subroutine intfil(val,mi,time,flaguse,nrowst,ilo,ihi,level,nvar,naux,msrc)
+subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
 
     use amr_module, only: possk, mxnest, iregsz, nghost, outunit, alloc
     use amr_module, only: node, lstart, store1, store2, levelptr, timemult,gridNbor
@@ -29,7 +29,7 @@ subroutine intfil(val,mi,time,flaguse,nrowst,ilo,ihi,level,nvar,naux,msrc)
     implicit none
 
     ! Input
-    integer, intent(in) :: mi, nrowst, ilo, ihi, level, nvar, naux,msrc
+    integer, intent(in) :: mi, ilo, ihi, level, nvar, naux,msrc
     real(kind=8), intent(in) :: time
 
     ! In/Out
@@ -153,7 +153,7 @@ subroutine intfil(val,mi,time,flaguse,nrowst,ilo,ihi,level,nvar,naux,msrc)
                 ! No time interp. copy the solution values
                 do ivar = 1, nvar
                     do i = ixlo, ixhi
-                        val(ivar,i-patch_rect(1)+nrowst) = &
+                        val(ivar,i-patch_rect(1)) = &
                             alloc(iadd(ivar,i-imlo+nghost+1))
                         flaguse(i) = 1
                     end do
@@ -162,7 +162,7 @@ subroutine intfil(val,mi,time,flaguse,nrowst,ilo,ihi,level,nvar,naux,msrc)
                 ! Linear interpolation in time
                 do ivar = 1, nvar
                     do i = ixlo, ixhi
-                        val(ivar,i-patch_rect(1)+nrowst) = &
+                        val(ivar,i-patch_rect(1)) = &
                             alloc(iadnew(ivar,i-imlo+nghost+1))*alphai + &
                             alloc(iadold(ivar,i-imlo+nghost+1))*alphac
                         flaguse(i) = 1
@@ -185,7 +185,7 @@ subroutine intfil(val,mi,time,flaguse,nrowst,ilo,ihi,level,nvar,naux,msrc)
     ! domains
 
     if (patch_rect(1) < 0) then
-        flaguse(patch_rect(1):min(-1,nrowst + ihi - patch_rect(1))) = 1
+        flaguse(patch_rect(1):min(-1,ihi - patch_rect(1))) = 1
     endif
 
     if (ihi >= iregsz(level)) then
