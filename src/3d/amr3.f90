@@ -385,7 +385,7 @@ program amr3
 
     ! Read in region and gauge data
     !call set_regions('regions.data')
-    call set_gauges('gauges.data')
+    call set_gauges(rest,'gauges.data',nvar)
 
 
     ! Look for capacity function via auxtypes:
