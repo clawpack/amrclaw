@@ -1,5 +1,5 @@
 #get the directory of this makefile
-AMRLIB:=$(dir $(lastword $(MAKEFILE_LIST)))
+AMRLIB:=$(CLAW)/amrclaw/src/2d
 
 #list of common sources for amr 2d codes
 COMMON_MODULES += \

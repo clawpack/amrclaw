@@ -1,7 +1,7 @@
 #get the directory of this makefile
-AMRLIB:=$(dir $(lastword $(MAKEFILE_LIST)))
+AMRLIB:=$(CLAW)/amrclaw/src/3d
 
-#list of common sources for amr 2d codes
+#list of common sources for amr 3d codes
 COMMON_MODULES += \
   $(AMRLIB)/amr_module.f90 \
   $(AMRLIB)/gauges_module.f90 \
