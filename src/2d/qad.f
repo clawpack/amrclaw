@@ -40,7 +40,7 @@ c      #  ok as long as meqn, mwaves < maxvar
 
        parameter (max1dp1 = max1d+1)
        dimension ql(nvar,max1dp1),    qr(nvar,max1dp1)
-       dimension wave(nvar,maxvar,max1dp1), s(nvar,max1dp1)
+       dimension wave(nvar,mwaves,max1dp1), s(mwaves,max1dp1)
        dimension amdq(nvar,max1dp1),  apdq(nvar,max1dp1)
        dimension auxl(maxaux*max1dp1),  auxr(maxaux*max1dp1)
 c
