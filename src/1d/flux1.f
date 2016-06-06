@@ -2,7 +2,7 @@ c
 c
 c     =====================================================
       subroutine flux1(maxm,meqn,maux,mbc,mx,
-     &                 q1d,dtdx1d,aux1,aux2,aux3,
+     &                 q1d,dtdx1d,aux1,
      &                 faddm,faddp,cfl1d,wave,s,
      &                 amdq,apdq,cqxx,bmasdq,bpasdq,rp1)
 c     =====================================================
@@ -49,14 +49,12 @@ c
       dimension   faddp(meqn,1-mbc:maxm+mbc)
       dimension dtdx1d(1-mbc:maxm+mbc)
       dimension aux1(maux,1-mbc:maxm+mbc)
-      dimension aux2(maux,1-mbc:maxm+mbc)
-      dimension aux3(maux,1-mbc:maxm+mbc)
 c
       dimension     s(mwaves, 1-mbc:maxm+mbc)
       dimension  wave(meqn, mwaves, 1-mbc:maxm+mbc)
 c
       logical limit
-      common /comxyt/ dtcom,dxcom,tcom,icom,jcom
+      common /comxt/ dtcom,dxcom,tcom,icom
 c
       limit = .false.
       do 5 mw=1,mwaves
@@ -78,7 +76,7 @@ c     # solve Riemann problem at each interface and compute Godunov updates
 c     ---------------------------------------------------------------------
 c
       call rp1(maxm,meqn,mwaves,maux,mbc,mx,q1d,q1d,
-     &          aux2,aux2,wave,s,amdq,apdq)
+     &          aux1,aux1,wave,s,amdq,apdq)
 c
 c     # Set fadd for the donor-cell upwind method (Godunov)
       do 40 i=1,mx+1
