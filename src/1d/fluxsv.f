@@ -28,7 +28,7 @@ c :::::::::::::::::::::::::::::;:::::::::::::::::::::::
  10      if (listbc(1,ispot).eq.0) go to 99          
 c
          mkid     = listbc(3,ispot)
-         intopl   = listbc(5,ispot)
+         intopl   = listbc(4,ispot)
          nx       = node(ndihi,mkid) - node(ndilo,mkid) + 1
          kidlst   = node(ffluxptr,mkid)
          i        = listbc(1,ispot)
