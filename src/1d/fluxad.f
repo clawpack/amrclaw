@@ -3,7 +3,7 @@ c -------------------------------------------------------
 c
       subroutine fluxad(xfluxm,xfluxp,
      1                  svdflx,mptr,mitot,
-     2                   nvar,lenbc,lratiox,ng,dtf,dx,dy)
+     2                   nvar,lenbc,lratiox,ng,dtf,dx)
 c
 
       use amr_module
@@ -21,9 +21,6 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       dimension xfluxm(nvar,mitot)
       dimension xfluxp(nvar,mitot)
       dimension svdflx(nvar,lenbc)
- 
-      nx  = mitot-2*ng
-      nxc = nx/lratiox
  
 c ::::: left side saved first
       lind = 0
