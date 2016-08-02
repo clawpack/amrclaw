@@ -195,6 +195,11 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         super(GaugeData,self).__init__()
         self.add_attribute('gauges',[])
 
+	# New output formatting options
+        self.add_attribute("output_format", "")
+	self.add_attribute("q_out_fields", 'all')
+	self.add_attribute("aux_out_fields", "none")
+
     def __str__(self):
         output = "Gauges: %s\n" % len(self.gauges)
         for gauge in self.gauges:
@@ -203,6 +208,11 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             output = " ".join((output,"%17.10e" % gauge[2]))
             output = " ".join((output,"%13.6e" % gauge[3]))
             output = " ".join((output,"%13.6e\n" % gauge[4]))
+ 	output = "\n\n".join((output, "Output Format:\n"))
+	output = "\t".join((output, "format: %s" % self.output_format))
+	output = "\n\t".join((output, "q fields: %s" % self.q_out_fields))
+	output = "\n\t".join((output, "aux fields: $s" % self.aux_out_fields))
+
         return output
 
     def write(self,out_file='gauges.data',data_source='setrun.py'):
@@ -219,6 +229,54 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         for gauge in self.gauges:
             format = "%4i" + (len(gauge)-3) * "  %17.10e" + 2 * "  %13.6e" + "\n"
             self._out_file.write(format % tuple(gauge))
+	self._out_file.write()
+	
+	if not isinstance(self.output_format, dict):
+	    # Convert into dict for output
+	    output_format = self.output_format
+	    self.output_format = {}
+            for gauge_num in self.gauge_numbers:
+		self.output_format[gauge_num] = output_format
+	for (gauge, gauge_format) in self.output_format.iter_values():
+	    self.data_write(value="%s %s" % (gauge, gauge_format))j
+
+        # Parse and output fields for output of q
+	if not isinstance(self.q_out_fields, dict):
+	    # Convert into dict for output
+	    q_out_fields = self.q_out_fields
+	    self.output_format = {}
+            for gauge_num in self.gauge_numbers:
+		self.q_out_fields[gauge_num] = q_out_fields
+
+	for (gauge, gauge_fields) in self.q_out_fields.iter_values():
+	    if isinstance(gauge_fields, basestr):
+		if gauge_fields.lower() == 'all':
+                    gauge_fields = [-1]
+                elif gauge_fields.lower() == 'none': 
+		    gauge_fields = [0]
+		else:
+		    raise ValueError("Unknown q field string specified, '%s'" % gauge_fields)
+	    self.data_write(value="%s %s" % (gauge, " ".join(gauge_fields))
+
+	# Parse and output fields for output of aux
+	if not isinstance(self.aux_out_fields, dict):
+	    # Convert into dict for output
+	    aux_out_fields = self.aux_out_fields
+	    self.output_format = {}
+            for gauge_num in self.gauge_numbers:
+		self.aux_out_fields[gauge_num] = aux_out_fields
+
+        for (gauge, gauge_fields) in self.aux_out_fields.iter_values():
+	    if isinstance(gauge_fields, basestr):
+		if gauge_fields.lower() == 'all':
+                    gauge_fields = [-1]
+                elif gauge_fields.lower() == 'none': 
+		    gauge_fields = [0]
+		else:
+		    raise ValueError("Unknown q field string specified, '%s'" % gauge_fields)
+	    self.data_write(value="%s %s" % (gauge, " ".join(gauge_fields))
+
+
         self.close_data_file()
 
     def read(self,data_path="./",file_name='gauges.data'):
