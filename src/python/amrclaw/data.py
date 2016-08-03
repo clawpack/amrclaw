@@ -190,7 +190,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         else:
             return [gauge[0] for gauge in self.gauges]
 
-    def __init__(self, num_eqn, num_aux, num_dim=None):
+    def __init__(self, num_dim=None):
         # num_dim is an argument for backward compatibility, but no longer used
         super(GaugeData,self).__init__()
         self.add_attribute('gauges',[])
@@ -200,6 +200,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         self.add_attribute("display_format", "e15.6")
         self.add_attribute("q_out_fields", "all")
         self.add_attribute("aux_out_fields", "none")
+
 
     def __str__(self):
         output = "Gauges: %s\n" % len(self.gauges)
@@ -216,8 +217,14 @@ class GaugeData(clawpack.clawutil.data.ClawData):
 
         return output
 
-    def write(self,out_file='gauges.data', data_source='setrun.py'):
-        r"""Write out gauge information data file."""
+
+    def write(self, num_eqn, num_aux, out_file='gauges.data', 
+                                      data_source='setrun.py'):
+        r"""Write out gauge information data file.
+
+        This particular write method also requires num_eqn and num_aux so that
+        the boolean arrays turning on and off each field can be filled out.
+        """
 
         # Check to make sure we have only unique gauge numbers
         if len(self.gauges) > 0:
@@ -259,9 +266,11 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         for gauge_num in self.gauge_numbers:
             self.display_format.setdefault(gauge_num, default_display_format)
 
-        for gauge_num in self.gauge_numbers:
-            self._out_file.write("%s " % self.display_format[gauge_num])
-        self._out_file.write("\n\n")
+        self.data_write("display_format")
+        self.data_write()
+        # for gauge_num in self.gauge_numbers:
+            # self._out_file.write("%s " % self.display_format[gauge_num])
+        # self._out_file.write("\n\n")
     
         # Parse and output fields for output of q
         default_q_out_fields = 'all'
@@ -276,15 +285,26 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             self.q_out_fields[gauge_num]
             if isinstance(self.q_out_fields[gauge_num], basestring):
                 if self.q_out_fields[gauge_num].lower() == 'all':
-                    self._out_file.write("-1\n")
+                    self._out_file.write("%s\n" % " ".join(['T'] * num_eqn))
                 elif self.q_out_fields[gauge_num].lower() == 'none': 
-                    self._out_file.write("0\n")
+                    self._out_file.write("%s\n" % " ".join(['F'] * num_eqn))
                 else:
                     raise ValueError("Unknown q field string specified, '%s'" % self.q_out_fields[gauge_num])
             else:
                 if not isinstance(self.q_out_fields[gauge_num], list):
                     self.q_out_fields[gauge_num] = [self.q_out_fields[gauge_num]]
-                self._out_file.write("%s\n" % (" ".join([str(field) for field in self.q_out_fields[gauge_num]])))
+                bool_list = []
+                # Default to T if length of list is not sufficient
+                for n in xrange(num_eqn):
+                    try:
+                        if self.q_out_fields[gauge_num][n]:
+                            bool_list.append("T")
+                        else:
+                            bool_list.append("F")
+                    except IndexError:
+                        bool_list.append('T')
+
+                self._out_file.write("%s\n" % (" ".join(bool_list)))
         self.data_write()
     
         # Parse and output fields for output of aux
@@ -300,15 +320,26 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             self.aux_out_fields[gauge_num]
             if isinstance(self.aux_out_fields[gauge_num], basestring):
                 if self.aux_out_fields[gauge_num].lower() == 'all':
-                    self._out_file.write("-1\n")
+                    self._out_file.write("%s\n" % " ".join(['T'] * num_aux))
                 elif self.aux_out_fields[gauge_num].lower() == 'none': 
-                    self._out_file.write("0\n")
+                    self._out_file.write("%s\n" % " ".join(['F'] * num_aux))
                 else:
                     raise ValueError("Unknown q field string specified, '%s'" % self.aux_out_fields[gauge_num])
             else:
                 if not isinstance(self.aux_out_fields[gauge_num], list):
                     self.aux_out_fields[gauge_num] = [self.aux_out_fields[gauge_num]]
-                self._out_file.write("%s\n" % (" ".join([str(field) for field in self.aux_out_fields[gauge_num]])))
+                bool_list = []
+                # Default to F if length of list is not sufficient
+                for n in xrange(num_aux):
+                    try:
+                        if self.aux_out_fields[gauge_num][n]:
+                            bool_list.append("T")
+                        else:
+                            bool_list.append("F")
+                    except IndexError:
+                        bool_list.append('F')
+                self.data_write()
+                self._out_file.write("%s\n" % (" ".join(bool_list)))
     
         self.close_data_file()
 
