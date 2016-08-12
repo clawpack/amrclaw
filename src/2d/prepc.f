@@ -37,7 +37,16 @@ c
       imax    = iregsz(level) - 1
       jmax    = jregsz(level) - 1
 
+      ! The code from below to the end of this file does the following:
+      ! for mpar in (all level "level" grid):
+      !     for mkid (all level "level"+1 grid):
+      !         if mkid is encompassed by mpar:
+      !             setuse(mkid)
+      !         endif
+      !     endfor
+      ! endfor
       mpar = lstart(level)
+
  30   if (mpar .eq. 0) go to 99
 c
        ispot   = 0
@@ -45,6 +54,8 @@ c
        jlo     = node(ndjlo,mpar)
        ihi     = node(ndihi,mpar)
        jhi     = node(ndjhi,mpar)
+       ! QUESTION: maxsp is too much? I think is for all level "level"
+       ! grid. Here each level "level" grid get such a space.
        locbc   = igetsp(5*maxsp)
 c      #  initialize list to 0 (0 terminator indicates end of bc list)
        do 35 i = 1,5*maxsp
@@ -54,6 +65,16 @@ c
        mkid = lstart(level+1)
  40    if (mkid .eq. 0) go to 60
 
+          ! ilo is smallest index i of grid mpar on level "level"
+          ! iclo tells horizontal index of the cell on level "level" that 
+          ! encompasses the left-most cell of grid mkid 
+          ! both ilo and iclo is based on cell index coordinate system
+          ! on level "level"
+          ! By comparing the value of ilo and iclo, we can tell their
+          ! relative location. For instance, if ilo < iclo, then the left
+          ! border of grid mpar is to the left of left border of grid
+          ! mkid. By comparing all four borders, we can tell if grid mkid is
+          ! encompassed by grid mpar.
           iclo = node(ndilo,mkid)/intratx(level)
           jclo = node(ndjlo,mkid)/intraty(level)
           ichi = node(ndihi,mkid)/intratx(level)
@@ -67,6 +88,10 @@ c
 c   regular intersections (will check in setuse that no duplication)
 c   this first call is only interior interfaces. 
 
+          ! check if this level "level"+1 grid, mkid, is encompassed by the
+          ! level "level" grid, mpar.
+          ! If so, write info along the border of this grid, mkid, to
+          ! listbc
           if (iplo .le. iphi+1 .and. jplo .le. jphi+1) then
                kflag = 1 ! interior stuff, no mappings
                 call setuse(alloc(locbc),maxsp,ispot,mkid,
