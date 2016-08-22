@@ -396,7 +396,7 @@ contains
       nextLoc(gaugeNum) = 1                        
 
       ! if you want to modify number of digits printed, modify this...
-100     format(i5,10e15.7)
+100     format(i5.2, 10e15.7)
 
       ! close file
       close(myunit)
