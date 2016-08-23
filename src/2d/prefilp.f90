@@ -22,6 +22,10 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
 
     use amr_module, only: iregsz, jregsz, nghost, xlower, ylower, xperdom, yperdom
     use amr_module, only: spheredom, hxposs, hyposs, NEEDS_TO_BE_SET, alloc
+    
+    !for setaux timing
+    use amr_module, only: timeSetaux, timeSetauxCPU
+    
     implicit none
 
     ! Input
@@ -41,6 +45,8 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
     integer :: iputst, jputst, mi, mj, locpatch, locpaux
     integer :: jbump, iwrap1, iwrap2, jwrap1, tmp, locflip, rect(4)
     real(kind=8) :: xlwrap, ybwrap
+    integer ::  msrc    ! this signifies not a real grid, no bndry list with it
+    ! it is possible to preprocess in the periodic case, just more complicated, so postponing
 
     integer :: ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
     real(kind=8) :: scratch(max(mitot,mjtot)*nghost*nvar)
@@ -49,6 +55,10 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
     ! dimension at largest possible
     real(kind=8) :: valPatch((ihi-ilo+1) * (jhi-jlo+1) * nvar)  
     real(kind=8) :: auxPatch((ihi-ilo+1) * (jhi-jlo+1) * naux)  
+    
+    !for timing setaux
+    integer :: clock_start, clock_finish, clock_rate
+    real(kind=8) :: cpu_start, cpu_finish
 
 !     # will divide patch  (from ilo,jlo to ihi,jhi)  into 9 possibilities (some empty): 
 !       x sticks out left, x interior, x sticks out right
@@ -56,6 +66,8 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
 !       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
 !     # this patch lives in a grid with soln array valbig, which goes from
 !       (iglo,jglo) to (ighi,jghi).
+
+    msrc = -1   ! iitialization indicating whether real src grid so can use faster bc list
 
     if (xperdom) then       
        ist(1)    = ilo
@@ -128,8 +140,9 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
                     if (naux .gt. 0)                                                         &
                         call auxCopyIn(auxPatch,mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,   &
                                        iglo,jglo)
+                                       
                     call filrecur(level,nvar,valPatch,auxPatch,naux,time,mi,mj,       &
-                                  1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.true.)
+                                  1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.true.,msrc)
                     ! copy it back to proper place in valbig 
                     call patchCopyOut(nvar,valPatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,   &
                                       iglo,jglo)
@@ -161,12 +174,16 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
 
                     if (naux>0) then
                         scratchaux = NEEDS_TO_BE_SET  !flag all cells with signal since dimensioned strangely
+                        call system_clock(clock_start, clock_rate)
+                        call cpu_time(cpu_start)
                         call setaux(ng,mi,mj,xlwrap,ybwrap,hxposs(level),hyposs(level),naux,scratchaux)
+                        call system_clock(clock_finish, clock_rate)
+                        call cpu_time(cpu_finish)
                     endif 
 
                     rect = [iwrap1,iwrap2,j1+jbump,j2+jbump]
                     call filrecur(level,nvar,scratch,scratchaux,naux,time,mi, &
-                                  mj,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump,.false.)
+                                  mj,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump,.false.,msrc)
 
                     ! copy back using weird mapping for spherical folding (so cant call copy subr below)
                     do ii = i1, i2

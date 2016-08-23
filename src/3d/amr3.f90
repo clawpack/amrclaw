@@ -64,7 +64,7 @@ program amr3
     use amr_module, only: cfl, cflv1, cflmax, evol
 
     use amr_module, only: checkpt_style, checkpt_interval, tchk, nchkpt
-    use amr_module, only: rstfile
+    use amr_module, only: rstfile, check_a
 
     use amr_module, only: max1d, maxvar, maxlv
 
@@ -81,7 +81,12 @@ program amr3
     use amr_module, only: output_aux_onlyonce, matlabu
 
     use amr_module, only: lfine, lentot, iregridcount, avenumgrids
-    use amr_module, only: tvoll, rvoll, rvol, mstart, possk, ibuff
+    use amr_module, only: tvoll,tvollCPU, rvoll, rvol, mstart, possk, ibuff
+    use amr_module, only: timeRegridding,timeRegriddingCPU
+    use amr_module, only: timeBound,timeStepgrid
+    use amr_module, only: timeBoundCPU,timeStepgridCPU
+    use amr_module, only: timeSetaux,timeSetauxCPU
+    use amr_module, only: timeValout,timeValoutCPU
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
@@ -89,7 +94,7 @@ program amr3
 
     use amr_module, only: t0, tstart_thisrun
 
-    !use regions_module, only: set_regions
+    use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
 
     implicit none
@@ -102,10 +107,11 @@ program amr3
     integer :: num_gauge_SAVE
     integer :: omp_get_max_threads, maxthreads
     real(kind=8) :: time, ratmet, cut, dtinit, dt_max
-    logical :: vtime, rest, output_t0    
+    logical :: vtime, rest, output_t0
 
     ! Timing variables
-    integer :: clock_start, clock_finish, clock_rate
+    integer :: clock_start, clock_finish, clock_rate,ttotal
+    real(kind=8) :: cpu_start, cpu_finish,ttotalcpu
 
     ! Common block variables
     real(kind=8) :: dxmin, dymin, dzmin
@@ -130,15 +136,15 @@ program amr3
     call opendatafile(inunit,clawfile)
 
     ! Number of space dimensions, not really a parameter but we read it in and
-    ! check to make sure everyone is on the same page. 
-    read(inunit,"(i1)") ndim  
+    ! check to make sure everyone is on the same page.
+    read(inunit,"(i1)") ndim
     if (ndim /= 3) then
         print *,'Error ***   ndim = 3 is required,  ndim = ',ndim
         print *,'*** Are you sure input has been converted'
         print *,'*** to Clawpack 5.x form?'
         stop
     endif
-          
+
     ! Domain variables
     read(inunit,*) xlower, ylower, zlower
     read(inunit,*) xupper, yupper, zupper
@@ -209,9 +215,10 @@ program amr3
     read(inunit,*) cflv1      ! cfl_max
     read(inunit,*) cfl        ! clf_desired
     read(inunit,*) nv1        ! steps_max
-      
+
     if (output_style /= 3) then
-        nstop = nv1
+        !nstop = nv1
+        nstop = iinfinity ! basically disables this test
     endif
 
     read(inunit,*) vtime      ! dt_variable
@@ -235,7 +242,7 @@ program amr3
     read(inunit,*) method(4)   ! verbosity
     read(inunit,*) method(5)   ! src_split
     read(inunit,*) mcapa1
-    
+
     read(inunit,*) use_fwaves
     allocate(mthlim(mwaves))
     read(inunit,*) (mthlim(mw), mw=1,mwaves)
@@ -253,7 +260,7 @@ program amr3
 
     if ((mthbc(1).eq.2 .and. mthbc(2).ne.2) .or. &
         (mthbc(2).eq.2 .and. mthbc(1).ne.2)) then
-        
+
         print *, '*** ERROR ***  periodic boundary conditions: '
         print *, '  mthbc(1) and mthbc(2) must BOTH be set to 2'
         stop
@@ -277,7 +284,7 @@ program amr3
 
    ! if ((mthbc(3).eq.5 .and. mthbc(4).ne.5) .or. &
    !     (mthbc(4).eq.5 .and. mthbc(3).ne.5)) then
-   ! 
+   !
    !     print *, '*** ERROR ***  sphere bcs at top and bottom: '
    !     print *, '  mthbc(3) and mthbc(4) must BOTH be set to 5'
    !     stop
@@ -301,12 +308,12 @@ program amr3
         ! Never checkpoint:
         checkpt_interval = iinfinity
 
-    else if (checkpt_style == 2) then
+    else if (abs(checkpt_style) == 2) then
         read(inunit,*) nchkpt
         allocate(tchk(nchkpt))
         read(inunit,*) (tchk(i), i=1,nchkpt)
 
-    else if (checkpt_style == 3) then
+    else if (abs(checkpt_style) == 3) then
         ! Checkpoint every checkpt_interval steps on coarse grid
         read(inunit,*) checkpt_interval
     endif
@@ -321,11 +328,11 @@ program amr3
     if (mxnest <= 0) then
         stop 'Error ***   mxnest (amrlevels_max) <= 0 not allowed'
     endif
-          
+
     if (mxnest > maxlv) then
         stop 'Error ***   mxnest > max. allowable levels (maxlv) in common'
     endif
-      
+
     ! Anisotropic refinement always allowed in 5.x:
     read(inunit,*) (intratx(i),i=1,max(1,mxnest-1))
     read(inunit,*) (intraty(i),i=1,max(1,mxnest-1))
@@ -335,7 +342,7 @@ program amr3
 
     do i=1,mxnest-1
         if ((intratx(i) > max1d) .or. (intraty(i) > max1d) .or. &
-                                      (intratz(i) > max1d)) then 
+                                      (intratz(i) > max1d)) then
             print *, ""
             format_string = "(' *** Error: Refinement ratios must be no " // &
                             "larger than max1d = ',i5,/,'     (set max1d" // &
@@ -350,7 +357,7 @@ program amr3
         read(inunit,*) (auxtype(iaux), iaux=1,naux)
     endif
     read(inunit,*)
-              
+
     read(inunit,*) flag_richardson
     read(inunit,*) tol            ! for richardson
     read(inunit,*) flag_gradient
@@ -375,11 +382,6 @@ program amr3
     close(inunit)
     ! Finished with reading in parameters
     ! ==========================================================================
-
-    ! Read in region and gauge data
-    !call set_regions('regions.data')
-    call set_gauges('gauges.data')
-
 
     ! Look for capacity function via auxtypes:
     mcapa = 0
@@ -420,7 +422,7 @@ program amr3
         print *, 'Error ***   need finer domain >', mindim, ' cells'
         stop
     endif
-    if (mcapa > naux) then     
+    if (mcapa > naux) then
         stop 'Error ***   mcapa > naux in input file'
     endif
 
@@ -444,13 +446,18 @@ program amr3
     hyposs(1) = (yupper - ylower) / ny
     hzposs(1) = (zupper - zlower) / nz
 
-    ! initialize frame number for output.  
+    ! initialize frame number for output.
     ! Note: might be reset in restrt if this is a restart
     if (output_t0) then
         matlabu   = 0
     else
         matlabu   = 1
     endif
+
+    ! Boolean check_a tells which checkpoint file to use next if alternating
+    ! between only two files via check_twofiles.f, unused otherwise.
+    ! May be reset in call to restrt, otherwise default to using aaaaa file.
+    check_a = .true.
 
     if (rest) then
 
@@ -467,6 +474,8 @@ program amr3
         ! Call user routine to set up problem parameters:
         call setprob()
 
+        call set_gauges(rest, nvar)
+        call set_regions()
     else
 
         open(outunit, file=outfile, status='unknown', form='formatted')
@@ -475,6 +484,8 @@ program amr3
 
         ! Call user routine to set up problem parameters:
         call setprob()
+        call set_gauges(rest, nvar)
+        call set_regions()
 
         cflmax = 0.d0   ! otherwise use previously heckpointed val
 
@@ -497,8 +508,8 @@ program amr3
 
         call domain(nvar,vtime,nx,ny,nz,naux,t0)
 
-        ! Hold off on gauges until grids are set. 
-        ! The fake call to advance at the very first timestep 
+        ! Hold off on gauges until grids are set.
+        ! The fake call to advance at the very first timestep
         ! looks at the gauge array but it is not yet built
         num_gauge_SAVE = num_gauges
         num_gauges = 0
@@ -527,10 +538,10 @@ program amr3
     write(parmunit,*) '   start time = ',time
     write(parmunit,*) ' '
 
-!$   maxthreads = omp_get_max_threads() 
+!$   maxthreads = omp_get_max_threads()
      write(outunit,*)" max threads set to ",maxthreads
      print *," max threads set to ",maxthreads
-    
+
     !
     !  print out program parameters for this run
     !
@@ -585,6 +596,7 @@ program amr3
 
     ! Timing
     call system_clock(clock_start,clock_rate)
+    call cpu_time(cpu_start)
 
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
@@ -593,19 +605,134 @@ program amr3
     ! --------------------------------------------------------
 
     call system_clock(clock_finish,clock_rate)
-    format_string = "('Total time to solution = ',1f16.8,' s')"
-    write(outunit,format_string) &
-            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) &
-            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
+    call cpu_time(cpu_finish)
 
-    do level = 1, mxnest            
-      format_string = "('Total advanc time on level ',i3,' = ',1f16.8,' s')"
-      write(outunit,format_string) level, &
-             real(tvoll(level),kind=8) / real(clock_rate,kind=8)
-      write(*,format_string) level, &
-             real(tvoll(level),kind=8) / real(clock_rate,kind=8)
+    !output timing data
+    write(*,*)
+    write(outunit,*)
+    format_string="('============================== Timing Data ==============================')"
+    write(outunit,format_string)
+    write(*,format_string)
+
+    write(*,*)
+    write(outunit,*)
+
+    !Integration time
+    format_string="('Integration Time (stepgrid + BC + overhead)')"
+    write(outunit,format_string)
+    write(*,format_string)
+
+    !Advanc time
+    format_string="('Level           Wall Time (seconds)    CPU Time (seconds)   Total Cell Updates')"
+    write(outunit,format_string)
+    write(*,format_string)
+    ttotalcpu=0.d0
+    ttotal=0
+    do level=1,mxnest
+        format_string="(i3,'           ',1f15.3,'        ',1f15.3,'    ', e17.3)"
+        write(outunit,format_string) level, &
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
+        write(*,format_string) level, &
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
+        ttotalcpu=ttotalcpu+tvollCPU(level)
+        ttotal=ttotal+tvoll(level)
     end do
+
+    format_string="('total         ',1f15.3,'        ',1f15.3,'    ', e17.3)"
+    write(outunit,format_string) &
+             real(ttotal,kind=8) / real(clock_rate,kind=8), ttotalCPU, rvol
+    write(*,format_string) &
+             real(ttotal,kind=8) / real(clock_rate,kind=8), ttotalCPU, rvol
+
+    write(*,*)
+    write(outunit,*)
+
+
+    format_string="('All levels:')"
+    write(*,format_string)
+    write(outunit,format_string)
+
+
+
+    !stepgrid
+    format_string="('stepgrid      ',1f15.3,'        ',1f15.3,'    ',e17.3)"
+    write(outunit,format_string) &
+         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
+    write(*,format_string) &
+         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
+
+    !bound
+    format_string="('BC/ghost cells',1f15.3,'        ',1f15.3)"
+    write(outunit,format_string) &
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
+    write(*,format_string) &
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
+
+    !regridding time
+    format_string="('Regridding    ',1f15.3,'        ',1f15.3,'  ')"
+    write(outunit,format_string) &
+            real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
+    write(*,format_string) &
+            real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
+
+    !output time
+    format_string="('Output (valout)',1f14.3,'        ',1f15.3,'  ')"
+    write(outunit,format_string) &
+            real(timeValout,kind=8) / real(clock_rate,kind=8), timeValoutCPU
+    write(*,format_string) &
+            real(timeValout,kind=8) / real(clock_rate,kind=8), timeValoutCPU
+
+    write(*,*)
+    write(outunit,*)
+
+    !Total Time
+    format_string="('Total time:   ',1f15.3,'        ',1f15.3,'  ')"
+    write(outunit,format_string) &
+            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
+            cpu_finish-cpu_start
+    write(*,format_string) &
+            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
+            cpu_finish-cpu_start
+
+    format_string="('Using',i3,' thread(s)')"
+    write(outunit,format_string) maxthreads
+    write(*,format_string) maxthreads
+
+
+    write(*,*)
+    write(outunit,*)
+
+
+    write(*,"('Note: The CPU times are summed over all threads.')")
+    write(outunit,"('Note: The CPU times are summed over all threads.')")
+    write(*,"('      Total time includes more than the subroutines listed above')")
+    write(outunit,"('      Total time includes more than the subroutines listed above')")
+
+
+    !end of timing data
+    write(*,*)
+    write(outunit,*)
+    format_string="('=========================================================================')"
+    write(outunit,format_string)
+    write(*,format_string)
+    write(*,*)
+    write(outunit,*)
+
+
+
+    !format_string = "('Total time to solution = ',1f16.8,' s')"
+    !write(outunit,format_string) &
+    !        real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) &
+    !        real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8)
+
+    !do level = 1, mxnest
+    !  format_string = "('Total advanc time on level ',i3,' = ',1f16.8,' s')"
+    !  write(outunit,format_string) level, &
+    !         real(tvoll(level),kind=8) / real(clock_rate,kind=8)
+    !  write(*,format_string) level, &
+    !         real(tvoll(level),kind=8) / real(clock_rate,kind=8)
+    !end do
 
     ! Done with computation, cleanup:
     lentotsave = lentot
@@ -614,7 +741,7 @@ program amr3
         write(outunit,*) lentot," words not accounted for in memory cleanup"
         print *,         lentot," words not accounted for in memory cleanup"
     endif
-    
+
     !
     ! report on statistics
     !

@@ -156,8 +156,8 @@ c
       npts = index 
       if (gprint) then
         write(outunit,100) npts, lcheck,len
- 100    format( i5,' flagged points initially colated on level ',i4,
-     .        " badpts len = ",i5)
+ 100    format( i9,' flagged points initially colated on level ',i4,
+     .        " badpts len = ",i10)
       endif
 c
 c colate flagged points into single integer array for quicksorting

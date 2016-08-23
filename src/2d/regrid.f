@@ -107,10 +107,16 @@ c        balancing, but doesn't help locality
          if (verbosity_regrid .ge. levnew) then
            write(*,100) ngridcount,ncells,levnew
            write(outunit,100) ngridcount,ncells,levnew
- 100       format("there are ",i4," grids with ",i8,
+ 100       format("there are ",i6," grids with ",i10,
      &            " cells at level ", i3)
          endif
 72     continue
+c
+c      set up array of grids instead of recomputing at each step
+       call makeGridList(lbase)
+       do levnew = lbase+1, lfine
+          call makeBndryList(levnew)   ! does one level at a time
+       end do
 
       return
       end

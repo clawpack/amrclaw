@@ -12,6 +12,9 @@ c
       integer mythread/0/, maxthreads/1/
       integer listgrids(numgrids(level))
       integer clock_start, clock_finish, clock_rate
+      integer clock_startStepgrid,clock_startBound,clock_finishBound
+      real(kind=8) cpu_start,cpu_finish,cpu_startBound
+      real(kind=8) cpu_startStepgrid,cpu_finishBound
 
 c     maxgr is maximum number of grids  many things are
 c     dimensioned at, so this is overall. only 1d array
@@ -27,28 +30,36 @@ c                  advancing the solution on the grid
 c                  adjusting fluxes for flux conservation step later
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
+c get start time for more detailed timing by level
+      call system_clock(clock_start,clock_rate)
+      call cpu_time(cpu_start)
+       
       hx   = hxposs(level)
       hy   = hyposs(level)
       hz   = hzposs(level)
       delt = possk(level)
 c     Lay out linked list into array for easier parallelization
-      call prepgrids(listgrids,numgrids(level),level)
+c     call prepgrids(listgrids,numgrids(level),level)
 c
-c get start time for more detailed timing by level
-       call system_clock(clock_start,clock_rate)
 
+      call system_clock(clock_startBound,clock_rate)
+      call cpu_time(cpu_startBound)
+      
 c     maxthreads initialized to 1 above in case no openmp
 !$    maxthreads = omp_get_max_threads()
 
 c     New code based on 2D
 !$OMP PARALLEL DO PRIVATE(j, locnew, locaux, mptr, nx, ny, nz, 
-!$OMP&                    mitot, mjtot, mktot,time),
+!$OMP&                    mitot, mjtot, mktot,time,levSt),
 !$OMP&            SHARED(level, nvar, naux, alloc, intrat, delt,
-!$OMP&                   nghost, node, rnode, numgrids, listgrids)
+!$OMP& listOfGrids,listStart,nghost, node, rnode, numgrids, listgrids)
 !$OMP&            SCHEDULE(dynamic,1),
 !$OMP&            DEFAULT(none)
       do j = 1, numgrids(level)
-         mptr   = listgrids(j)
+         !mptr   = listgrids(j)
+         levSt = listStart(level)
+         mptr   = listOfGrids(levSt+j-1)
+         !write(*,*)"old ",listgrids(j)," new",mptr
          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
          nz     = node(ndkhi,mptr) - node(ndklo,mptr) + 1
@@ -64,7 +75,11 @@ c
 
        end do
 !$OMP END PARALLEL DO
-
+      call system_clock(clock_finishBound,clock_rate)
+      call cpu_time(cpu_finishBound)
+      timeBound=timeBound+clock_finishBound-clock_startBound
+      timeBoundCPU=timeBoundCPU+cpu_finishBound-cpu_startBound
+      
 c
 c save coarse level values if there is a finer level for wave fixup
       if (level+1 .le. mxnest) then
@@ -78,18 +93,21 @@ c
       cflmax = 0.d0    !# added by rjl 6/17/05 to keep track of cfl on level
 c
 
-
+      call system_clock(clock_startStepgrid,clock_rate)
+      call cpu_time(cpu_startStepgrid)
 
 !$OMP PARALLEL DO PRIVATE(j,mptr,nx,ny,nz,mitot,mjtot,mktot,
-!$OMP&                    dtnew, mythread,maxthreads),
+!$OMP&                    dtnew, mythread,maxthreads,levSt),
 !$OMP&            SHARED(rvol,rvoll,level,nvar,mxnest,alloc,intrat)
 !$OMP&            SHARED(nghost,intratx,intraty,intratz,hx,hy,hz)
 !$OMP&            SHARED(naux,listsp,node,rnode,dtlevnew)
-!$OMP&            SHARED(numgrids,listgrids)
+!$OMP&            SHARED(numgrids,listgrids,listStart,listOfGrids)
 !$OMP&            SCHEDULE (dynamic,1)
 !$OMP&            DEFAULT(none)
       do j = 1, numgrids(level)
-         mptr   = listgrids(j)
+         !mptr   = listgrids(j)
+         levSt = listStart(level)
+         mptr = listOfGrids(levSt+j-1)
          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
          ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
          nz     = node(ndkhi,mptr) - node(ndklo,mptr) + 1
@@ -107,7 +125,13 @@ c
 !$OMP END PARALLEL DO
 c
       call system_clock(clock_finish,clock_rate)
+      call cpu_time(cpu_finish)
       tvoll(level) = tvoll(level) + clock_finish - clock_start
+      tvollCPU(level)=tvollCPU(level)+cpu_finish-cpu_start
+      timeStepgrid=timeStepgrid+clock_finish-clock_startStepgrid
+      timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid
+      
+      
       cflmax = dmax1(cflmax,cfl_level)
 
 c
@@ -142,7 +166,7 @@ c
       subroutine par_advanc (mptr,mitot,mjtot,mktot,nvar,naux,dtnew)
 c
       use amr_module
-      use gauges_module, only: print_gauges, num_gauges
+      use gauges_module, only: update_gauges, num_gauges
       implicit double precision (a-h,o-z)
 
 
@@ -228,8 +252,10 @@ c        # now has boundary conditions filled in.
 c     should change the way print_gauges does io - right now is critical section
 
       if (num_gauges > 0) then
-         call print_gauges(alloc(locnew),alloc(locaux),xlow,ylow,zlow,
-     .                    nvar,mitot,mjtot,mktot,naux,mptr)
+         call update_gauges(alloc(locnew:locnew+nvar*mitot*mjtot*mktot),
+     .                     alloc(locaux:locaux+nvar*mitot*mjtot*mktot),
+     .                     xlow,ylow,zlow,nvar,mitot,mjtot,mktot,
+     .                     naux,mptr)
          endif
 
          if (dimensional_split .eq. 0) then

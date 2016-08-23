@@ -13,6 +13,10 @@ c
 
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
       logical   xint, yint
+      
+      !for setaux timing
+      integer :: clock_start, clock_finish, clock_rate
+      real(kind=8) :: cpu_start, cpu_finish
 c
 c NEW INDEXING - ORDER SWITCHED
       iadd   (ivar,i,j)  = locflip    + ivar-1 + nvar*((j-1)*nc+i-1)
@@ -150,9 +154,15 @@ c             swap so that smaller one is left index, etc since mapping reflects
                   endif
                   fliparray(locflipaux:locflipaux+naux*nc*nr - 1) =
      1                     NEEDS_TO_BE_SET
+                 call system_clock(clock_start, clock_rate)
+                 call cpu_time(cpu_start)
                  call setaux(ng,nr,nc,xlwrap,ybwrap,
      1                    hxposs(level),hyposs(level),naux,
      2                    fliparray(locflipaux))
+                 call system_clock(clock_finish, clock_rate)
+                 call cpu_time(cpu_finish)
+                 timeSetaux = timeSetaux + clock_finish - clock_start
+                 timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_finish
               endif 
 
 c             write(dbugunit,101) i1,i2,j1,j2

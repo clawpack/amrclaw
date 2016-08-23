@@ -44,6 +44,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
       logical    debug,  dump
       data       debug/.false./,  dump/.false./
+
 c
 c
 !--        if (dump .and. mptr .ne. 1) 
@@ -229,8 +230,8 @@ c For variable time stepping, use max speed seen on this grid to
 c choose the allowable new time step dtnew.  This will later be
 c compared to values seen on other grids.
 c
-        if (cflgrid .gt. 0.d0) then
-            dtnew = dt*cfl/cflgrid
+        if (cfl_level .gt. 0.d0) then
+            dtnew = dt*cfl/cfl_level
           else
 c            # velocities are all zero on this grid so there's no
 c            # time step restriction coming from this grid.
@@ -238,9 +239,9 @@ c            # time step restriction coming from this grid.
           endif
 c
 
-      if (cflgrid .gt. cflv1) then
-            write(*,810) cflgrid
-            write(outunit,810) cflgrid
+      if (cfl_level .gt. cflv1) then
+            write(*,810) cfl_level
+            write(outunit,810) cfl_level
   810       format('*** WARNING *** Courant number  =', d12.4,
      &              '  is larger than cflv(1) ')
             endif

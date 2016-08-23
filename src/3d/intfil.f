@@ -2,7 +2,7 @@ c
 c ------------------------------------------------------
 c
        subroutine intfil(val,mi,mj,mk,time,flaguse,nrowst,ncolst,nfilst,
-     2                   ilo,ihi,jlo,jhi,klo,khi,level,nvar,naux)
+     2                   ilo,ihi,jlo,jhi,klo,khi,level,nvar,naux,msrc)
 c
 c ::::::::::::::::::::::: INTFIL ::::::::::::::::::::::::::::::::;
 c  INTFIL: interpolates values for a patch at the specified level and
@@ -59,8 +59,26 @@ c
          end do
       end do
 
-      mptr   = lstart(level)
- 10   if (mptr .eq. 0) go to 105
+!      mptr   = lstart(level)
+! 10   if (mptr .eq. 0) go to 105
+       
+      if (msrc .eq. -1) then ! use array of all grids at this level
+         numg = numgrids(level)
+         levSt = listStart(level)
+      else  ! use new bndry list for each grid if at same level
+         bndLoc = node(bndListSt,msrc)  ! index of first grid in bndList
+         bndNum = node(bndListNum,msrc)
+         nextSpot = node(bndListSt, msrc) ! initialize
+         numg = bndNum
+      endif
+
+      do icount = 1, numg   ! combining old and new way to loop over grids
+      
+         if (msrc .eq. -1) then
+            mptr = listOfGrids(levSt+icount-1)
+         else
+            mptr = bndList(nextSpot,gridNbor)
+         endif
 c
 c     :::  check if grid mptr and patch intersect
 c
@@ -176,8 +194,14 @@ c     ::: linear interpolation in time
  75      continue
       endif
 c
- 90   mptr = node(levelptr, mptr)
-      go to 10
+!90   mptr = node(levelptr, mptr)
+ 90      continue
+
+         if (msrc .ne. -1) then
+            nextSpot = bndList(nextSpot,nextfree)
+         endif
+      end do
+!      go to 10
 c
  105  continue
  

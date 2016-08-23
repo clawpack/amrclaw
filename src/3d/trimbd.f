@@ -1,13 +1,13 @@
 c
 c ---------------------------------------------------------------
 c
-        subroutine trimbd(used,set,il ,ir ,jf ,jr ,kb ,kt ,
+        subroutine trimbd(used,set,il ,ir ,jl ,jr ,kl ,kr ,
      &                             ilo,ihi,jlo,jhi,klo,khi)
 c
 c ::::::::::::::::::::: TRIMBD :::::::::::::::::::::::::::::::::::
 c  if used array is completely set (=1.) then return set=true, 
 c  otherwise return false, and the dimensions of the smallest rectangular
-c  parallelopiped containing all unset points in il,ir,jf,jr,kb,kt.
+c  parallelopiped containing all unset points in il,ir,jl,jr,kl,kr.
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
         implicit double precision (a-h,o-z)
@@ -39,7 +39,7 @@ c some unset cells were found
            do 220 j = jlo, jhi
               uleft = dmin1(uleft,used(i,j,k))
 220        continue
-           il = i -ilo + 1
+           il = i 
            if (uleft .eq. 0.) go to 230
 200     continue
 
@@ -49,7 +49,7 @@ c some unset cells were found
            do 320 j = jlo, jhi
               uright = dmin1(uright,used(i,j,k))
 320        continue
-           ir = i - ilo + 1
+           ir = i 
            if (uright .eq. 0.) go to 330
 300     continue
 
@@ -59,7 +59,7 @@ c some unset cells were found
            do 420 i = ilo, ihi
               ufront = dmin1(ufront,used(i,j,k))
 420        continue
-           jf = j - jlo + 1
+           jl = j 
            if (ufront .eq. 0.) go to 430
 400        continue
  
@@ -69,7 +69,7 @@ c some unset cells were found
            do 520 i = ilo, ihi
               urear = dmin1(urear,used(i,j,k))
 520        continue
-           jr = j - jlo + 1
+           jr = j 
            if (urear .eq. 0.) go to 530
 500     continue
  
@@ -79,7 +79,7 @@ c some unset cells were found
            do 620 i = ilo, ihi
               ubot = dmin1(ubot,used(i,j,k))
 620        continue
-           kb = k - klo + 1
+           kl = k
            if (ubot .eq. 0.) go to 630
 600     continue
  
@@ -89,7 +89,7 @@ c some unset cells were found
            do 720 i = ilo, ihi
               utop = dmin1(utop,used(i,j,k))
 720        continue
-           kt = k - klo + 1
+           kr = k 
            if (utop .eq. 0.) go to 730
 700     continue
 

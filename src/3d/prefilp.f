@@ -23,6 +23,7 @@ c
     ! dimension scratch patches at largest possible
       dimension  valPatch((ihi-ilo+1)*(jhi-jlo+1)*(khi-klo+1)*nvar)  
       dimension  auxPatch((ihi-ilo+1)*(jhi-jlo+1)*(khi-klo+1)*naux)    
+      integer    msrc/ -1/  ! indicates not a real grid calling filpatch
 
 c
 c  :::::::::::::: PREFILRECUR :::::::::::::::::::::::::::::::::::::::::::
@@ -159,7 +160,7 @@ c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
      2                      1,1,1,                      
      3                      i1+ishift(i), i2+ishift(i),
      4                      j1+jshift(j), j2+jshift(j),
-     5                      k1+kshift(k), k2+kshift(k),.true.)      
+     5                      k1+kshift(k), k2+kshift(k),.true.,msrc)      
 
                     ! copy it back to proper place in valbig 
                     call patchCopyOut(nvar,valPatch,mi,mj,mk,valbig,

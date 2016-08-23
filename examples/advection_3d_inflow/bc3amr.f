@@ -3,11 +3,9 @@ c ------------------------------------------------------------------
 c
       subroutine bc3amr(val,aux,nrow,ncol,nfil,meqn,naux,
      1                  hx, hy, hz,level, time,
-     2                  xleft,  xright,  yfront, yrear,
-     3                  zbot, ztop,
-     4                  xlower,ylower,zlower,
-     5                  xupper,yupper,zupper,
-     6                  xperiodic, yperiodic,zperiodic)
+     2                  xlo_patch,  xhi_patch,  
+     3                  ylo_patch, yhi_patch,
+     4                  zlo_patch, zhi_patch)
 
 
 c
@@ -21,8 +19,9 @@ c     using the boundary conditions.
 c     ------------------------------------------------
 c     # Standard boundary condition choices for amr3ez in clawpack
 c
-c     # At each boundary  k = 1 (left),  2 (right),  3 (front), 4 (rear),
-c                         5 (bottom) 6 (top)
+c     # At each boundary  k = 1 (xlower),  2 (xupper),  3 (ylower ), 4 (yupper),
+c                         5 (zlower) 6 (zupper)
+c     #  
 c     #   mthbc(k) =  0  for user-supplied BC's (must be inserted!)
 c     #            =  1  for zero-order extrapolation
 c     #            =  2  for periodic boundary coniditions
@@ -33,8 +32,8 @@ c     #                  or 4'th (for k = 5,6) component of q.
 c     ------------------------------------------------
 c
 c     The corners of the grid patch are at
-c        (xleft,yfront,zbot)  --  lower front left corner
-c        (xright,yrear,ztop) --  upper rear right corner
+c        (xlo_patch,ylo_patch,zlo_patch)  --  lower left corner
+c        (xhi_patch,yhi_patch,zhi_patch)  --  upper right corner
 c
 c     The physical domain itself is a rectangular parallelopiped bounded by
 c        (xlower,ylower,zlower)  -- lower front left corner
@@ -49,20 +48,20 @@ c                         /                         /  |
 c                        /_________________________/   |
 c                        |                         |   |
 c                        |                         |   |
-c                     ___|_____(xright,yrear,ztop) |   |
+c                     ___|_____(xhi_patch,yhi_patch,zhi_patch) 
 c                    /___|____/|                   |   |
 c                    |   |    ||                   |   |
 c                    |   |    ||                   |   |
 c                    |   |    ||                   |   |
 c                    |___|____|/                   |   |
-c  (xleft,yfront,zbot)   |                         |  /
+c  (xlo_patch,ylo_patch,zlo_patch)                 |  /                       
 c                        |                         | /
 c                        |_________________________|/
 c  (xlower,ylower,zlower)
 c
 c     Any cells that lie outside the physical domain are ghost cells whose
 c     values should be set in this routine.  This is tested for by comparing
-c     xleft with xlower to see if values need to be set at the left, as in
+c     xlo_patch with xlower to see if values need to be set at the left, as in
 c     the figure above, and similarly at the other boundaries.
 c
 c     Patches are guaranteed to have at least 1 row of cells filled
@@ -80,47 +79,46 @@ c     Don't overwrite ghost cells in periodic directions!
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
-      use amr_module, only:  mthbc
-c     implicit double precision (a-h,o-z)
+      use amr_module, only:  mthbc,xlower,ylower,zlower
+      use amr_module, only:  xupper,yupper,zupper
+      use amr_module, only:  xperdom,yperdom,zperdom
       implicit none
 
-      real*8  val(meqn,nrow,ncol,nfil), aux(naux,nrow,ncol,nfil)
-      logical xperiodic, yperiodic, zperiodic
+      real*8  val(meqn,nrow,ncol,nfil)
+      real*8  aux(naux,nrow,ncol,nfil)
+      real*8  hx,hy,hz,hxmarg,hymarg,hzmarg,time
       integer nrow,ncol,nfil,meqn,naux,level
-      real*8  hx,hy,hz,time
-      real*8  hxmarg,hymarg,hzmarg
-      real*8  xleft,xright,yfront,yrear,zbot,ztop
+      real*8  xlo_patch,xhi_patch,ylo_patch,yhi_patch
+      real*8  zlo_patch,zhi_patch
       real*8  xcell,ycell,zcell
-      real*8  xlower,ylower,zlower
-      real*8  xupper,yupper,zupper
       integer i,j,k,m,nxl,nxr,ibeg,nyf,nyr,jbeg,nzb,nzt,kbeg
 
       hxmarg = hx*.01d0
       hymarg = hy*.01d0
       hzmarg = hz*.01d0
 
-      if (xperiodic .and. yperiodic .and. zperiodic) go to 699
+      if (xperdom .and. yperdom .and. zperdom) go to 699
 c
 c
 c-------------------------------------------------------
 c     # xlower boundary:
 c-------------------------------------------------------
-      if (xleft .ge. xlower-hxmarg) then
+      if (xlo_patch .ge. xlower-hxmarg) then
 c        # not a physical boundary -- ghost cells lie within another
 c        # grid and values are set elsewhere in amr code.
          go to 199
          endif
 c
 c     # number of ghost cells lying outside physical domain:
-      nxl = (xlower+hxmarg-xleft)/hx
+      nxl = (xlower+hxmarg-xlo_patch)/hx
 c
       go to (100,110,120,130) mthbc(1)+1
 c
   100 continue
          do k = 1,nfil
-            zcell = zbot + (k-0.5d0)*hz
+            zcell = zlo_patch + (k-0.5d0)*hz
             do j = 1,ncol
-               ycell = yfront + (j-0.5d0)*hy
+               ycell = ylo_patch + (j-0.5d0)*hy
                do i=1,nxl
                   if ((zcell-0.5d0)**2 +(ycell-0.5d0)**2 
      &                     < 0.01d0) then
@@ -168,14 +166,14 @@ c
 c-------------------------------------------------------
 c     # xupper boundary:
 c-------------------------------------------------------
-      if (xright .le. xupper+hxmarg) then
+      if (xhi_patch .le. xupper+hxmarg) then
 c        # not a physical boundary -- ghost cells lie within another
 c        # grid and values are set elsewhere in amr code.
          go to 299
          endif
 c
 c     # number of ghost cells lying outside physical domain:
-      nxr = (xright - xupper + hxmarg)/hx
+      nxr = (xhi_patch - xupper + hxmarg)/hx
       ibeg = max0(nrow-nxr+1, 1)
 c
       go to (200,210,220,230) mthbc(2)+1
@@ -222,22 +220,22 @@ c
 c-------------------------------------------------------
 c     # ylower boundary:
 c-------------------------------------------------------
-      if (yfront .ge. ylower-hymarg) then
+      if (ylo_patch .ge. ylower-hymarg) then
 c        # not a physical boundary -- ghost cells lie within another
 c        # grid and values are set elsewhere in amr code.
          go to 399
          endif
 c
 c     # number of ghost cells lying outside physical domain:
-      nyf = (ylower+hymarg-yfront)/hy
+      nyf = (ylower+hymarg-ylo_patch)/hy
 c
       go to (300,310,320,330) mthbc(3)+1
 c
   300 continue
          do k = 1,nfil
-            zcell = zbot + (k-0.5d0)*hz
+            zcell = zlo_patch + (k-0.5d0)*hz
             do i = 1,nrow
-               xcell = xleft + (i-0.5d0)*hx
+               xcell = xlo_patch + (i-0.5d0)*hx
                do j=1,nyf
                   if ((zcell-0.5d0)**2 +(xcell-0.5d0)**2 
      &                     < 0.01d0) then
@@ -285,14 +283,14 @@ c
 c-------------------------------------------------------
 c     # yupper boundary:
 c-------------------------------------------------------
-      if (yrear .le. yupper+hymarg) then
+      if (yhi_patch .le. yupper+hymarg) then
 c        # not a physical boundary -- ghost cells lie within another
 c        # grid and values are set elsewhere in amr code.
          go to 499
          endif
 c
 c     # number of ghost cells lying outside physical domain:
-      nyr = (yrear - yupper + hymarg)/hy
+      nyr = (yhi_patch - yupper + hymarg)/hy
       jbeg = max0(ncol-nyr+1, 1)
 c
       go to (400,410,420,430) mthbc(4)+1
@@ -340,22 +338,22 @@ c
 c-------------------------------------------------------
 c     # zlower boundary:
 c-------------------------------------------------------
-      if (zbot .ge. zlower-hzmarg) then
+      if (zlo_patch .ge. zlower-hzmarg) then
 c        # not a physical boundary -- ghost cells lie within another
 c        # grid and values are set elsewhere in amr code.
          go to 599
          endif
 c
 c     # number of ghost cells lying outside physical domain:
-      nzb = (zlower+hzmarg-zbot)/hz
+      nzb = (zlower+hzmarg-zlo_patch)/hz
 c
       go to (500,510,520,530) mthbc(5)+1
 c
   500 continue
          do i = 1,nrow
-            xcell = xleft + (i-0.5d0)*hx
+            xcell = xlo_patch + (i-0.5d0)*hx
             do j = 1,ncol
-               ycell = yfront + (j-0.5d0)*hy
+               ycell = ylo_patch + (j-0.5d0)*hy
                do k=1,nzb
                   if ((xcell-0.5d0)**2 +(ycell-0.5d0)**2 
      &                     < 0.01d0) then
@@ -403,14 +401,14 @@ c
 c-------------------------------------------------------
 c     # zupper boundary:
 c-------------------------------------------------------
-      if (ztop .le. zupper+hzmarg) then
+      if (zhi_patch .le. zupper+hzmarg) then
 c        # not a physical boundary -- ghost cells lie within another
 c        # grid and values are set elsewhere in amr code.
          go to 699
          endif
 c
 c     # number of ghost cells lying outside physical domain:
-      nzt = (ztop - zupper + hzmarg)/hz
+      nzt = (zhi_patch - zupper + hzmarg)/hz
       kbeg = max0(nfil-nzt+1, 1)
 c
       go to (600,610,620,630) mthbc(6)+1

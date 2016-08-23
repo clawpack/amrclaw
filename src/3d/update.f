@@ -38,7 +38,7 @@ c
       lget = level
       if (uprint) write(outunit,100) lget
 100   format(19h    updating level ,i5)
-      call prepgrids(listgrids,numgrids(level),level)
+c     call prepgrids(listgrids,numgrids(level),level)
 c
 c  grid loop for each level
 c
@@ -53,14 +53,16 @@ c 20   if (mptr .eq. 0) go to 85
 !$OMP&                    jclo,kclo,ichi,jchi,kchi,mi,mj,mk,locf,
 !$OMP&                    locfaux,iplo,jplo,kplo,iphi,jphi,kphi,
 !$OMP&                    iff,jff,kff,totrat,i,j,k,ivar,
-!$OMP&                    ico,jco,kco,capa),
+!$OMP&                    ico,jco,kco,capa,levSt),
 !$OMP&         SHARED(lget,numgrids,listgrids,listsp,alloc,nvar,maux,
 !$OMP&                   intratx,intraty,intratz,nghost,uprint,mcapa,
-!$OMP&                   node,lstart,level),
+!$OMP&                   node,lstart,level,listOfGrids,listStart),
 !$OMP&         SCHEDULE(dynamic,1),
 !$OMP&         DEFAULT(none)
        do ng = 1, numgrids(lget)
-         mptr    = listgrids(ng)
+         !mptr    = listgrids(ng)
+         levSt   = listStart(lget)
+         mptr    = listOfGrids(levSt + ng - 1)
          loc     = node(store1,mptr)
          loccaux = node(storeaux,mptr)
          nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
