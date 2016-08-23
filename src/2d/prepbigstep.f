@@ -9,8 +9,14 @@ c
 
        double precision valdub(nvar,midub,mjdub)
        double precision auxdub(naux,midub,mjdub)
+       double precision valbgc(nvar,mi2tot,mj2tot)
+       double precision auxbgc(naux,mi2tot,mj2tot)
        dimension fp(nvar,mi2tot,mj2tot),gp(nvar,mi2tot,mj2tot)
        dimension fm(nvar,mi2tot,mj2tot),gm(nvar,mi2tot,mj2tot)
+       
+       !for setaux timing
+       integer :: clock_start, clock_finish, clock_rate
+       real(kind=8) :: cpu_start, cpu_finish
 
 
           hx  = hxposs(lcheck)
@@ -41,14 +47,21 @@ c
               mx = midub - 4*nghost
               my = mjdub - 4*nghost
               auxdub = NEEDS_TO_BE_SET  ! signal that needs a val
+              
+              call system_clock(clock_start, clock_rate)
+              call cpu_time(cpu_start)
               call setaux(2*nghost,mx,my,xl,yb,hx,hy,
      &                    naux,auxdub)
+              call system_clock(clock_finish, clock_rate)
+              call cpu_time(cpu_finish)
+              timeSetaux = timeSetaux + clock_finish - clock_start
+              timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
+              
               call auxcoarsen(auxdub,midub,mjdub,
      1                     auxbgc,mi2tot,mj2tot,naux,auxtype)
           endif
 
 c         # fill it - use enlarged (before coarsening) aux arrays
-c          call bound(tpre,nvar,ng2,alloc(locdub),midub,mjdub,mptr,
           call bound(tpre,nvar,ng2,valdub,midub,mjdub,mptr,
      1               auxdub,naux)
 

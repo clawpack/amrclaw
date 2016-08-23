@@ -37,7 +37,7 @@ c
 c
  10   call moment(intcorn(1,icl),badpts(1,ist),numptc(icl),usenew)
       if (gprint) write(outunit,101) icl,numptc(icl),usenew
- 101  format('   testing cluster ',i4,' with ',i5,' pts. use ',e12.4)
+ 101  format('   testing cluster ',i8,' with ',i9,' pts. use ',e12.4)
 c
       if (usenew .lt. cutoff) go to 20
 c

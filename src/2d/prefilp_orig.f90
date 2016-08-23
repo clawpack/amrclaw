@@ -22,6 +22,10 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
 
     use amr_module, only: iregsz, jregsz, nghost, xlower, ylower, xperdom, yperdom
     use amr_module, only: spheredom, hxposs, hyposs, NEEDS_TO_BE_SET
+    
+    !for setaux timing
+    use amr_module, only: timeSetaux, timeSetauxCPU
+    
     implicit none
 
     ! Input
@@ -42,6 +46,10 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
     integer :: ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
     real(kind=8) :: scratch(max(mitot,mjtot)*nghost*nvar)
     real(kind=8) :: scratchaux(max(mitot,mjtot)*nghost*naux)
+    
+    !for timings
+    integer :: clock_start, clock_finish, clock_rate
+    real(kind=8) :: cpu_start, cpu_finish
 
 !     # will divide patch into 9 possibilities (some empty): 
 !       x sticks out left, x interior, x sticks out right
@@ -143,7 +151,14 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
               
                     if (naux>0) then
                         scratchaux = NEEDS_TO_BE_SET  !flag all cells with signal since dimensioned strangely
+                        
+                        call system_clock(clock_start,clock_rate)
+                        call cpu_time(cpu_start)
                         call setaux(ng,nr,nc,xlwrap,ybwrap,hxposs(level),hyposs(level),naux,scratchaux)
+                        call system_clock(clock_finish,clock_rate)
+                        call cpu_time(cpu_finish)
+                        timeSetaux = timeSetaux + clock_finish - clock_start
+                        timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
                     endif 
 
                     rect = [iwrap1,iwrap2,j1+jbump,j2+jbump]

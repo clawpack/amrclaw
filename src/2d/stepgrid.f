@@ -51,9 +51,9 @@ c     # needed there.
          write(outunit,*) "dumping grid ",mptr," at time ",time
          do i = 1, mitot
          do j = 1, mjtot
-            write(outunit,545) i,j,(q(ivar,i,j),ivar=1,nvar),
-     .                  (aux(ivar,i,j),ivar=1,maux)
- 545        format(2i4,4e15.7)
+            write(outunit,545) i,j,(q(ivar,i,j),ivar=1,nvar) 
+c    .                  ,(aux(ivar,i,j),ivar=1,maux)
+ 545        format(2i4,5e15.7)
          end do
          end do
       endif

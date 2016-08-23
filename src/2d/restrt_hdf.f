@@ -18,7 +18,7 @@ c
 c
 c     # HDF: Arrays which will hold output arrays.
 c
-      dimension  iqout(14), qout(4)
+      dimension  iqout(15), qout(4)
 c
 c     # HDF: Declare external HDF functions
 c
@@ -54,7 +54,7 @@ c
       end if
 
       index = 0
-      call read_integer_vector(sd_id,14,index,'iqout ',iqout)
+      call read_integer_vector(sd_id,15,index,'iqout ',iqout)
       lenmax  = iqout(1)
       lendim  = iqout(2)
       isize   = iqout(3)
@@ -69,6 +69,7 @@ c
       nsteps  = iqout(12)
       matlabu = iqout(13)
       lentot  = iqout(14)
+      ndfree_bnd  = iqout(15)
 
       index = index + 1
       call read_integer_vector(sd_id,maxlv,index,'icheck',icheck)

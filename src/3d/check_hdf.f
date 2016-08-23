@@ -66,7 +66,8 @@ c     # HDF: DFNT_INT32
       iqout(12) = nsteps
       iqout(13) = matlabu
       iqout(14) = lentot
-      call dump_integer_vector(sd_id,14,'iqout ',iqout)
+      iqout(15) = ndfree_bnd
+      call dump_integer_vector(sd_id,15,'iqout ',iqout)
       call dump_integer_vector(sd_id,maxlv,'icheck',icheck)
       call dump_integer_vector(sd_id,maxlv,'lstart',lstart)
       call dump_integer_vector(sd_id,maxlv,'newstl',newstl)

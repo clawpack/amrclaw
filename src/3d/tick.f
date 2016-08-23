@@ -5,7 +5,8 @@ c
      &                rest,dt_max)
 c
       use amr_module
-      use gauges_module, only: setbestsrc
+      use gauges_module, only: setbestsrc, num_gauges
+      use gauges_module, only: print_gauges_and_reset_nextloc
 
       implicit double precision (a-h,o-z)
 
@@ -13,6 +14,8 @@ c
       logical    vtime, dumpout/.false./, dumpchk/.false./
       logical    rest, dump_final
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
+      integer clock_start, clock_finish, clock_rate
+      real(kind=8) cpu_start,cpu_finish
 
 c
 c :::::::::::::::::::::::::::: TICK :::::::::::::::::::::::::::::
@@ -64,7 +67,7 @@ c              # restart: make sure output times start after restart time
       endif
 
       nextchk = 1
-      if ((nstart .gt. 0) .and. (checkpt_style.eq.2)) then
+      if ((nstart .gt. 0) .and. (abs(checkpt_style).eq.2)) then
 c        if this is a restart, make sure chkpt times start after restart time
          do ii = 1, nchkpt
            if (tchk(ii) .gt. time) then
@@ -187,7 +190,15 @@ c level 'lbase' stays fixed.
 c
           if (rprint) write(outunit,101) lbase
 101       format(8h  level ,i5,32h  stays fixed during regridding )
+          
+          call system_clock(clock_start,clock_rate)
+          call cpu_time(cpu_start)
           call regrid(nvar,lbase,cut,naux,start_time)
+          call system_clock(clock_finish,clock_rate)
+          call cpu_time(cpu_finish)
+          timeRegridding = timeRegridding + clock_finish - clock_start
+          timeRegriddingCPU=timeRegriddingCPU+cpu_finish-cpu_start 
+          
           call setbestsrc()     ! need at every grid change
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
 c note negative time to signal regridding output in plots
@@ -289,17 +300,6 @@ c
           ncycle  = ncycle + 1
           call conck(1,nvar,naux,time,rest)
 
-       if ((checkpt_style.eq.3 .and. 
-     &      mod(ncycle,checkpt_interval).eq.0) .or. dumpchk) then
-          call check(ncycle,time,nvar,naux)
-                dumpchk = .true.
-       endif
-
-       if ((mod(ncycle,iout).eq.0) .or. dumpout) then
-          call valout(1,lfine,time,nvar,naux)
-          if (printout) call outtre(mstart,.true.,nvar,naux)
-       endif
-
       if ( vtime) then
 c
 c         find new dt for next cycle (passed back from integration routine).
@@ -314,6 +314,17 @@ c          make sure not to exceed largest permissible dt
  120       possk(i) = possk(i-1) / kratio(i-1)
 
       endif
+
+       if ((abs(checkpt_style).eq.3 .and. 
+     &      mod(ncycle,checkpt_interval).eq.0) .or. dumpchk) then
+          call check(ncycle,time,nvar,naux)
+                dumpchk = .true.
+       endif
+
+       if ((mod(ncycle,iout).eq.0) .or. dumpout) then
+          call valout(1,lfine,time,nvar,naux)
+          if (printout) call outtre(mstart,.true.,nvar,naux)
+       endif
 
       go to 20
 c
@@ -340,17 +351,23 @@ c
           endif
       
       if (dump_final) then
-           call valout(1,lfine,time,nvar,naux)
-           if (printout) call outtre(mstart,.true.,nvar,naux)
-         endif
+          call valout(1,lfine,time,nvar,naux)
+          if (printout) call outtre(mstart,.true.,nvar,naux)
+      endif
 
 c  # checkpoint everything for possible future restart
 c  # (unless we just did it based on dumpchk)
 c
-
-      if ((checkpt_style .gt. 0) .and. (.not. dumpchk)) then
-           call check(ncycle,time,nvar,naux)
+      if (checkpt_style .ne. 0) then  ! want a chckpt
+         ! check if just did it so dont do it twice
+         if (.not. dumpchk) call check(ncycle,time,nvar,naux)
+      else  ! no chkpt wanted, so need to print gauges separately
+         if (num_gauges .gt. 0) then
+            do ii = 1, num_gauges
+               call print_gauges_and_reset_nextLoc(ii,nvar)
+            end do
          endif
+      endif
 
       write(6,*) "Done integrating to time ",time
       return
