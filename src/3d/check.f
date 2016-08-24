@@ -8,7 +8,8 @@ c   check point routine - can only call at end of coarse grid cycle
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       use amr_module
-      use gauges_module, only: OUTGAUGEUNIT
+      use gauges_module, only:  num_gauges
+      use gauges_module, only: print_gauges_and_reset_nextLoc
 
       implicit double precision (a-h,o-z)
       integer tchkunit
@@ -18,7 +19,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       write(6,601) time,nsteps
  601  format('Creating checkpoint file at t = ',e16.9,'  nsteps = ',i5)
-
+c
       if (checkpt_style < 0) then
 
 c         #  Alternate between two sets of files, overwriting the oldest
@@ -52,7 +53,6 @@ c
  20       continue
       endif
 
-
       open(unit=tchkunit,file=tchkname,status='unknown',
      .     form='formatted')
       open(unit=chkunit,file=chkname,status='unknown',
@@ -79,7 +79,10 @@ c     # if code dies it will at least have output up to this checkpoint time
 
       flush(outunit)        ! defined in amr_module.f90
       flush(dbugunit)       ! defined in amr_module.f90
-      flush(OUTGAUGEUNIT)   ! defined in gauges_module.f90
+c      flush(OUTGAUGEUNIT)   ! defined in gauges_module.f90
+      do ii = 1, num_gauges
+         call print_gauges_and_reset_nextLoc(ii,nvar)
+      end do
 
 c     # write the time stamp file last so it's not updated until data is
 c     # all dumped, in case of crash mid-dump.

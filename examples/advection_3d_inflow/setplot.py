@@ -26,7 +26,28 @@ def setplot(plotdata):
     plotdata.clearfigures()  # clear any old figures,axes,items data
     
     print "**** Python plotting tools not yet implemented in 3d"
-    print "**** No plots will be generated."
+    print "**** No frame plots will be generated."
+    print "**** Gauges can still be plotted."
+
+
+    #-----------------------------------------
+    # Figures for gauges
+    #-----------------------------------------
+    plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
+                    type='each_gauge')
+    plotfigure.clf_each_gauge = True
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'q'
+
+    # Plot q as blue curve:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 0
+    plotitem.plotstyle = 'b-'
+
 
     # Parameters used only when creating html and/or latex hardcopy
     # e.g., via clawpack.visclaw.frametools.printframes:

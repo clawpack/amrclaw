@@ -69,14 +69,14 @@ c     left boundary
 
       if ((xperdom .and. xl .lt. xlower) .or. 
      1    (yperdom .and. ysticksout)) then
-	      call  prefilrecur(level,nvar,valbig,aux,naux,time,
+        call  prefilrecur(level,nvar,valbig,aux,naux,time,
      1                    mitot,mjtot,mktot,
      2                    1,1,ng+1,
      3                    ilo-ng,ilo-1,jlo-ng,jhi+ng,klo,khi,
      4                    ilo-ng,ilo+ng,jlo-ng,jhi+ng,klo-ng,khi+ng,
      5                    patchOnly)
       else
-      	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
+        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                1,1,ng+1,ilo-ng,ilo-1,
      2                jlo-ng,jhi+ng,klo,khi,patchOnly,mptr)
       endif
@@ -94,14 +94,14 @@ c     right boundary
 
       if ((xperdom .and. xr .gt. xupper) .or. 
      1    (yperdom .and. ysticksout)) then
-      	call  prefilrecur(level,nvar,valbig,aux,naux,time,
+        call  prefilrecur(level,nvar,valbig,aux,naux,time,
      1                    mitot,mjtot,mktot,
      2                    mitot-ng+1,1,ng+1,
      3                    ihi+1,ihi+ng,jlo-ng,jhi+ng,klo,khi,
      4                    ilo-ng,ilo+ng,jlo-ng,jhi+ng,klo-ng,khi+ng,
      5                    patchOnly)
       else
-      	call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
+        call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,mktot,
      1                mitot-ng+1,1,ng+1,ihi+1,ihi+ng,
      2                jlo-ng,jhi+ng,klo,khi,patchOnly,mptr)
       endif
@@ -135,7 +135,7 @@ c     rear boundary
       zb = zlo
       zt = zhi
       if (yperdom .and. yr .gt. yupper) then
-      	call prefilrecur(level,nvar,valbig,aux,naux,time,
+        call prefilrecur(level,nvar,valbig,aux,naux,time,
      1                   mitot,mjtot,mktot,
      2                   ng+1,mjtot-ng+1,ng+1,
      3                   ilo,ihi,jhi+1,jhi+ng,klo,khi,
