@@ -66,7 +66,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[1] = 0.5         # yupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 50      # mx
+    clawdata.num_cells[0] = 50     # mx
     clawdata.num_cells[1] = 1      # my
     
 
@@ -225,11 +225,11 @@ def setrun(claw_pkg='amrclaw'):
     #   2 or 'periodic' => periodic (must specify this at both boundaries)
     #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
     
-    clawdata.bc_lower[0] = 'periodic'   # at xlower
-    clawdata.bc_upper[0] = 'periodic'   # at xupper
+    clawdata.bc_lower[0] = 'extrap'   # at xlower
+    clawdata.bc_upper[0] = 'extrap'   # at xupper
 
-    clawdata.bc_lower[1] = 'user'   # at ylower
-    clawdata.bc_upper[1] = 'user'   # at yupper
+    clawdata.bc_lower[1] = 'extrap'   # at ylower
+    clawdata.bc_upper[1] = 'extrap'   # at yupper
                          
 
     # ---------------

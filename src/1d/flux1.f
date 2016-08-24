@@ -23,10 +23,6 @@ c         method(2) = 1 if only first order increment waves are to be used.
 c                   = 2 if second order correction terms are to be added, with
 c                       a flux limiter as specified by mthlim.  
 c
-c         method(3) = 0 if no transverse propagation is to be applied.
-c                       Increment and perhaps correction waves are propagated
-c                       normal to the interface.
-c
 c     Note that if mcapa>0 then the capa array comes into the second 
 c     order correction terms, and is already included in dtdx1d:
 c        dtdx1d(i) = dt/dx                      if mcapa= 0

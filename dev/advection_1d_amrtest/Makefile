@@ -25,7 +25,7 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS ?=  
+FFLAGS = -g -Wall -pedantic -fbounds-check -ffpe-trap=invalid,overflow,zero
 
 # ---------------------------------
 # package sources for this program:
@@ -45,6 +45,8 @@ AMRLIB1D = $(CLAW)/amrclaw/src/1d
 EXCLUDE_MODULES = \
 
 EXCLUDE_SOURCES = \
+  $(AMRLIB)/bc2amr.f \
+  $(AMRLIB)/amr2.f90 \
 
 # ----------------------------------------
 # List of custom sources for this program:
@@ -55,11 +57,14 @@ MODULES = \
 SOURCES = \
   qinit.f \
   setprob.f \
-  bc2amr.f \
   $(CLAW)/riemann/src/rpn2_advection.f \
   $(CLAW)/riemann/src/rpt2_advection.f \
   $(AMRLIB1D)/flag2refine2.f90 \
   $(AMRLIB1D)/step2.f90 \
+  $(AMRLIB1D)/bc1amr.f \
+  $(AMRLIB1D)/amr1.f90 \
+  $(AMRLIB1D)/advanc.f \
+  $(AMRLIB1D)/amr_module.f90 \
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
