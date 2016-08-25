@@ -5,7 +5,8 @@ c
      &                rest,dt_max)
 c
       use amr_module
-      use gauges_module, only: setbestsrc
+      use gauges_module, only: setbestsrc, num_gauges
+      use gauges_module, only: print_gauges_and_reset_nextLoc 
 
       implicit double precision (a-h,o-z)
 c     include  "call.i"
@@ -360,10 +361,17 @@ c
 c  # checkpoint everything for possible future restart
 c  # (unless we just did it based on dumpchk)
 c
-
-      if ((checkpt_style .ne. 0) .and. (.not. dumpchk)) then
-           call check(ncycle,time,nvar,naux)
+      if (checkpt_style .ne. 0) then  ! want a chckpt
+         ! check if just did it so dont do it twice
+         if (.not. dumpchk) call check(ncycle,time,nvar,naux)
+      else  ! no chkpt wanted, so need to print gauges separately
+         if (num_gauges .gt. 0) then
+            do ii = 1, num_gauges
+               call print_gauges_and_reset_nextLoc(ii,nvar)
+            end do
          endif
+      endif
+             
 
       write(6,*) "Done integrating to time ",time
       return

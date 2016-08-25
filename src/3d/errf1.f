@@ -123,7 +123,7 @@ c
      .          ' max. error = ',e15.7,' err2 = ',e15.7)
          if (edebug) then
            write(outunit,*) ' flagged points on coarsened grid ',
-     .             	    'for grid ',mptr
+     .                  'for grid ',mptr
            do 45 kk = nghost+1, mk2tot-nghost
               k = mk2tot + 1 - kk
            do 45 jj = nghost+1, mj2tot-nghost

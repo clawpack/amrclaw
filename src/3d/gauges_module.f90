@@ -18,22 +18,35 @@
 !   
 ! Note: Updated for Clawpack 5.3.0:
 !   - Introduced in 3d code
+!
+! Note: Updated for Clawpack 5.4.0
+!   - refactor so each gauge writes to its own file, and batches the writes instead of 
+!     writing one at a time. This will remove the critical section and should speed up gauges a lot
+!   - When array is filled, that gauge will write to file and start over. 
+!   - Need to save index so know position in array where left off
+!   - At checkpoint times, dump all gauges
 
 module gauges_module
 
     implicit none
     save
 
+    logical, private :: module_setup = .false.
+
     integer, parameter :: OUTGAUGEUNIT=89
-    integer :: num_gauges
+    integer :: num_gauges, inum
     real(kind=8), allocatable, dimension(:) :: xgauge, ygauge, zgauge, &
                   t1gauge, t2gauge
     integer, allocatable, dimension(:) ::  mbestsrc, mbestorder, &
-                  igauge, mbestg1, mbestg2
+                  igauge, mbestg1, mbestg2, nextLoc
 
+!    integer, parameter :: MAXDATA=1
+    integer, parameter :: MAXDATA=1000
+    real(kind=8), pointer :: gaugeArray(:,:,:)
+    integer, pointer :: levelArray(:,:)
 contains
 
-    subroutine set_gauges(fname)
+    subroutine set_gauges(restart, nvar, fname)
 
         use amr_module
 
@@ -41,41 +54,76 @@ contains
 
         ! Input
         character(len=*), intent(in), optional :: fname
+        logical, intent(in) :: restart
+        integer, intent(in) :: nvar
 
         ! Locals
-        integer :: i
+        integer :: i, ipos, idigit
         integer, parameter :: iunit = 7
+        character*14 :: fileName
 
-        ! Open file
-        if (present(fname)) then
-            call opendatafile(iunit,fname)
-        else
-            call opendatafile(iunit,'gauges.data')
-        endif
+        if (.not. module_setup) then
 
-        read(iunit,*) num_gauges
+            ! Open file
+            if (present(fname)) then
+                call opendatafile(iunit,fname)
+            else
+                call opendatafile(iunit,'gauges.data')
+            endif
 
-        allocate(xgauge(num_gauges), ygauge(num_gauges), zgauge(num_gauges))
-        allocate(t1gauge(num_gauges), t2gauge(num_gauges))
-        allocate(mbestsrc(num_gauges), mbestorder(num_gauges))
-        allocate(igauge(num_gauges))
-        allocate(mbestg1(maxgr), mbestg2(maxgr))
-        
-        do i=1,num_gauges
-            read(iunit,*) igauge(i),xgauge(i),ygauge(i),zgauge(i), &
-                          t1gauge(i),t2gauge(i)
-        enddo
+            read(iunit,*) num_gauges
 
-        close(iunit)
-        
-        ! initialize for starters
-        mbestsrc = 0
+            allocate(xgauge(num_gauges), ygauge(num_gauges), zgauge(num_gauges))
+            allocate(t1gauge(num_gauges), t2gauge(num_gauges))
+            allocate(mbestsrc(num_gauges), mbestorder(num_gauges))
+            allocate(igauge(num_gauges))
+            allocate(mbestg1(maxgr), mbestg2(maxgr))
 
-        ! open file for output of gauge data 
-        ! ascii file with format determined by the write(OUTGAUGEUNIT,100)
-        ! statement in print_gauges
-        open(unit=OUTGAUGEUNIT, file='fort.gauge', status='unknown', &
-                                form='formatted')
+            allocate(nextLoc(num_gauges))
+            allocate(gaugeArray(nvar+1,MAXDATA,num_gauges))  ! +1 for time
+            allocate(levelArray(MAXDATA,num_gauges))
+            
+            do i=1,num_gauges
+                read(iunit,*) igauge(i),xgauge(i),ygauge(i),zgauge(i), &
+                              t1gauge(i),t2gauge(i)
+            enddo
+
+            ! initialize for starters
+            mbestsrc = 0
+            nextLoc  = 1  ! next location to be filled with gauge info
+            close(iunit)
+            
+            do i = 1, num_gauges
+               fileName = 'gaugexxxxx.txt'    ! NB different name convention too
+               inum = igauge(i)
+               do ipos = 10,6,-1              ! do this to replace the xxxxx in the name
+                  idigit = mod(inum,10)
+                  fileName(ipos:ipos) = char(ichar('0') + idigit)
+                  inum = inum / 10
+               end do
+
+    !          status unknown since might be a restart run. 
+               if (restart) then
+                  open(unit=OUTGAUGEUNIT, file=fileName, status='old',        &
+                       position='append', form='formatted')
+               else
+                  open(unit=OUTGAUGEUNIT, file=fileName, status='unknown',        &
+                       position='append', form='formatted')
+                  rewind OUTGAUGEUNIT
+                  write(OUTGAUGEUNIT,100) igauge(i), xgauge(i), &
+                        ygauge(i), zgauge(i), nvar
+ 100              format("# gauge_id= ",i5," location=( ",1e15.7," ", &
+                        1e15.7," ",1e15.7," ) num_eqn= ",i2)
+                  write(OUTGAUGEUNIT,101)
+ 101              format("# Columns: level time q(1 ... num_eqn)")
+               endif
+
+               close(OUTGAUGEUNIT)
+
+          end do
+
+          module_setup = .true.
+      end if
 
     end subroutine set_gauges
 
@@ -177,8 +225,8 @@ contains
 !
 ! -------------------------------------------------------------------------
 !
-      subroutine print_gauges(q,aux,xlow,ylow,zlow,nvar,mitot,mjtot,mktot, &
-                 naux,mptr)
+      subroutine update_gauges(q,aux,xlow,ylow,zlow,nvar,mitot,mjtot,mktot, &
+                               naux,mptr)
 !
 !     This routine is called each time step for each grid patch, to output
 !     gauge values for all gauges for which this patch is the best one to 
@@ -210,7 +258,7 @@ contains
       real(kind=8) :: var(maxvar), var1, var2
       real(kind=8) :: xcent,ycent,zcent, xoff,yoff,zoff, tgrid, hx,hy,hz
       integer :: level,i,j,iindex,jindex,kindex, &
-                 ivar, ii,i1,i2
+                 ivar, ii,i1,i2, nindex
 
 !     write(*,*) '+++ in print_gauges with num_gauges, mptr = ',num_gauges,mptr
 
@@ -294,22 +342,78 @@ contains
            if (abs(var(ivar)) .lt. 1.d-90) var(ivar) = 0.d0
         end do
 
-
-!$OMP CRITICAL (gaugeio)
-
-!       # output values at gauge, along with gauge no, level, time:
-!       # if you want to print out something different at each gauge,
-!       # modify this...
-        write(OUTGAUGEUNIT,100)igauge(ii),level, tgrid,(var(j),j=1,nvar)
-
-!       # if you want to modify number of digits printed, modify this...
-100     format(2i5,15e15.7)
-
-!$OMP END CRITICAL (gaugeio)
-
-
- 10     continue  ! end of loop over all gauges
+       ! save info for this time
+        nindex = nextLoc(ii)
  
-      end subroutine print_gauges
+        levelArray(nindex,ii) = level
+        gaugeArray(1,nindex,ii) = tgrid
+        do ivar = 1, nvar
+           gaugeArray(1+ivar,nindex,ii) = var(ivar)
+        end do
+        
+        nextLoc(ii) = nextLoc(ii) + 1
+        if (nextLoc(ii) .gt. MAXDATA) then
+          call print_gauges_and_reset_nextLoc(ii,nvar)  
+        endif
+ 10     continue  ! end of loop over all gauges
+
+ 
+      end subroutine update_gauges
+
+!
+! -------------------------------------------------------------------------
+!
+      subroutine print_gauges_and_reset_nextLoc(gaugeNum,nvar)
+!
+!    Array of gauge data for this gauge reached max capacity
+!    print to file.
+
+      implicit none
+      integer :: gaugeNum,nvar,j,inum,k,idigit,ipos,myunit
+      character*14 :: fileName
+      integer :: omp_get_thread_num, mythread
+
+      ! open file for gauge gaugeNum, figure out name
+      ! not writing gauge number since it is in file name now
+      ! status is old, since file name and info written for
+      ! each file in in set_gauges.
+      !
+      ! NB: output written in different order, losing backward compatibility
+
+
+      fileName = 'gaugexxxxx.txt'    ! NB different name convention too
+      inum = igauge(gaugeNum)
+      do ipos = 10,6,-1              ! do this to replace the xxxxx in the name
+         idigit = mod(inum,10)
+         fileName(ipos:ipos) = char(ichar('0') + idigit)
+         inum = inum / 10
+      end do
+
+
+      mythread = 0
+!$    mythread = omp_get_thread_num()
+      myunit = OUTGAUGEUNIT+mythread
+
+!     add thread number of outgaugeunit to make a unique unit number.
+!     ok since writing to a unique file. in serial, still using only IOUTGAUGEUNIT
+      open(unit=myunit, file=fileName, status='old',    &
+           position='append', form='formatted')
+      
+      ! called either because array is full (write MAXDATA amount of gauge data)
+      ! or checkpoint time, so write whatever is in array and reset.
+      ! nextLoc has already been increment before this subr. called
+      do j = 1, nextLoc(gaugeNum)-1
+        write(myunit,100) levelArray(j,gaugeNum),      &
+                          (gaugeArray(k,j,gaugeNum),k=1,nvar+1)  ! includes time
+      end do
+      nextLoc(gaugeNum) = 1                        
+
+      ! if you want to modify number of digits printed, modify this...
+100     format(i5,5e15.7)
+
+      ! close file
+      close(myunit)
+
+      end subroutine print_gauges_and_reset_nextLoc
 
 end module gauges_module

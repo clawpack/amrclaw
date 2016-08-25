@@ -62,9 +62,6 @@ module amr_module
     ! The max1d parameter should be changed if using OpenMP grid based 
     ! looping, usually set to max1d = 60
     integer, parameter :: max1d = 60 
-    !integer, parameter :: max1d = 100 
-    !integer, parameter :: max1d = 80 
-    !integer, parameter :: max1d = 500 
 
     integer, parameter :: maxvar = 10
     integer, parameter :: maxaux = 20
@@ -168,6 +165,8 @@ module amr_module
 
     integer :: matlabu
 
+    !  USE UNITS NUMBERS < 89.
+    ! 89 and + numthreads taken by gauge output
     integer, parameter :: parmunit = 12
     integer, parameter :: chkunit = 10
     integer, parameter :: inunit  = 5

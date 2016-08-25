@@ -66,7 +66,7 @@ c  that have been primed with bcs to be advanced.
 
          if ((ixlo .le. ixhi .and. jxlo .le. jxhi) .and.
      &       (                     kxlo .le. kxhi)) then
-	         loc  = node(store1,mptr)
+           loc  = node(store1,mptr)
            locaux = node(storeaux,mptr)
            nx   = ighi - iglo + 1
            ny   = jghi - jglo + 1

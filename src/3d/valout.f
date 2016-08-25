@@ -176,7 +176,7 @@ c        #  output aux array to fort.aXXXX
 
 
 
-     	       if (output_format == 1) then
+             if (output_format == 1) then
                 open(unit=matunit3,file=fname3,status='unknown',
      .               form='formatted')
                 write(matunit3,1001) mptr,level,nx,ny,nz

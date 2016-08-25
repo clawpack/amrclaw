@@ -38,7 +38,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       dimension fp(nvar,mitot,mjtot),gp(nvar,mitot,mjtot)
       dimension fm(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
       dimension aux(maux,mitot,mjtot)
-C 	  dimension work(mwork)
+C     dimension work(mwork)
 
       logical    debug,  dump
       data       debug/.false./,  dump/.false./
