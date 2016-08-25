@@ -38,4 +38,4 @@ Run in the terminal:
 python run_adjoint_flagging.py
 ```
 
-This example can be run with either the regular pressure-flagging technique (by using the flag2refine file) or with error-flagging (by using errf1 file). Either option can be set by setting flag_richardson and/or flag_richardson in setrun.py.
+This example can be run with either the regular surface-flagging technique (by using the flag2refine file) or with error-flagging (by using errf1 file). These options can be set by setting the flag2refine and/or flag_richardson flags in setrun.py.
