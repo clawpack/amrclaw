@@ -54,7 +54,12 @@ c     # need to allocate for dynamic memory:
      3       numgrids,kcheck1,nsteps,time,
      3       matlabu
       read(rstunit) avenumgrids, iregridcount,
-     1              evol,rvol,rvoll,lentot,tmass0,cflmax
+     1              evol,rvol,rvoll,lentot,tmass0,cflmax,
+     2              tvoll,tvollCPU,timeTick,timeTickCPU,
+     3              timeStepgrid,timeStepgridCPU,
+     4              timeBound,timeBoundCPU,
+     5              timeRegridding,timeRegriddingCPU,
+     6              timeValout,timeValoutCPU 
 
       close(rstunit) 
 
@@ -62,6 +67,7 @@ c     # need to allocate for dynamic memory:
       write(6,100) nsteps,time
  100  format(/,' RESTARTING the calculation after ',i5,' steps',
      1        /,'  (time = ',e15.7,')')
+      
 c
 c     error checking that refinement ratios have not changed
 c     ### new feature: when using variable refinement in time
@@ -236,5 +242,34 @@ c     bndry list for faster ghost cell filling
          call makeBndryList(level)
       end do
 c
+c     some timers were checkpointed and restarted.
+c     others not currently used, so initialize to 0 to prevent NaNs
+      call initRestOfTimers()
+
       return
       end
+c
+c  ------------------------------------------------------------------
+c
+      subroutine initRestOfTimers()
+      use amr_module
+c
+c :::::::::::::::::::::::::::: RESTRT ::::::::::::::::::::::::::::::::
+c
+c some timers checkpointed and reinitalized. Set rest to zero to prevent
+c NaNs. These timers used for developers, not printed for all users, so
+c not deleted.
+c
+c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+      timeBufnst     = 0.d0 
+      timeFilval     = 0.d0
+      timeFlagger    = 0.d0
+      timeFlglvl     = 0.d0
+      timeFlglvlTot  = 0.d0
+      timeGrdfit2    = 0.d0
+      timeGridfitAll = 0.d0
+      timeUpdating   = 0.d0
+
+      return
+      end
+

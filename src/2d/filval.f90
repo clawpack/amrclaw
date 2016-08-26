@@ -15,9 +15,6 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     use amr_module, only: yperdom, spheredom, xupper, yupper, alloc
     use amr_module, only: outunit, NEEDS_TO_BE_SET, mcapa
     
-    !for setaux timing
-    use amr_module, only: timeSetaux, timeSetauxCPU
-
     implicit none
 
     ! Input
@@ -98,8 +95,6 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
            call setaux(ng,mic,mjc,xl,yb,dx_coarse,dy_coarse,naux,auxc)
            call system_clock(clock_finish, clock_rate)
            call cpu_time(cpu_finish)
-           timeSetaux = timeSetaux + clock_finish - clock_start
-           timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
     endif
     call bc2amr(valc,auxc,mic,mjc,nvar,naux,dx_coarse,dy_coarse,level-1,   &
                 time,xl,xr,yb,yt)
@@ -137,8 +132,6 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
         call setaux(nghost,nx,ny,xleft,ybot,dx,dy,naux,aux)
         call system_clock(clock_finish, clock_rate)
         call cpu_time(cpu_finish)
-        timeSetaux = timeSetaux + clock_finish - clock_start
-        timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
     else ! either no aux exists, or cant reuse yet  
          ! so only call intcopy (which copies soln) and not icall.
          ! in this case flag q(1,:) to NEEDS_TO_BE_SET flag so wont be overwritten
