@@ -67,8 +67,10 @@ def setplot(plotdata):
     plotitem.pcolor_cmap = colormaps.white_red
     plotitem.add_colorbar = False
     plotitem.show = True       # show on plot?
-    plotitem.pcolor_cmin = 0.01
-    plotitem.pcolor_cmax = 0.12
+    plotitem.pcolor_cmin = 0.01     # use when plotting inner product with q
+    #plotitem.pcolor_cmin = 0.0      # use when plotting inner product with error
+    plotitem.pcolor_cmax = 0.12    # use when plotting inner product with q
+    #plotitem.pcolor_cmax = 0.0005    # use when plotting inner product with error
     plotitem.amr_patchedges_show = [0,0,0]
     plotitem.amr_celledges_show = [0,0,0]
     plotitem.amr_data_show = [1,1,0]
