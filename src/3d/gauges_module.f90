@@ -404,7 +404,10 @@ contains
       ! nextLoc has already been increment before this subr. called
       do j = 1, nextLoc(gaugeNum)-1
         write(myunit,100,advance='no') levelArray(j,gaugeNum)
-        write(myunit,110) gaugeArray(:,j,gaugeNum)  ! includes time
+        do k = 1, nvar
+          write(myunit,110,advance='no') gaugeArray(k,j,gaugeNum)
+        end do
+        write(myunit,110) gaugeArray(nvar+1,j,gaugeNum) ! include time
       end do
       nextLoc(gaugeNum) = 1                        
 
