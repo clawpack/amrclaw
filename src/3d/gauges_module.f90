@@ -403,13 +403,14 @@ contains
       ! or checkpoint time, so write whatever is in array and reset.
       ! nextLoc has already been increment before this subr. called
       do j = 1, nextLoc(gaugeNum)-1
-        write(myunit,100) levelArray(j,gaugeNum),      &
-                          (gaugeArray(k,j,gaugeNum),k=1,nvar+1)  ! includes time
+        write(myunit,100,advance='no') levelArray(j,gaugeNum)
+        write(myunit,110) gaugeArray(:,j,gaugeNum)  ! includes time
       end do
       nextLoc(gaugeNum) = 1                        
 
       ! if you want to modify number of digits printed, modify this...
-100     format(i5,5e15.7)
+100     format(i5)
+110     format(5e15.7)
 
       ! close file
       close(myunit)
