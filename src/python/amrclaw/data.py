@@ -266,11 +266,11 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         for gauge_num in self.gauge_numbers:
             self.display_format.setdefault(gauge_num, default_display_format)
 
-        self.data_write("display_format")
-        self.data_write()
-        # for gauge_num in self.gauge_numbers:
-            # self._out_file.write("%s " % self.display_format[gauge_num])
-        # self._out_file.write("\n\n")
+        #self.data_write("display_format")
+        #self.data_write()
+        for gauge_num in self.gauge_numbers:
+            self._out_file.write("%s " % self.display_format[gauge_num])
+        self._out_file.write("\n\n")
     
         # Parse and output fields for output of q
         default_q_out_fields = 'all'
