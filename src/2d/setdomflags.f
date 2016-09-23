@@ -143,7 +143,7 @@ c 3.5 set any part of grid buffer zone to 1 that is at physical boundary
      .                         jlo_coarse,jhi_coarse,mbuff,lbase)
 
 c  4.  done setting flags on base level. next step is to transfer the
-c      properly ensted domain flags to lcheck - i.e. upscale to level needed 
+c      properly nested domain flags to lcheck - i.e. upscale to level needed 
 c      first shrink by 1 for actual nested region.
 c      always shrink once - so works if lcheck same as lbase
 c      if going up 1 level each one needs to be nested, so still shrink first before upsizing
