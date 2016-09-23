@@ -75,8 +75,6 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic,          &
     jchi   = (jhi + 1) / refinement_ratio_y - 1 + 1
     ng     = 0
 
-    valc = 2.22222E+10 ! MJB DEBUG
-
     sticksoutxfine = ( (ilo .lt. 0) .or. (ihi .ge. iregsz(level)))
     sticksoutyfine = ( (jlo .lt. 0) .or. (jhi .ge. jregsz(level)))
     sticksoutxcrse = ((iclo .lt. 0) .or. (ichi .ge. iregsz(level-1)))
@@ -108,31 +106,12 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic,          &
 !!$        end do
            ! no ghost cells on coarse enlarged patch. set any remaining
            ! vals. should only be bcs that stick out of domain.
-           call system_clock(clock_start, clock_rate)
-           call cpu_time(cpu_start)
            call setaux(ng,mic,mjc,xl,yb,dx_coarse,dy_coarse,naux,auxc)
-           call system_clock(clock_finish, clock_rate)
-           call cpu_time(cpu_finish)
     endif
 
     call bc2amr(valc,auxc,mic,mjc,nvar,naux,dx_coarse,dy_coarse,level-1,time,xl,xr,yb, &
                 yt,xlower,ylower,xupper,yupper,xperdom,yperdom,spheredom)
 
-
-   do jm = 1, mjc 
-   do im = 1, mic 
-   do nm = 1, nvar 
-      if  (valc(nm,im,jm) .eq. 2.22222E+10 .and. .not. DIAGONAL_CORNER(im,jm,mic,mjc)) then
-          write(54,*)" not covered by coarser grid"
-          write(*,*)" not covered by coarser grid"
-          write(*,*) "stop here for grid ",mptr
-          write(54,*) "stop here for grid ",mptr
-          call outlev(newstl(level-1),.false.,nvar,naux)
-          stop
-      endif
-   end do
-   end do
-   end do
 
 
 !  NOTE change in order of code.  Since the interp from coarse to fine needs the aux
@@ -162,11 +141,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic,          &
         setflags = aux(1,:,:)   ! save since will overwrite in setaux when setting all aux vals
            ! need this so we know where to use coarse grid to set fine solution w/o overwriting
            ! set remaining aux vals not set by copying from prev existing grids
-        call system_clock(clock_start, clock_rate)
-        call cpu_time(cpu_start)
         call setaux(nghost,nx,ny,xleft,ybot,dx,dy,naux,aux)
-        call system_clock(clock_finish, clock_rate)
-        call cpu_time(cpu_finish)
     else ! either no aux exists, or cant reuse yet  
          ! so only call intcopy (which copies soln) and not icall.
          ! in this case flag q(1,:) to NEEDS_TO_BE_SET flag so wont be overwritten
