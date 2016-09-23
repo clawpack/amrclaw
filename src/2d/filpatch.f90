@@ -19,9 +19,6 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   use amr_module, only: outunit, nghost, xperdom, yperdom, spheredom
   use amr_module, only: iregsz, jregsz, intratx, intraty, NEEDS_TO_BE_SET
 
-  !for setaux timing
-  use amr_module, only: timeSetaux, timeSetauxCPU
-
   implicit none
 
   ! Input
@@ -174,15 +171,9 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
         do k = 1, lencrse, naux
            auxcrse(k) = NEEDS_TO_BE_SET ! new system checks initialization before setting aux vals
         end do
-        call system_clock(clock_start,clock_rate)
-        call cpu_time(cpu_start)
         call setaux(nghost_patch, mitot_coarse,mjtot_coarse,  &
              xlow_coarse, ylow_coarse,            &
              dx_coarse,dy_coarse,naux,auxcrse)
-        call system_clock(clock_finish,clock_rate)
-        call cpu_time(cpu_finish)
-        timeSetaux = timeSetaux + clock_finish - clock_start
-        timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
      endif
 
      ! Fill in the edges of the coarse grid. for recursive calls, patch indices and
