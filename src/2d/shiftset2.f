@@ -30,8 +30,8 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 c  note: not looking at ghost cells, only real cells should be flagged
 c  but can buffer the flags into the ghost zone
-       do i = ilo, ihi
        do j = jlo, jhi
+       do i = ilo, ihi
           rflag = rectflags(i,j)
           if (rflag .gt. 0)  then
 c            cell is flagged, buffer in all dirs by ibuff

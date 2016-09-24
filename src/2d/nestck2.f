@@ -7,9 +7,10 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
       dimension  badpts(2,npts)
-      logical baseCheck, isNested
+      logical baseCheck, isNested1, isNested2
+      logical projecCheck
 
-      integer   numptc(maxcl)
+      integer   numptc(maxcl), zeroBuff
 c
 c ::::::::::::::::::::::: NESTCK :::::::::::::::::::::::::::::::::::
 c
@@ -29,19 +30,43 @@ c   badpts  - only the flagged pts. in this cluster (# icl)
 c :::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::::::::
 c
        nestck2 = .true.
+       levnew  = node(nestlevel,mnew)
+       lratiox = intratx(levnew-1)
+       lratioy = intraty(levnew-1)
 c
-c      # for CONVEX coarsest grid at level 1, nothing to check
-       if (lbase .eq. 1)  go to 99
+!--c      # for CONVEX coarsest grid at level 1, nothing to check
+       if (lbase .eq. 1)  then
+            isNested1 = .true.
 
-       levnew = node(nestlevel,mnew)
-       lratiox  = intratx(levnew-1)
-       lratioy  = intraty(levnew-1)
+c POTENTIAL BUG FIX
+c  need to also check that new grid can be projected to level-2 grids so is
+c  properly nested.  might be an accident of grid gen that makes it stick out
+c  for now check using same call for both purposes
+       else
 
-       isNested = baseCheck(mnew,lbase,node(ndilo,mnew),
-     .                      node(ndihi,mnew),node(ndjlo,mnew),
-     .                      node(ndjhi,mnew))
-       if (isNested) then
-           nestck2 = isNested
+         zeroBuff = 0   ! dont count buffer zone around grid in checking
+         isNested1 = baseCheck(mnew,lbase,node(ndilo,mnew),
+     .                         node(ndihi,mnew),node(ndjlo,mnew),
+     .                         node(ndjhi,mnew),nvar,naux,zeroBuff)
+       endif
+
+c again using new second definition of proper nesting (must have existing grid to project to
+c to insure new lev-2 grid generated containing levnew grids
+       levToCheck = levnew - 2
+       if (levToCheck .le. 1) then 
+         isNested2 = .true.   ! base grid convex, no L shaped domains
+       else if (levToCheck .le. lbase) then
+         isNested2 = isNested1
+       else
+         mbuff = max(nghost,ibuff+1) ! you can use buffer zone in checking, since is only to flag points
+         isNested2 = baseCheck(mnew,levToCheck,node(ndilo,mnew),
+     .                         node(ndihi,mnew),node(ndjlo,mnew),
+     .                         node(ndjhi,mnew),nvar,naux,mbuff)
+
+       endif
+
+       if (isNested1 .and. isNested2) then
+           nestck2 = .true.
            go to 99
        endif
 c
