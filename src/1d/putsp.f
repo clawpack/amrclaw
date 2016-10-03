@@ -6,7 +6,7 @@ c
       use amr_module
       implicit double precision (a-h,o-z)
 
-      parameter(numbcs=2)
+      parameter(numbcs=4)
 
 c
 c ::::::::::::::::::::::::::::::: PUTSP :::::::::::::::::::::::::
@@ -20,9 +20,6 @@ c
       if (level .eq. lfine) go to 30
 c
       mptr  = lstart(level)
-c BND:TODO
-c This used to be "5" for 2d code, and is "numbcs" (6) for 3d code.
-c So, should it be 2 or 3?
  20      call reclam(node(cfluxptr,mptr), numbcs*listsp(level))
          node(cfluxptr,mptr) = 0
       mptr  = node(levelptr,mptr)
