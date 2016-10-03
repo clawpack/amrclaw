@@ -76,50 +76,34 @@ c   for fine grids touching periodic boundary on left
           if  (xperdom .and. iclo .eq. 0 .and. ihi .eq. imax) then
               kflag = 1
               call setuse(alloc(locbc),maxsp,ispot,mkid,
-     2          ilo,ihi,jlo,jhi,iclo+iregsz(level),ichi+iregsz(level),
-     3          jclo,jchi,kflag)
-          endif
-
-c   for fine grids touching periodic boundary on top
-          if  (yperdom .and. jlo .eq. 0 .and. jchi .eq. jmax) then
-                kflag = 1
-                call setuse(alloc(locbc),maxsp,ispot,mkid,
-     2          ilo,ihi,jlo,jhi,iclo,ichi,
-     3          jclo-jregsz(level),jchi-jregsz(level),kflag)
-          endif
-
-c   for fine grids touching periodic boundary on bottom
-          if  (yperdom .and. jclo .eq. 0 .and. jhi .eq. jmax)  then
-              kflag = 1
-              call setuse(alloc(locbc),maxsp,ispot,mkid,
-     2          ilo,ihi,jlo,jhi,iclo,ichi,
-     3          jclo+jregsz(level),jchi+jregsz(level),kflag)
+     2          ilo,ihi,iclo+iregsz(level),ichi+iregsz(level),
+     3          kflag)
           endif
 
 c   for fine grids touching boundary on top in spherically mapped case
 c   and coarse grid touches top too. see if (mapped) x extent overlap.
-          if  (spheredom .and. jhi .eq. jmax .and. jchi .eq. jmax) then
+c Is this needed in 1d case?
+          if  (spheredom) then
                kflag = 2
 c              write(dbugunit,*)" for coarse grid ",mpar
                iwrap2 = iregsz(level) - iclo - 1  !higher mapped index
                iwrap1 = iregsz(level) - ichi - 1  !lower mapped index
                if (max(ilo,iwrap1) .le. min(ihi,iwrap2)) then
                   call setuse(alloc(locbc),maxsp,ispot,mkid,
-     1                        ilo,ihi,jlo,jhi,iclo,ichi,
-     2                        jclo,jchi,kflag)
+     1                        ilo,ihi,iclo,ichi,kflag)
                endif
           endif
 
 c   fine grids touching boundary on bottom for spherically mapped case
 c   coarse grid touches bottom too. see if (mapped) x extents overlap
-          if  (spheredom .and. jclo .eq. 0 .and. jlo .eq. 0) then
+c Is this needed in 1d case?
+          if  (spheredom) then
                kflag = 3
                iwrap2 = iregsz(level) - iclo - 1  !higher mapped index
                iwrap1 = iregsz(level) - ichi - 1  !lower mapped index
                if (max(ilo,iwrap1) .le. min(ihi,iwrap2)) then
                   call setuse(alloc(locbc),maxsp,ispot,mkid,
-     1                        ilo,ihi,jlo,jhi,iclo,ichi,
-     2                        jclo,jchi,kflag)
+     1                        ilo,ihi,iclo,ichi,kflag)
                endif
           endif
 
