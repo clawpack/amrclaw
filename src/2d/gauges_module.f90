@@ -80,7 +80,7 @@ module gauges_module
 
 contains
 
-    subroutine set_gauges(restart, nvar, fname)
+    subroutine set_gauges(restart, num_aux, fname)
 
         use amr_module, only: maxgr
         use utility_module, only: get_value_count_alt, parse_values
@@ -90,15 +90,13 @@ contains
         ! Input
         character(len=*), intent(in), optional :: fname
         logical, intent(in) :: restart
-        integer, intent(in) :: nvar
+        integer, intent(in) :: num_aux
 
         ! Locals
         integer :: i, ipos, idigit, inum, n, num_fields, index
         integer, parameter :: iunit = 7
         character(len=128) :: line
-        character(len=4) temp_string
         character(len=20) :: q_column, aux_column
-        real(kind=8) :: values(10)
 
         if (.not.module_setup) then
             ! Open file
@@ -146,24 +144,27 @@ contains
 
             ! Read in aux fields
             read(iunit, *)
-            do i=1, num_gauges
-                read(iunit, "(a)") line
-                num_fields = get_value_count_alt(line)
-                allocate(gauges(i)%aux_out_vars(num_fields))
-                read(line, *) gauges(i)%aux_out_vars
+            if (num_aux > 0) then
+                do i=1, num_gauges
+                    read(iunit, "(a)") line
+                    num_fields = get_value_count_alt(line)
+                    allocate(gauges(i)%aux_out_vars(num_fields))
+                    read(line, *) gauges(i)%aux_out_vars
 
-                do n=1, size(gauges(i)%aux_out_vars, 1)
-                    if (gauges(i)%aux_out_vars(n)) then
-                        gauges(i)%num_out_vars = gauges(i)%num_out_vars + 1
-                    end if  
+                    do n=1, size(gauges(i)%aux_out_vars, 1)
+                        if (gauges(i)%aux_out_vars(n)) then
+                            gauges(i)%num_out_vars = gauges(i)%num_out_vars + 1
+                        end if  
+                    end do
                 end do
-
-                ! Allocate data buffer - time + num_out_vars + eta
-                allocate(gauges(i)%data(gauges(i)%num_out_vars + 1, MAX_BUFFER))
-                print *, "data size ", i, ": (", gauges(i)%num_out_vars + 1, ", ", MAX_BUFFER, ")"
-            end do
+            end if
 
             close(iunit)
+
+            ! Allocate actual data buffer, + 1 is for time
+            do i = 1, num_gauges
+                allocate(gauges(i)%data(gauges(i)%num_out_vars + 1, MAX_BUFFER))
+            end do
             
             ! Create gauge output file names
             do i = 1, num_gauges
@@ -183,7 +184,7 @@ contains
                     open(unit=OUTGAUGEUNIT, file=gauges(i)%file_name, status='unknown',        &
                        position='append', form='formatted')
                     rewind OUTGAUGEUNIT
-                    write(OUTGAUGEUNIT, 100) gauges(i)%gauge_num, gauges(i)%x, gauges(i)%y, gauges(i)%num_out_vars + 1
+                    write(OUTGAUGEUNIT, 100) gauges(i)%gauge_num, gauges(i)%x, gauges(i)%y, gauges(i)%num_out_vars
  100                format("# gauge_id= ",i5," location=( ",1e15.7," ",1e15.7," ) num_eqn= ",i2)
                     ! write(OUTGAUGEUNIT, 101) 
 
@@ -210,7 +211,7 @@ contains
 
                     write(OUTGAUGEUNIT, *) "# level, time, q",             &
                                            trim(q_column), ", aux",       &
-                                           trim(aux_column), ", eta"
+                                           trim(aux_column)
                 endif
 
                 close(OUTGAUGEUNIT)
@@ -339,17 +340,17 @@ contains
         implicit none
   
         ! Input
+        integer, intent(in) ::  nvar,mitot,mjtot,naux,mptr
         real(kind=8), intent(in) ::  q(nvar,mitot,mjtot)
         real(kind=8), intent(in) ::  aux(naux,mitot,mjtot)
         real(kind=8), intent(in) ::  xlow,ylow
-        integer, intent(in) ::  nvar,mitot,mjtot,naux,mptr
   
         ! local variables:
         integer, parameter :: MAX_VARS = 20
         real(kind=8) :: var(MAX_VARS)
         real(kind=8) :: xcent,ycent,xoff,yoff,tgrid,hx,hy
-        integer :: level,i,j,ioff,joff,iindex,jindex,ivar, ii,i1,i2
-        integer :: icell,jcell, index
+        integer :: level,i,j,iindex,jindex,ivar, ii,i1,i2
+        integer :: index
         integer :: var_index
   
 !       write(*,*) '+++ in print_gauges with num_gauges, mptr = ',num_gauges,mptr
@@ -409,7 +410,7 @@ contains
 
     !       ## bilinear interpolation
             var_index = 0
-            do ivar - 1, size(gauges(ii)%q_out_vars, 1)
+            do ivar = 1, size(gauges(ii)%q_out_vars, 1)
                 if (gauges(ii)%q_out_vars(ivar)) then
                     var_index = var_index + 1
                     var(var_index) = (1.d0 - xoff) * (1.d0 - yoff) * q(ivar, iindex, jindex) &
@@ -417,14 +418,19 @@ contains
                                         + (1.d0 - xoff) * yoff * q(ivar, iindex, jindex + 1) &
                                         + xoff * yoff * q(ivar, iindex + 1, jindex + 1)
                 endif
-                if (gauge(ii)%aux_out_vars(ivar)) then
-                    var_index = var_index + 1
-                    var(var_index) = (1.d0 - xoff) * (1.d0 - yoff) * aux(ivar, iindex, jindex) &
-                                        + xoff * (1.d0 - yoff) * aux(ivar, iindex + 1, jindex) &
-                                        + (1.d0 - xoff) * yoff * aux(ivar, iindex, jindex + 1) &
-                                        + xoff * yoff * aux(ivar, iindex + 1, jindex + 1)
-                endif
             end do
+
+            if (allocated(gauges(ii)%aux_out_vars)) then
+                do ivar = 1, size(gauges(ii)%aux_out_vars, 1)
+                    if (gauges(ii)%aux_out_vars(ivar)) then
+                        var_index = var_index + 1
+                        var(var_index) = (1.d0 - xoff) * (1.d0 - yoff) * aux(ivar, iindex, jindex) &
+                                            + xoff * (1.d0 - yoff) * aux(ivar, iindex + 1, jindex) &
+                                            + (1.d0 - xoff) * yoff * aux(ivar, iindex, jindex + 1) &
+                                            + xoff * yoff * aux(ivar, iindex + 1, jindex + 1)
+                    endif
+                end do
+            end if
 
             ! Check to make sure we grabbed all the values
             if (gauges(ii)%num_out_vars /= var_index) then
@@ -447,7 +453,6 @@ contains
             do j = 1, gauges(ii)%num_out_vars
                 gauges(ii)%data(1 + j, index) = var(j)
             end do
-            gauges(ii)%data(gauges(ii)%num_out_vars + 2, index) = eta
             
             gauges(ii)%buffer_index = index + 1
             if (gauges(ii)%buffer_index > MAX_BUFFER) then
