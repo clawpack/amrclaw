@@ -174,10 +174,9 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
      ! Fill in the edges of the coarse grid. for recursive calls, patch indices and
      ! 'coarse grid' indices are the same (no actual coarse grid here, so cant use mptr
      ! must pass indices. patchOnly argument  is thus true
-     if ((xperdom .or. spheredom) .and. sticksout(iplo,iphi)) then
-        write(*,*) "ERROR: Periodic boundary conditions not yet implemented in 1d"
-        !call prefilrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,mjtot_coarse,1,1,   &
-        !     iplo,iphi,jplo,jphi,iplo,iphi,jplo,jphi,.true.)
+     if ((xperdom) .and. sticksout(iplo,iphi)) then
+        call prefilrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,1,   &
+             iplo,iphi,iplo,iphi,.true.)
      else
         call filrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,   &
              iplo,iphi,.true.,-1)  ! when going to coarser patch, no source grid (for now at least)
