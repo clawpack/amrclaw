@@ -1,8 +1,10 @@
 #get the directory of this makefile
+CLASSIC:=$(CLAW)/classic/src
 AMRLIB:=$(CLAW)/amrclaw/src/2d
 
 #list of common sources for amr 2d codes
 COMMON_MODULES += \
+  $(CLASSIC)/utility_module.f90 \
   $(AMRLIB)/amr_module.f90 \
   $(AMRLIB)/gauges_module.f90 \
   $(AMRLIB)/regions_module.f90 \
