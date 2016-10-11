@@ -56,7 +56,7 @@ c         make coarsened enlarged patch for conservative fixup
             sticksout = .false.
           endif
 
-          if (sticksout .and. (xperdom.or.spheredom)) then
+          if (sticksout .and. xperdom) then
              !iperim = nrow
              !locflip = igetsp(iperim*nghost*(nvar+naux))
              write(*,*) "ERROR: periodic not implemented in 1d"

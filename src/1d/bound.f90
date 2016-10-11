@@ -21,7 +21,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mptr,aux,naux)
   use amr_module, only: rnode, node, hxposs, cornxlo, cornxhi
   use amr_module, only: ndilo, ndihi
   use amr_module, only: nestlevel, xlower, xupper
-  use amr_module, only: xperdom, spheredom
+  use amr_module, only: xperdom
 
   implicit none
 

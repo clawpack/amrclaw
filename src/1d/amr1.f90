@@ -75,7 +75,7 @@ program amr1
     use amr_module, only: tol, tolsp, flag_richardson, flag_gradient
 
     use amr_module, only: nghost, mthbc
-    use amr_module, only: xperdom, spheredom
+    use amr_module, only: xperdom
 
     use amr_module, only: nstop, nout, iout, tfinal, tout, output_style
     use amr_module, only: output_format, printout, verbosity_regrid
@@ -252,10 +252,6 @@ program amr1
 
     ! 1 = left, 2 = right
     xperdom = (mthbc(1) == 2 .and. mthbc(2) == 2)
-    ! BND Is spheredom even needed for 1d code?
-    ! temporary fix:
-    spheredom = .false.
-    !spheredom =  (mthbc(3) == 5 .and. mthbc(4) == 5)
 
     if ((mthbc(1).eq.2 .and. mthbc(2).ne.2) .or. &
         (mthbc(2).eq.2 .and. mthbc(1).ne.2)) then
@@ -272,13 +268,6 @@ program amr1
     !    print *, '  mthbc(3) and mthbc(4) must BOTH be set to 5'
     !    stop
     !endif
-
-    if (spheredom .and. .not. xperdom) then
-
-        print *,'*** ERROR ***  sphere bcs at top and bottom: '
-        print *,'must go with periodic bcs at left and right  '
-        stop
-    endif
 
     ! ==========================================================================
     !  Restart and Checkpointing

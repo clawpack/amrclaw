@@ -65,7 +65,7 @@ c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       use amr_module, only: mthbc,xlower,xupper
-      use amr_module, only: xperdom,spheredom
+      use amr_module, only: xperdom
 
       implicit none
 
@@ -78,7 +78,6 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       hxmarg = hx*.01
 
-      if (xperdom .and. spheredom)) go to 499
 c
 c
 c-------------------------------------------------------

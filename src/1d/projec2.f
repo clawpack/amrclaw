@@ -66,23 +66,6 @@ c       do 60 i = ist, iend        ! new code into rectflags is 0 based
            endif
  60    continue
 c
-c IS THERE SOMETHING TO DO ABOUT PERIODICITY
-c
-c repeat above procedure for wrapped area if nec. if ibuff > 0
-c this will be caught in shiftset flagging
-       if (spheredom .and. ibuff .eq. 0) then
-             iwrap1 = iregsz(level) - iend - 1
-             iwrap2 = iregsz(level) - ist - 1
-c             do 61 i = iwrap1+1, iwrap2+1
-             do 61 i = iwrap1, iwrap2  !changing this WITHOUT CHECKING, AS ABOVE. STILL NEED TO CHECK***
-                if (rectflags(i) .eq. goodpt) then
-                  rectflags(i) = badpro  ! only need to flag 1 wrapped buffer cell
-                  numpro      = numpro + 1
-                  if (pprint) write(outunit,101) i,mkid
-                endif
- 61          continue
-       endif
-c
 c  done with gridpt. loop for grid mkid.
 c
  80     mkid = node(levelptr, mkid)

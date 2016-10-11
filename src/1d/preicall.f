@@ -81,78 +81,9 @@ c      ## but in setaux/bcamr (not called from here).
           i2 = min(ihi, iend(i))
           if (i1 .le. i2) then ! part of patch in this region
 c
-c check if special mapping needed for spherical bc. 
-c (i=2 is interior,nothing special needed)
-            if (.not. spheredom .or. i .eq. 2) then
-               iputst = i1 - ilo + 1
                call icall(val,aux,nrow,nvar,naux,
      1                       i1+ishift(i),i2+ishift(i),level,
      2                       iputst)
-            else
-              nr = i2 - i1 + 1
-              ng = 0    ! no ghost cells in this little patch. fill everything.
-
-c             next 2 lines would take care of periodicity in x
-              iwrap1 = i1 + ishift(i)
-              iwrap2 = i2 + ishift(i)
-c             next 2 lines take care of mapped sphere bcs
-              iwrap1 = iregsz(level) - iwrap1 -1
-              iwrap2 = iregsz(level) - iwrap2 -1
-c             swap so that smaller one is left index, etc since mapping reflects
-              tmp = iwrap1
-              iwrap1 = iwrap2
-              iwrap2 = tmp
-
-              xlwrap = xlower + iwrap1*hxposs(level)
-
-              if (naux>0) then
-!               fliparray(locflipaux:locflipaux+naux*(ncol+nrow)-1) =  
-               iflipChunkSize  = naux*nr - 1 + nvar*(nrow)
-               idimen = (nrow)*nghost*(nvar+naux)
-               if (iflipChunkSize .gt. idimen) then
-                  write(*,*) "Error in fliparray size: asking for ",
-     .                       iflipChunkSize," but dimension is",idimen
-                   stop
-                  endif
-                  fliparray(locflipaux:locflipaux+naux*nr - 1) =
-     1                     NEEDS_TO_BE_SET
-                 call system_clock(clock_start, clock_rate)
-                 call cpu_time(cpu_start)
-                 call setaux(ng,nr,xlwrap,
-     1                    hxposs(level),naux,
-     2                    fliparray(locflipaux))
-                 call system_clock(clock_finish, clock_rate)
-                 call cpu_time(cpu_finish)
-                 timeSetaux = timeSetaux + clock_finish - clock_start
-                 timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_finish
-              endif 
-
-c             write(dbugunit,101) i1,i2
-c             write(dbugunit6,102) iwrap1,iwrap2
- 101          format(" actual patch from i:",2i5)
- 102          format(" icall called w i:",2i5)
-              call icall(fliparray(locflip),fliparray(locflipaux),
-     1                   nr,nvar, naux,iwrap1,iwrap2,
-     2                   level,1)
-
-c             copy back using weird mapping for spherical folding
-              nrowst = 1   ! start filling up val at (1) - no additional offset
-              do 15 ii = i1, i2
-c            write(dbugunit6,100)nrowst+ii-ilo,nr-(ii-i1))
- 100          format(" filling loc ",i5," with ",i5)
-
-                do 17 ivar = 1, nvar
-                   val(ivar,nrowst+(ii-ilo)) =
-     1                    fliparray(iadd(ivar,nr-(ii-i1)))
- 17             continue
-
-                do 16 iaux = 1, naux
-                   aux(iaux,nrowst+(ii-ilo)) =
-     1                    fliparray(iaddaux(iaux,nr-(ii-i1)))
- 16             continue
- 15           continue
-             
-            endif
 
           endif
 

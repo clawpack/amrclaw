@@ -22,11 +22,6 @@ c  # taking them from. (no ghost cells in this index, but
 c  # it is 1-based for indexing array, not - based for
 c  # integer index of grid location).
 c
-c  changed 11/11/08: spheredom for periodically mapped spherical
-c      grids. if calling with spheredom
-c      then grid is NOT periodically mapped.
-c  need kflag to indicate spherically mapped now - otherwise
-c  cant tell the difference, dont skip appropropriate loops
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c

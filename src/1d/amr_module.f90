@@ -108,7 +108,7 @@ module amr_module
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ! :::::  domain description variables
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    logical xperdom, spheredom
+    logical xperdom
     real(kind=8) :: xupper, xlower
     integer :: nghost, mthbc(2)
 

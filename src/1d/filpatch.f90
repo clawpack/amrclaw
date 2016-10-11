@@ -15,7 +15,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
      ilo,ihi,patchOnly,msrc)
 
   use amr_module, only: hxposs, xlower, xupper
-  use amr_module, only: outunit, nghost, xperdom, spheredom
+  use amr_module, only: outunit, nghost, xperdom
   use amr_module, only: iregsz, intratx, NEEDS_TO_BE_SET
 
   !for setaux timing

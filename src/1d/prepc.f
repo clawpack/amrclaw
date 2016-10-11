@@ -80,33 +80,6 @@ c   for fine grids touching periodic boundary on left
      3          kflag)
           endif
 
-c   for fine grids touching boundary on top in spherically mapped case
-c   and coarse grid touches top too. see if (mapped) x extent overlap.
-c Is this needed in 1d case?
-          if  (spheredom) then
-               kflag = 2
-c              write(dbugunit,*)" for coarse grid ",mpar
-               iwrap2 = iregsz(level) - iclo - 1  !higher mapped index
-               iwrap1 = iregsz(level) - ichi - 1  !lower mapped index
-               if (max(ilo,iwrap1) .le. min(ihi,iwrap2)) then
-                  call setuse(alloc(locbc),maxsp,ispot,mkid,
-     1                        ilo,ihi,iclo,ichi,kflag)
-               endif
-          endif
-
-c   fine grids touching boundary on bottom for spherically mapped case
-c   coarse grid touches bottom too. see if (mapped) x extents overlap
-c Is this needed in 1d case?
-          if  (spheredom) then
-               kflag = 3
-               iwrap2 = iregsz(level) - iclo - 1  !higher mapped index
-               iwrap1 = iregsz(level) - ichi - 1  !lower mapped index
-               if (max(ilo,iwrap1) .le. min(ihi,iwrap2)) then
-                  call setuse(alloc(locbc),maxsp,ispot,mkid,
-     1                        ilo,ihi,iclo,ichi,kflag)
-               endif
-          endif
-
  50     mkid = node(levelptr,mkid)
         go to 40
 c

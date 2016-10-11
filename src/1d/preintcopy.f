@@ -66,52 +66,10 @@ c       i from (ilo,-1), (0,iregsz(level)-1), (iregsz(level),ihi)
           i2 = min(ihi, iend(i))
           if (i1 .le. i2) then ! part of patch in this region
 c
-c check if special mapping needed for spherical bc. 
-c(i=2 is interior,nothing special needed)
-          if (.not. spheredom .or. i .eq. 2) then
             iputst = (i1 - ilo) + 1
             call intcopy(val,mitot,nvar,
      2                    i1+ishift(i),i2+ishift(i),
      3                    level,iputst)
-          else
-              nr = i2 - i1 + 1
-              ng = 0    ! no ghost cells in this little patch. fill everything.
-
-c             next 2 lines would take care of periodicity in x
-              iwrap1 = i1 + ishift(i)
-              iwrap2 = i2 + ishift(i)
-c             next 2 lines take care of mapped sphere bcs
-              iwrap1 = iregsz(level) - iwrap1 -1
-              iwrap2 = iregsz(level) - iwrap2 -1
-c             swap so that smaller one is left index, etc since mapping reflects
-              tmp = iwrap1
-              iwrap1 = iwrap2
-              iwrap2 = tmp
-
-              xlwrap = xlower + iwrap1*hxposs(level)
-
-c             write(dbugunit,101) i1,i2
-c             write(dbugunit6,102) iwrap1,iwrap2
- 101          format(" actual patch from i:",2i5)
- 102          format(" intcopy called w i:",2i5)
-              call intcopy(fliparray,nr,nvar,
-     1                     iwrap1,iwrap2,level,1)
-
-c             copy back using weird mapping for spherical folding
-              nrowst = 1   ! start filling up val at (1) - no additional offset
-              do 15 ii = i1, i2
-c            write(dbugunit6,100)nrowst+ii-ilo,nr-(ii-i1))
- 100          format(" filling loc ",i5," with ",i5)
-
-              do 15 ivar = 1, nvar
-                 iindex = nr-(ii-i1)
-                 index = iadd(ivar,nr-(ii-i1))
-                 val(ivar,nrowst+(ii-ilo)) =
-     1                  fliparray(iadd(ivar,nr-(ii-i1)))
- 15           continue
-             
-
-            endif
 
           endif
 

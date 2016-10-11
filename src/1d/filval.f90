@@ -12,7 +12,7 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
                   aux, naux)
 
     use amr_module, only: xlower, intratx, nghost, xperdom
-    use amr_module, only: spheredom, xupper, alloc
+    use amr_module, only: xupper, alloc
     use amr_module, only: outunit, NEEDS_TO_BE_SET, mcapa
     
     !for setaux timing
@@ -62,7 +62,7 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
     ng     = 0
 
     if (naux == 0) then
-        if (xperdom .or. spheredom) then
+        if (xperdom) then
             call preintcopy(valc,mic,nvar,iclo,ichi,level-1,fliparray)
         else
             call intcopy(valc,mic,nvar,iclo,ichi,level-1,1)
@@ -70,7 +70,7 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
     else  
         ! intersect grids and copy all (soln and aux)
         auxc(1,:) = NEEDS_TO_BE_SET
-        if (xperdom .or. spheredom) then
+        if (xperdom) then
             call preicall(valc,auxc,mic,nvar,naux,iclo,ichi, &
                           level-1,fliparray)
         else
@@ -113,7 +113,7 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
 !       ## overwritten with coarse grid interpolation
         aux(1,:) = NEEDS_TO_BE_SET  ! indicates fine cells not yet set.
 
-        if (xperdom .or. spheredom) then
+        if (xperdom) then
             call preicall(val,aux,mitot,nvar,naux,ilo-nghost,ihi+nghost, &
                           level,fliparray)
         else
@@ -136,7 +136,7 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
          ! by coarse grid interp.  this is needed due to reversing order of
          ! work - first copy from fine grids, then interpolate from coarse grids
         val(1,:) = NEEDS_TO_BE_SET
-        if (xperdom .or. spheredom) then
+        if (xperdom) then
             call preintcopy(val,mitot,nvar,ilo-nghost,ihi+nghost,     &
                             level,fliparray)
         else
