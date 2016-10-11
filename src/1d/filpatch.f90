@@ -139,7 +139,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
 
      xlow_coarse = xlower + iplo * dx_coarse
 
-     ! Coarse grid number of spatial points (nrowc,ncolc)
+     ! Coarse grid number of spatial points (nrowc)
      mitot_coarse   =  iphi - iplo + 1
 
      ! Check to make sure we created big enough scratch arrays
@@ -175,7 +175,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
      ! 'coarse grid' indices are the same (no actual coarse grid here, so cant use mptr
      ! must pass indices. patchOnly argument  is thus true
      if ((xperdom) .and. sticksout(iplo,iphi)) then
-        call prefilrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,1,   &
+        call prefilrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,   &
              iplo,iphi,iplo,iphi,.true.)
      else
         call filrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,   &

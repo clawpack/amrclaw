@@ -53,7 +53,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mptr,aux,naux)
   xl = xleft - ng*hx
   xr = xleft
   if ((xl < xlower) .and. xperdom) then
-     call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,ng+1, &
+     call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot, &
           ilo-ng,ilo-1,ilo-ng,ihi+ng,patchOnly)
   else
      call filrecur(level,nvar,valbig,aux,naux,time,mitot,ilo-ng, &
@@ -66,7 +66,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mptr,aux,naux)
 
   if ((xr .gt. xupper) .and. xperdom) then
      call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot, &
-          mitot-ng+1,ihi+1,ihi+ng,ilo-ng,ihi+ng,patchOnly)
+          ihi+1,ihi+ng,ilo-ng,ihi+ng,patchOnly)
   else
      call filrecur(level,nvar,valbig,aux,naux,time,mitot, &
           ihi+1,ihi+ng,patchOnly,mptr)

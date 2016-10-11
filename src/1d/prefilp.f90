@@ -16,7 +16,7 @@
 !
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,  &
-                                 nrowst,ilo,ihi,iglo,ighi,patchOnly)
+                                 ilo,ihi,iglo,ighi,patchOnly)
 
 
 
@@ -43,7 +43,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,  &
     ! Local storage
 
     ! Various of these are extra. Remove once you know which.
-    integer :: i, ii, ivar, ng, i1, i2, nrowst
+    integer :: i, ii, ivar, ng, i1, i2
     integer :: iputst, mi, locpatch, locpaux
     integer :: iwrap1, iwrap2, tmp, locflip, rect(2)
     real(kind=8) :: xlwrap
@@ -102,8 +102,6 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,  &
         i1 = max(ilo,  ist(i))
         i2 = min(ihi, iend(i))
         if (i1 .gt. i2) go to 20
-
-        if (i .eq. 2) then
             ! make temp patch of just the right size.
             mi = i2 - i1 + 1
             if (mi .gt. (ihi-ilo+1))  then
@@ -116,51 +114,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,  &
                     i1+ishift(i),i2+ishift(i),.true.,msrc)
             ! copy it back to proper place in valbig
             call patchCopyOut(nvar,valPatch,mi,valbig,mitot,i1,i2,iglo)
- 
-        else
-                   
-            mi = i2 - i1 + 1
-            ng = 0    ! no ghost cells in this little patch. fill everything.
 
-            ! next 2 lines would take care of periodicity in x
-            iwrap1 = i1 + ishift(i)
-            iwrap2 = i2 + ishift(i)
-            ! next 2 lines take care of mapped sphere bcs
-            iwrap1 = iregsz(level) - iwrap1 -1
-            iwrap2 = iregsz(level) - iwrap2 -1
-            ! swap so that smaller one is left index, etc since mapping reflects
-            tmp = iwrap1
-            iwrap1 = iwrap2
-            iwrap2 = tmp
-
-            xlwrap = xlower + iwrap1*hxposs(level)
-
-            if (naux>0) then
-                scratchaux = NEEDS_TO_BE_SET  !flag all cells with signal since dimensioned strangely
-                call system_clock(clock_start, clock_rate)
-                call cpu_time(cpu_start)
-                call setaux(ng,mi,xlwrap,hxposs(level),naux,scratchaux)
-                call system_clock(clock_finish, clock_rate)
-                call cpu_time(cpu_finish)
-            endif
-
-            rect = [iwrap1,iwrap2
-            call filrecur(level,nvar,scratch,scratchaux,naux,time,mi, &
-                        iwrap1,iwrap2,.false.,msrc)
-
-            ! copy back using weird mapping for spherical folding (so cant call copy subr below)
-            do ii = i1, i2
-                ! write(dbugunit,'(" filling loc ",2i5," with ",2i5)') &
-                ! nrowst+ii-fill_indices(1),ncolst+jj-fill_indices(3),mi-(ii-i1),mj-jj+j1
-
-                do ivar = 1, nvar
-                    valbig(ivar,nrowst+(ii-ilo)) = &
-                        scratch(iaddscratch(ivar,mi-(ii-i1)))
-                end do
-                ! write(dbugunit,'(" new val is ",4e15.7)')(valbig(ivar,  &
-                ! nrowst+(ii-fill_indices(1)),ncolst+(jj-fill_indices(3))),ivar=1,nvar)
-            end do
-        endif ! end if not i == 2
     endif ! end if region not empty
 
  20 continue

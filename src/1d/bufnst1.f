@@ -84,7 +84,7 @@ c
 c      ##  new call to flag regions: check if cells must be refined, or exceed
 c      ##  maximum refinement level for that region.  used to be included with
 c      ## flag2refine. moved here to include flags from richardson too.
-       call flagregions2(nx,mbuff,rnode(cornxlo,mptr),
+       call flagregions1(nx,mbuff,rnode(cornxlo,mptr),
      1                  dx,lcheck,time,
      2                  alloc(locamrflags),goodpt,badpt)
 

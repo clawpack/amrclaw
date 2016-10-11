@@ -63,7 +63,6 @@ c
        tgrid = rnode(timemult, mptr)
        if (qprint) 
      .      write(dbugunit,*)" working on grid ",mptr," time ",tgrid
-       nc = 1
        level = node(nestlevel, mptr)
        index = 0
 
@@ -103,24 +102,18 @@ c                # from the cell corresponding  to q
     
        if (qprint) then
          write(dbugunit,*) 'side 1, ql and qr:'
-         do i=2,nc
-            write(dbugunit,4101) i,qr(1,i-1),ql(1,i)
-          enddo
+            write(dbugunit,4101) i,qr(1,1),ql(1,2)
  4101      format(i3,4e16.6)
          if (maux .gt. 0) then
              write(dbugunit,*) 'side 1, auxr:'
-             do i=2,nc
-                write(dbugunit,4101) i,(auxr(iaddaux(ma,i-1)),ma=1,maux)
-                enddo
+             write(dbugunit,4101) i,(auxr(iaddaux(ma,1)),ma=1,maux)
              write(dbugunit,*) 'side 1, auxl:'
-             do i=2,nc
-                write(dbugunit,4101) i,(auxl(iaddaux(ma,i)),ma=1,maux)
-                enddo
+             write(dbugunit,4101) i,(auxl(iaddaux(ma,2)),ma=1,maux)
          endif
        endif
  
        call rp1(max1dp1-2*nghost,nvar,mwaves,maux,nghost,
-     .              nc+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
+     .              2-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 1 add into sdflxm
 c
@@ -167,12 +160,10 @@ c                # preserves conservation in incompressible flow:
     
        if (qprint) then
          write(dbugunit,*) 'side 2, ql and qr:'
-         do i=1,nc
-            write(dbugunit,4101) i,ql(1,i),qr(1,i)
-            enddo
+            write(dbugunit,4101) i,ql(1,2),qr(1,1)
        endif
        call rpn1(max1dp1-2*nghost,nvar,mwaves,maux,nghost,
-     .              nc+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
+     .              2-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 2 add into sdflxp
 C
