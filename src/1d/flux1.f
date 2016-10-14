@@ -17,7 +17,7 @@ c     # we are solving along a 1D slice in the x-direction.
 c
 c     # fadd(*,i,.) modifies F to the left of cell i
 c
-c     # The method used is specified by method(2:3):
+c     # The method used is specified by method(2):
 c
 c         method(2) = 1 if only first order increment waves are to be used.
 c                   = 2 if second order correction terms are to be added, with

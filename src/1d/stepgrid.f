@@ -108,7 +108,7 @@ c            # with capa array.
  50      continue
 c
 c
-      if (method(5).eq.1) then
+      if (method(4).eq.1) then
 c        # with source term:   use Godunov splitting
          call src1(nvar,mbc,mx,xlowmbc,dx,
      &             q,maux,aux,time,dt)

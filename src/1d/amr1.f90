@@ -229,17 +229,9 @@ program amr1
 
     read(inunit,*) method(2)  ! order
     iorder = method(2)
-    read(inunit,*) method(3)  ! order_trans
 
-    read(inunit,*) dimensional_split
-       if (dimensional_split > 0) then
-           print *, '*** ERROR ***  dimensional_split = ', dimensional_split
-           print *, ' Dimensional splitting not needed for 1d'
-           stop
-       endif
-
-    read(inunit,*) method(4)   ! verbosity
-    read(inunit,*) method(5)   ! src_split
+    read(inunit,*) method(3)   ! verbosity
+    read(inunit,*) method(4)   ! src_split
     read(inunit,*) mcapa1
     
     read(inunit,*) use_fwaves

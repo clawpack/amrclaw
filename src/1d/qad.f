@@ -56,7 +56,7 @@ c
 c      aux is auxiliary array with user parameters needed in Riemann solvers
 c          on fine grid corresponding to valbig
 c      auxc1d is coarse grid stuff from around boundary, same format as qc1d
-c      auxl, auxr are work arrays needed to pass stuff to rpn1
+c      auxl, auxr are work arrays needed to pass stuff to rp1
 c      maux is the number of aux variables, which may be zero.
 c
 
@@ -112,7 +112,7 @@ c                # from the cell corresponding  to q
          endif
        endif
  
-       call rpn1(max1dp1-2*nghost,nvar,mwaves,maux,nghost,
+       call rp1(max1dp1-2*nghost,nvar,mwaves,maux,nghost,
      .              2-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 1 add into sdflxm
@@ -175,7 +175,7 @@ C
  340       continue
 
 c      # for source terms:
-       if (method(5) .ne. 0) then   ! should I test here if index=0 and all skipped?
+       if (method(4) .ne. 0) then   ! should I test here if index=0 and all skipped?
            call src1d(nvar,nghost,lenbc,qc1d,maux,auxc1d,tgrid,delt)
 c      # how can this be right - where is the integrated src term used?
            endif

@@ -5,8 +5,8 @@ c
      &                rest,dt_max)
 c
       use amr_module
-c     Gauges not implemented in 1d code yet
-c      use gauges_module, only: setbestsrc
+      use gauges_module, only: setbestsrc, num_gauges
+      use gauges_module, only: print_gauges_and_reset_nextLoc
 
       implicit double precision (a-h,o-z)
 
@@ -243,7 +243,7 @@ c         # rjl & mjb changed to cfl_level, 3/17/10
           if (tprint) then
               write(outunit,100)level,cfl_level,possk(level),timenew
               endif
-          if (method(4).ge.level) then
+          if (method(3).ge.level) then
               write(6,100)level,cfl_level,possk(level),timenew
               endif
 100       format(' AMRCLAW: level ',i2,'  CFL = ',e8.3,
@@ -365,7 +365,13 @@ c
 
       if ((checkpt_style .ne. 0) .and. (.not. dumpchk)) then
            call check(ncycle,time,nvar,naux)
-         endif
+      else  ! no chkpt wanted, so need to print gauges separately
+          if (num_gauges .gt. 0) then
+              do ii = 1, num_gauges
+                  call print_gauges_and_reset_nextLoc(ii,nvar)
+              end do
+          endif
+      endif
 
       write(6,*) "Done integrating to time ",time
       return

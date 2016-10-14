@@ -59,10 +59,9 @@ c         make coarsened enlarged patch for conservative fixup
           if (sticksout .and. xperdom) then
              !iperim = nrow
              !locflip = igetsp(iperim*nghost*(nvar+naux))
-             write(*,*) "ERROR: periodic not implemented in 1d"
-!             call preicall(alloc(loctmp),alloc(loctx),nrow,ncol,nvar,
-!     .                     naux,iclo,ichi,jclo,jchi,level-1,
-!     .                     fliparray)
+             call preicall(alloc(loctmp),alloc(loctx),nrow,nvar,
+     .                     naux,iclo,ichi,level-1,
+     .                     fliparray)
 !     .                     alloc(locflip))
 !             call reclam(locflip,iperim*nghost*(nvar+naux))
           else 
