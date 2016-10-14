@@ -12,7 +12,7 @@ c
       dimension  corner(nsize,maxcl)
       integer    numptc(maxcl), prvptr
       logical    fit, nestck, cout
-      logical    fit2, nestck2
+      logical    fit2, nestck1
       data       cout/.false./
 c
 c ::::::::::::::::::::: GRDFIT :::::::::::::::::::::::::::::::::;

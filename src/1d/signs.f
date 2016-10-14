@@ -36,7 +36,7 @@ c
  40    do 50 ipt = 1, idim
           if (iscr(idim+1-ipt) .ne. 0) then
              ihi = idim+1-ipt
-             go to 60
+             go to 99
           endif
  50    continue
 

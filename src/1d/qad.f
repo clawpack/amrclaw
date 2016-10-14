@@ -112,7 +112,7 @@ c                # from the cell corresponding  to q
          endif
        endif
  
-       call rp1(max1dp1-2*nghost,nvar,mwaves,maux,nghost,
+       call rpn1(max1dp1-2*nghost,nvar,mwaves,maux,nghost,
      .              2-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 1 add into sdflxm
@@ -162,7 +162,7 @@ c                # preserves conservation in incompressible flow:
          write(dbugunit,*) 'side 2, ql and qr:'
             write(dbugunit,4101) i,ql(1,2),qr(1,1)
        endif
-       call rpn1(max1dp1-2*nghost,nvar,mwaves,maux,nghost,
+       call rp1(max1dp1-2*nghost,nvar,mwaves,maux,nghost,
      .              2-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
 c
 c we have the wave. for side 2 add into sdflxp

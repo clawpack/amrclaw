@@ -44,9 +44,9 @@ c
       write(outunit,112)
       write(outunit,113) node(ndilo,mptr),node(ndihi,mptr)
 112   format(1x,23h! integer index space :,53x,1h!)
-113   format(1x,2h! ,18x,2(1h(,i8,2h, ,i8,1h)),16x,1h!)
-104   format(1x,23h! edges of line:,53x,1h!)
-111   format(1x,2h! ,10x,2(1h(,f12.7,2h, ,f12.7,1h)),8x,1h!)
+113   format(1x,2h! ,18x,1h(,i8,2h, ,i8,1h),16x,1h!)
+104   format(1x,16h! edges of line:,53x,1h!)
+111   format(1x,2h! ,10x,1h(,f12.7,2h, ,f12.7,1h),8x,1h!)
 
 c     This is a replacement for line 45-46 format that used to be format 111
 c111   format(1x,2h! ,18x,2(1h(,d10.3,2h, ,d10.3,1h)),8x,1h!)

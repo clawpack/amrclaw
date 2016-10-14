@@ -60,7 +60,7 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
     ! Locals
     integer :: i,m
     real(kind=8) :: x_c,x_low,x_hi
-    real(kind=8) :: dqi(meqn), dqj(meqn), dq(meqn)
+    real(kind=8) :: dqi(meqn), dq(meqn)
 
     ! Initialize flags
     amrflags = DONTFLAG
@@ -81,7 +81,7 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
 
         ! -----------------------------------------------------------------
             dq = 0.d0
-            dqi = abs(q(:,i+1,j) - q(:,i-1,j))
+            dqi = abs(q(:,i+1) - q(:,i-1))
             dq = max(dq,dqi)
 
         ! default checks all components of undivided difference:

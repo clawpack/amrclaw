@@ -304,7 +304,7 @@ contains
 !
 !       write(6,*) '+++ interploting for gauge ', ii
         iindex =  int(.5d0 + (xgauge(ii)-xlow)/hx)
-        if ((iindex .lt. nghost .or. iindex .gt. mitot-nghost) &
+        if (iindex .lt. nghost .or. iindex .gt. mitot-nghost) &
           write(*,*)"ERROR in output of Gauge Data "
         xcent  = xlow + (iindex-.5d0)*hx
         xoff   = (xgauge(ii)-xcent)/hx

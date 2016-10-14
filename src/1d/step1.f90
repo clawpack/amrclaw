@@ -92,7 +92,5 @@ subroutine step1(maxm,meqn,maux,mbc,mx,qold,aux,dx,dt,cflgrid,fm,fp,rp1)
         ! Update fluxes
         fm(:,1:mx+1) = fm(:,1:mx+1) + faddm(:,1:mx+1)
         fp(:,1:mx+1) = fp(:,1:mx+1) + faddp(:,1:mx+1)
-        
-    enddo
 
 end subroutine step1

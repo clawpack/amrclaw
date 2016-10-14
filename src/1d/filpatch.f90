@@ -48,8 +48,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
   real(kind=8) :: cpu_start, cpu_finish
 
   ! Interpolation variables
-  real(kind=8) :: eta1, eta2, valp10, valm10, valc, valp01, valm01, dupc, dumc
-  real(kind=8) :: ducc, du, fu, fv, valint, uslope
+  real(kind=8) :: eta1, eta2, valp, valm, valc, dupc, dumc
+  real(kind=8) :: ducc, du, fu, valint, uslope
 
   ! Cell set tracking
   logical :: set

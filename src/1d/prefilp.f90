@@ -29,7 +29,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,  &
     implicit none
 
     ! Input
-    integer, intent(in) :: level, nvar, naux, mitot,
+    integer, intent(in) :: level, nvar, naux, mitot
     integer, intent(in) :: ilo,ihi,iglo,ighi
     real(kind=8), intent(in) :: time
     ! false when called from bound, when valbig is whole grid but only filling patch.
@@ -114,8 +114,6 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,  &
                     i1+ishift(i),i2+ishift(i),.true.,msrc)
             ! copy it back to proper place in valbig
             call patchCopyOut(nvar,valPatch,mi,valbig,mitot,i1,i2,iglo)
-
-    endif ! end if region not empty
 
  20 continue
            

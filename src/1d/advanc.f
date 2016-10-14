@@ -158,7 +158,7 @@ c
       subroutine par_advanc (mptr,mitot,nvar,naux,dtnew)
 c
       use amr_module
-      use gauges_module, only: print_gauges, num_gauges
+      use gauges_module, only: update_gauges, num_gauges
       implicit double precision (a-h,o-z)
 
 
@@ -228,11 +228,12 @@ c        # now to make linear interpolation easier, since grid
 c        # now has boundary conditions filled in.
 
 c     should change the way print_gauges does io - right now is critical section
-c     NOTE: HAS NOT BEEN MODIFIED TO BE 1D
+c     no more,  each gauge has own array.
+
       if (num_gauges > 0) then
-c           call print_gauges(alloc(locnew:locnew+nvar*mitot*mjtot),
-c     .                       alloc(locaux:locaux+nvar*mitot*mjtot),
-c     .                       xlow,ylow,nvar,mitot,mjtot,naux,mptr)
+           call update_gauges(alloc(locnew:locnew+nvar*mitot),
+     .                       alloc(locaux:locaux+nvar*mitot),
+     .                       xlow,nvar,mitot,naux,mptr)
          endif
 
 c

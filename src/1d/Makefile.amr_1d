@@ -20,7 +20,6 @@ COMMON_SOURCES += \
   $(AMRLIB)/advanc.f \
   $(AMRLIB)/bound.f90 \
   $(AMRLIB)/stepgrid.f \
-#  $(AMRLIB)/auxcoarsen.f \
   $(AMRLIB)/fixcapaq.f \
   $(AMRLIB)/estdt.f \
   $(AMRLIB)/igetsp.f \
@@ -31,16 +30,12 @@ COMMON_SOURCES += \
   $(AMRLIB)/bufnst1.f \
   $(AMRLIB)/flag2refine1.f90 \
   $(AMRLIB)/flagregions1.f90 \
-#  $(AMRLIB)/errest.f \
-#  $(AMRLIB)/errf1.f \
   $(AMRLIB)/gfixup.f \
   $(AMRLIB)/filval.f90 \
   $(AMRLIB)/filpatch.f90 \
   $(AMRLIB)/prefilp.f90 \
   $(AMRLIB)/flglvl1.f \
   $(AMRLIB)/flagger.f \
-#  $(AMRLIB)/prepregstep.f \
-#  $(AMRLIB)/prepbigstep.f \
   $(AMRLIB)/fluxad.f \
   $(AMRLIB)/fluxsv.f \
   $(AMRLIB)/ginit.f \
@@ -66,13 +61,11 @@ COMMON_SOURCES += \
   $(AMRLIB)/nodget.f \
   $(AMRLIB)/upbnd.f  \
   $(AMRLIB)/outval.f \
-#  $(AMRLIB)/copysol.f \
   $(AMRLIB)/outmsh.f \
   $(AMRLIB)/outtre.f \
   $(AMRLIB)/domain.f  \
   $(AMRLIB)/shiftset.f \
   $(AMRLIB)/conck.f \
-#  $(AMRLIB)/coarsen.f \
   $(AMRLIB)/intcopy.f \
   $(AMRLIB)/preintcopy.f \
   $(AMRLIB)/icall.f \
@@ -97,3 +90,10 @@ COMMON_SOURCES += \
   $(AMRLIB)/griddomup.f \
   $(AMRLIB)/baseCheck.f \
   $(AMRLIB)/init_alloc.f90 \
+#  $(AMRLIB)/auxcoarsen.f \
+#  $(AMRLIB)/coarsen.f \
+#  $(AMRLIB)/copysol.f \
+#  $(AMRLIB)/prepregstep.f \
+#  $(AMRLIB)/prepbigstep.f \
+#  $(AMRLIB)/errest.f \
+#  $(AMRLIB)/errf1.f \

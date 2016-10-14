@@ -232,9 +232,9 @@ program amr1
     read(inunit,*) method(3)  ! order_trans
 
     read(inunit,*) dimensional_split
-       if (dimensional_split > 1) then
+       if (dimensional_split > 0) then
            print *, '*** ERROR ***  dimensional_split = ', dimensional_split
-           print *, ' Strang splitting not supported in amrclaw'
+           print *, ' Dimensional splitting not needed for 1d'
            stop
        endif
 
@@ -383,7 +383,7 @@ program amr1
     if (nvar > maxvar) then
         stop 'Error ***   nvar > maxvar in common'
     endif
-    if (2*nghost > min(nx)) then
+    if (2*nghost > nx) then
         mindim = 2 * nghost
         print *, 'Error ***   need finer domain >', mindim, ' cells'
         stop
