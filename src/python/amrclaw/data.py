@@ -184,7 +184,8 @@ class GaugeData(clawpack.clawutil.data.ClawData):
     r""""""
 
     defaults = {"file_format":"ascii", "display_format":"e15.7",
-                "q_out_fields":"all", "aux_out_fields":"none"}
+                "q_out_fields":"all", "aux_out_fields":"none",
+                "min_time_increment":0.0}
 
     @property
     def gauge_numbers(self):
@@ -213,7 +214,9 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         output = "\n\n".join((output, "Output Format: %s\n" % self.file_format))
         output = "\t".join((output, "display: %s" % self.display_format))
         output = "\n\t".join((output, "q fields: %s" % self.q_out_fields))
-        output = "\n\t".join((output, "aux fields: $s" % self.aux_out_fields))
+        output = "\n\t".join((output, "aux fields: %s" % self.aux_out_fields))
+        output = "\n\t".join((output, "min. time increment: %s" 
+                                                     % self.min_time_increment))
         return output
 
     def write(self, num_eqn, num_aux, out_file='gauges.data', 
@@ -249,10 +252,16 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         self._out_file.write("\n")
         self.data_write()
 
-        # Output format for each gauge
+        # Display format for each gauge
         self._out_file.write("# Display format\n")
         for gauge_num in self.gauge_numbers:
             self._out_file.write("%s " % self.display_format[gauge_num])
+        self._out_file.write("\n\n")
+
+        # Minimum time increment output
+        self._out_file.write("# Minimum output increment\n")
+        for gauge_num in self.gauge_numbers:
+            self._out_file.write("%s " % self.min_time_increment[gauge_num])
         self._out_file.write("\n\n")
 
         # Which q fields to output
@@ -299,7 +308,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
                     self._out_file.write("%s\n" % (" ".join(bool_list)))
 
         self.close_data_file()
-        
+
 
     def expand_gauge_format_option(self, param_name):
         r"""Construct the full gauge output specification for *param_name*
