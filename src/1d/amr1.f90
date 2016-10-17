@@ -240,7 +240,8 @@ program amr1
 
     ! Boundary conditions
     read(inunit,*) nghost
-    read(inunit,*) mthbc(1),mthbc(2)
+    read(inunit,*) mthbc(1)
+    read(inunit,*) mthbc(2)
 
     ! 1 = left, 2 = right
     xperdom = (mthbc(1) == 2 .and. mthbc(2) == 2)
