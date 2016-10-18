@@ -72,7 +72,7 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
 
     # Number of equations in the system:
-    clawdata.num_eqn = 3
+    clawdata.num_eqn = 2
 
     # Number of auxiliary variables in the aux array (initialized in setaux)
     clawdata.num_aux = 0
@@ -178,13 +178,6 @@ def setrun(claw_pkg='amrclaw'):
     
     # Use dimensional splitting?
     clawdata.dimensional_split = 'unsplit'
-    
-    # For unsplit method, transverse_waves can be 
-    #  0 or 'none'      ==> donor cell (only normal solver used)
-    #  1 or 'increment' ==> corner transport of waves
-    #  2 or 'all'       ==> corner transport of 2nd order corrections too
-    clawdata.transverse_waves = 2
-    
     
     # Number of waves in the Riemann solution:
     clawdata.num_waves = 2

@@ -13,58 +13,55 @@ def setplot(plotdata):
     
     """ 
     Specify what is to be plotted at each frame.
-    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.
+    Input:  plotdata, an instance of clawpack.visclaw.data.ClawPlotData.
     Output: a modified version of plotdata.
     
     """ 
 
+
     plotdata.clearfigures()  # clear any old figures,axes,items data
 
-    
-
     # Figure for q[0]
-    plotfigure = plotdata.new_plotfigure(name='q[0]', figno=0)
+    plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = [0,1.5]
-    plotaxes.ylimits = [-2.,4.]
-    plotaxes.title = 'q[0]'
+    plotaxes.axescmd = 'subplot(2,1,1)'   # top figure
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = [-.5,1.1]
+    plotaxes.title = 'Pressure'
 
     # Set up for item on these axes:
-    plotitem = plotaxes.new_plotitem(plot_type='1d')
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
-    plotitem.plotstyle = '-'
+    plotitem.plotstyle = '-o'
     plotitem.color = 'b'
-    plotitem.show = True       # show on plot?
-    
+
 
     # Figure for q[1]
-    plotfigure = plotdata.new_plotfigure(name='q[1]', figno=1)
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,1,2)'   # bottom figure
     plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = 'auto'
-    plotaxes.title = 'q[1]'
+    plotaxes.ylimits = [-.5,1.1]
+    plotaxes.title = 'Velocity'
 
     # Set up for item on these axes:
-    plotitem = plotaxes.new_plotitem(plot_type='1d')
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 1
-    plotitem.plotstyle = '-'
+    plotitem.plotstyle = '-o'
     plotitem.color = 'b'
-    plotitem.show = True       # show on plot?
-    
 
     # Parameters used only when creating html and/or latex hardcopy
-    # e.g., via pyclaw.plotters.frametools.printframes:
+    # e.g., via clawpack.visclaw.frametools.printframes:
 
     plotdata.printfigs = True                # print figures
     plotdata.print_format = 'png'            # file format
     plotdata.print_framenos = 'all'          # list of frames to print
     plotdata.print_fignos = 'all'            # list of figures to print
     plotdata.html = True                     # create html files of plots?
-    plotdata.html_homelink = '../README.html'   # pointer for top of index
+    plotdata.html_homelink = '../README.html'
     plotdata.latex = True                    # create latex file of plots?
     plotdata.latex_figsperline = 2           # layout of plots
     plotdata.latex_framesperline = 1         # layout of plots
