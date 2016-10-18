@@ -56,7 +56,7 @@ module amr_module
 
     ! The max1d parameter should be changed if using OpenMP grid based 
     ! looping, usually set to max1d = 60
-    integer, parameter :: max1d = 60 
+    integer, parameter :: max1d = 60
     !integer, parameter :: max1d = 100 
     !integer, parameter :: max1d = 80 
     !integer, parameter :: max1d = 500 
@@ -131,7 +131,7 @@ module amr_module
     ! :::::  method parameters
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     character(len=10), allocatable :: auxtype(:)
-    integer  method(4), mwaves, mcapa, dimensional_split
+    integer  method(4), mwaves, mcapa
     integer, allocatable :: mthlim(:)
     real(kind=8) cfl,cflmax,cflv1,cfl_level
 

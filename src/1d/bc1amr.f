@@ -65,15 +65,14 @@ c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       use amr_module, only: mthbc,xlower,xupper
-      use amr_module, only: xperdom
 
       implicit none
 
-      real*8  val(meqn,nrow), aux(naux,nrow)
       integer nrow,meqn,naux,level
-      real*8  hx,time, hxmarg
-      real*8  xlo_patch,xhi_patch
+      real(kind=8) :: hx,time, hxmarg
+      real(kind=8) :: xlo_patch,xhi_patch
       integer nxl,nxr,ibeg,i,m
+      real(kind=8) :: val(meqn,nrow), aux(naux,nrow)
       
 
       hxmarg = hx*.01

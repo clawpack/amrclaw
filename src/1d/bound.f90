@@ -56,7 +56,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mptr,aux,naux)
      call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot, &
           ilo-ng,ilo-1,ilo-ng,ihi+ng,patchOnly)
   else
-     call filrecur(level,nvar,valbig,aux,naux,time,mitot,ilo-ng, &
+     call filrecur(level,nvar,valbig,aux,naux,time,mitot,1,ilo-ng, &
           ilo-1,patchOnly,mptr)
   endif
 
@@ -69,7 +69,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mptr,aux,naux)
           ihi+1,ihi+ng,ilo-ng,ihi+ng,patchOnly)
   else
      call filrecur(level,nvar,valbig,aux,naux,time,mitot, &
-          ihi+1,ihi+ng,patchOnly,mptr)
+          mitot-ng+1,ihi+1,ihi+ng,patchOnly,mptr)
   endif
 
 

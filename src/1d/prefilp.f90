@@ -110,7 +110,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,  &
             if (naux .gt. 0)                                                         &
                 call auxCopyIn(auxPatch,mi,auxbig,mitot,naux,i1,i2,iglo)
                                        
-            call filrecur(level,nvar,valPatch,auxPatch,naux,time,mi,       &
+            call filrecur(level,nvar,valPatch,auxPatch,naux,time,mi,1,       &
                     i1+ishift(i),i2+ishift(i),.true.,msrc)
             ! copy it back to proper place in valbig
             call patchCopyOut(nvar,valPatch,mi,valbig,mitot,i1,i2,iglo)

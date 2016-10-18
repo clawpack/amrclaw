@@ -249,15 +249,15 @@ contains
 
       implicit none
 
-      real(kind=8), intent(in) ::  q(nvar,mitot)
-      real(kind=8), intent(in) ::  aux(naux,mitot)
       real(kind=8), intent(in) ::  xlow
       integer, intent(in) ::  nvar,mitot,naux,mptr
+      real(kind=8), intent(in) ::  q(nvar,mitot)
+      real(kind=8), intent(in) ::  aux(naux,mitot)
 
       ! local variables:
       real(kind=8) :: var(maxvar)
       real(kind=8) :: xcent,xoff,tgrid,hx
-      integer :: level,i,ioff,iindex,ivar, ii,i1,i2
+      integer :: level,i,iindex,ivar, ii,i1,i2
       integer :: nindex
 
 !     write(*,*) '+++ in print_gauges with num_gauges, mptr = ',num_gauges,mptr
@@ -348,7 +348,7 @@ contains
       implicit none
       integer :: gaugeNum,nvar,j,inum,k,idigit,ipos,myunit
       character*14 :: fileName
-      integer :: omp_get_thread_num, mythread
+      integer :: mythread
 
       ! open file for gauge gaugeNum, figure out name
       ! not writing gauge number since it is in file name now

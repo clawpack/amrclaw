@@ -18,7 +18,7 @@
 !  after intersections at specified level.
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 !
-subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
+subroutine intfil(val,mi,time,flaguse,nrowst,ilo,ihi,level,nvar,naux,msrc)
 
     use amr_module, only: possk, mxnest, iregsz, nghost, outunit, alloc
     use amr_module, only: node, lstart, store1, store2, levelptr, timemult,gridNbor
@@ -29,7 +29,7 @@ subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
     implicit none
 
     ! Input
-    integer, intent(in) :: mi, ilo, ihi, level, nvar, naux,msrc
+    integer, intent(in) :: mi, nrowst, ilo, ihi, level, nvar, naux,msrc
     real(kind=8), intent(in) :: time
 
     ! In/Out
@@ -44,7 +44,7 @@ subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
     real(kind=8) :: dt, alphac, alphai
     logical :: t_interpolate
 
-    integer :: patch_rect(2)
+    integer :: patch_line(2)
 
     real(kind=8), parameter :: t_epsilon = 1.0d-4
 
@@ -59,9 +59,9 @@ subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
             "' time wanted ',e24.16,' source time is ',e24.16,/," // &
             "' alphai, t_epsilon ',2e24.16)"
 
-    patch_rect = [ilo,ihi]
+    patch_line = [ilo,ihi]
 
-    ! Note that we need a non-dimensionalized t epspatch_rect(1)n as it was a problem
+    ! Note that we need a non-dimensionalized t epspatch_line(1)n as it was a problem
     ! in tsunami tests ( instead of t_epsilon   = dt / 10.d0 )
     
     ! Time step at this level
@@ -93,13 +93,14 @@ subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
 
         ! Check if grid mptr and patch intersect
         imlo = node(ndilo, mptr)
+        imhi = node(ndihi, mptr)
 
         nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
         
         mitot = nx + 2 * nghost
-        
-        ixlo = max(imlo,patch_rect(1))
-        ixhi = min(imhi,patch_rect(2))
+
+        ixlo = max(imlo,patch_line(1))
+        ixhi = min(imhi,patch_line(2))
 
         ! Check to see if grid and patch interesect, if not continue to next
         ! grid in the list
@@ -114,8 +115,8 @@ subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
                 write(outunit,missing_error) time, mptr, level
                 print missing_error, time, mptr, level
                 write(outunit,'(A,E24.16)') 'Line 80', dt
-                write(outunit,time_error) patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
-                print time_error, patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
+                write(outunit,time_error) patch_line,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
+                print time_error, patch_line,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
                 call outtre(mstart,.false.,nvar,naux)
                 stop
             endif
@@ -128,9 +129,9 @@ subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
                 loc = node(store2,mptr)
                 if (level == mxnest) then
                     write(outunit,'(A,E24.16)') 'Line 95', dt
-                    write(outunit,time_error) patch_rect,mptr,level,time, &
+                    write(outunit,time_error) patch_line,mptr,level,time, &
                                               rnode(timemult,mptr),alphai,t_epsilon
-                    write(*,time_error) patch_rect,mptr,level,time, &
+                    write(*,time_error) patch_line,mptr,level,time, &
                                         rnode(timemult,mptr),alphai,t_epsilon
                     stop
                 endif
@@ -142,8 +143,8 @@ subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
                 ! If we are at the maximum level nesting, abort
                 if (level == mxnest) then
                     write(outunit,'(A,E24.16)') 'Line 107',dt
-                    write(outunit,time_error) patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
-                    print time_error, patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
+                    write(outunit,time_error) patch_line,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
+                    print time_error, patch_line,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
                     stop
                 endif
             endif
@@ -153,7 +154,7 @@ subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
                 ! No time interp. copy the solution values
                 do ivar = 1, nvar
                     do i = ixlo, ixhi
-                        val(ivar,i-patch_rect(1)) = &
+                        val(ivar,i-patch_line(1)+nrowst) = &
                             alloc(iadd(ivar,i-imlo+nghost+1))
                         flaguse(i) = 1
                     end do
@@ -162,7 +163,7 @@ subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
                 ! Linear interpolation in time
                 do ivar = 1, nvar
                     do i = ixlo, ixhi
-                        val(ivar,i-patch_rect(1)) = &
+                        val(ivar,i-patch_line(1)+nrowst) = &
                             alloc(iadnew(ivar,i-imlo+nghost+1))*alphai + &
                             alloc(iadold(ivar,i-imlo+nghost+1))*alphac
                         flaguse(i) = 1
@@ -184,12 +185,12 @@ subroutine intfil(val,mi,time,flaguse,ilo,ihi,level,nvar,naux,msrc)
     ! they will be set elsewhere, namely boundary conditions and periodic
     ! domains
 
-    if (patch_rect(1) < 0) then
-        flaguse(patch_rect(1):min(-1,ihi - patch_rect(1))) = 1
+    if (patch_line(1) < 0) then
+        flaguse(patch_line(1):min(-1,ihi - patch_line(1))) = 1
     endif
 
     if (ihi >= iregsz(level)) then
-        flaguse(max(iregsz(level),patch_rect(1)):ihi) = 1
+        flaguse(max(iregsz(level),patch_line(1)):ihi) = 1
     endif
 
 contains

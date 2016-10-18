@@ -12,7 +12,7 @@
 ! :::::::::::::::::::::::::::::::::::::::;:::::::::::::::::::::::;
 !
 recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
-     ilo,ihi,patchOnly,msrc)
+     nrowst,ilo,ihi,patchOnly,msrc)
 
   use amr_module, only: hxposs, xlower, xupper
   use amr_module, only: outunit, nghost, xperdom
@@ -24,7 +24,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
   implicit none
 
   ! Input
-  integer, intent(in) :: level, nvar, naux, mitot
+  integer, intent(in) :: level, nvar, naux, mitot, nrowst
   integer, intent(in) :: ilo,ihi, msrc
   real(kind=8), intent(in) :: t
   logical  :: patchOnly
@@ -85,9 +85,9 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
   ! note that if only a patch, msrc = -1, otherwise a real grid and intfil
   ! uses its boundary list
   ! msrc either -1 (for a patch) or the real grid number
-  call intfil(valbig,mitot,t,flaguse, ilo,  &
+  call intfil(valbig,mitot,t,flaguse,nrowst,ilo,  &
               ihi,level,nvar,naux,msrc)
- 
+
 
 
   ! Trimbd returns set = true if all of the entries are filled (=1.).
@@ -178,7 +178,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
         call prefilrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,   &
              iplo,iphi,iplo,iphi,.true.)
      else
-        call filrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,   &
+        call filrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,1,   &
              iplo,iphi,.true.,-1)  ! when going to coarser patch, no source grid (for now at least)
      endif
 

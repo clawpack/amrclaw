@@ -14,9 +14,8 @@ c
       mstart = nodget()
 c
 c code assumes in many places that lower left corner at (0)
-c this initial code sets the domain - assumed rectangular
-c if it is too large, birect will chop it up into several rectangular
-c pieces
+c this initial code sets the domain
+c if it is too large, birect will chop it up into several pieces
 c
       rnode(cornxlo,mstart)   = xlower
       rnode(cornxhi,mstart)   = xupper
