@@ -8,7 +8,7 @@ subroutine step1(maxm,meqn,maux,mbc,mx,qold,aux,dx,dt,cflgrid,fm,fp,rp1)
 !        and is unchanged in this version.
 !    
 !     fm, fp are fluxes to left and right of single cell edge
-!     See the flux2 documentation for more information.
+!     See the flux1 documentation for more information.
 !
 !     Converted to f90 2012-1-04 (KTM)
 !     Modified from step2 to work with 1d 2016-6-6 (BND)
@@ -48,10 +48,10 @@ subroutine step1(maxm,meqn,maux,mbc,mx,qold,aux,dx,dt,cflgrid,fm,fp,rp1)
     
     ! Looping scalar storage
     integer :: i,j,thread_num
-    real(kind=8) :: dtdx,dtdy,cfl1d
+    real(kind=8) :: dtdx,cfl1d
     
     ! Common block storage
-    integer :: icom,jcom
+    integer :: icom
     real(kind=8) :: dtcom,dxcom,tcom
     common /comxt/ dtcom,dxcom,tcom,icom
     
@@ -82,7 +82,7 @@ subroutine step1(maxm,meqn,maux,mbc,mx,qold,aux,dx,dt,cflgrid,fm,fp,rp1)
             aux1(:,1-mbc:mx+mbc) = aux(:,1-mbc:mx+mbc)
         endif
 
-        ! Compute modifications fadd and gadd to fluxes along this slice:
+        ! Compute modification fadd to fluxes along this slice:
         call flux1(maxm,meqn,maux,mbc,mx,q1d,dtdx1d,aux1, &
                    faddm,faddp,cfl1d,wave,s, &
                    amdq,apdq,cqxx,bmadq,bpadq,rp1)
