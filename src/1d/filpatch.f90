@@ -1,6 +1,6 @@
 ! :::::::::::::::::::::::::::: FILPATCH :::::::::::::::::::::::::;
 !
-!  fill the portion of valbig
+!  fill the portion of valbig from rows  nrowst
 !  the patch is described by the corners (xlp) by (xrp).
 !  vals are needed at time t, and level level,
 !
@@ -110,11 +110,11 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
      ! Error check 
      if (level == 1) then
         write(outunit,*)" error in filrecur - level 1 not set"
-        write(outunit,'("bounds: ",i4," and ",i4)') ilo,ihi
+        write(outunit,'("start at row: ",i4)') nrowst
         print *," error in filrecur - level 1 not set"
         print *," should not need more recursion "
         print *," to set patch boundaries"
-        print '("bounds: ",i4," and ",i4)', ilo,ihi
+        print '("start at row: ",i4)', nrowst
         stop
      endif
 
@@ -219,7 +219,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
 
                 valint = valc + eta1 * uslope
 
-                valbig(n,i_fine-1) = valint
+                valbig(n,i_fine+nrowst-1) = valint
 
             end do
 
