@@ -141,10 +141,8 @@ contains
             read(UNIT, *)
             read(UNIT, *)
             do i = 1, num_gauges
-                read(UNIT, "(a)") line
-                num_fields = get_value_count(line, delimiter=" ")
-                allocate(gauges(i)%q_out_vars(num_fields))
-                read(line, *) gauges(i)%q_out_vars
+                allocate(gauges(i)%q_out_vars(num_eqn))
+                read(UNIT, *) gauges(i)%q_out_vars
 
                 ! Count number of vars to be output
                 gauges(i)%num_out_vars = 0
@@ -160,10 +158,8 @@ contains
                 read(UNIT, *)
                 read(UNIT, *)
                 do i = 1, num_gauges
-                    read(UNIT, "(a)") line
-                    num_fields = get_value_count(line, delimiter=" ")
-                    allocate(gauges(i)%aux_out_vars(num_fields))
-                    read(line, *) gauges(i)%aux_out_vars
+                    allocate(gauges(i)%aux_out_vars(num_aux))
+                    read(UNIT, *) gauges(i)%aux_out_vars
 
                     ! Count number of vars to be output
                     do n = 1, size(gauges(i)%aux_out_vars, 1)
