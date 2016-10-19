@@ -459,7 +459,7 @@ program amr2
 
         ! Non-user data files
         call set_regions()
-        call set_gauges(rest, nvar)
+        call set_gauges(rest, nvar, naux)
 
     else
 
@@ -472,7 +472,7 @@ program amr2
 
         ! Non-user data files
         call set_regions()
-        call set_gauges(rest, nvar)
+        call set_gauges(rest, nvar, naux)
 
         cflmax = 0.d0   ! otherwise use previously heckpointed val
 
