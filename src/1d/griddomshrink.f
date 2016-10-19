@@ -10,8 +10,6 @@ c
 
       integer*1  iflags (ilo-mbuff:ihi+mbuff)
       integer*1  iflags2(ilo-mbuff:ihi+mbuff)
-
-
 c
 c :::::::::::::::::::::::::  GRIDDOMSHRINK ::::::::::::::::::::::::::::
 c
@@ -39,9 +37,6 @@ c     nesting.  not always nec., or always done
           iflags(ilo-mbuff) = 0   ! set last border to 0 instead of leaving uninitialized
           iflags(ihi+mbuff) = 0
  40   continue
-      do i = ilo-mbuff,ihi+mbuff   ! finish zeroing out col
-         iflags(i) = 0
-      end do
 
 c  dont need to handle periodicity here.  Setting of initial grid included enough room to shrink 1
 c  for proper nesting.  If expand up then will need to add periodic domain flagging

@@ -91,7 +91,7 @@ c      ## flag2refine. moved here to include flags from richardson too.
 c     for this version project to each grid separately, no giant iflags
          if (lcheck+2 .le. mxnest) then
             numpro2 = 0
-            call projec2(lcheck,numpro2,alloc(locamrflags),
+            call projec1(lcheck,numpro2,alloc(locamrflags),
      .           ilo,ihi,mbuff)
 c            numpro = numpro + numpro2  not used for now. would need critical section for numpro
          endif      
@@ -152,6 +152,7 @@ c     bad names, for historical reasons. they are both smae size now
 
       node(domflags_base,mptr) = locdomflags
       node(domflags2,mptr) = locdom2
+
       call setdomflags(mptr,alloc(locdomflags),ilo,ihi,
      .                 mbuff,lbase,lcheck,mibuff)
 

@@ -1,7 +1,7 @@
 c
 c ---------------------------------------------------------
 c
-      subroutine projec2(level,numpro,rectflags,ilo,ihi,mbuff)
+      subroutine projec1(level,numpro,rectflags,ilo,ihi,mbuff)
 c
       use amr_module
       implicit double precision (a-h,o-z)

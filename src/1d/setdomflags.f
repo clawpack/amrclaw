@@ -90,20 +90,16 @@ c             the UNWRAPPED region  of original enlarged grid
               ixhi_unwrapped = ixhi - ishift(i)
               call coarseGridFlagSet(igridflags,
      .                               ixlo_unwrapped,ixhi_unwrapped,
-     .                               jxlo_unwrapped,jxhi_unwrapped,
-     .                               ilo_coarse,ihi_coarse,
-     .                               jlo_coarse,jhi_coarse,mbuff)
+     .                               ilo_coarse,ihi_coarse,mbuff)
 
  25        continue
 
        else       
            ixlo = max(iblo,ilo_coarse-mbuff)
            ixhi = min(ibhi,ihi_coarse+mbuff)
-           jxlo = max(jblo,jlo_coarse-mbuff)
-           jxhi = min(jbhi,jhi_coarse+mbuff)
 c
 c         does this patch intersect mbase grid?
-           if (.not.((ixlo .le. ixhi) .and. (jxlo .le. jxhi))) go to 30  !this grid doesnt intersect
+           if (.not.(ixlo .le. ixhi)) go to 30  !this grid doesnt intersect
 c
            call coarseGridFlagSet(igridflags,ixlo,ixhi,
      .                           ilo_coarse,ihi_coarse,

@@ -45,7 +45,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/nestck1.f \
   $(AMRLIB)/prepf.f \
   $(AMRLIB)/prepc.f \
-  $(AMRLIB)/projec2.f \
+  $(AMRLIB)/projec1.f \
   $(AMRLIB)/signs.f \
   $(AMRLIB)/findcut.f \
   $(AMRLIB)/smartbis.f \
