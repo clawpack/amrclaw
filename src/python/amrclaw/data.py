@@ -270,18 +270,19 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             # Handle special values of "all" and "none"
             if isinstance(self.q_out_fields[gauge_num], basestring):
                 if self.q_out_fields[gauge_num].lower() == 'all':
-                    self._out_file.write("%s\n" % " ".join(['T'] * num_eqn))
+                    self._out_file.write("%s\n" % " ".join(['True'] * num_eqn))
                 elif self.q_out_fields[gauge_num].lower() == 'none': 
-                    self._out_file.write("%s\n" % " ".join(['F'] * num_eqn))
+                    self._out_file.write("%s\n" % " ".join(['False'] * num_eqn))
                 else:
                     raise ValueError("Unknown q field string specified, '%s'" 
                                                  % self.q_out_fields[gauge_num])
             else:
                 # Specify by field number
-                if not isinstance(self.q_out_fields[gauge_num, list]):
+                if not isinstance(self.q_out_fields[gauge_num], list):
                     self.q_out_fields[gauge_num] = [self.q_out_fields[gauge_num]]
                 bool_list = [n in self.q_out_fields[gauge_num] 
                                                        for n in xrange(num_eqn)]
+                bool_list = [str(value) for value in bool_list]
                 self._out_file.write("%s\n" % (" ".join(bool_list)))
         self.data_write()
 
@@ -292,19 +293,19 @@ class GaugeData(clawpack.clawutil.data.ClawData):
                 # Handle special values of "all" and "none"
                 if isinstance(self.aux_out_fields[gauge_num], basestring):
                     if self.aux_out_fields[gauge_num].lower() == 'all':
-                        self._out_file.write("%s\n" % " ".join(['T'] * num_aux))
+                        self._out_file.write("%s\n" % " ".join(['True'] * num_aux))
                     elif self.aux_out_fields[gauge_num].lower() == 'none': 
-                        self._out_file.write("%s\n" % " ".join(['F'] * num_aux))
+                        self._out_file.write("%s\n" % " ".join(['False'] * num_aux))
                     else:
                         raise ValueError("Unknown q field string specified, '%s'" 
                                                      % self.aux_out_fields[gauge_num])
                 else:
                     # Specify by field number
-                    if not isinstance(self.aux_out_fields[gauge_num, list]):
+                    if not isinstance(self.aux_out_fields[gauge_num], list):
                         self.aux_out_fields[gauge_num] = [self.aux_out_fields[gauge_num]]
                     bool_list = [n in self.aux_out_fields[gauge_num] 
                                                            for n in xrange(num_aux)]
-
+                    bool_list = [str(value) for value in bool_list]
                     self._out_file.write("%s\n" % (" ".join(bool_list)))
 
         self.close_data_file()
