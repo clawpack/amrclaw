@@ -56,6 +56,9 @@ module gauges_module
         ! Location in time and space
         real(kind=8) :: x, y, t_start, t_end
 
+        ! Last time recorded
+        real(kind=8) :: last_time
+
         ! Output settings
         integer :: file_format
         real(kind=8) :: min_time_increment
@@ -124,6 +127,7 @@ contains
                 read(UNIT, *) gauges(i)%gauge_num, gauges(i)%x, gauges(i)%y, &
                               gauges(i)%t_start, gauges(i)%t_end
                 gauges(i)%buffer_index = 1
+                gauges(i)%last_time = gauges(i)%t_start
             enddo
 
             ! Read in output formats
@@ -400,6 +404,11 @@ contains
             if (tgrid < gauges(ii)%t_start .or. tgrid > gauges(ii)%t_end) then
                cycle
             endif
+            ! Minimum increment
+            ! TODO Maybe always allow last time output recording?
+            if (tgrid - gauges(ii)%last_time < gauges(ii)%min_time_increment) then
+                cycle
+            end if
 
             ! Compute indexing and bilinear interpolant weights
             ! Note: changed 0.5 to  0.5d0 etc.
@@ -470,6 +479,8 @@ contains
             if (gauges(ii)%buffer_index > MAX_BUFFER) then
                 call print_gauges_and_reset_nextLoc(ii)  
             endif
+
+            gauges(ii)%last_time = tgrid
 
         end do ! End of gauge loop =============================================
 
