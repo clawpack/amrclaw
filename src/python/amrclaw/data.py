@@ -194,6 +194,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         else:
             return [gauge[0] for gauge in self.gauges]
 
+
     def __init__(self, num_dim=None):
         # num_dim is an argument for backward compatibility, but no longer used
         super(GaugeData,self).__init__()
@@ -218,6 +219,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         output = "\n\t".join((output, "min. time increment: %s" 
                                                      % self.min_time_increment))
         return output
+
 
     def write(self, num_eqn, num_aux, out_file='gauges.data', 
                                       data_source='setrun.py'):
@@ -329,11 +331,18 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             # Convert into dict for file
             default_param = getattr(self, param_name)
             setattr(self, param_name, {})
+
+        # Check to make sure that gauges listed are actually gauges
+        for gauge_num in getattr(self, param_name).keys():
+            if gauge_num not in self.gauge_numbers:
+                raise ValueError("Gauge number listed in format option not a ",
+                                 "gauge.  gauge_id = %s" % gauge_num)
+
         for gauge_num in self.gauge_numbers:
             getattr(self, param_name).setdefault(gauge_num, default_param)
 
 
-    def read(self,data_path="./", file_name='gauges.data'):
+    def read(self, data_path="./", file_name='gauges.data'):
         r"""Read gauge data file"""
         path = os.path.join(data_path, file_name)
         gauge_file = open(path,'r')
@@ -356,7 +365,10 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             line = gauge_file.readline().split()
             self.gauges.append([int(line[0])] + [float(a) for a in line[1:]])
 
+        # TODO:  Read in format data
+
         gauge_file.close()
+
 
 #  Gauge data objects
 # ==============================================================================
