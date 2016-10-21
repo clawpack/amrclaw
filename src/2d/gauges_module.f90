@@ -32,6 +32,9 @@
 !   - When array is filled, that gauge will write to file and start over. 
 !   - Need to save index so know position in array where left off
 !   - At checkpoint times, dump all gauges
+!
+! Note: Updated for Clawpack 5.4.x
+!  - Add gauge formatting capabilities
 
 module gauges_module
 
@@ -43,8 +46,7 @@ module gauges_module
     integer, parameter :: OUTGAUGEUNIT = 89
     integer :: num_gauges
 
-!     integer, parameter :: MAX_BUFFER = 1000
-    integer, parameter :: MAX_BUFFER = 10
+    integer, parameter :: MAX_BUFFER = 1000
 
     ! Gauge data types
     type gauge_type
@@ -121,7 +123,6 @@ contains
             allocate(mbestg1(maxgr), mbestg2(maxgr))
             mbestsrc = 0
             
-
             ! Original gauge information
             do i=1,num_gauges
                 read(UNIT, *) gauges(i)%gauge_num, gauges(i)%x, gauges(i)%y, &
@@ -357,7 +358,7 @@ contains
 !     Loops over only the gauges to be handled by this grid, as specified
 !     by indices from mbestg1(mptr) to mbestg2(mptr)
 
-        use amr_module, only: nestlevel, nghost, timemult, rnode, node
+        use amr_module, only: nestlevel, nghost, timemult, rnode, node, maxvar
         use amr_module, only: hxposs, hyposs
 
         implicit none
@@ -369,8 +370,7 @@ contains
         real(kind=8), intent(in) :: xlow, ylow
         
         ! Locals
-        integer, parameter :: MAX_VARS = 20
-        real(kind=8) :: var(MAX_VARS)
+        real(kind=8) :: var(max_var * 2)
         real(kind=8) :: xcent, ycent, xoff, yoff, tgrid, hx, hy
         integer :: i, j, i1, i2, iindex, jindex, n, ii, index, level, var_index
 
@@ -423,11 +423,17 @@ contains
             xoff   = (gauges(ii)%x - xcent) / hx
             yoff   = (gauges(ii)%y - ycent) / hy
 
-            ! IF WANT TO INCLUDE THIS TEST< MODIFY FOR ROUNDOFF LEVEL DIFF
-            ! if (xoff .lt. 0.d0 .or. xoff .gt. 1.d0 .or. &
-            !     yoff .lt. 0.d0 .or. yoff .gt. 1.d0) then
-            !    write(6,*)" BIG PROBLEM in DUMPGAUGE", i
-            ! endif
+            ! Gauge interpolation seems to work, so error test is commented out.
+            ! For debugging, use the code below...
+            !   Note: we expect 0 <= xoff, yoff <= 1 but if gauge is exactly 
+            !   at center of cell these might be off by rounding error
+
+            !if (xoff .lt. -1.d-4 .or. xoff .gt. 1.0001d0 .or. &
+            !    yoff .lt. -1.d-4 .or. yoff .gt. 1.0001d0) then
+            !   write(6,*) "*** print_gauges: Interpolation problem at gauge ",&
+            !               igauge(ii)
+            !   write(6,*) "    xoff,yoff: ", xoff,yoff
+            !endif
 
             ! Bilinear interpolation
             var_index = 0
