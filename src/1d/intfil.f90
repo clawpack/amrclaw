@@ -186,7 +186,7 @@ subroutine intfil(val,mi,time,flaguse,nrowst,ilo,ihi,level,nvar,naux,msrc)
     ! domains
 
     if (patch_line(1) < 0) then
-        flaguse(patch_line(1):min(-1,ihi - patch_line(1))) = 1
+        flaguse(patch_line(1):min(-1,nrowst + ihi - patch_line(1))) = 1
     endif
 
     if (ihi >= iregsz(level)) then

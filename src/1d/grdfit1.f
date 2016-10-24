@@ -69,7 +69,7 @@ c
  70   mnew      = nodget()
 c       if (lcheck .eq. 2 .and. (mnew .ne. 6 .and. mnew .ne. 7)) go to 69 
 c       if (lcheck .eq. 1 .and. (mnew .ne. 3 .and. mnew .ne. 2 )) go to 69 
- 75   call  moment(node(1,mnew),alloc(index+2*ibase),numptc(icl),usage)
+ 75   call  moment(node(1,mnew),alloc(index+1*ibase),numptc(icl),usage)
 
       if (gprint) write(outunit,100) icl,mnew,usage,numptc(icl)
 100   format('         cluster ',i5,' new rect.',i5,

@@ -2,8 +2,8 @@
 !  :::::::::::::: BOUND :::::::::::::::::::::::::::::::::::::::::::
 !     This routine sets the boundary values for a given grid 
 !     at level level.
-!     We are setting the values for a strip ng zones wide all
-!     the way around the border, in 4 rectangular strips.
+!     We are setting the values for a strip ng zones wide on
+!     both borders.
 !
 !     Outputs from this routine:
 !     The values around the border of the grid are inserted
@@ -32,7 +32,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mptr,aux,naux)
   real(kind=8), intent(in out) :: aux(naux,mitot)
 
   ! Locals
-  integer :: ilo, ihi, level  ! rect(4)
+  integer :: ilo, ihi, level
   real(kind=8) :: xleft, xright, hx, xl, xr
   real(kind=8) :: xloWithGhost,  xhiWithGhost
   logical      :: patchOnly
@@ -53,7 +53,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mptr,aux,naux)
   xl = xleft - ng*hx
   xr = xleft
   if ((xl < xlower) .and. xperdom) then
-     call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot, &
+     call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,1, &
           ilo-ng,ilo-1,ilo-ng,ihi+ng,patchOnly)
   else
      call filrecur(level,nvar,valbig,aux,naux,time,mitot,1,ilo-ng, &
@@ -66,7 +66,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mptr,aux,naux)
 
   if ((xr .gt. xupper) .and. xperdom) then
      call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot, &
-          ihi+1,ihi+ng,ilo-ng,ihi+ng,patchOnly)
+          mitot-ng+1,ihi+1,ihi+ng,ilo-ng,ihi+ng,patchOnly)
   else
      call filrecur(level,nvar,valbig,aux,naux,time,mitot, &
           mitot-ng+1,ihi+1,ihi+ng,patchOnly,mptr)

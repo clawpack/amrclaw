@@ -76,6 +76,10 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
   ! filled in this way, we return;
   mitot_patch = ihi-ilo + 1 ! nrowp
 
+  write(*,*) " "
+  write(*,*) "In filpatch."
+  write(*,*) "ilo,ihi,level: ",ilo,ihi,level
+
   dx_fine     = hxposs(level)
 
   ! Coordinates of edges of patch (xlp,xrp)
@@ -175,7 +179,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
      ! 'coarse grid' indices are the same (no actual coarse grid here, so cant use mptr
      ! must pass indices. patchOnly argument  is thus true
      if ((xperdom) .and. sticksout(iplo,iphi)) then
-        call prefilrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,   &
+        call prefilrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,1,   &
              iplo,iphi,iplo,iphi,.true.)
      else
         call filrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,1,   &

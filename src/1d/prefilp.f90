@@ -16,7 +16,7 @@
 !
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,  &
-                                 ilo,ihi,iglo,ighi,patchOnly)
+                                 nrowst,ilo,ihi,iglo,ighi,patchOnly)
 
 
 
@@ -43,7 +43,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,  &
     ! Local storage
 
     ! Various of these are extra. Remove once you know which.
-    integer :: i, ii, ivar, ng, i1, i2
+    integer :: i, ii, ivar, ng, i1, i2, nrowst
     integer :: iputst, mi, locpatch, locpaux
     integer :: iwrap1, iwrap2, tmp, locflip, rect(2)
     real(kind=8) :: xlwrap

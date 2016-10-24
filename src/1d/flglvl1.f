@@ -61,7 +61,7 @@ c since there are duplicates, and proper nesting not yet checked
            call colate1(alloc(index),nxpts,lcheck,npts,lbase)
       else 
          npts = 0  !npts is number of unique flagged points after removing duplicates
-         call freeFlags(lcheck)   ! otherwise storage freed in colate2. perhaps always do it here
+         call freeFlags(lcheck)   ! otherwise storage freed in colate1. perhaps always do it here
       endif
 
       return
