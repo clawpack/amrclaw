@@ -54,30 +54,6 @@ c           ::::: Cell i on left side of fine grid
 300         continue
 c         write(dbugunit,901) i,j,3,(xfluxm(ivar,i+1,j),ivar=1,nvar)
          endif
-c
-c        ### new bcs 5 and 6 come from spherical mapping. note sign change:
-c        ### previous fluxes stored negative flux, fine grids always add
-c        ### their flux, then the delta is either added or subtracted as
-c        ### appropriate for that side.  New bc adds or subtracts BOTH fluxes.
-c
-         if (listbc(2,ispot) .eq. 5) then
-c           ::::: Cell i,j on top side of fine grid with spherical mapped bc
-c            do 500 ivar = 1, nvar
-c               alloc(inlist + ivar) = yfluxm(ivar,i,j+1)*dtc*hx
-c500         continue
-c         write(dbugunit,901) i,j,5,(yfluxm(ivar,i,j+1),ivar=1,nvar)
-c 901        format(2i4," side",i3,4e15.7)
-             write(*,*) "Error, spherical mapping not enabled yet."
-         endif
-c
-         if (listbc(2,ispot) .eq. 6) then
-c           ::::: Cell i,j on bottom side of fine grid with spherical mapped bc
-c            do 600 ivar = 1, nvar
-c               alloc(inlist + ivar) = yfluxp(ivar,i,j)*dtc*hx
-c600         continue
-c         write(dbugunit,901) i,j,6,(yfluxp(ivar,i,j),ivar=1,nvar)
-             write(*,*) "Error, spherical mapping not enabled yet."
-         endif
 
       ispot = ispot + 1
       if (ispot .gt. maxsp) go to 99
