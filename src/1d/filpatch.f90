@@ -76,10 +76,6 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
   ! filled in this way, we return;
   mitot_patch = ihi-ilo + 1 ! nrowp
 
-  write(*,*) " "
-  write(*,*) "In filpatch."
-  write(*,*) "ilo,ihi,level: ",ilo,ihi,level
-
   dx_fine     = hxposs(level)
 
   ! Coordinates of edges of patch (xlp,xrp)
