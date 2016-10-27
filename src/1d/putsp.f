@@ -29,8 +29,9 @@ c
       mptr = lstart(level)
  40       nx    = node(ndihi,mptr) - node(ndilo,mptr) + 1
           ikeep = nx/intratx(level-1)
-          lenbc = 2*(ikeep)
-c         twice perimeter since saving plus or minus fluxes 
+          lenbc = 2
+c         twice perimeter (which is just one cell
+c         on each side) since saving plus or minus fluxes
 c         plus coarse solution storage
           call reclam(node(ffluxptr,mptr), 2*nvar*lenbc+naux*lenbc)
           mptr  = node(levelptr,mptr)

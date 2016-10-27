@@ -24,7 +24,7 @@ c
       mkid   = lstart(level+1)
  10   if (mkid .eq. 0) go to 20
          ikeep  = (node(ndihi,mkid)-node(ndilo,mkid)+1)/intratx(level)
-         maxsp  = maxsp + 2*(ikeep)
+         maxsp  = maxsp + 2*ikeep
       mkid = node(levelptr,mkid)
       go to 10
  20   listsp(level) = maxsp

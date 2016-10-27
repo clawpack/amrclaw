@@ -67,7 +67,7 @@ c We want to do this regardless of the threading type
          locnew = node(store1,mptr)
          locaux = node(storeaux,mptr)
          time   = rnode(timemult,mptr)
-c     
+c
           call bound(time,nvar,nghost,alloc(locnew),mitot,mptr,
      1               alloc(locaux),naux)
 
@@ -177,6 +177,7 @@ c  array for them it has too long a lendim, makes too big
 c  a checkpoint file, and is a big critical section.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
+
       level = node(nestlevel,mptr)
       hx    = hxposs(level)
       delt  = possk(level)
@@ -212,6 +213,7 @@ c
          locaux = node(storeaux,mptr)
 c
          if (node(ffluxptr,mptr) .ne. 0) then
+
          lenbc  = 2*(nx/intratx(level-1))
             locsvf = node(ffluxptr,mptr)
             locsvq = locsvf + nvar*lenbc
@@ -242,10 +244,12 @@ c
      3                  delt,dtnew,hx,nvar,
      4                  xlow,time,mptr,naux,alloc(locaux))
 c
-      if (node(cfluxptr,mptr) .ne. 0)
-     2   call fluxsv(mptr,fm,fp,
-     3               alloc(node(cfluxptr,mptr)),mitot,
-     4               nvar,listsp(level),delt,hx)
+
+      if (node(cfluxptr,mptr) .ne. 0) then
+        call fluxsv(mptr,fm,fp,
+     2               alloc(node(cfluxptr,mptr)),mitot,
+     3               nvar,listsp(level),delt,hx)
+      endif
          if (node(ffluxptr,mptr) .ne. 0) then
          lenbc = 2*(nx/intratx(level-1))
             locsvf = node(ffluxptr,mptr)

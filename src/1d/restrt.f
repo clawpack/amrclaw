@@ -132,7 +132,7 @@ c
                    endif
                    nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
                    ikeep = nx/intrtx(lev-1)
-                   lenbc = 2*(ikeep)
+                   lenbc = 2
                    if (lev .gt. mxnest) then
                        call reclam
      .                  (node(ffluxptr,mptr),2*nvar*lenbc+naux*lenbc)
