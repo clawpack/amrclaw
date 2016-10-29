@@ -340,26 +340,26 @@ contains
 !
     subroutine update_gauges(q, aux, xlow, ylow, num_eqn, mitot, mjtot, num_aux, &
                              mptr)
-!
-!     This routine is called each time step for each grid patch, to output
-!     gauge values for all gauges for which this patch is the best one to 
-!     use (i.e. at the finest refinement level).  
-
-!     It is called after ghost cells have been filled from adjacent grids
-!     at the same level, so bilinear interpolation can be used to 
-!     to compute values at any gauge location that is covered by this grid.  
-
-!     The grid patch is designated by mptr.
-!     We only want to set gauges i for which mbestsrc(i) == mptr.
-!     The array mbestsrc is reset after each regridding to indicate which
-!     grid patch is best to use for each gauge.
-
-!     This is a refactoring of dumpgauge.f from Clawpack 5.2 
-!     Loops over only the gauges to be handled by this grid, as specified
-!     by indices from mbestg1(mptr) to mbestg2(mptr)
+        !
+        ! This routine is called each time step for each grid patch, to output
+        ! gauge values for all gauges for which this patch is the best one to 
+        ! use (i.e. at the finest refinement level).  
+        
+        ! It is called after ghost cells have been filled from adjacent grids
+        ! at the same level, so bilinear interpolation can be used to 
+        ! to compute values at any gauge location that is covered by this grid.  
+        
+        ! The grid patch is designated by mptr.
+        ! We only want to set gauges i for which mbestsrc(i) == mptr.
+        ! The array mbestsrc is reset after each regridding to indicate which
+        ! grid patch is best to use for each gauge.
+        
+        ! This is a refactoring of dumpgauge.f from Clawpack 5.2 
+        ! Loops over only the gauges to be handled by this grid, as specified
+        ! by indices from mbestg1(mptr) to mbestg2(mptr)
 
         use amr_module, only: nestlevel, nghost, timemult, rnode, node, maxvar
-        use amr_module, only: hxposs, hyposs
+        use amr_module, only: maxaux, hxposs, hyposs
 
         implicit none
         
@@ -370,7 +370,7 @@ contains
         real(kind=8), intent(in) :: xlow, ylow
         
         ! Locals
-        real(kind=8) :: var(max_var * 2)
+        real(kind=8) :: var(maxvar + maxaux)
         real(kind=8) :: xcent, ycent, xoff, yoff, tgrid, hx, hy
         integer :: i, j, i1, i2, iindex, jindex, n, ii, index, level, var_index
 
