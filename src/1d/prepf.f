@@ -19,7 +19,6 @@ c
       mkid = lstart(level)
  10   if (mkid .eq. 0) go to 99
           nx    = node(ndihi,mkid)-node(ndilo,mkid) + 1
-          ikeep = nx/intratx(level-1)
           lenbc = 2
 c
 c         get twice the storage, one for plus or minus fluxes, the

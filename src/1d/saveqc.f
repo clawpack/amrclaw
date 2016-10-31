@@ -29,7 +29,6 @@ c
       mkid = lstart(level)
  10   if (mkid .eq. 0) go to 99
           nx    = node(ndihi,mkid)-node(ndilo,mkid) + 1
-          ikeep = nx/intratx(level-1)
           lenbc = 2
           ist   = node(ffluxptr,mkid)
           time = rnode(timemult,mkid)
@@ -59,12 +58,13 @@ c         make coarsened enlarged patch for conservative fixup
           if (sticksout .and. xperdom) then
              !iperim = nrow
              !locflip = igetsp(iperim*nghost*(nvar+naux))
+
              call preicall(alloc(loctmp),alloc(loctx),nrow,nvar,
      .                     naux,iclo,ichi,level-1,
      .                     fliparray)
 !     .                     alloc(locflip))
 !             call reclam(locflip,iperim*nghost*(nvar+naux))
-          else 
+          else
              call icall(alloc(loctmp),alloc(loctx),nrow,nvar,naux,
      .                   iclo,ichi,level-1,1)
           endif
