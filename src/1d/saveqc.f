@@ -30,7 +30,7 @@ c
  10   if (mkid .eq. 0) go to 99
           nx    = node(ndihi,mkid)-node(ndilo,mkid) + 1
           ikeep = nx/intratx(level-1)
-          lenbc = 2*(ikeep)
+          lenbc = 2
           ist   = node(ffluxptr,mkid)
           time = rnode(timemult,mkid)
 

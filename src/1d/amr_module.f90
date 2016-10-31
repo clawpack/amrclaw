@@ -66,7 +66,9 @@ module amr_module
     integer, parameter :: maxwave = 10
 
 
-    ! note use of sentinel in listStart
+    ! put linked list of grids into array and save.
+    ! order is coarsest level to finest. is redone after regridding
+    ! and on restarting.  note use of sentinel in listStart
     integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
     integer,parameter :: bndListSize = 8*maxgr
     integer :: bndList(bndListSize,2)  ! guess size, average # nbors 4? manage as linked list

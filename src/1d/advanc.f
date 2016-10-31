@@ -214,7 +214,7 @@ c
 c
          if (node(ffluxptr,mptr) .ne. 0) then
 
-         lenbc  = 2*(nx/intratx(level-1))
+         lenbc  = 2
             locsvf = node(ffluxptr,mptr)
             locsvq = locsvf + nvar*lenbc
             locx1d = locsvq + nvar*lenbc
