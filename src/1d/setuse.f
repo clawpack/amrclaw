@@ -51,7 +51,7 @@ c  right side (of fine grid, left of coarse cell)
 c (numbered from bottom to top, so not continuous in lkid numbering)
 c
  40    if (iend .gt. ihi .or. kflag .ne. 1) go to 80
-       lkid     = (ichi-iclo+1) + 1
+       lkid     = (ichi-iclo+1) + 2
           ispot              = ispot + 1
           listbc(1,ispot)    = iend-ilo+nghost+1
           listbc(2,ispot)    = 1
