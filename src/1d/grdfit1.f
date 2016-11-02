@@ -21,6 +21,7 @@ c         on each level. lcheck is the level being error estimated
 c         so that lcheck+1 will be the level of the new grids.
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
+
       call system_clock(clock_start,clock_rate)
 
 
@@ -48,6 +49,7 @@ c        till each cluster ok. needs scratch space.
 c
        idim = iregsz(lcheck)
 c       lociscr = igetsp(idim+jdim)
+
        call smartbis(alloc(index),npts,cut,numptc,nclust,lbase,
      2               corner,idim)
 c     2               corner,alloc(lociscr),alloc(locjscr),idim,jdim)
@@ -91,7 +93,7 @@ c     ##  and returns 2 clusters where there used to be 1.
 c
 c 2/28/02 : Added naux to argument list; needed by call to outtre in nestck
 
-      fit2 = nestck1(mnew,lbase,alloc(index+2*ibase),numptc(icl),numptc,
+      fit2 = nestck1(mnew,lbase,alloc(index+1*ibase),numptc(icl),numptc,
      1             icl,nclust,nvar, naux)
       if (.not. fit2) go to 75
 c
@@ -119,7 +121,7 @@ c    ## may have npts 0 but array was allocated due to initially flagged points
 c    ## that were not allowed for proper nesting or other reasons. in this case
 c    ## the array was still allocated, so need to test further to see if colating
 c    ## array space needs to be reclaimed
-      if (nptmax .gt. 0) call reclam(index, 2*nptmax) 
+      if (nptmax .gt. 0) call reclam(index, nptmax)
 c
       call system_clock(clock_finish,clock_rate)
       timeGrdfitAll = timeGrdfitAll + clock_finish - clock_start

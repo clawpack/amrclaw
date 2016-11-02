@@ -192,7 +192,7 @@ c          #  add second storage location to previous mxnest level
          mptr = lstart(mxnold)
 15       if (mptr .eq. 0) go to 25
             mitot = node(ndihi,mptr)-node(ndilo,mptr)+1+2*nghost
-            node(store2,mptr) = igetsp(mitot*mjtot*nvar)
+            node(store2,mptr) = igetsp(mitot*nvar)
             mptr = node(levelptr,mptr)
             go to 15
 25       continue
