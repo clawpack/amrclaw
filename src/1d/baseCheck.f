@@ -35,7 +35,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
        levnew = node(nestlevel,mnew)
 c
 c initialize for potential periodicity
-c each patch divided into 9 regions (some may be empty)
+c each patch divided into 3 regions (some may be empty)
 c e.g. i from (ilo,-1), (0,iregsz(level)-1),(iregsz(level),ihi)
 c except using enlarged grid (ilo-1 to ihi+1)
 c
@@ -87,6 +87,16 @@ c  leave 0 for now so match older nestck
 !--        alloc(iadd(ichi,jclo)) = 1.
 !--        alloc(iadd(ichi,jchi)) = 1.
 c
+c  if mnew on domain boundary fix flags so ok.
+c  fix extra border, and first/last real edge
+       if (ilo .eq. 0 .and. .not. xperdom) then
+         alloc(iadd(iclo)) = 1.
+         alloc(iadd(iclo+1)) = 1.
+       endif
+       if (ihi .eq. iregsz(levnew)-1 .and. .not. xperdom) then
+         alloc(iadd(ichi)) = 1.
+         alloc(iadd(ichi-1)) = 1.
+       endif
 
        mptr = lstart(lbase)
  20       iblo = node(ndilo, mptr)

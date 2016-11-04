@@ -11,8 +11,8 @@ c
 c
       dimension  corner(nsize,maxcl)
       integer    numptc(maxcl), prvptr
-      logical    fit, nestck, cout
-      logical    fit2, nestck1
+      logical    cout
+      logical    fit1, nestck1
       data       cout/.false./
 c
 c ::::::::::::::::::::: GRDFIT :::::::::::::::::::::::::::::::::;
@@ -93,9 +93,9 @@ c     ##  and returns 2 clusters where there used to be 1.
 c
 c 2/28/02 : Added naux to argument list; needed by call to outtre in nestck
 
-      fit2 = nestck1(mnew,lbase,alloc(index+1*ibase),numptc(icl),numptc,
+      fit1= nestck1(mnew,lbase,alloc(index+ibase),numptc(icl),numptc,
      1             icl,nclust,nvar, naux)
-      if (.not. fit2) go to 75
+      if (.not. fit1) go to 75
 c
 c     ##  grid accepted. put in list.
       if (newstl(levnew) .eq. null) then
