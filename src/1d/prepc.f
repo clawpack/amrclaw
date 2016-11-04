@@ -22,8 +22,9 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
       maxsp  = 0
       mkid   = lstart(level+1)
+
  10   if (mkid .eq. 0) go to 20
-c        Adding twice the twice perimeter (which is just one cell
+c        Adding twice perimeter (which is just one cell
 c         on each side)
          maxsp  = maxsp + 2
       mkid = node(levelptr,mkid)
@@ -61,8 +62,10 @@ c   this first call is only interior interfaces.
 
           if (iplo .le. iphi+1) then
                kflag = 1 ! interior stuff, no mappings
+
                 call setuse(alloc(locbc),maxsp,ispot,mkid,
      2          ilo,ihi,iclo,ichi,kflag)
+
           endif
 
 c   for fine grids touching periodic boundary on right

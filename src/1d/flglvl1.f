@@ -18,7 +18,7 @@ c           lcheck = level to be flagged
 c output parameters:
 c           nxpts = no. of flagged pts. total
 c           index  = starting index in alloc of the flagged pts.
-c                    (which occupy 2*nxpts locations).
+c                    (which occupy 1*nxpts locations).
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
@@ -27,7 +27,7 @@ c
       numbad = 0
 
 
-c     flag arrays- based on either spatial gradients (and/or user defined 
+c     flag arrays- based on either spatial gradients (and/or user defined
 c                  criteria),  or Richardson error estimation
     
       call system_clock(clock_start,clock_rate)
@@ -44,6 +44,7 @@ c     proper nesting. Finally compute proper domain for each patch
       call system_clock(clock_finish,clock_rate)
       timeBufnst = timeBufnst + clock_finish - clock_start
 
+
       nxpts = nxpts + numbad
 c
 c  colate flagged pts into flagged points array
@@ -57,9 +58,9 @@ c         call domgrid(lbase,lcheck)   ! will need since there are flagged pts  
 c
 c in new version, there are bad cells but nxpts isnt true count any longer
 c since there are duplicates, and proper nesting not yet checked
-           index = igetsp(1*nxpts)
+           index = igetsp(nxpts)
            call colate1(alloc(index),nxpts,lcheck,npts,lbase)
-      else 
+      else
          npts = 0  !npts is number of unique flagged points after removing duplicates
          call freeFlags(lcheck)   ! otherwise storage freed in colate1. perhaps always do it here
       endif

@@ -37,7 +37,7 @@ c
 c
 c  left side (of fine grid, right side of coarse cell)
 c
-      if (ist .lt. ilo .or. kflag .ne. 1) go to 40
+      if (ist .lt. ilo .or. kflag .ne. 1) go to 20
          lkid     = 1
 
          ispot              = ispot + 1
@@ -50,8 +50,8 @@ c
 c  right side (of fine grid, left of coarse cell)
 c (numbered from bottom to top, so not continuous in lkid numbering)
 c
- 40    if (iend .gt. ihi .or. kflag .ne. 1) go to 80
-       lkid     = (ichi-iclo+1) + 2
+ 20    if (iend .gt. ihi .or. kflag .ne. 1) go to 30
+       lkid     = 2
           ispot              = ispot + 1
           listbc(1,ispot)    = iend-ilo+nghost+1
           listbc(2,ispot)    = 1
@@ -59,6 +59,6 @@ c
           listbc(4,ispot)    = lkid
           lkid   = lkid + 1
 c
- 80    continue 
+ 30    continue
        return
        end

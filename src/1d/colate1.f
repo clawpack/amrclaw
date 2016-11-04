@@ -36,13 +36,14 @@ c
 c domain flags corresponding to each grid have already been set up.
 c colate will check that flagged points nested or throw away
 c
+
+
        mbuff = max(nghost,ibuff+1)  ! new way of expanding grid to do buffering in place
        index = 0  ! for putting into badpts array
 
 
       mptr = lstart(lcheck)
  10      continue
-c        write(outunit,*)" colating flags on grid ",mptr
 
 c        handle each of 2 sides (in 1D)
 c        set tags to negative val. reset to positive if they have a home     
@@ -77,12 +78,14 @@ c     .                     mbuff,lcheck)
 c     pass loop bounds to keep consistent
 c     need this next subr. to do integer indexing for iflags
 c
+
          call flagcheck(alloc(locamrflags),ilo,ihi,mbuff,
      .                  alloc(node(domflags2,mptr)),
      .                  imin,imax,mptr)
 
 
              do 60 i = imin, imax
+
 
 c             neg means no home was found. throw out
              if (alloc(iadd(i)) .lt. 0) then
@@ -114,9 +117,6 @@ c             note that previous code subtracted .5 since it used 1 based indexi
  101          format(2f6.1)
 
  60        continue
-
- 65         continue
- 66         continue
 
 c
  70     continue
