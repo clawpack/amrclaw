@@ -42,7 +42,7 @@ module gauges_module
 
     integer, parameter :: OUTGAUGEUNIT=89
     integer :: num_gauges, inum
-    real(kind=8), allocatable :: xgauge(:), ygauge(:), t1gauge(:), t2gauge(:)
+    real(kind=8), allocatable :: xgauge(:), t1gauge(:), t2gauge(:)
     integer, allocatable, dimension(:) ::  mbestsrc, mbestorder, &
                           igauge, mbestg1, mbestg2, nextLoc
     
