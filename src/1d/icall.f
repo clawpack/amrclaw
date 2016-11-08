@@ -10,8 +10,6 @@ c
        dimension val(nvar,nrow)
        dimension aux(naux,nrow)
 
-       logical sticksout
-
 
 c NEW INDEX ORDERING
        iadd   (ivar,i) = loc    + ivar-1 + nvar*(i-1)

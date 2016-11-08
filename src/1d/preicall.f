@@ -81,6 +81,7 @@ c      ## but in setaux/bcamr (not called from here).
           i2 = min(ihi, iend(i))
           if (i1 .le. i2) then ! part of patch in this region
 c
+               iputst = i1 - ilo + 1
                call icall(val,aux,nrow,nvar,naux,
      1                       i1+ishift(i),i2+ishift(i),level,
      2                       iputst)
