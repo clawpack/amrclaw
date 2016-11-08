@@ -141,8 +141,12 @@ class RegionData(clawpack.clawutil.data.ClawData):
         self.data_write(value=len(self.regions),alt_name='num_regions')
         if (self.num_dim == 3) and (len(self.regions) > 0):
             raise NotImplementedError("*** Regions not yet implemented in 3d")
-        for regions in self.regions:
-            self._out_file.write(8*"%g  " % tuple(regions) +"\n")
+        if (self.num_dim == 1) and (len(self.regions) > 0):
+            for regions in self.regions:
+                self._out_file.write(6*"%g  " % tuple(regions) +"\n")
+        if (self.num_dim == 2) and (len(self.regions) > 0):
+            for regions in self.regions:
+                self._out_file.write(8*"%g  " % tuple(regions) +"\n")
         self.close_data_file()
 
 
