@@ -115,9 +115,7 @@ c no longer getting locbig, using "real" solution array in locnew
              endif     
 c     
          if (flag_richardson) then
-c              NOTE: Richardson error not implemented in 1d code yet
-        write(*,*) "Error, Richardson error flagging not implemented"
-c              call errest(nvar,naux,lcheck,mptr,nx,ny)
+              call errest(nvar,naux,lcheck,mptr,nx)
          endif
 
        end do
