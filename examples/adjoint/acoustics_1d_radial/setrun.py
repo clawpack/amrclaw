@@ -273,7 +273,7 @@ def setrun(claw_pkg='amrclaw'):
 
     # Specify type of each aux variable in clawdata.auxtype.
     # This must be a list of length num_aux, each element of which is one of:
-    #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
+    #   'center',  'capacity', or 'xleft'  (see documentation).
     amrdata.aux_type = ['center']
 
 

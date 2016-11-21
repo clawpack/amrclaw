@@ -266,7 +266,7 @@ def setrun(claw_pkg='amrclaw'):
 
     # Specify type of each aux variable in clawdata.auxtype.
     # This must be a list of length num_aux, each element of which is one of:
-    #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
+    #   'center',  'capacity', or 'xleft'  (see documentation).
     amrdata.aux_type = []
 
 
@@ -301,7 +301,7 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     rundata.regiondata.regions = []
     # to specify regions of refinement append lines of the form
-    #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
+    #  [minlevel,maxlevel,t1,t2,x1,x2]
 
 
     #  ----- For developers ----- 
