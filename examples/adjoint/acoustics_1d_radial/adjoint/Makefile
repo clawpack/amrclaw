@@ -25,7 +25,7 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS = -g -Wall -pedantic -fbounds-check -ffpe-trap=invalid,overflow,zero -fbacktrace -fcheck=all -O
+FFLAGS ?= 
 
 # ---------------------------------
 # package sources for this program:
@@ -33,16 +33,6 @@ FFLAGS = -g -Wall -pedantic -fbounds-check -ffpe-trap=invalid,overflow,zero -fba
 
 AMRLIB = $(CLAW)/amrclaw/src/1d
 include $(AMRLIB)/Makefile.amr_1d
-
-# ---------------------------------------
-# package sources specifically to exclude
-# (i.e. if a custom replacement source 
-#  under a different name is provided)
-# ---------------------------------------
-
-EXCLUDE_MODULES = \
-
-EXCLUDE_SOURCES = \
 
 # ----------------------------------------
 # List of custom sources for this program:
