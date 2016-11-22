@@ -34,9 +34,19 @@ FFLAGS ?=
 AMRLIB = $(CLAW)/amrclaw/src/1d
 include $(AMRLIB)/Makefile.amr_1d
 
-# ---------------------------------
-# List of sources for this program:
-# ---------------------------------
+# ---------------------------------------
+# package sources specifically to exclude
+# (i.e. if a custom replacement source 
+#  under a different name is provided)
+# ---------------------------------------
+
+EXCLUDE_MODULES = \
+
+EXCLUDE_SOURCES = \
+
+# ----------------------------------------
+# List of custom sources for this program:
+# ----------------------------------------
 
 MODULES = \
 
