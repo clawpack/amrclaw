@@ -1,7 +1,7 @@
 
 .. _acoustics_1d_heterogeneous:
 
-Acoustics 1D Example 1 -- Forward problem
+Acoustics 1D -- Heterogeneous example
 ------------------------------------------
 
 1D acoustics in a piecewise constant medium to illustrate reflection and
