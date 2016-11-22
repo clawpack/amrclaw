@@ -8,11 +8,13 @@ c
 
       integer*1 igridflags(ilo-mbuff:ihi+mbuff,jlo-mbuff:jhi+mbuff)
 c icopy is dimensioned large enough, but will be used at several sizes
-c and accessed using loi-mbuff:hi_i+mbuff, etc.      
+c and accessed using lo_i-mbuff:hi_i+mbuff, etc.      
+c
       integer*1 icopy(mibuff,mjbuff) 
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
-      dimension igridst(lcheck),jgridst(lcheck)
-      dimension igridend(lcheck),jgridend(lcheck)
+      dimension igridst(lcheck), igridend(lcheck)
+      dimension jgridst(lcheck), jgridend(lcheck)
+      logical borderx, bordery
 
 c
 c set domain flags for this grid only, enlarged by buffer zone. check if any other base grids
@@ -21,13 +23,7 @@ c note that interior of base grids 1 away from edge are automatically ok for pro
 c  will shrink gridflags after setting to get proper nesting region
 c
 c  1. initialize this grids domain flags to 0, at lcheck
-        do j = jlo-mbuff, jhi+mbuff
-        do i = ilo-mbuff, ihi+mbuff
-           igridflags(i,j) = 0
-        end do
-        end do
- 
-c
+        igridflags = 0
 c
 c    ... if lbase coarse than lcheck, set initial indices, before upscaling, for base transfer
 c        so that dont have entire base grid upscaled
@@ -49,23 +45,21 @@ c        so that dont have entire base grid upscaled
             igridst(lc) = ilo_coarse
             jgridst(lc) = jlo_coarse
          end do
+!       get out coarsened indices in case level lbase == lcheck (zero trip loop)
          ilo_coarse = igridst(lbase)
          ihi_coarse = igridend(lbase)
          jlo_coarse = jgridst(lbase)
          jhi_coarse = jgridend(lbase)
 
-      if (xperdom .or. yperdom) then   ! set here once and for all, use coarsened "base" coords to set
-         call setIndices(ist,iend,jst,jend,
-     .              ilo_coarse-mbuff,ihi_coarse+mbuff,
-     .              jlo_coarse-mbuff,jhi_coarse+mbuff,
-     .              ishift,jshift,lbase)
-       endif 
-
-c  3.  loop over all other intersecting grids at base level staying fixed
+c
+c  3.  loop over all intersecting grids at base level staying fixed
+c      to make the proper nesting dodmain.
 c      set the buffer zone in igridflags to 1 if nested 
 c      this is so when shrink by one you dont lose too much area.
+c
         mbase = lstart(lbase)
  20     continue        
+        
            iblo = node(ndilo,mbase)   ! if base grid coarser, need to scale up
            ibhi = node(ndihi,mbase)   ! if same grid will just mark interior cells as 1
            jblo = node(ndjlo,mbase)
@@ -75,15 +69,19 @@ c  3.5 if periodic bcs, then if grids buffer sticks out, will have to wrap the
 c      coordinates and flag any intersecting base grids for wrapped  buffer.
 c      do here instead of above since cant coarsen mbuff same way you can for regular grid
 c      also grid itself (without enlarged mbuff zone) doesnt stick out
-       if (xperdom .or. yperdom) then
+
+        borderx = (ilo_coarse.le. 0 .or. ihi_coarse.ge.iregsz(lbase)-1)
+        bordery = (jlo_coarse.le. 0 .or. jhi_coarse.ge.jregsz(lbase)-1)
+        if ((xperdom .and. borderx) .or. (yperdom .and. bordery)) then   
+           call setIndices(ist,iend,jst,jend,
+     .                     ilo_coarse-mbuff,ihi_coarse+mbuff,
+     .                     jlo_coarse-mbuff,jhi_coarse+mbuff,
+     .                     ishift,jshift,lbase)
+ 
            do 25 i = 1, 3
-c              i1 = max(ist(i)  + ishift(i)
-c              i2 = iend(i) + ishift(i)
                i1 = max(ilo_coarse-mbuff,ist(i))
                i2 = min(ihi_coarse+mbuff,iend(i))
            do 24 j = 1, 3
-c              j1 = jst(j)  + jshift(j)
-c              j2 = jend(j) + jshift(j)
                j1 = max(jlo_coarse-mbuff,jst(j))
                j2 = min(jhi_coarse+mbuff, jend(j))
 
@@ -130,6 +128,8 @@ c
 c         does this patch intersect mbase grid?
            if (.not.((ixlo .le. ixhi) .and. (jxlo .le. jxhi))) go to 30  !this grid doesnt intersect
 c
+c          use subroutine call since dimension of igridflags not same as above declaration
+c          when on coarser grids
            call coarseGridFlagSet(igridflags,ixlo,ixhi,jxlo,jxhi,
      .                           ilo_coarse,ihi_coarse,
      .                           jlo_coarse,jhi_coarse,mbuff)
@@ -142,16 +142,18 @@ c 3.5 set any part of grid buffer zone to 1 that is at physical boundary
         call setPhysBndryFlags(igridflags,ilo_coarse,ihi_coarse,
      .                         jlo_coarse,jhi_coarse,mbuff,lbase)
 
-c  4.  done setting flags. upscale to level needed then
-c      shrink by 1 for actual nested region
-c      shrink once - works if lcheck same as lbase
+c  4.  done setting flags on base level. next step is to transfer the
+c      properly nested domain flags to lcheck - i.e. upscale to level needed 
+c      first shrink by 1 for actual nested region.
+c      always shrink once - so works if lcheck same as lbase
 c      if going up 1 level each one needs to be nested, so still shrink first before upsizing
 c
-c  after loop above, dom flags in igridflags, copy to icopy
+c      after loop above, dom flags in igridflags, copy to icopy (in subr for dimensioning reasons)
       call griddomcopy(icopy,igridflags,ilo_coarse,ihi_coarse,
      .                 jlo_coarse,jhi_coarse,mbuff)
 c
-c     shrink from icopy to dom2 flag array
+c     shrink from icopy to dom2 flag array. This is where shrinking occurs if
+c     lbase = lcheck, for proper nesting
       call griddomshrink(icopy,ilo_coarse,ihi_coarse,jlo_coarse,
      .                     jhi_coarse,mbuff,
      .                     alloc(node(domflags2,mptr)),lbase)
@@ -161,23 +163,23 @@ c         ### for each level that upsize, calculate new coords starting from
 c         ### actual fine grid and recoarsening down to needed level
 c         ### cant take previous coarse coords and refine, since may be
 c         ### too large. grid prob. not anchored at base grid corner.
-         ilofine = igridst(lev)
-         ihifine = igridend(lev)
-         jlofine = jgridst(lev)
-         jhifine = jgridend(lev)
+         ilo_fine = igridst(lev)
+         ihi_fine = igridend(lev)
+         jlo_fine = jgridst(lev)
+         jhi_fine = jgridend(lev)
 c
 c       flags in dom2, upsize to icopy array with finer dimensions
         call griddomup(alloc(node(domflags2,mptr)),icopy,
      .                 ilo_coarse,ihi_coarse,jlo_coarse,jhi_coarse,
      .                 mbuff,lev-1,
-     .                 ilofine,ihifine,jlofine,jhifine)
+     .                 ilo_fine,ihi_fine,jlo_fine,jhi_fine)
 c       flags in icopy, shrink one  back to dom2
-        call griddomshrink(icopy,ilofine,ihifine,jlofine,jhifine,
+        call griddomshrink(icopy,ilo_fine,ihi_fine,jlo_fine,jhi_fine,
      .                     mbuff,alloc(node(domflags2,mptr)),lev)
-        ilo_coarse = ilofine
-        ihi_coarse = ihifine
-        jlo_coarse = jlofine
-        jhi_coarse = jhifine
+        ilo_coarse = ilo_fine
+        ihi_coarse = ihi_fine
+        jlo_coarse = jlo_fine
+        jhi_coarse = jhi_fine
 40    continue
 c 
         return
