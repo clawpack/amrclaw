@@ -31,8 +31,8 @@ FFLAGS ?=
 # package sources for this program:
 # ---------------------------------
 
-ADJLIB = $(CLAW)/amrclaw/src/1d
-include $(ADJLIB)/Makefile.amr_1d
+AMRLIB = $(CLAW)/amrclaw/src/1d
+include $(AMRLIB)/Makefile.amr_1d
 
 # ---------------------------------
 # List of sources for this program:
