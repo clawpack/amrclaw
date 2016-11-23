@@ -371,6 +371,10 @@ contains
         integer :: i, j, n, i1, i2, iindex, jindex, kindex, ii, index, level
         integer :: var_index
 
+        ! REMOVE
+            integer :: ivar
+            real(kind=8) :: var1, var2
+
 
         if (num_gauges == 0) then
             return
@@ -443,17 +447,16 @@ contains
             do n = 1, size(gauges(ii)%q_out_vars, 1)
                 if (gauges(ii)%q_out_vars(n)) then
                     var_index = var_index + 1
-                    var(var_index) =                &
-                        (1.d0 - xoff) * (1.d0 - yoff) * q(n, iindex, jindex, kindex) &
-                      + xoff * (1.d0 - yoff) * q(n, iindex + 1, jindex, kindex) &
-                      + (1.d0 - xoff) * yoff * q(n, iindex, jindex + 1, kindex) &
-                      + xoff * yoff * q(n, iindex + 1, jindex + 1, kindex)
+                    var(var_index) = (1.d0 - xoff) * (1.d0 - yoff) * q(n, iindex, jindex, kindex) &
+                       + xoff * (1.d0 - yoff) * q(n, iindex + 1, jindex, kindex) &
+                       + (1.d0 - xoff) * yoff * q(n, iindex, jindex + 1, kindex) &
+                       + xoff * yoff * q(n, iindex + 1, jindex + 1, kindex)
                     var(var_index) = var(var_index) * (1.0d0 - zoff)
-                    var(var_index) = var(var_index) + zoff *          &
-                        (1.d0 - xoff) * (1.d0 - yoff) * q(n, iindex, jindex, kindex + 1) &
-                      + xoff * (1.d0 - yoff) * q(n, iindex + 1, jindex, kindex + 1) &
-                      + (1.d0 - xoff) * yoff * q(n, iindex, jindex + 1, kindex + 1) &
-                      + xoff * yoff * q(n, iindex + 1, jindex + 1, kindex + 1)
+                    var(var_index) = var(var_index) + zoff *                &
+                        ((1.d0 - xoff) * (1.d0 - yoff) * q(n, iindex, jindex, kindex + 1) &
+                       + xoff * (1.d0 - yoff) * q(n, iindex + 1, jindex, kindex + 1) &
+                       + (1.d0 - xoff) * yoff * q(n, iindex, jindex + 1, kindex + 1) &
+                       + xoff * yoff * q(n, iindex + 1, jindex + 1, kindex + 1))
                 end if
             end do
 
@@ -461,17 +464,16 @@ contains
                 do n = 1, size(gauges(ii)%aux_out_vars, 1)
                     if (gauges(ii)%aux_out_vars(n)) then
                         var_index = var_index + 1
-                        var(var_index) =                &
-                            (1.d0 - xoff) * (1.d0 - yoff) * aux(n, iindex, jindex, kindex) &
-                          + xoff * (1.d0 - yoff) * aux(n, iindex + 1, jindex, kindex) &
-                          + (1.d0 - xoff) * yoff * aux(n, iindex, jindex + 1, kindex) &
-                          + xoff * yoff * aux(n, iindex + 1, jindex + 1, kindex)
+                        var(var_index) = (1.d0 - xoff) * (1.d0 - yoff) * q(n, iindex, jindex, kindex) &
+                           + xoff * (1.d0 - yoff) * q(n, iindex + 1, jindex, kindex) &
+                           + (1.d0 - xoff) * yoff * q(n, iindex, jindex + 1, kindex) &
+                           + xoff * yoff * q(n, iindex + 1, jindex + 1, kindex)
                         var(var_index) = var(var_index) * (1.0d0 - zoff)
-                        var(var_index) = var(var_index) + zoff *          &
-                            (1.d0 - xoff) * (1.d0 - yoff) * aux(n, iindex, jindex, kindex + 1) &
-                          + xoff * (1.d0 - yoff) * aux(n, iindex + 1, jindex, kindex + 1) &
-                          + (1.d0 - xoff) * yoff * aux(n, iindex, jindex + 1, kindex + 1) &
-                          + xoff * yoff * aux(n, iindex + 1, jindex + 1, kindex + 1)
+                        var(var_index) = var(var_index) + zoff *                &
+                            ((1.d0 - xoff) * (1.d0 - yoff) * q(n, iindex, jindex, kindex + 1) &
+                           + xoff * (1.d0 - yoff) * q(n, iindex + 1, jindex, kindex + 1) &
+                           + (1.d0 - xoff) * yoff * q(n, iindex, jindex + 1, kindex + 1) &
+                           + xoff * yoff * q(n, iindex + 1, jindex + 1, kindex + 1))
                     end if
                 end do
             end if
