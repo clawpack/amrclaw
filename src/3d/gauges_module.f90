@@ -92,10 +92,9 @@ contains
         character(len=*), intent(in), optional :: fname
 
         ! Locals
-        integer :: i, n, index, num_fields
+        integer :: i, n, index
         integer :: num, pos, digit
         integer, parameter :: UNIT = 7
-        character(len=128) :: line
         character(len=128) :: header_1
         character(len=20) :: q_column, aux_column
 
@@ -217,12 +216,14 @@ contains
 
                     aux_column = "["
                     index = 0
-                    do n=1, size(gauges(i)%aux_out_vars, 1)
-                        if (gauges(i)%aux_out_vars(n)) then
-                            write(aux_column(3 * index + 2:4 + 3 * index), "(i3)") n
-                            index = index + 1
-                        end if  
-                    end do
+                    if (allocated(gauges(i)%aux_out_vars)) then
+                        do n=1, size(gauges(i)%aux_out_vars, 1)
+                            if (gauges(i)%aux_out_vars(n)) then
+                                write(aux_column(3 * index + 2:4 + 3 * index), "(i3)") n
+                                index = index + 1
+                            end if  
+                        end do
+                    end if
                     aux_column(3 * index + 2:4 + 3 * index) = "]"
 
                     write(OUTGAUGEUNIT, *) "# level, time, q",            &
