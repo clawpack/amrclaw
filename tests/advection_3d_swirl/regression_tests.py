@@ -2,6 +2,7 @@
 Regression tests for swril 3D advection.
 """
 
+from __future__ import absolute_import
 import sys
 import os
 import unittest

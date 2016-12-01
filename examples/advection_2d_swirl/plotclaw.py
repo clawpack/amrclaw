@@ -1,5 +1,6 @@
 
 
+from __future__ import absolute_import
 def plotclaw():
     """
     Basic plotting script.  Execute from unix by
