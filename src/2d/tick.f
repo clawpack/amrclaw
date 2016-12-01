@@ -14,8 +14,9 @@ c     include  "call.i"
       logical    vtime, dumpout/.false./, dumpchk/.false./
       logical    rest, dump_final
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
-      integer clock_start, clock_finish, clock_rate
-      real(kind=8) cpu_start, cpu_finish
+      integer   clock_start, clock_finish, clock_rate
+      integer   tick_clock_start, tick_clock_finish, tick_clock_rate  
+
 
 c
 c :::::::::::::::::::::::::::: TICK :::::::::::::::::::::::::::::
@@ -44,6 +45,9 @@ c          each step) to keep track of when that level should
 c          have its error estimated and finer levels should be regridded.
 c ::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::
 c
+      call system_clock(tick_clock_start,tick_clock_rate)
+      call cpu_time(tick_cpu_start)
+
 
       ncycle         = nstart
       call setbestsrc()     ! need at very start of run, including restart
@@ -200,7 +204,7 @@ c
           timeRegriddingCPU=timeRegriddingCPU+cpu_finish-cpu_start
 
           call setbestsrc()     ! need at every grid change
-c         call outtre(lstart(lbase+1),.true.,nvar,naux)
+c         call outtre(lstart(lbase+1),.false.,nvar,naux)
 c note negative time to signal regridding output in plots
 c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
 c
@@ -358,6 +362,14 @@ c
            if (printout) call outtre(mstart,.true.,nvar,naux)
       endif
 
+c ## tick timing moved here so can be saved in checkpoint file 
+c
+      call system_clock(tick_clock_finish,tick_clock_rate)
+      call cpu_time(tick_cpu_finish)
+      timeTick = timeTick + tick_clock_finish - tick_clock_start 
+      timeTickCPU = timeTickCPU + tick_cpu_finish - tick_cpu_start 
+ 
+
 c  # checkpoint everything for possible future restart
 c  # (unless we just did it based on dumpchk)
 c
@@ -372,6 +384,7 @@ c
          endif
       endif
              
+   
 
       write(6,*) "Done integrating to time ",time
       return

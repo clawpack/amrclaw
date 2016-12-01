@@ -14,12 +14,12 @@ c                 set domain flags to 1 in buffer zone. That way when shrink
 c                 by 1 to get proper nested domain, you wont lose the first
 c                 border cell of a grid
 c
-c                 flag array uses 0-based indexing
+c                 flag array uses 0-based index space
 c              
 c                 if periodic, then have to look elsewhere to see if
 c                 last interior row/col that is flagged is ok.
 c                 this is done in the calling routine that
-c                 transfers flagged points to base grdis
+c                 transfers flagged points to base grids
 c ****************************************************************
 
        if (ilo-mbuff .lt. 0 .and. .not. xperdom) then  ! grid extends out of left side of domain
