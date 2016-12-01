@@ -183,6 +183,10 @@ class RegionData(clawpack.clawutil.data.ClawData):
 class GaugeData(clawpack.clawutil.data.ClawData):
     r""""""
 
+    defaults = {"file_format":"ascii", "display_format":"e15.7",
+                "q_out_fields":"all", "aux_out_fields":"none",
+                "min_time_increment":0.0}
+
     @property
     def gauge_numbers(self):
         if len(self.gauges) == 1:
@@ -190,10 +194,15 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         else:
             return [gauge[0] for gauge in self.gauges]
 
+
     def __init__(self, num_dim=None):
         # num_dim is an argument for backward compatibility, but no longer used
         super(GaugeData,self).__init__()
         self.add_attribute('gauges',[])
+
+        for (value, default) in self.defaults.iteritems():
+            self.add_attribute(value, default)
+
 
     def __str__(self):
         output = "Gauges: %s\n" % len(self.gauges)
@@ -203,9 +212,17 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             output = " ".join((output,"%17.10e" % gauge[2]))
             output = " ".join((output,"%13.6e" % gauge[3]))
             output = " ".join((output,"%13.6e\n" % gauge[4]))
+        output = "\n\n".join((output, "Output Format: %s\n" % self.file_format))
+        output = "\t".join((output, "display: %s" % self.display_format))
+        output = "\n\t".join((output, "q fields: %s" % self.q_out_fields))
+        output = "\n\t".join((output, "aux fields: %s" % self.aux_out_fields))
+        output = "\n\t".join((output, "min. time increment: %s" 
+                                                     % self.min_time_increment))
         return output
 
-    def write(self,out_file='gauges.data',data_source='setrun.py'):
+
+    def write(self, num_eqn, num_aux, out_file='gauges.data', 
+                                      data_source='setrun.py'):
         r"""Write out gauge information data file."""
 
         # Check to make sure we have only unique gauge numbers
@@ -219,9 +236,113 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         for gauge in self.gauges:
             format = "%4i" + (len(gauge)-3) * "  %17.10e" + 2 * "  %13.6e" + "\n"
             self._out_file.write(format % tuple(gauge))
+        self.data_write()
+        
+        # Expand all gauge format option dictionaries
+        for key in self.defaults.keys():
+            self.expand_gauge_format_option(key)
+
+        # File format
+        self._out_file.write("# File format\n")
+        format_map = {'ascii':1, 'binary': 2}
+        for gauge_num in self.gauge_numbers:
+            try:
+                file_format = format_map[self.file_format[gauge_num].lower()]
+            except KeyError:
+                raise ValueError("Invalid file format %s requested." % self.file_format[gauge_num])
+            self._out_file.write("%s " % file_format)
+        self._out_file.write("\n")
+        self.data_write()
+
+        # Display format for each gauge
+        self._out_file.write("# Display format\n")
+        for gauge_num in self.gauge_numbers:
+            self._out_file.write("%s " % self.display_format[gauge_num])
+        self._out_file.write("\n\n")
+
+        # Minimum time increment output
+        self._out_file.write("# Minimum output increment\n")
+        for gauge_num in self.gauge_numbers:
+            self._out_file.write("%s " % self.min_time_increment[gauge_num])
+        self._out_file.write("\n\n")
+
+        # Which q fields to output
+        self._out_file.write("# q fields\n")
+        for gauge_num in self.gauge_numbers:
+            # Handle special values of "all" and "none"
+            if isinstance(self.q_out_fields[gauge_num], basestring):
+                if self.q_out_fields[gauge_num].lower() == 'all':
+                    self._out_file.write("%s\n" % " ".join(['True'] * num_eqn))
+                elif self.q_out_fields[gauge_num].lower() == 'none': 
+                    self._out_file.write("%s\n" % " ".join(['False'] * num_eqn))
+                else:
+                    raise ValueError("Unknown q field string specified, '%s'" 
+                                                 % self.q_out_fields[gauge_num])
+            else:
+                # Specify by field number
+                if not isinstance(self.q_out_fields[gauge_num], list):
+                    self.q_out_fields[gauge_num] = [self.q_out_fields[gauge_num]]
+                bool_list = [n in self.q_out_fields[gauge_num] 
+                                                       for n in xrange(num_eqn)]
+                bool_list = [str(value) for value in bool_list]
+                self._out_file.write("%s\n" % (" ".join(bool_list)))
+        self.data_write()
+
+        # Which aux fields to output
+        if num_aux > 0:
+            self._out_file.write("# aux fields\n")
+            for gauge_num in self.gauge_numbers:
+                # Handle special values of "all" and "none"
+                if isinstance(self.aux_out_fields[gauge_num], basestring):
+                    if self.aux_out_fields[gauge_num].lower() == 'all':
+                        self._out_file.write("%s\n" % " ".join(['True'] * num_aux))
+                    elif self.aux_out_fields[gauge_num].lower() == 'none': 
+                        self._out_file.write("%s\n" % " ".join(['False'] * num_aux))
+                    else:
+                        raise ValueError("Unknown q field string specified, '%s'" 
+                                                     % self.aux_out_fields[gauge_num])
+                else:
+                    # Specify by field number
+                    if not isinstance(self.aux_out_fields[gauge_num], list):
+                        self.aux_out_fields[gauge_num] = [self.aux_out_fields[gauge_num]]
+                    bool_list = [n in self.aux_out_fields[gauge_num] 
+                                                           for n in xrange(num_aux)]
+                    bool_list = [str(value) for value in bool_list]
+                    self._out_file.write("%s\n" % (" ".join(bool_list)))
+
         self.close_data_file()
 
-    def read(self,data_path="./",file_name='gauges.data'):
+
+    def expand_gauge_format_option(self, param_name):
+        r"""Construct the full gauge output specification for *param_name*
+
+        Also handles if each *param_name* is set to a single value (not a dict)
+        and then assumes that all gauges should have this parameter.  For
+        example if a user set
+
+        > file_format = 'ascii'
+
+        this would set all gauges ot have the 'ascii' format.
+
+        """
+
+        default_param = self.defaults[param_name]
+        if not isinstance(getattr(self, param_name), dict):
+            # Convert into dict for file
+            default_param = getattr(self, param_name)
+            setattr(self, param_name, {})
+
+        # Check to make sure that gauges listed are actually gauges
+        for gauge_num in getattr(self, param_name).keys():
+            if gauge_num not in self.gauge_numbers:
+                raise ValueError("Gauge number listed in format option not a ",
+                                 "gauge.  gauge_id = %s" % gauge_num)
+
+        for gauge_num in self.gauge_numbers:
+            getattr(self, param_name).setdefault(gauge_num, default_param)
+
+
+    def read(self, data_path="./", file_name='gauges.data'):
         r"""Read gauge data file"""
         path = os.path.join(data_path, file_name)
         gauge_file = open(path,'r')
@@ -244,7 +365,10 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             line = gauge_file.readline().split()
             self.gauges.append([int(line[0])] + [float(a) for a in line[1:]])
 
+        # TODO:  Read in format data
+
         gauge_file.close()
+
 
 #  Gauge data objects
 # ==============================================================================
