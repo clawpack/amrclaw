@@ -379,7 +379,7 @@ c
       else  ! no chkpt wanted, so need to print gauges separately
          if (num_gauges .gt. 0) then
             do ii = 1, num_gauges
-               call print_gauges_and_reset_nextLoc(ii,nvar)
+               call print_gauges_and_reset_nextLoc(ii)
             end do
          endif
       endif

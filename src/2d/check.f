@@ -87,7 +87,7 @@ c     # so if code dies it will at least have output up to this checkpoint time
       flush(dbugunit)       ! defined in amr_module.f90
 c      flush(OUTGAUGEUNIT)   ! defined in gauges_module.f90
       do ii = 1, num_gauges
-         call print_gauges_and_reset_nextLoc(ii, nvar)
+         call print_gauges_and_reset_nextLoc(ii)
       end do
 
 c     # write the time stamp file last so it's not updated until data is

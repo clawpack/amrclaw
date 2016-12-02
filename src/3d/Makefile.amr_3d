@@ -3,6 +3,7 @@ AMRLIB:=$(CLAW)/amrclaw/src/3d
 
 #list of common sources for amr 3d codes
 COMMON_MODULES += \
+  $(CLAW)/classic/src/utility_module.f90 \
   $(AMRLIB)/amr_module.f90 \
   $(AMRLIB)/gauges_module.f90 \
 #$(AMRLIB)/regions_module.f90 \
