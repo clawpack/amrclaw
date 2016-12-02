@@ -57,6 +57,24 @@ def setplot(plotdata):
         plotitem.color = 'b'
         plotitem.plotstyle = 'o'
 
+    #-----------------------------------------
+    # Figures for gauges
+    #-----------------------------------------
+    plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
+                                     type='each_gauge')
+    plotfigure.clf_each_gauge = True
+    
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'Pressure'
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 0
+    plotitem.plotstyle = 'b-'
+    
+    # Parameters used only when creating html and/or latex hardcopy
+    # e.g., via clawpack.visclaw.frametools.printframes:
+
     plotdata.printfigs = True          # Whether to output figures
     plotdata.print_format = 'png'      # What type of output format
     plotdata.print_framenos = 'all'    # Which frames to output

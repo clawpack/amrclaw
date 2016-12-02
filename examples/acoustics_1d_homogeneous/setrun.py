@@ -211,6 +211,14 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_lower[0] = 'extrap'   # at xlower
     clawdata.bc_upper[0] = 'extrap'   # at xupper
     
+    # ---------------
+    # Gauges:
+    # ---------------
+    rundata.gaugedata.gauges = []
+    # for gauges append lines of the form  [gaugeno, x, t1, t2]
+    rundata.gaugedata.gauges.append([0, 0.0, 0., 0.8])
+    rundata.gaugedata.gauges.append([1, -0.7, 0., 0.8])
+    
     # --------------
     # Checkpointing:
     # --------------
@@ -263,7 +271,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 0.01 # tolerance used in this routine
+    amrdata.flag2refine_tol = 0.1 # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
     # between a cell and each of its neighbors.

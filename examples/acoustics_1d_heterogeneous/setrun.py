@@ -216,6 +216,14 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.bc_lower[0] = 'wall'   # at xlower
     clawdata.bc_upper[0] = 'wall'   # at xupper
     
+    # ---------------
+    # Gauges:
+    # ---------------
+    rundata.gaugedata.gauges = []
+    # for gauges append lines of the form  [gaugeno, x, t1, t2]
+    rundata.gaugedata.gauges.append([0, 0.0, 0., 5.])
+    rundata.gaugedata.gauges.append([1, -2.0, 0., 5.])
+    
     # --------------
     # Checkpointing:
     # --------------
