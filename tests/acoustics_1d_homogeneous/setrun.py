@@ -36,8 +36,9 @@ def setrun(claw_pkg='amrclaw'):
     # Problem-specific parameters to be written to setprob.data:
     #------------------------------------------------------------------
     probdata = rundata.new_UserData(name='probdata', fname='setprob.data')
-    probdata.add_param('u',  1.0,  'advection velocity')
-    probdata.add_param('beta', 400., 'Gaussian width parameter')
+    probdata.add_param('rho',  1.0,  'density of medium')
+    probdata.add_param('K',    4.0,  'bulk modulus')
+    probdata.add_param('beta', 200., 'Gaussian width parameter')
 
     
     #------------------------------------------------------------------
@@ -55,7 +56,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_dim = num_dim
     
     # Lower and upper edge of computational domain:
-    clawdata.lower[0] = 0.000000e+00          # xlower
+    clawdata.lower[0] = -1.000000e+00          # xlower
     clawdata.upper[0] = 1.000000e+00          # xupper
     
     # Number of grid cells:
@@ -67,7 +68,7 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
 
     # Number of equations in the system:
-    clawdata.num_eqn = 1
+    clawdata.num_eqn = 2
 
     # Number of auxiliary variables in the aux array (initialized in setaux)
     clawdata.num_aux = 0
@@ -106,8 +107,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 20
-        clawdata.tfinal = 4.000000
+        clawdata.num_output_times = 1
+        clawdata.tfinal = 0.200000
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -117,7 +118,7 @@ def setrun(claw_pkg='amrclaw'):
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 2
+        clawdata.output_step_interval = 1
         clawdata.total_steps = 4
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
@@ -150,7 +151,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Initial time step for variable dt.  
     # (If dt_variable==0 then dt=dt_initial for all steps)
-    clawdata.dt_initial = 1.000000e-01
+    clawdata.dt_initial = 1.000000e-02
     
     # Max time step to be allowed if variable dt used:
     clawdata.dt_max = 1.000000e+99
@@ -173,7 +174,7 @@ def setrun(claw_pkg='amrclaw'):
     
     
     # Number of waves in the Riemann solution:
-    clawdata.num_waves = 1
+    clawdata.num_waves = 2
     
     # List of limiters to use for each wave family:  
     # Required:  len(limiter) == num_waves
@@ -183,7 +184,7 @@ def setrun(claw_pkg='amrclaw'):
     #   2 or 'superbee' ==> superbee
     #   3 or 'vanleer'  ==> van Leer
     #   4 or 'mc'       ==> MC limiter
-    clawdata.limiter = ['mc']
+    clawdata.limiter = ['vanleer', 'vanleer']
     
     clawdata.use_fwaves = False    # True ==> use f-wave version of algorithms
     
@@ -207,16 +208,16 @@ def setrun(claw_pkg='amrclaw'):
     #   2 or 'periodic' => periodic (must specify this at both boundaries)
     #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
     
-    clawdata.bc_lower[0] = 'periodic'   # at xlower
-    clawdata.bc_upper[0] = 'periodic'   # at xupper
+    clawdata.bc_lower[0] = 'extrap'   # at xlower
+    clawdata.bc_upper[0] = 'extrap'   # at xupper
     
     # ---------------
     # Gauges:
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, t1, t2]
-    rundata.gaugedata.gauges.append([0, 0, 0., 0.8])
-    rundata.gaugedata.gauges.append([1, 1, 0., 0.8])
+    rundata.gaugedata.gauges.append([0, 0.0, 0., 0.8])
+    rundata.gaugedata.gauges.append([1, -0.7, 0., 0.8])
     
     # --------------
     # Checkpointing:
