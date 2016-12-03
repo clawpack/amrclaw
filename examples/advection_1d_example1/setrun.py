@@ -59,7 +59,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[0] = 1.000000e+00          # xupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 40      # mx
+    clawdata.num_cells[0] = 50      # mx
     
 
     # ---------------
@@ -118,7 +118,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
         clawdata.output_step_interval = 1
-        clawdata.total_steps = 10
+        clawdata.total_steps = 50
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
