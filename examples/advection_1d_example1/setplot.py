@@ -52,8 +52,10 @@ def setplot(plotdata):
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
-    plotitem.plotstyle = 'o'
-    plotitem.color = 'b'
+    plotitem.amr_color = ['g','b','r']
+    plotitem.amr_plotstyle = ['^','s','o']
+    plotitem.amr_data_show = [1,1,1]
+    plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
 
     # Plot true solution for comparison:
     def plot_qtrue(current_data):
@@ -62,9 +64,41 @@ def setplot(plotdata):
         t = current_data.t
         q = qtrue(x,t)
         plot(x,q,'r',label='true solution')
-        legend()
+    
+    def plot_qtrue_with_legend(current_data):
+        from pylab import plot, legend
+        x = linspace(0,1,1000)
+        t = current_data.t
+        q = qtrue(x,t)
+        plot(x,q,'r',label='true solution')
+        legend(loc='lower right')
 
-    plotaxes.afteraxes = plot_qtrue
+    plotaxes.afteraxes = plot_qtrue_with_legend
+
+    # ------------------------------------------
+    # Figure with each level plotted separately:
+
+    plotfigure = plotdata.new_plotfigure(name='AMR Levels', figno=2)
+    plotfigure.kwargs = {'figsize':(8,10)}
+
+
+    for level in range(1,4):
+        # Set up plot for this level:
+        plotaxes = plotfigure.new_plotaxes()
+        plotaxes.axescmd = 'subplot(3,1,%i)' % level
+        plotaxes.xlimits = [0,1]
+        plotaxes.ylimits = [-.5,1.3]
+        plotaxes.title = 'Level %s' % level
+        plotaxes.afteraxes = plot_qtrue
+
+        plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+        plotitem.plot_var = 0
+        plotitem.amr_color = ['g','b','r']
+        plotitem.amr_plotstyle = ['^','s','o']
+        plotitem.amr_data_show = [0,0,0]
+        plotitem.amr_data_show[level-1] = 1  # show only one level
+
+
 
     #-----------------------------------------
     # Figures for gauges
