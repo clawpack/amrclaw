@@ -5,6 +5,52 @@ module amr_module
     save
        
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    ! :::::   My notes for variables in this module
+    ! :::::   Some of them are just my guessing
+    ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    ! node(levelptr, mptr) stores grid number (pointer) to next grid 
+    ! of the same level as grid mptr
+    ! It acts as a pointer to next grid of the same level. This provides
+    ! a way of traverse all grids at the same level.
+
+    ! node(ndilo, mptr) stores i index (pointer) of left-most cell of grid 
+    ! mptr excluding the ghost cell
+
+    ! node(ndjlo, mptr) stores j index (pointer) of lower-most cell of grid 
+    ! mptr excluding the ghost cell
+
+    ! node(cfluxptr, mptr) acts as a pointer which stores the location 
+    ! in alloc that stores listbc for grid mptr. In another word, that 
+    ! location in alloc stores flux of this grid at interface between
+    ! it and its nested fine grids. See setuse.f for details about listbc.
+
+    ! node(ffluxptr, mptr) is a pointer to the location in alloc that
+    ! stores correction fluxes along the border of mptr. These fluxes are 
+    ! used to do conservation fix-up at this border. It stores both fluxes
+    ! at this interface, from grid mptr and from the coarse grid that 
+    ! encompassed grid mptr
+
+    ! node(store1, mptr) is a pointer to the location in alloc where
+    ! solution q is stored. This chunk of memory has a length of 
+    ! mitot*mjtot*nvar words.
+
+    ! node(storeaux, mptr) is a pointer to the location in alloc where
+    ! auxiliary array is stored. This chunk of memory has a length of 
+    ! mitot*mjtot*naux words.
+
+    ! listsp(level) stores total length of the borders of all 
+    ! level "level"+1 grids, with length of a cell on level "level"
+    ! as unit. In other words, this tells us information about how
+    ! may cells on level "level" grids are adjacent to a finer
+    ! level grid. Note that some interfaces may be shared by two level
+    ! "level"+1 grids. It's definition can be found in prepc.f
+    ! This value is often referred to as maxsp locally.
+
+
+    !rnode(timemult, mptr) is current time of grid mptr
+
+    ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ! :::::   data structure info.
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     integer, parameter :: rsize = 5
