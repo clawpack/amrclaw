@@ -31,6 +31,13 @@ module amr_module
     ! at this interface, from grid mptr and from the coarse grid that 
     ! encompassed grid mptr
 
+    ! node(store1, mptr) is a pointer to the location in alloc where
+    ! solution q is stored. This chunk of memory has a length of 
+    ! mitot*mjtot*nvar words.
+
+    ! node(storeaux, mptr) is a pointer to the location in alloc where
+    ! auxiliary array is stored. This chunk of memory has a length of 
+    ! mitot*mjtot*naux words.
 
     ! listsp(level) stores total length of the borders of all 
     ! level "level"+1 grids, with length of a cell on level "level"
@@ -39,6 +46,9 @@ module amr_module
     ! level grid. Note that some interfaces may be shared by two level
     ! "level"+1 grids. It's definition can be found in prepc.f
     ! This value is often referred to as maxsp locally.
+
+
+    !rnode(timemult, mptr) is current time of grid mptr
 
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ! :::::   data structure info.
