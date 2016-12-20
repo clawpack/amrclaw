@@ -30,8 +30,8 @@ def setplot(plotdata):
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = 'auto'
+    plotaxes.xlimits = [0,1]
+    plotaxes.ylimits = [0,1]
     plotaxes.title = 'Density'
     plotaxes.scaled = True
     plotaxes.afteraxes = addgauges
@@ -52,8 +52,8 @@ def setplot(plotdata):
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = 'auto'
+    plotaxes.xlimits = [0,1]
+    plotaxes.ylimits = [0,1]
     plotaxes.title = 'Density'
     plotaxes.scaled = True      # so aspect ratio is 1
 
@@ -91,8 +91,8 @@ def setplot(plotdata):
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = 'auto'
+    plotaxes.xlimits = [0,1]
+    plotaxes.ylimits = [0,1]
     plotaxes.title = 'Density'
 
     # Plot q as blue curve:
