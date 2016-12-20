@@ -2,9 +2,12 @@
 
 """Base AMRClaw data class for writing out data parameter files."""
 
+from __future__ import absolute_import
 import os
 
 import clawpack.clawutil.data
+import six
+from six.moves import range
 
 class AmrclawInputData(clawpack.clawutil.data.ClawData):
     r"""
@@ -169,7 +172,7 @@ class RegionData(clawpack.clawutil.data.ClawData):
 
         # Read in each region
         self.regions = []
-        for n in xrange(num_regions):
+        for n in range(num_regions):
             line = data_file.readline().split()
             self.regions.append([int(line[0]), int(line[1])] + [float(a) for a in line[2:]])
 
@@ -200,7 +203,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         super(GaugeData,self).__init__()
         self.add_attribute('gauges',[])
 
-        for (value, default) in self.defaults.iteritems():
+        for (value, default) in six.iteritems(self.defaults):
             self.add_attribute(value, default)
 
 
@@ -270,7 +273,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         self._out_file.write("# q fields\n")
         for gauge_num in self.gauge_numbers:
             # Handle special values of "all" and "none"
-            if isinstance(self.q_out_fields[gauge_num], basestring):
+            if isinstance(self.q_out_fields[gauge_num], six.string_types):
                 if self.q_out_fields[gauge_num].lower() == 'all':
                     self._out_file.write("%s\n" % " ".join(['True'] * num_eqn))
                 elif self.q_out_fields[gauge_num].lower() == 'none': 
@@ -283,7 +286,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
                 if not isinstance(self.q_out_fields[gauge_num], list):
                     self.q_out_fields[gauge_num] = [self.q_out_fields[gauge_num]]
                 bool_list = [n in self.q_out_fields[gauge_num] 
-                                                       for n in xrange(num_eqn)]
+                                                       for n in range(num_eqn)]
                 bool_list = [str(value) for value in bool_list]
                 self._out_file.write("%s\n" % (" ".join(bool_list)))
         self.data_write()
@@ -293,7 +296,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             self._out_file.write("# aux fields\n")
             for gauge_num in self.gauge_numbers:
                 # Handle special values of "all" and "none"
-                if isinstance(self.aux_out_fields[gauge_num], basestring):
+                if isinstance(self.aux_out_fields[gauge_num], six.string_types):
                     if self.aux_out_fields[gauge_num].lower() == 'all':
                         self._out_file.write("%s\n" % " ".join(['True'] * num_aux))
                     elif self.aux_out_fields[gauge_num].lower() == 'none': 
@@ -306,7 +309,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
                     if not isinstance(self.aux_out_fields[gauge_num], list):
                         self.aux_out_fields[gauge_num] = [self.aux_out_fields[gauge_num]]
                     bool_list = [n in self.aux_out_fields[gauge_num] 
-                                                           for n in xrange(num_aux)]
+                                                           for n in range(num_aux)]
                     bool_list = [str(value) for value in bool_list]
                     self._out_file.write("%s\n" % (" ".join(bool_list)))
 
@@ -361,7 +364,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         num_gauges = int(line.split()[0])
 
         # Read in each gauge line
-        for n in xrange(num_gauges):
+        for n in range(num_gauges):
             line = gauge_file.readline().split()
             self.gauges.append([int(line[0])] + [float(a) for a in line[1:]])
 

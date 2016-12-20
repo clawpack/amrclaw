@@ -12,6 +12,7 @@ function setplot is called to set the plot parameters.
 
 
 #--------------------------
+from __future__ import print_function
 def setplot(plotdata):
 #--------------------------
     
@@ -25,8 +26,8 @@ def setplot(plotdata):
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
     
-    print "**** Python plotting tools not yet implemented in 3d"
-    print "**** No frame plots will be generated."
+    print("**** Python plotting tools not yet implemented in 3d")
+    print("**** No frame plots will be generated.")
 
     #-----------------------------------------
     # Figures for gauges
