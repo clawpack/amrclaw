@@ -7,9 +7,10 @@ function setplot is called to set the plot parameters.
     
 """ 
 
-#--------------------------
 from __future__ import absolute_import
-def setplot(plotdata):
+
+#--------------------------
+def setplot(plotdata=None):
 #--------------------------
     
     """ 
@@ -19,8 +20,12 @@ def setplot(plotdata):
     
     """ 
 
-
     from clawpack.visclaw import colormaps
+
+    if plotdata is None:
+        from clawpack.visclaw.data import ClawPlotData
+        plotdata = ClawPlotData()
+
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
     
