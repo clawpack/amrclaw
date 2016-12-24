@@ -87,7 +87,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         self.data_write()  # writes blank line
 
         if self._clawdata.num_aux > 0:
-            self.data_write(file, self.aux_type, 'aux_type')
+            self.data_write('aux_type')
         self.data_write()
 
         self.data_write('flag_richardson')
