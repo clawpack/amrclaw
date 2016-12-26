@@ -10,10 +10,10 @@ function setplot is called to set the plot parameters.
     
 """ 
 
+from __future__ import print_function
 
 #--------------------------
-from __future__ import print_function
-def setplot(plotdata):
+def setplot(plotdata=None):
 #--------------------------
     
     """ 
@@ -22,6 +22,10 @@ def setplot(plotdata):
     Output: a modified version of plotdata.
     
     """ 
+
+    if plotdata is None:
+        from clawpack.visclaw.data import ClawPlotData
+        plotdata = ClawPlotData()
 
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
@@ -43,6 +47,7 @@ def setplot(plotdata):
     plotdata.latex_figsperline = 2           # layout of plots
     plotdata.latex_framesperline = 1         # layout of plots
     plotdata.latex_makepdf = False           # also run pdflatex?
+    plotdata.parallel = True                 # make multiple frame png's at once
 
     return plotdata
 
