@@ -103,7 +103,7 @@ contains
         integer :: num, pos, digit
         integer, parameter :: UNIT = 7
         character(len=128) :: header_1
-        character(len=20) :: q_column, aux_column
+        character(len=40) :: q_column, aux_column
 
         if (.not. module_setup) then
 
@@ -233,9 +233,9 @@ contains
                     end if
                     aux_column(3 * index + 2:4 + 3 * index) = "]"
 
-                    write(OUTGAUGEUNIT, *) "# level, time, q",            &
-                                           trim(q_column), ", aux",       &
-                                           trim(aux_column)
+                    write(OUTGAUGEUNIT, "(a,a,a,a)") "# level, time, q",      &
+                                               trim(q_column), ", aux",       &
+                                               trim(aux_column)
                endif
 
                close(OUTGAUGEUNIT)
