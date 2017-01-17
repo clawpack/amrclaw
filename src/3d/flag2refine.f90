@@ -67,7 +67,6 @@ subroutine flag2refine(mx,my,mz,mbc,meqn,maux,xlower,ylower, &
                 else if (max_level > 0 .and. max_level <= level) then
                     amrflags(i,j,k) = DONTFLAG
                 else if (allowflag(xcell,ycell,zcell,t,level)) then
-!                    max_stress = 0.d0
                     dq = 0.d0
                     dqi = abs(q(:,i+1,j,k) - q(:,i-1,j,k))
                     dqj = abs(q(:,i,j+1,k) - q(:,i,j-1,k))
@@ -75,7 +74,6 @@ subroutine flag2refine(mx,my,mz,mbc,meqn,maux,xlower,ylower, &
                     dq = max(dq,dqi,dqj,dqk)
 
                     do m = 1,meqn
-!                        max_stress = max(max_stress, dabs(q(m,i,j,k)))
                         if (dq(m) > tolsp) then
                              amrflags(i,j,k) = DOFLAG
                         else
