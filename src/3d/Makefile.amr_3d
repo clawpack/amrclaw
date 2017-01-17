@@ -6,7 +6,7 @@ COMMON_MODULES += \
   $(CLAW)/classic/src/utility_module.f90 \
   $(AMRLIB)/amr_module.f90 \
   $(AMRLIB)/gauges_module.f90 \
-#$(AMRLIB)/regions_module.f90 \
+  $(AMRLIB)/regions_module.f90 \
 
 COMMON_SOURCES += \
   $(AMRLIB)/qinit.f \
@@ -32,7 +32,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/cleanup.f \
   $(AMRLIB)/colate.f \
   $(AMRLIB)/errest.f \
-  $(AMRLIB)/flag2refine.f \
+  $(AMRLIB)/flag2refine.f90 \
   $(AMRLIB)/allowflag.f \
   $(AMRLIB)/bufnst.f \
   $(AMRLIB)/spest.f \
@@ -101,5 +101,3 @@ COMMON_SOURCES += \
   $(AMRLIB)/resize_alloc.f90 \
   $(AMRLIB)/restrt_alloc.f90 \
   $(AMRLIB)/inlinelimiter.f \
-
-
