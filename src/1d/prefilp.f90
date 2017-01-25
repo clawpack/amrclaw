@@ -95,7 +95,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,  &
 !   ## loop over the 3 regions (in 1D) of the patch - the interior is i=2 plus
 !   ## the ghost cell regions.  If any parts stick out of domain and are periodic
 !   ## map indices periodically, but stick the values in the correct place
-!   ## in the orig grid (indicated by iputst,jputst.
+!   ## in the orig grid (indicated by iputst.
 !   ## if a region sticks out of domain  but is not periodic, not handled in (pre)-icall 
 !   ## but in setaux/bcamr (not called from here).
     do 20 i = 1, 3
@@ -109,14 +109,15 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,  &
             endif
             if (naux .gt. 0)                                                         &
                 call auxCopyIn(auxPatch,mi,auxbig,mitot,naux,i1,i2,iglo)
-                                       
+
             call filrecur(level,nvar,valPatch,auxPatch,naux,time,mi,1,       &
                     i1+ishift(i),i2+ishift(i),.true.,msrc)
+
             ! copy it back to proper place in valbig
             call patchCopyOut(nvar,valPatch,mi,valbig,mitot,i1,i2,iglo)
 
  20 continue
-           
+
 contains
 
     integer pure function iadd(n,i)
@@ -156,8 +157,8 @@ subroutine patchCopyOut(nvar,valpatch,mi,valbig,mitot,i1,i2,iglo)
     integer :: ist
 
 
-    ! this ghost cell patch subset goes from (i1,j1) to (i2,j2) in integer index space
-    ! the grid (including ghost cells) is from (iglo,jglo) to (ighi,jghi)
+    ! this ghost cell patch subset goes from (i1) to (i2) in integer index space
+    ! the grid (including ghost cells) is from (iglo) to (ighi)
     ! figure out where to copy
     ist = i1 - iglo + 1   ! offset 1 since soln array is 1-based
 

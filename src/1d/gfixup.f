@@ -116,14 +116,12 @@ c          # "interior" of coarser patch to fill fine grid.
            xr = rnode(cornxhi,mptr)
            ilo    = node(ndilo, mptr)
            ihi    = node(ndihi, mptr)
- 
+
            call filval(alloc(loc),mitot,hx,lcheck,time,
-     1                 mic,
-     2                 xl,xr,nvar,
-     3                 mptr,ilo,ihi,
-     4                 alloc(locaux),naux)
- 
-           end do 
+     1                 mic,xl,xr,nvar,mptr,ilo,ihi,
+     2                 alloc(locaux),naux)
+
+           end do
 c
 c  done filling new grids at level. move them into lstart from newstl
 c  (so can use as source grids for filling next level). can also
