@@ -9,7 +9,7 @@ c
       dimension  badpts(1,npts)
       logical baseCheck, isNested
 
-      integer   numptc(maxcl)
+      integer   numptc(maxcl), zeroBuff
 c
 c ::::::::::::::::::::::: NESTCK :::::::::::::::::::::::::::::::::::
 c
@@ -37,7 +37,7 @@ c      # for CONVEX coarsest grid at level 1, nothing to check
        lratiox  = intratx(levnew-1)
 
        isNested = baseCheck(mnew,lbase,node(ndilo,mnew),
-     .                      node(ndihi,mnew))
+     .                      node(ndihi,mnew),nvar,naux,zeroBuff)
        if (isNested) then
            nestck1 = isNested
            go to 99

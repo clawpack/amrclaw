@@ -65,13 +65,12 @@ c        to mapped bcs. should still only have one update per side of coarse cel
          mkid = listbc(3,ispot)
          kidlst = node(ffluxptr,mkid)
          lkid = listbc(4,ispot)
-c         if (mod(iside,4).gt.1) then
 c         modified to include other side options
           if (iside .eq. 2) then
-c           (iside .eq. 2 .or. iside .eq. 3)
+c           (iside .eq. 2)
             sgnm = -1.
          else
-c           (iside .eq. 4 .or. iside .eq. 1)
+c           (iside .eq. 1)
             sgnm = 1.
          endif
 
@@ -85,13 +84,13 @@ c        ## debugging output
          if (mcapa .gt. 0) then
 c            # capacity array:  need to divide by capa in each cell.
 c            # modify sgnm which is reset for each grid cell.
-c            # Note capa is stored in aux(icrse,jcrse,mcapa)
+c            # Note capa is stored in aux(icrse,mcapa)
              sgnm = sgnm / alloc(iaddaux(icrse))
          endif
 
          do 20 ivar = 1,nvar
             val(ivar,icrse) = val(ivar,icrse) +
-     1      sgnm*alloc(kidlst+nvar*(lkid-1)+ivar-1)/area
+     1       sgnm*alloc(kidlst+nvar*(lkid-1)+ivar-1)/area
  20      continue
          iused(icrse) = iused(icrse) + norm
 
