@@ -8,7 +8,10 @@ To modify for a different app or set of tests, see the code labelled "Test 1",
 "Test 2", etc.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import clawpack.clawutil.batch as batch
+from six.moves import input
 
 # from setrun_regression import setrun
 # from setplot import setplot
@@ -63,11 +66,11 @@ def run_regression_tests(regression_dir="_regression_tests", \
     if run_tests:
 
         if os.path.exists(regression_dir):
-            ans = raw_input("Directory %s exists, ok to overwrite? " % regression_dir)
+            ans = input("Directory %s exists, ok to overwrite? " % regression_dir)
             if ans=='y':
                 os.system('rm -rf %s' % regression_dir)
             else:
-                print "*** Aborting regression tests"
+                print("*** Aborting regression tests")
                 sys.exit()
 
         os.system('mkdir %s' % regression_dir)
@@ -127,7 +130,7 @@ def run_regression_tests(regression_dir="_regression_tests", \
         # End of test case definitions
         # ----------------------------------------------------
 
-        print "Output and plots are in ", regression_dir
+        print("Output and plots are in ", regression_dir)
 
     regression_ok = None
 
@@ -136,10 +139,10 @@ def run_regression_tests(regression_dir="_regression_tests", \
                         regression_output_files, regression_plot_files, \
                         relocatable=relocatable)
         if regression_ok:
-            print "The specified regression files are identical in all"
-            print "    directories checked"
+            print("The specified regression files are identical in all")
+            print("    directories checked")
         else:
-            print "*** Some regression tests did not pass"
+            print("*** Some regression tests did not pass")
 
     return regression_ok
 

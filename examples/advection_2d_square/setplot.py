@@ -6,8 +6,10 @@ This module is imported by the plotting routines and then the
 function setplot is called to set the plot parameters.
 """
 
+from __future__ import absolute_import
+
 #--------------------------
-def setplot(plotdata):
+def setplot(plotdata=None):
 #--------------------------
     
     """ 
@@ -19,6 +21,11 @@ def setplot(plotdata):
 
 
     from clawpack.visclaw import colormaps
+
+    if plotdata is None:
+        from clawpack.visclaw.data import ClawPlotData
+        plotdata = ClawPlotData()
+
 
     plotdata.clearfigures() # clear any old figures,axes,items data
 
@@ -117,6 +124,7 @@ def setplot(plotdata):
     plotdata.latex_figsperline = 2           # layout of plots
     plotdata.latex_framesperline = 1         # layout of plots
     plotdata.latex_makepdf = False           # also run pdflatex?
+    plotdata.parallel = True                 # make multiple frame png's at once
 
     return plotdata
 

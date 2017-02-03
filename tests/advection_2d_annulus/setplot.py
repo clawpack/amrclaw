@@ -7,7 +7,8 @@ function setplot is called to set the plot parameters.
     
 """ 
 
-from mapc2p import mapc2p
+from __future__ import absolute_import
+from .mapc2p import mapc2p
 import numpy as np
 
 #--------------------------

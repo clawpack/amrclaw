@@ -10,9 +10,10 @@ function setplot is called to set the plot parameters.
     
 """ 
 
+from __future__ import print_function
 
 #--------------------------
-def setplot(plotdata):
+def setplot(plotdata=None):
 #--------------------------
     
     """ 
@@ -22,12 +23,16 @@ def setplot(plotdata):
     
     """ 
 
+    if plotdata is None:
+        from clawpack.visclaw.data import ClawPlotData
+        plotdata = ClawPlotData()
+
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
     
-    print "**** Python plotting tools not yet implemented in 3d"
-    print "**** No frame plots will be generated."
-    print "**** Gauges can still be plotted."
+    print("**** Python plotting tools not yet implemented in 3d")
+    print("**** No frame plots will be generated.")
+    print("**** Gauges can still be plotted.")
 
 
     #-----------------------------------------
@@ -63,6 +68,7 @@ def setplot(plotdata):
     plotdata.latex_figsperline = 2           # layout of plots
     plotdata.latex_framesperline = 1         # layout of plots
     plotdata.latex_makepdf = False           # also run pdflatex?
+    plotdata.parallel = True                 # make multiple frame png's at once
 
     return plotdata
 

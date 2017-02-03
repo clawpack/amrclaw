@@ -2,6 +2,7 @@
 Regression tests for 2D advection on a square.
 """
 
+from __future__ import absolute_import
 import sys
 import unittest
 
