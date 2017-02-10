@@ -88,9 +88,8 @@ c                # from the cell corresponding  to q
          ql(ivar,2) = valbig(ivar,nghost)
  10    continue
 
-       lind = 0
        index = index + 1
-       lind = lind + 1
+       lind = 1
        if (maux.gt.0) then
          do 24 ma=1,maux
             auxr(iaddaux(ma,lind)) = auxc1d(ma,index)
@@ -111,14 +110,15 @@ c                # from the cell corresponding  to q
              write(dbugunit,4101) i,(auxl(iaddaux(ma,2)),ma=1,maux)
          endif
        endif
- 
+
        call rp1(max1dp1-2*nghost,nvar,mwaves,maux,nghost,
      .              2-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
+
+
 c
 c we have the wave. for side 1 add into sdflxm
 c
-       influx = 0
-       influx  = influx + 1
+       influx  = 1
        do 40 ivar = 1, nvar
            svdflx(ivar,influx) = svdflx(ivar,influx)
      .                     + amdq(ivar,2) * delt
@@ -130,20 +130,18 @@ c  side 2
 c--------
 c
         if (maux.gt.0) then
-          do 305 ma = 1,maux
+          do 205 ma = 1,maux
              auxr(iaddaux(ma,1)) = aux(ma,mitot-nghost+1)
- 305         continue
+ 205         continue
           endif
-        do 310 ivar = 1, nvar
+        do 210 ivar = 1, nvar
           qr(ivar,1) = valbig(ivar,mitot-nghost+1)
- 310      continue
-
-       lind = 0
+ 210      continue
 
          index = index + 1
-         lind = lind + 1
+         lind = 1
          if (maux.gt.0) then
-            do 324 ma=1,maux
+            do 224 ma=1,maux
              if (auxtype(ma).eq."xleft") then
 c                # Assuming velocity at left-face, this fix
 c                # preserves conservation in incompressible flow:
@@ -151,25 +149,26 @@ c                # preserves conservation in incompressible flow:
                else
                  auxl(iaddaux(ma,lind+1)) = auxc1d(ma,index)
                endif
-  324          continue
+  224          continue
             endif
-         do 325 ivar = 1, nvar
+         do 225 ivar = 1, nvar
              ql(ivar,lind+1) = qc1d(ivar,index)
- 325     continue
+ 225     continue
 
-    
        if (qprint) then
          write(dbugunit,*) 'side 2, ql and qr:'
             write(dbugunit,4101) i,ql(1,2),qr(1,1)
        endif
+
        call rp1(max1dp1-2*nghost,nvar,mwaves,maux,nghost,
      .              2-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
+
 c
 c we have the wave. for side 2 add into sdflxp
 C
           influx  = influx + 1
           do 340 ivar = 1, nvar
-              svdflx(ivar,influx) = svdflx(ivar,influx) 
+              svdflx(ivar,influx) = svdflx(ivar,influx)
      .                     - amdq(ivar,2) * delt
      .                     - apdq(ivar,2) * delt
  340       continue
@@ -179,6 +178,6 @@ c      # for source terms:
            call src1d(nvar,nghost,lenbc,qc1d,maux,auxc1d,tgrid,delt)
 c      # how can this be right - where is the integrated src term used?
            endif
-           
+
        return
        end

@@ -65,8 +65,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
   !     when pass it in to subroutines they treat it as having dierent
   !     dimensions than the max size need to allocate here
 
-  !--      dimension valcrse((ihi-ilo+2)*(jhi-jlo+2)*nvar)  ! NB this is a 1D array 
-  !--      dimension auxcrse((ihi-ilo+2)*(jhi-jlo+2)*naux)  ! the +2 is to expand on coarse grid to enclose fine
+  !--      dimension valcrse((ihi-ilo+2)*nvar)  ! NB this is a 1D array
+  !--      dimension auxcrse((ihi-ilo+2)*naux)  ! the +2 is to expand on coarse grid to enclose fine
   ! ### turns out you need 3 rows, forget offset of 1 plus one on each side
   ! the +3 is to expand on coarse grid to enclose fine
   real(kind=8) :: valcrse((ihi-ilo+3)* nvar)
@@ -89,7 +89,6 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
               ihi,level,nvar,naux,msrc)
 
 
-
   ! Trimbd returns set = true if all of the entries are filled (=1.).
   ! set = false, otherwise. If set = true, then no other levels are
   ! are required to interpolate, and we return.
@@ -100,6 +99,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
   ! boundary pieces filled.
   call trimbd(flaguse,mitot_patch,set,unset_indices)
   ! il,ir= unset_indices(2)
+
 
   ! If set is .true. then all cells have been set and we can skip to setting
   ! the remaining boundary cells.  If it is .false. we need to interpolate
@@ -174,6 +174,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
      ! Fill in the edges of the coarse grid. for recursive calls, patch indices and
      ! 'coarse grid' indices are the same (no actual coarse grid here, so cant use mptr
      ! must pass indices. patchOnly argument  is thus true
+
      if ((xperdom) .and. sticksout(iplo,iphi)) then
         call prefilrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,1,   &
              iplo,iphi,iplo,iphi,.true.)
@@ -192,6 +193,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot, &
 
         ! new coarse indexing
         !i_coarse =(i_fine+ilo-1)/refinement_ratio_x - iplo + 1
+
         i_coarse = floor((i_fine+ilo-1)/ratiox) - iplo + 1
         xcent_coarse = xlow_coarse + (i_coarse-.5d0)*dx_coarse
         xcent_fine =  xlower + (i_fine-1+ilo + .5d0)*dx_fine
