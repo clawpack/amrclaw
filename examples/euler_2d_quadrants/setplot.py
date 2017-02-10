@@ -7,8 +7,10 @@ function setplot is called to set the plot parameters.
     
 """ 
 
+from __future__ import absolute_import
+
 #--------------------------
-def setplot(plotdata):
+def setplot(plotdata=None):
 #--------------------------
     
     """ 
@@ -18,8 +20,12 @@ def setplot(plotdata):
     
     """ 
 
-
     from clawpack.visclaw import colormaps
+
+    if plotdata is None:
+        from clawpack.visclaw.data import ClawPlotData
+        plotdata = ClawPlotData()
+
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
     
@@ -29,8 +35,8 @@ def setplot(plotdata):
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = 'auto'
+    plotaxes.xlimits = [0,1]
+    plotaxes.ylimits = [0,1]
     plotaxes.title = 'Density'
     plotaxes.scaled = True
     plotaxes.afteraxes = addgauges
@@ -51,8 +57,8 @@ def setplot(plotdata):
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = 'auto'
+    plotaxes.xlimits = [0,1]
+    plotaxes.ylimits = [0,1]
     plotaxes.title = 'Density'
     plotaxes.scaled = True      # so aspect ratio is 1
 
@@ -90,8 +96,8 @@ def setplot(plotdata):
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = 'auto'
+    plotaxes.xlimits = [0,1]
+    plotaxes.ylimits = [0,1]
     plotaxes.title = 'Density'
 
     # Plot q as blue curve:
@@ -114,6 +120,7 @@ def setplot(plotdata):
     plotdata.latex_figsperline = 2           # layout of plots
     plotdata.latex_framesperline = 1         # layout of plots
     plotdata.latex_makepdf = False           # also run pdflatex?
+    plotdata.parallel = True                 # make multiple frame png's at once
 
     return plotdata
 

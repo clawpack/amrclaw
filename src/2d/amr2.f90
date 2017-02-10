@@ -82,8 +82,8 @@ program amr2
     use amr_module, only: tvoll, tvollCPU, rvoll, rvol, mstart, possk, ibuff
     use amr_module, only: timeRegridding,timeUpdating, timeValout
     use amr_module, only: timeBound,timeStepgrid, timeFlagger,timeBufnst,timeFilvalTot
-    use amr_module, only: timeBoundCPU,timeStepGridCPU,timeSetauxCPU,timeRegriddingCPU
-    use amr_module, only: timeSetaux, timeSetauxCPU, timeValoutCPU
+    use amr_module, only: timeBoundCPU,timeStepGridCPU,timeRegriddingCPU
+    use amr_module, only: timeValoutCPU,timeTick,timeTickCPU
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
@@ -105,8 +105,10 @@ program amr2
     logical :: vtime, rest, output_t0    
 
     ! Timing variables
-    integer :: clock_start, clock_finish, clock_rate, ttotal
-    real(kind=8) :: cpu_start, cpu_finish,ttotalcpu
+    integer ::  ttotal
+    real(kind=8) ::ttotalcpu, cpu_start,cpu_finish 
+    integer :: clock_start, clock_finish, clock_rate  
+
 
     ! Common block variables
     real(kind=8) :: dxmin, dymin
@@ -457,7 +459,7 @@ program amr2
 
         ! Non-user data files
         call set_regions()
-        call set_gauges(rest, nvar)
+        call set_gauges(rest, nvar, naux)
 
     else
 
@@ -470,7 +472,7 @@ program amr2
 
         ! Non-user data files
         call set_regions()
-        call set_gauges(rest, nvar)
+        call set_gauges(rest, nvar, naux)
 
         cflmax = 0.d0   ! otherwise use previously heckpointed val
 
@@ -571,9 +573,9 @@ program amr2
     endif
     close(parmunit)
 
-    ! Timing
-    call system_clock(clock_start,clock_rate)
+    ! Timing:  moved inside tick so can finish and be checkpointed
     call cpu_time(cpu_start)
+    call system_clock(clock_start,clock_rate)
 
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
@@ -582,10 +584,8 @@ program amr2
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
 
-    call system_clock(clock_finish,clock_rate)
     call cpu_time(cpu_finish)
-    
-    
+
     !output timing data
     write(*,*)
     write(outunit,*)
@@ -607,6 +607,10 @@ program amr2
     write(*,format_string)
     ttotalcpu=0.d0
     ttotal=0
+
+    call system_clock(clock_finish,clock_rate)  ! just to get clock_rate
+    write(*,*) "clock_rate ",clock_rate
+
     do level=1,mxnest
         format_string="(i3,'           ',1f15.3,'        ',1f15.3,'    ', e17.3)"
         write(outunit,format_string) level, &
@@ -666,12 +670,14 @@ program amr2
     
     !Total Time
     format_string="('Total time:   ',1f15.3,'        ',1f15.3,'  ')"
-    write(outunit,format_string) &
-            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
-            cpu_finish-cpu_start
-    write(*,format_string) &
-            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
-            cpu_finish-cpu_start
+
+!    write(*,format_string)  &
+!            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
+!            cpu_finish-cpu_start
+    write(*,format_string) real(timeTick,kind=8)/real(clock_rate,kind=8), &
+            timeTickCPU
+    write(outunit,format_string) real(timeTick,kind=8)/real(clock_rate,kind=8), &
+            timeTickCPU
     
     format_string="('Using',i3,' thread(s)')"
     write(outunit,format_string) maxthreads
@@ -686,6 +692,10 @@ program amr2
     write(outunit,"('Note: The CPU times are summed over all threads.')")
     write(*,"('      Total time includes more than the subroutines listed above')")
     write(outunit,"('      Total time includes more than the subroutines listed above')")
+    if (rest) then
+      write(*,"('      Times for restart runs are cumulative')")
+      write(outunit,"('      Times for restart runs are cumulative')")
+    endif
     
     
     !end of timing data
@@ -696,42 +706,6 @@ program amr2
     write(*,format_string)
     write(*,*)
     write(outunit,*)
-    
-    
-    
-    
-    
-    !write(*,*) " "
-    !write(outunit,*) " "
-    !format_string = "('Total time to solution = ',1f16.8,' s, using ',i3,' threads')"
-    !write(outunit,format_string) &
-    !        real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), maxthreads
-    !write(*,format_string) &
-    !        real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), maxthreads
-
-    !do level = 1, mxnest            
-    !  format_string = "('Total advanc time on level ',i3,' = ',1f16.8,' s')"
-    !  write(outunit,format_string) level, &
-    !         real(tvoll(level),kind=8) / real(clock_rate,kind=8)
-    !  write(*,format_string) level, &
-    !         real(tvoll(level),kind=8) / real(clock_rate,kind=8)
-    !end do
-    !write(*,*) " "
-    !write(outunit,*)" "
-
-    !format_string = "('Total updating   time            ',1f16.8,' s')"
-    !write(outunit,format_string)  real(timeUpdating,kind=8) / real(clock_rate,kind=8)
-    !write(*,format_string) real(timeUpdating,kind=8) / real(clock_rate,kind=8)
-
-    !format_string = "('Total valout     time            ',1f16.8,' s')"
-    !write(outunit,format_string)  real(timeValout,kind=8) / real(clock_rate,kind=8)
-    !write(*,format_string) real(timeValout,kind=8) / real(clock_rate,kind=8)
-
-    !format_string = "('Total regridding time            ',1f16.8,' s')"
-    !write(outunit,format_string)  &
-    !         real(timeRegridding,kind=8) / real(clock_rate,kind=8)
-    !write(*,format_string)  &
-    !         real(timeRegridding,kind=8) / real(clock_rate,kind=8)
 
     ! Done with computation, cleanup:
     lentotsave = lentot

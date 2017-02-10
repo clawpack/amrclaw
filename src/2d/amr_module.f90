@@ -121,10 +121,10 @@ module amr_module
     integer ::  iregridcount(maxlv), tvoll(maxlv)
     integer :: timeRegridding, timeUpdating, timeValout
     integer :: timeFlglvl,timeGrdfit2,timeGrdfit3,timeGrdfitAll
-    integer :: timeSetaux,timeFilval,timeBound,timeStepgrid,timeFilvalTot
-    integer :: timeFlagger, timeBufnst
-    real(kind=8) tvollCPU(maxlv)
-    real(kind=8) timeBoundCPU,timeStepgridCPU,timeSetauxCPU,timeRegriddingCPU
+    integer :: timeFilval,timeBound,timeStepgrid,timeFilvalTot
+    integer :: timeFlagger, timeBufnst,timeTick
+    real(kind=8) tvollCPU(maxlv), timeTickCPU
+    real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU
     real(kind=8) timeValoutCPU
 
     integer lentot,lenmax,lendim

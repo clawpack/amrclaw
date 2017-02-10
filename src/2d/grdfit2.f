@@ -11,7 +11,7 @@ c
 c
       dimension  corner(nsize,maxcl)
       integer    numptc(maxcl), prvptr
-      logical    fit, nestck, cout
+      logical    fit,  cout
       logical    fit2, nestck2
       data       cout/.false./
 c

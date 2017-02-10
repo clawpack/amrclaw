@@ -1,13 +1,16 @@
 c
 c ----------------------------------------------------------------
 c
-       logical function baseCheck(mnew,lbase,ilo,ihi,jlo,jhi)
+       logical function baseCheck(mnew,lbase,ilo,ihi,jlo,jhi,
+     .                            nvar,naux,thisBuff)
 
        use amr_module
        implicit double precision (a-h, o-z)
 
-       logical debug/.false./
+       logical debug/.true./
        integer ist(3),iend(3),jst(3),jend(3),ishift(3),jshift(3)
+       logical borderx, bordery
+       integer thisBuff
 
 c      index into alloc from iclo:ichi and jclo:jchi, not 0..leni/j. 
        iadd(i,j) = locm + i - iclo + leni*(j-jclo) 
@@ -28,19 +31,14 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
 
-       if (debug) write(outunit,100) mnew,ilo,ihi,jlo,jhi,lbase
- 100   format("NESTCK2 testing grid ",i5," base level ",i5,/,
-     .  " new grid from ilo:hi: ",2i12," to ",2i12)
-
        levnew = node(nestlevel,mnew)
-c
-c initialize for potential periodicity
-c each patch divided into 9 regions (some may be empty)
-c e.g. i from (ilo,-1), (0,iregsz(level)-1),(iregsz(level),ihi)
-c except using enlarged grid (ilo-1 to ihi+1)
-c
-       call setIndices(ist,iend,jst,jend,ilo-1,ihi+1,jlo-1,jhi+1,
-     .                 ishift,jshift,levnew)
+       borderx = (ilo .eq. 0 .or. ihi .eq. iregsz(levnew)-1)
+       bordery = (jlo .eq. 0 .or. jhi .eq. jregsz(levnew)-1)
+       
+
+      if (debug) write(outunit,100) mnew,lbase,ilo,ihi,jlo,jhi,levnew
+ 100  format("NESTCK2 testing grid ",i5," base level ",i5,/,
+     . " new grid from ilo:hi: ",2i12," to ",2i12," at level ",i4)
 c
 c    on to initializing for the given grid and its nest checking
        levratx = 1
@@ -51,15 +49,21 @@ c    on to initializing for the given grid and its nest checking
  5     continue
 
 c widen by 1 cell (proper nesting), then project to lbase
-       iclo = ilo-1
-       ichi = ihi+1
-       jclo = jlo-1
-       jchi = jhi+1
+c this might stick out of domain, fix later
+c figure out size for scratch storage on base grid for testing
+       iclo = ilo
+       ichi = ihi
+       jclo = jlo
+       jchi = jhi
        do lev = levnew-1,lbase,-1
-          iclo = (dfloat(iclo)/intratx(lev))
-          ichi = (dfloat(ichi)/intratx(lev))
-          jclo = (dfloat(jclo)/intraty(lev)) 
-          jchi = (dfloat(jchi)/intraty(lev))
+          iclo = iclo/intratx(lev)
+          ichi = ichi/intratx(lev)
+          jclo = jclo/intraty(lev) 
+          jchi = jchi/intraty(lev)
+          iclo = iclo - 1
+          ichi = ichi + 1
+          jclo = jclo - 1
+          jchi = jchi + 1
           if (debug) then
              write(outunit,111) lev, iclo,ichi,jclo,jchi
 111          format(10x,"at level",i5," projected coords ilo:hi:",2i10,
@@ -73,29 +77,28 @@ c      space, we took care of that already.
        if (debug) then
           write(outunit,108) ilo-1,ihi+1,jlo-1,jhi+1
           write(outunit,109) levratx,levraty
- 108      format(" enlarged fine grid from ilo:hi:",2i12,
+ 108      format(" enlarged (by 1) fine grid from ilo:hi:",2i12,
      .           " to jlo:hi:", 2i12)
  109      format(" refinement factors to base grid of ", 2i12)
           write(outunit,101) iclo,ichi,jclo,jchi
- 101      format("coarsened to lbase, grid from ilo:hi: ",2i12,
-     .        " to jlo:hi:",2i12)
+ 101      format("coarsened to lbase, grid from iclo:hi: ",2i12,
+     .        " to jclo:hi:",2i12)
        endif
+
+       if (.not. (xperdom .and. borderx) .and. 
+     .     .not. (yperdom .and. bordery)) then
+          iclo = max(iclo,0)  ! make sure in domain boundary when checking nesting
+          jclo = max(jclo,0)  
+          ichi = min(ichi,iregsz(lbase)-1) ! subtract 1 since regsz is number of cells, so -1 is highest index
+          jchi = min(jchi,jregsz(lbase)-1)
+       endif
+
 
        leni = ichi - iclo + 1
        lenj = jchi - jclo + 1
        lenrect = leni * lenj
        locm = igetsp(lenrect)
-c      initialize on projected size of new grid. used to mark nesting         
-       do k = 0, lenrect-1   
-          alloc(locm + k) = 0.
-       end do
-c
-c      corners dont count for nesting so mark as ok
-c  leave 0 for now so match older nestck
-!--        alloc(iadd(iclo,jclo)) = 1.
-!--        alloc(iadd(iclo,jchi)) = 1.
-!--        alloc(iadd(ichi,jclo)) = 1.
-!--        alloc(iadd(ichi,jchi)) = 1.
+       alloc(locm:locm+lenrect-1) = 0.
 c
 c  if mnew on domain boundary fix flags so ok. 
 c  fix extra border, and first/last real edge
@@ -126,73 +129,67 @@ c  fix extra border, and first/last real edge
        endif
 
        mptr = lstart(lbase)
- 20       iblo = node(ndilo, mptr)
-          ibhi = node(ndihi, mptr)
-          jblo = node(ndjlo, mptr)
-          jbhi = node(ndjhi, mptr)
+ 20       iblo = node(ndilo, mptr) - thisBuff
+          ibhi = node(ndihi, mptr) + thisBuff
+          jblo = node(ndjlo, mptr) - thisbuff
+          jbhi = node(ndjhi, mptr) + thisBuff
+c
+          ! non periodic case, base level coordinates, just mark if nested.
+          if ((.not. (xperdom .and. borderx)) .and. 
+     .         .not. (yperdom .and. bordery)) then
+              ixlo = max(iclo,iblo)
+              ixhi = min(ichi,ibhi)
+              jxlo = max(jclo,jblo)
+              jxhi = min(jchi,jbhi)
+              if (.not.((ixlo.le.ixhi) .and. (jxlo.le.jxhi))) go to 30
+              do jx = jxlo, jxhi
+              do ix = ixlo, ixhi
+                alloc(iadd(ix,jx))=1.
+              end do
+              end do
+              go to 30
+          endif
+c
+c          periodic case:  initialize for potential periodicity
+c             each patch divided into 9 regions (some may be empty)
+c             e.g. i from (ilo,-1), (0,iregsz(level)-1),(iregsz(level),ihi)
+c             except using enlarged grid (ilo-1 to ihi+1)
+c
+       call setIndices(ist,iend,jst,jend,iclo,ichi,jclo,jchi,
+     .                 ishift,jshift,lbase)
 
-          if (debug) then
-              write(outunit,*)
-             write(outunit,102) mptr,lbase,iblo,ibhi,jblo,jbhi
- 102        format("TESTING AGAINST GRID ",i5," level ",i5,
-     .             " from ilo:hi:",2i10," to jlo:hi:",2i10)
-           endif
-
-c          compare all regions of patch with one lbase grid at a time
+c          compare all regions of coarsened patch with one lbase grid at a time
            do 25 i = 1, 3
-              i1 = max(ilo-1,ist(i))
-              i2 = min(ihi+1, iend(i))
+              i1 = max(iclo,ist(i))
+              i2 = min(ichi, iend(i))
            do 25 j = 1, 3
-              j1 = max(jlo-1, jst(j))
-              j2 = min(jhi+1, jend(j))
+              j1 = max(jclo, jst(j))
+              j2 = min(jchi, jend(j))
 
               if (.not. ((i1 .le. i2) .and. (j1 .le. j2))) go to 25
-
-              if (debug) write(outunit,103)i,j,i1,i2,j1,j2
- 103          format("region ",2i10," from ilo:hi:",2i10,
-     .               " to jlo:ji:",2i10)
 c
-c             patch not empty. project coords to level lbase
-              iplo = i1+ishift(i)
-              iphi = i2+ishift(i)
-              jplo = j1+jshift(j)
-              jphi = j2+jshift(j)
-              do lev = levnew-1,lbase,-1
-                iplo = floor(dfloat(iplo)/intratx(lev))
-                iphi = ceiling(dfloat(iphi+1)/intratx(lev) - 1)
-                jplo = floor(dfloat(jplo)/intraty(lev))
-                jphi = ceiling(dfloat(jphi+1)/intraty(lev) - 1)
-              end do
-              if (debug) then
-                 write(outunit,104) i,j,iplo,iphi,jplo,jphi
- 104             format("projected coords of region ",2i15," is ",2i12,
-     .                  " by ",2i12)
-              endif
+c           patch (possibly periodically wrapped) not empty.
+c           see if intersects base grid. wrap coords for periodicity
+              i1_shifted = i1 + ishift(i)
+              i2_shifted = i2 + ishift(i)
+              j1_shifted = j1 + jshift(j)
+              j2_shifted = j2 + jshift(j)
 
-              ixlo = max(iplo,iblo)
-              ixhi = min(iphi,ibhi)
-              jxlo = max(jplo,jblo)
-              jxhi = min(jphi,jbhi)
+              ixlo = max(i1_shifted,iblo)
+              ixhi = min(i2_shifted,ibhi)
+              jxlo = max(j1_shifted,jblo)
+              jxhi = min(j2_shifted,jbhi)
 
               if (.not.((ixlo.le.ixhi) .and. (jxlo.le.jxhi))) go to 25
-
-              if (debug) write(outunit,105) ixlo,ixhi,jxlo,jxhi
- 105          format("intersected reg ",2i12," by ",2i12)
-c FOR NOW DO NOT HANDLE PERIODIC NEST CHECKING
-          
-              if (debug) then
-                 write(outunit,106) ixlo,ixhi,jxlo,jxhi
-                 write(outunit,107) ishift(i),jshift(j)
- 106             format("SETTING FROM ",4i5)
- 107             format("shifts are ",2i5)
-              endif
 c     mark intersected regions with 1
               do jx = jxlo, jxhi
               do ix = ixlo, ixhi
-c              need to mark nesting of orig coords, not shifted 
-               alloc(iadd(ix-ishift(i)/levratx,jx-jshift(j)/levraty))=1.
-              end do
-              end do
+c                need to mark nesting of orig coords, not coarsened shifted indices
+                 ix_unshifted = (ix - ishift(i)) ! back to unshifted coords
+                 jx_unshifted = (jx - jshift(j)) ! to mark base grid nesting ok
+                 alloc(iadd(ix_unshifted,jx_unshifted)) = 1.
+               end do
+               end do
 
  25       continue
 

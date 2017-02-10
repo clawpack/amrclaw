@@ -475,7 +475,7 @@ program amr3
         ! Call user routine to set up problem parameters:
         call setprob()
 
-        call set_gauges(rest, nvar)
+        call set_gauges(rest, nvar, naux)
     else
 
         open(outunit, file=outfile, status='unknown', form='formatted')
@@ -484,7 +484,7 @@ program amr3
 
         ! Call user routine to set up problem parameters:
         call setprob()
-        call set_gauges(rest, nvar)
+        call set_gauges(rest, nvar, naux)
 
         cflmax = 0.d0   ! otherwise use previously heckpointed val
 

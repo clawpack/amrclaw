@@ -71,7 +71,12 @@ c
      3          numgrids,kcheck,nsteps,
      3          time,matlabu
       write(chkunit) avenumgrids, iregridcount,
-     1               evol,rvol,rvoll,lentot,tmass0,cflmax
+     1               evol,rvol,rvoll,lentot,tmass0,cflmax,
+     2               tvoll,tvollCPU,timeTick,timeTickCPU,
+     3               timeStepgrid,timeStepgridCPU,
+     4               timeBound,timeBoundCPU,
+     5               timeRegridding,timeRegriddingCPU,
+     6               timeValout,timeValoutCPU 
 c
       close(chkunit)
 
@@ -82,7 +87,7 @@ c     # so if code dies it will at least have output up to this checkpoint time
       flush(dbugunit)       ! defined in amr_module.f90
 c      flush(OUTGAUGEUNIT)   ! defined in gauges_module.f90
       do ii = 1, num_gauges
-         call print_gauges_and_reset_nextLoc(ii, nvar)
+         call print_gauges_and_reset_nextLoc(ii)
       end do
 
 c     # write the time stamp file last so it's not updated until data is
