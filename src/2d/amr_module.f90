@@ -121,7 +121,7 @@ module amr_module
     integer ::  iregridcount(maxlv), tvoll(maxlv)
     integer :: timeRegridding, timeUpdating, timeValout
     integer :: timeFlglvl,timeGrdfit2,timeGrdfit3,timeGrdfitAll
-    integer :: timeFilval,timeBound,timeStepgrid,timeFilvalTot
+    integer :: timeBound,timeStepgrid
     integer :: timeFlagger, timeBufnst,timeTick
     real(kind=8) tvollCPU(maxlv), timeTickCPU
     real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU

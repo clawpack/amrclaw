@@ -30,11 +30,11 @@ c
           x  = cornx + hx*(dble(i)-.5d0)
           y  = corny + hy*(dble(j)-.5d0)
           write(outunit,107) x,y,i,j,(val(ivar,i,j),ivar=1,nvar)
- 107      format(2hx=,f6.3,3h y=,f5.3,3h,i=,i3,3h,j=,i3,' a=',
+ 107      format(2hx=,f6.3,2hy=,f6.3,3h,i=,i3,3h,j=,i3,' a=',
      *           e25.15)
 c    *           5(e9.3,1x))
           if (naux.gt.0) write(outunit,108) (aux(iaux,i,j),iaux=1,naux)
- 108      format(1x,'aux = ',7(e9.3,1x))
+ 108      format(1x,'aux = ',7(e10.3,1x))
 
  20   continue
  25   continue

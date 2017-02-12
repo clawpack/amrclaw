@@ -36,9 +36,9 @@ c
          write(outunit,107) x,y,z,i,j,k,(val(ivar,i,j,k),ivar=1,nvar)
  107     format(2hx=,f7.3,3h y=,f7.3,3h z=,f7.3,
      *          4h, i=,i3,4h, j=,i3 ,4h, k=,i3 ,
-     *          ' a= ',5(e10.4,1x))
+     *          ' a= ',5(e11.4,1x))
          if (naux.gt.0) write(outunit,108) (aux(iaux,i,j,k),iaux=1,naux)
- 108     format(1x,'aux = ',7(e9.3,1x))
+ 108     format(1x,'aux = ',7(e10.3,1x))
 
  20   continue
  25   continue

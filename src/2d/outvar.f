@@ -24,7 +24,7 @@ c
       do 20 ivar = 1, nvar
          write(pltunit1,101) ((rect(ivar,i,j),i=ng+1,mitot-ng),
      .                                        j=ng+1,mjtot-ng)
- 101     format(5e12.6)
+ 101     format(5e13.6)
  20   continue
 c
       return
