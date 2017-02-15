@@ -25,7 +25,7 @@ c
       write(pltunit1,106)(hxposs(i),i=1,lfine)
       write(pltunit1,106)(hyposs(i),i=1,lfine)
       write(pltunit1,106)(hzposs(i),i=1,lfine)
-106   format(6e13.8)
+106   format(6e15.8)
 c
       level = lst
  10   if (level .gt. lend) go to 99
@@ -34,7 +34,7 @@ c
               write(pltunit1,103) mptr, (node(i,mptr),i=1,nsize)
               write(pltunit1,104) (rnode(i,mptr),i=1,rsize)
 103           format(10i7)
-104           format(5e14.8)
+104           format(5e15.8)
               mptr = node(levelptr,mptr)
           go to 20
  30       level = level + 1
