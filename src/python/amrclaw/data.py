@@ -26,11 +26,10 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         # Refinement control
         self.add_attribute('amr_levels_max',1)
         self.add_attribute('refinement_ratios_x',[1])
-        self.add_attribute('refinement_ratios_y',[1])
+        if self._clawdata.num_dim >= 2:
+            self.add_attribute('refinement_ratios_y',[1])
         if self._clawdata.num_dim == 3:
             self.add_attribute('refinement_ratios_z',[1])
-        if self._clawdata.num_dim == 1:
-            raise NotImplementedError("1d AMR not yet supported")
         self.add_attribute('variable_dt_refinement_ratios',False)
 
         self.add_attribute('refinement_ratios_t',[1])
@@ -70,11 +69,12 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         if len(self.refinement_ratios_x) < num_ratios:
             raise ValueError("*** Error in data parameter: " + \
                   "require len(refinement_ratios_x) >= %s " % num_ratios)
-        if len(self.refinement_ratios_y) < num_ratios:
-            raise ValueError("*** Error in data parameter: " + \
-                  "require len(refinement_ratios_y) >= %s " % num_ratios)
         self.data_write('refinement_ratios_x')
-        self.data_write('refinement_ratios_y')
+        if self._clawdata.num_dim >= 2:
+            if len(self.refinement_ratios_y) < num_ratios:
+                raise ValueError("*** Error in data parameter: " + \
+                      "require len(refinement_ratios_y) >= %s " % num_ratios)
+            self.data_write('refinement_ratios_y')
         if self._clawdata.num_dim == 3:
             if len(self.refinement_ratios_z) < num_ratios:
                     raise ValueError("*** Error in data parameter: " + \
