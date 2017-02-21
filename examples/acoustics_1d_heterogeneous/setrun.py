@@ -65,7 +65,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[0] = 3.           # xupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 100      # mx
+    clawdata.num_cells[0] = 20       # mx
     
 
     # ---------------
@@ -260,8 +260,8 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.amr_levels_max = 3
     
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    amrdata.refinement_ratios_x = [2, 2]
-    amrdata.refinement_ratios_t = [2, 2]
+    amrdata.refinement_ratios_x = [4, 4]
+    amrdata.refinement_ratios_t = [4, 4]
     
     
     # Specify type of each aux variable in clawdata.auxtype.
@@ -276,7 +276,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 0.01 # tolerance used in this routine
+    amrdata.flag2refine_tol = 0.1 # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
     # between a cell and each of its neighbors.

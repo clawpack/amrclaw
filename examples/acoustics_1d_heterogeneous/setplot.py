@@ -1,79 +1,51 @@
-def setplot(plotdata):
+from __future__ import absolute_import
+
+#--------------------------
+def setplot(plotdata=None):
+#--------------------------
     
+    """ 
+    Specify what is to be plotted at each frame.
+    Input:  plotdata, an instance of clawpack.visclaw.data.ClawPlotData.
+    Output: a modified version of plotdata.
+    
+    """ 
+
+    if plotdata is None:
+        from clawpack.visclaw.data import ClawPlotData
+        plotdata = ClawPlotData()
+
     plotdata.clearfigures()
+
+    # Figures corresponding to Figure 9.5 of LeVeque, "Finite Volume
+    # Methods for Hyperbolic Problems," 2002 (though more of them)
 
     # Tuples of (variable name, variable number)
     figdata = [('Pressure', 0),
                ('Velocity', 1)]
 
-    # Draw a vertical dashed line at the interface
+    # Afteraxes function: draw a vertical dashed line at the interface
     # between different media
     def draw_interface(current_data):
         import pylab
         pylab.plot([0., 0.], [-1000., 1000.], 'k--')
-    
-    # Formatting title
-    def format(current_data, var, adjoint):
-        import pylab
-        size = 28
-        t = current_data.t
-        timestr = float(t)
-        
-        if (var == 0):
-            titlestr = 'Pressure at time %s' % timestr
-        else:
-            titlestr = 'Velocity at time %s' % timestr
-        
-        pylab.title(titlestr, fontsize=size)
-        pylab.xticks(fontsize=size)
-        pylab.yticks(fontsize=size)
-        pylab.xticks([-4, -2, 0, 2], fontsize=size)
-    
-    # After axis function for pressure
-    def aa_pressure(current_data):
-        draw_interface(current_data)
-        format(current_data, 0, False)
-
-    # After axis function for velocity
-    def aa_velocity(current_data):
-        draw_interface(current_data)
-        format(current_data, 1, False)
 
     for varname, varid in figdata:
         plotfigure = plotdata.new_plotfigure(name=varname, figno=varid)
-        plotfigure.kwargs = {'figsize': (11,5)}
-
+        plotfigure.kwargs = {'figsize':(12,6)}
+        
         plotaxes = plotfigure.new_plotaxes()
-        plotaxes.axescmd = 'axes([0.1,0.1,0.4,0.8])'
-        plotaxes.xlimits = [-5., 3.]
+        plotaxes.xlimits = [-5., 5.]
         plotaxes.ylimits = [-0.5, 1.5]    # Good for both vars because of near-unit impedance
-        if (varid == 0):
-            plotaxes.afteraxes = aa_pressure
-        else:
-            plotaxes.afteraxes = aa_velocity
+        plotaxes.title = varname
+        plotaxes.afteraxes = draw_interface
 
         plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
         plotitem.plot_var = varid
-        plotitem.color = 'b'
-        plotitem.plotstyle = 'o'
-
-    #-----------------------------------------
-    # Figures for gauges
-    #-----------------------------------------
-    plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
-                                     type='each_gauge')
-    plotfigure.clf_each_gauge = True
-    
-    plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = 'auto'
-    plotaxes.title = 'Pressure'
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = 0
-    plotitem.plotstyle = 'b-'
-    
-    # Parameters used only when creating html and/or latex hardcopy
-    # e.g., via clawpack.visclaw.frametools.printframes:
+        plotitem.amr_color = ['g','b','r']
+        plotitem.amr_plotstyle = ['^-','s-','o-']
+        plotitem.amr_data_show = [1,1,1]
+        plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
 
     plotdata.printfigs = True          # Whether to output figures
     plotdata.print_format = 'png'      # What type of output format
@@ -83,3 +55,4 @@ def setplot(plotdata):
     plotdata.latex = False             # Whether to make LaTeX output
 
     return plotdata
+
