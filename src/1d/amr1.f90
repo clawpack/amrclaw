@@ -104,7 +104,7 @@ program amr1
     integer :: i, iaux, mw, level
     integer :: ndim, nvar, naux, mcapa1, mindim
     integer :: nstart, nsteps, nv1, nx, lentotsave, num_gauge_SAVE
-    integer :: maxthreads
+    integer :: omp_get_max_threads, maxthreads
     real(kind=8) :: time, ratmet, cut, dtinit, dt_max
     logical :: vtime, rest, output_t0    
 
