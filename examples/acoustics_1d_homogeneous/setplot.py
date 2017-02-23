@@ -23,7 +23,7 @@ def setplot(plotdata):
 
     # Figure for q[0]
     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
-
+    plotfigure.kwargs = {'figsize': (8,8)}
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(2,1,1)'   # top figure
@@ -34,8 +34,11 @@ def setplot(plotdata):
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
-    plotitem.plotstyle = 'o'
-    plotitem.color = 'b'
+    plotitem.amr_color = ['g','b','r']
+    plotitem.amr_plotstyle = ['^-','s-','o-']
+    plotitem.amr_data_show = [1,1,1]
+    plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
+
 
 
     # Figure for q[1]
@@ -50,8 +53,11 @@ def setplot(plotdata):
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 1
-    plotitem.plotstyle = 'o'
-    plotitem.color = 'b'
+    plotitem.amr_color = ['g','b','r']
+    plotitem.amr_plotstyle = ['^-','s-','o-']
+    plotitem.amr_data_show = [1,1,1]
+    plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
+
     
     #-----------------------------------------
     # Figures for gauges

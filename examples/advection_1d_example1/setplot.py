@@ -53,7 +53,7 @@ def setplot(plotdata):
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
     plotitem.amr_color = ['g','b','r']
-    plotitem.amr_plotstyle = ['^','s','o']
+    plotitem.amr_plotstyle = ['^-','s-','o-']
     plotitem.amr_data_show = [1,1,1]
     plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
 
@@ -63,14 +63,14 @@ def setplot(plotdata):
         x = linspace(0,1,1000)
         t = current_data.t
         q = qtrue(x,t)
-        plot(x,q,'r',label='true solution')
+        plot(x,q,'k',label='true solution')
     
     def plot_qtrue_with_legend(current_data):
         from pylab import plot, legend
         x = linspace(0,1,1000)
         t = current_data.t
         q = qtrue(x,t)
-        plot(x,q,'r',label='true solution')
+        plot(x,q,'k',label='true solution')
         legend(loc='lower right')
 
     plotaxes.afteraxes = plot_qtrue_with_legend
@@ -94,7 +94,7 @@ def setplot(plotdata):
         plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
         plotitem.plot_var = 0
         plotitem.amr_color = ['g','b','r']
-        plotitem.amr_plotstyle = ['^','s','o']
+        plotitem.amr_plotstyle = ['^-','s-','o-']
         plotitem.amr_data_show = [0,0,0]
         plotitem.amr_data_show[level-1] = 1  # show only one level
 

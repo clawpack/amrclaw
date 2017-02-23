@@ -347,8 +347,8 @@ contains
 
       implicit none
       integer :: gaugeNum,nvar,j,inum,k,idigit,ipos,myunit
+      integer :: omp_get_thread_num, mythread
       character*14 :: fileName
-      integer :: mythread
 
       ! open file for gauge gaugeNum, figure out name
       ! not writing gauge number since it is in file name now
