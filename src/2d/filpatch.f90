@@ -293,6 +293,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
 
               do n=1,nvar
                  ! write(*,*)n,i_coarse+1,j_coarse,coarse_index(n,i_coarse + 1,j_coarse)
+                 ! QUESTION: why do we interpolate in this way?
                  valp10 = valcrse(coarse_index(n,i_coarse + 1,j_coarse))
                  valm10 = valcrse(coarse_index(n,i_coarse - 1,j_coarse))
                  valc   = valcrse(coarse_index(n,i_coarse    ,j_coarse))
