@@ -1,3 +1,7 @@
+c :::::::::::::::::::::::::: BUFNST :::::::::::::::::::::::::::::::::::
+!> After error estimation, need to tag the cell for refinement,
+!! buffer the tags, take care of level nesting, etc.
+c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 c -------------------------------------------------------------
 c
@@ -18,10 +22,6 @@ c     but here is from 1:mibuff
       iadd(i,j) = locamrflags + i-1+ mibuff*(j-1)
 c
  
-c :::::::::::::::::::::::::: BUFNST :::::::::::::::::::::::::::::::::::
-c  after error estimation, need to tag the cell for refinement,
-c  buffer the tags, take care of level nesting, etc.
-c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 c
 c
@@ -151,6 +151,7 @@ c
                numflagged=numflagged + 1
             endif
  82      continue
+        ! TODO: this output statement is broken?
 c     write(outunit,116) numflagged, mptr
  116     format(i5,' points flagged on level ',i4,' grid ',i4)
          node(numflags,mptr) = numflagged
@@ -162,6 +163,7 @@ c ADD WORK THAT USED TO BE IN FLGLVL2 FOR MORE PARALLEL WORK WITHOUT JOINING AND
 c in effect this is domgrid, but since variables already defined just need half of it, inserted here
       ibytesPerDP = 8      
 c     bad names, for historical reasons. they are both smae size now
+      ! recall that igetsp(1) will allocate 8 bytes
       locdomflags = igetsp( (mibuff*mjbuff)/ibytesPerDP+1)
       locdom2 = igetsp( (mibuff*mjbuff)/ibytesPerDP+1)
 

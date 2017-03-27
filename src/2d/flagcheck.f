@@ -1,3 +1,8 @@
+!> Check if every cell in grid mptr is properly nested in base level
+!! grids (base level in current refinement, usually represented by
+!! **lbase**).
+!! If not, turn off the flagging on that cell (mark as needing
+!! no refinement).
 c
 c ----------------------------------------------------------------------------
 c

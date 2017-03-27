@@ -1,4 +1,22 @@
 c
+!> set domain flags (not AMR flags) for grid **mptr** (only), enlarged by buffer zone. 
+!!
+!! \param mptr number (index) of the grid being processed
+!! \param igridflags pointer to memory address storing domain flags (not
+!! AMR flags)
+!! \param ilo global *i* index of left-most cell of this grid
+!! \param ihi global *i* index of right-most cell of this grid 
+!! \param jlo global *j* index of lower-most cell of this grid 
+!! \param jhi global *j* index of upper-most cell of this grid 
+!! \param mbuff width of buffer zone
+!! \param lbase base AMR level for current refinement, which stays
+!!  fixed. Note that **lbase** is always less or equal to **lcheck**
+!! \param lcheck AMR level of grid **mptr**
+!! \param mibuff number of cells (including buffer zone) on grid
+!! **mptr** in *i* direction 
+!! \param mjbuff number of cells (including buffer zone) on grid
+!! **mptr** in *j* direction 
+
 c -----------------------------------------------------------------------------------
 c
       subroutine setdomflags(mptr,igridflags,ilo,ihi,jlo,jhi,
@@ -50,6 +68,9 @@ c        so that dont have entire base grid upscaled
          ihi_coarse = igridend(lbase)
          jlo_coarse = jgridst(lbase)
          jhi_coarse = jgridend(lbase)
+    ! If we project grid mptr to level "lbase" to get a grid on that
+    ! level, ilo_coarse is global index of its left border and similarly
+    ! for other three
 
 c
 c  3.  loop over all intersecting grids at base level staying fixed

@@ -1,3 +1,8 @@
+!> Takes flagged points on all grids on level lcheck
+!! and pack their (i,j) cell centered
+!! indices into the badpts array.
+!! Points in the badpts array are unique and sorted based on 
+!! one dimensional packing of their 2D indices.
 c
 c -----------------------------------------------------------
 c

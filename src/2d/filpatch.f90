@@ -14,7 +14,7 @@
 !
 !  Below are comments for Doxygen
 !> Fill a region (patch) described by:
-!! * global indices of its left lower corner: (**ilo**, **jlo**).
+!! * global indices of its lower left corner: (**ilo**, **jlo**).
 !! * global indices of its upper right corner: (**ihi**, **jhi**). 
 !!
 !! The patch is on grid **msrc** and starts from 

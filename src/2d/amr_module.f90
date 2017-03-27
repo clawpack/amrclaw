@@ -1,3 +1,23 @@
+!> The module contains the definition of a "node descriptor" 
+!! as well as other global variables used during the whole run.
+!! 
+!! The "node descriptor" is a tree data structure we use to keep track of 
+!! all AMR grids.
+!! Each grid in the grid hierarchy corresponds to a node in the tree. 
+!! When a fine grid is nested in a coarse grid, its corresponding node in the tree 
+!! is an offspring of the parent node corresponding to the coarse grid.
+!! ![Tree data structure for grid management](AMR_tree.png "amr_tree")
+!!
+!! Each node has a fixed number of items of information describing the grid,
+!! stored and accessable as **node(property number, node number)** (which returns
+!! a integer type as either data itself or a pointer to a memory location)
+!! and **rnode(property number, node number)** (which returns a real type).
+!! E.g. **node(nestlevel, 5)** stores AMR level of grid 5.
+!! **rnode(cornxlo, 3)** stores x-coordinate of left border of grid 3.
+!!
+!! See explanation to each data members in this module 
+!! for details of all properties of a node.
+!!
 module amr_module
 
     implicit none
@@ -11,31 +31,83 @@ module amr_module
     integer, parameter :: nsize = 19
 
     !  :::::::   integer part of node descriptor
-    integer, parameter :: levelptr  = 1
+    !> node number (index) of next grid on the same level
+    integer, parameter :: levelptr  = 1 
+
+    !> temporary pointer
     integer, parameter :: tempptr   = 2
+
+    ! TODO
     integer, parameter :: errptr    = 3
+
+    !> AMR level of the grid
     integer, parameter :: nestlevel = 4
+
+    ! TODO
     integer, parameter :: cfluxptr  = 5
+
+    !> pointer to the address of memory storing fluxes in a layer around the grid, 
+    !! to be used in conservation fixup near coarse-fine grid intersections.
+    !! The memory allocated is 
+    !! \f$ 2 \times nvar \times lenbc + naux \times lenbc \f$, 
+    !! where \f$lenbc\f$ is 
+    !! the number of its parent grid cells adjacent to (around) their boundary interfaces. 
+    !! The coefficient 2 is for two spaces. 
+    !! One is for plus or minus fluxes, and the other is for the coarse solution for wave fixing.
+    ! TODO
     integer, parameter :: ffluxptr  = 6
+
+    !> pointer to the address of memory storing the first copy of solution data on this grid
+    ! TODO
     integer, parameter :: store1    = 7
+
+    !> pointer to the address of memory storing the second copy of solution data on this grid
     integer, parameter :: store2    = 8
+
+    !> global *i* index of left border of this grid
     integer, parameter :: ndilo     = 9
+
+    !> global *i* index of right border of this grid
     integer, parameter :: ndihi     = 10
+
+    !> global *j* index of lower border of this grid
     integer, parameter :: ndjlo     = 11
+
+    !> global *j* index of upper border of this grid
     integer, parameter :: ndjhi     = 12
+
+    !> pointer to the address of memory storing auxiliary data on this grid
     integer, parameter :: storeaux  = 13
+
+    !> pointer to the address of memory storing flags for refinement on this grid
     integer, parameter :: storeflags  = 14
+
+    !> number of flagged cells on this grid
     integer, parameter :: numflags  = 15
+
+    !> domain flags, indexed within base level (lbase) index space
     integer, parameter :: domflags_base  = 16
+
+    !> domain flags, indexed within level-of-this-grid level index space
     integer, parameter :: domflags2  = 17
+
+    !> pointer (actually it's an index in the bndList array) to the first node 
+    !! of a linked list, which stores all grids (on the same level) that border this grid
     integer, parameter :: bndListSt  = 18
+
+    !> number of grids (on the same level) that border this grid
     integer, parameter :: bndListNum = 19
 
     ! :::::::  real part of node descriptor
+    !> x-coordinate of the left border of this grid
     integer, parameter :: cornxlo  = 1
+    !> y-coordinate of the lower border of this grid
     integer, parameter :: cornylo  = 2
+    !> x-coordinate of the right border of this grid
     integer, parameter :: cornxhi  = 3
+    !> y-coordinate of the upper border of this grid
     integer, parameter :: cornyhi  = 4
+    !> current simulation time on this grid
     integer, parameter :: timemult = 5
 
     ! :::::::   for linking nodes
@@ -46,7 +118,10 @@ module amr_module
     integer, parameter :: gridNbor = 1 !use 1st col, 2nd col is nextfree - the link
 
     ! :::::::  for flagging points   
+    ! TODO: can use one bit for this instead of real?
+    ! needs no refine
     real(kind=8), parameter :: goodpt = 0.0
+    ! needs refine
     real(kind=8), parameter :: badpt  = 2.0
     real(kind=8), parameter :: badpro = 3.0
 

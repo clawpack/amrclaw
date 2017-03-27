@@ -24,7 +24,7 @@
 !! \param ncol size of the patch in *j* direction
 !! \param set output whether the patch is completely set
 !! \param unset_rect the smallest rectangle that contains all unset points. 
-!! The rectangle is described by its left lower corner, (unset_rect(1), unset_rect(3)), 
+!! The rectangle is described by its lower left corner, (unset_rect(1), unset_rect(3)), 
 !! and its upper right corner, (unset_rect(2), unset_rect(4)).
 !!
 !! \callgraph
