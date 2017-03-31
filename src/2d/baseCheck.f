@@ -1,4 +1,19 @@
 c
+!> Check that potential grid mnew is completely contained
+!! in coarser grids at level **lbase** (>1) that will
+!! stay fixed during this regridding step
+!! 
+!! This version tries to do it without using domflags
+!! slower but better if cant afford memory over entire domain
+!!
+!! For a grid mnew, find the smallest rectangle expressed in 
+!! **lbase** index space and compare it to each grid on level **lbase**.
+!! If every region in the rectangle has been overlapped during
+!! the comparison, the grid mnew is properly nested and the function returns
+!! true
+!!
+!!
+c
 c ----------------------------------------------------------------
 c
        logical function baseCheck(mnew,lbase,ilo,ihi,jlo,jhi,

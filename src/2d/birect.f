@@ -1,4 +1,10 @@
 c
+!> Check each grid, starting with **mptr1** (either newstl or lstart)
+!! to see that it has no more than max1d points in either dimensions.
+!! needed so that scratch array space in stepgrid not exceeded.
+!!
+!! Also check for too small grids - but has never happened.
+c
 c --------------------------------------------------
 c
       subroutine birect(mptr1)

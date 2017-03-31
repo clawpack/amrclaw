@@ -1,6 +1,16 @@
 c
 c -----------------------------------------------------------
 c
+!> Synchronize between all grids on level **level** and grids on
+!! level **level**+1.
+!! The synchronization includes averaging down solution and conservation
+!! fix-up near the fine-coarse interface.
+!!
+!! This routine assumes cell centered variables.
+!! \param[in] level the only level to be updated (synchronized on). levels coarser than
+!! this will be at a diffeent time.
+!! \param[in] nvar number of equations for the system
+!! \param[in] naux number of auxiliary variables
       subroutine update (level, nvar, naux)
 c
       use amr_module

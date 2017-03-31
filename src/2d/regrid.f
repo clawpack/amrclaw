@@ -123,6 +123,12 @@ c      set up array of grids instead of recomputing at each step
 c
 c -------------------------------------------------------------------
 c
+!> Sort all grids at level **level**. 
+!! Put the most expensive grid in **lstart(level)** 
+!! Cost is measured by number of cells.
+!! The linked list was also sorted such that the cost of grids
+!! decreases from list head to list tail
+
       subroutine arrangeGrids(level, numg)
 c
       use amr_module
@@ -135,8 +141,8 @@ c
        mptr = lstart(level)
        do i = 1, numg
          listgrids(i) = mptr
-         cost(i) =  (node(ndihi,mptr)-node(ndilo,mptr)+1) *
-     1              (node(ndjhi,mptr)-node(ndjlo,mptr)+1)
+         cost(i) =  (node(ndihi,mptr)-node(ndilo,mptr)+3) *
+     1              (node(ndjhi,mptr)-node(ndjlo,mptr)+2)
          index(i) = i
          mptr = node(levelptr, mptr)
        end do

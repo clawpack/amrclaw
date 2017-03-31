@@ -132,6 +132,8 @@ module amr_module
     integer, parameter :: vertical = 2
     integer, parameter :: maxgr = 15000
     integer, parameter :: maxlv = 10
+
+    !> maximum number of clusters (grids) on each grid level
     integer, parameter :: maxcl = 5000
 
     ! The max1d parameter should be changed if using OpenMP grid based 

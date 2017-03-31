@@ -1,4 +1,37 @@
 c
+!> Check that the potential grid mnew is completely
+!! contained in the (coarser) finest grid which stays
+!! fixed, at level lbase. projec algo. Will guarantee
+!! containment in all finer grids twixt them.
+!!
+!! If grid not contained in some coarse grid, then
+!! bisect in long direction and add the two new grids
+!! to the cluster (grid) list and return false.
+!! EVENTUALLY this has to work, since flagged pts were
+!! checked for proper nesting.
+!!
+!! For grid mnew (on level **lev**), check if it's properly nested in
+!! - fixed base level (**lbase**) grids for current regridding
+!! - level **lev**-2 grids
+!! 
+!! If grid mnew is properly nested, return true.
+!!
+!! Need to check base level grids since they are fixed during 
+!! currign regridding.
+!!
+!! TODO: check these
+!!
+!! Need to check **lev**-2 grids since the **lev**-1 grids to be 
+!! generated at next step is in the range of level **lev**-2 grids.
+!! If level **lev**-2 grids do not properly contain mnew, there is 
+!! no way the **lev**-1 grids to be generated at next step can 
+!! contain grid mnew.
+!! Grid mnew will be projected to level **lev**-2 grids so level 
+!! **lev**-1 grids are guaranteed to contain grid mnew after they
+!! are re-generated.
+!!
+!!
+c
 c ---------------------------------------------------------
 c
       logical function nestck2(mnew,lbase,badpts,npts,numptc,icl,
@@ -13,7 +46,7 @@ c
       integer   numptc(maxcl), zeroBuff
 c
 c ::::::::::::::::::::::: NESTCK :::::::::::::::::::::::::::::::::::
-c
+
 c nestck - check that the potential grid mnew is completely
 c          contained in the (coarser) finest grid which stays
 c          fixed, at level lbase. projec algo. will guarantee
