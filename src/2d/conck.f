@@ -1,6 +1,8 @@
 c
 c -----------------------------------------------------------
 c
+!> Conservation check for specified level.
+!! This is mostly a debugging tool and assumes grids don't overlap
       subroutine conck(level, nvar, naux, time, rest)
 c
       use amr_module
