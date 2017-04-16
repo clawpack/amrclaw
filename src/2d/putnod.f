@@ -1,5 +1,6 @@
 c
 c -------------------------------------------------------------
+!> Return **mptr** node to the linked list kept in node array.
 c
       subroutine putnod (mptr)
 c

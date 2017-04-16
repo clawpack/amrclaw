@@ -19,8 +19,6 @@ c
 
 c
 c ::::::::::::::::::::::::::: QAD ::::::::::::::::::::::::::::::::::
-c  solve RP between ghost cell value on fine grid and coarse grid
-c  value that ghost cell overlaps. The resulting fluctuations
 c  are added in to coarse grid value, as a conservation fixup. 
 c  Done each fine grid time step. If source terms are present, the
 c  coarse grid value is advanced by source terms each fine time step too.

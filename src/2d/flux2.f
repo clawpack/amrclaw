@@ -1,5 +1,26 @@
 c
 c
+!> Solve Riemann problems based on 1D slice of the 2D grid.
+!! Return fluxes contributed by this slice.
+!!
+!! If **ixy** = 1, it's a slice in x. 
+!! If **ixy** = 2, it's a slice in y. 
+!!
+!! Suppose it's a slice in x, the subroutine call normal Riemann 
+!! solver to get fluctuations at edges(i-1/2,j)
+!! and store the fluctuations in flux form: **faddm**, **faddp**.
+!! It also call transverse Riemann soler to get up-goning and down-going
+!! transverse waves and store them in **gaddm** and **gaddp**.
+!!
+!! **gaddm** is value to be added to gm, which is g flux on the lower side
+!! of a cell edge. 
+!! **gaddp** is value to be added to gp, which is g flux on the upper side
+!! of a cell edge. 
+!! Here **gaddm** and **gaddp** have the same value since g flux
+!! on upper side and lower side of a cell edge should be the same (it's not 
+!! like apdq and amdq at the edge).
+!! **gaddm(*,i,.,1)** or **gaddp(*,i,.,1)** modifies G below cell i;
+!! **gaddm(*,i,.,2)** or **gaddp(*,i,.,2)** modifies G above cell i;
 c     =====================================================
       subroutine flux2(ixy,maxm,meqn,maux,mbc,mx,
      &                 q1d,dtdx1d,aux1,aux2,aux3,

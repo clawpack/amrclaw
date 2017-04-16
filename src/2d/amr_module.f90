@@ -43,7 +43,40 @@ module amr_module
     !> AMR level of the grid
     integer, parameter :: nestlevel = 4
 
-    ! TODO
+    !> Pointer to an 5 by **maxsp** array, which has boundary information 
+    !! for this grid.
+    !!
+    !! ### About the Array
+    !! The array is generally referred to as **listbc**. It stores information 
+    !! about interface between grid **mptr** and all grids one
+    !! level finer if they intersect. 
+    !! These interfaces consist of multiple cell edges (or segments,
+    !! whose length = cell size on grid **mptr**).
+    !! Each column in **listbc** has five entries and stores information 
+    !! associated with one segment. 
+    !! If a global index for all these segments is denoted by **ispot**,
+    !! the five entries for the \f$ ispot^{th}\f$ segment can be explained as below: 
+    !! 
+    !! - listbc(1,ispot) stores LOCAL (RALATIVE to left boundary of grid
+    !! **mptr**) *i* index of the cell on grid **mptr** that border this 
+    !! segment. 
+    !! - listbc(2,ispot) stores LOCAL (RALATIVE to left boundary of grid
+    !! **mptr**) *j* index of the cell on grid **mptr** that border this 
+    !! segment. 
+    !! - listbc(3,ispot) stores side number, which indicates which side 
+    !! of this segment is a cell of grid **mptr** (coarse cell).
+    !! If this segment is the left edge of a cell on grid **mptr**, this 
+    !! number is 1. The number increases (2, 3, 4) as it goes around a coarse cell
+    !! clockwise (top edge, right edge, bottom edge).
+    !! - listbc(4,ispot) stores grid number of the finer grid that borders
+    !! this segment
+    !! - listbc(5,ispot) stores the position of this segment with respect to 
+    !! the perimeter of this finer grid (grid listbc(4,ispot)). 
+    !! The fine grid will save all its fluxes all around its
+    !! perimeter. This entry tells where the coarse grid should
+    !! take them from. Note that number of fluxes saved here is equal 
+    !! to number of such segments (length = coarse cell size) needed to make
+    !! up the perimeter.
     integer, parameter :: cfluxptr  = 5
 
     !> pointer to the address of memory storing fluxes in a layer around the grid, 
@@ -54,14 +87,21 @@ module amr_module
     !! the number of its parent grid cells adjacent to (around) their boundary interfaces. 
     !! The coefficient 2 is for two spaces. 
     !! One is for plus or minus fluxes, and the other is for the coarse solution for wave fixing.
-    ! TODO
+    !!
+    !! From node(ffluxptr,mptr) to node(ffluxptr,mptr)+lenbc-1, 
+    !! it stores value that should be added to the adjacent coarse cell
+    !! during the synchronization for conservation fixup
+    !!
+    !! From node(ffluxptr,mptr)+lenbc to node(ffluxptr,mptr)+2*lenbc-1,
+    !! it stores solution q on the adjacent coarse cell
     integer, parameter :: ffluxptr  = 6
 
-    !> pointer to the address of memory storing the first copy of solution data on this grid
-    ! TODO
+    !> pointer to the address of memory storing the first copy of solution data on this grid,
+    !! usually for storing new solution
     integer, parameter :: store1    = 7
 
-    !> pointer to the address of memory storing the second copy of solution data on this grid
+    !> pointer to the address of memory storing the second copy of solution data on this grid, 
+    !! usually for storing old solution
     integer, parameter :: store2    = 8
 
     !> global *i* index of left border of this grid

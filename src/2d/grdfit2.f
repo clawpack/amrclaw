@@ -6,7 +6,8 @@ c
 !! It generates all grids on level **lcheck**+1 and ensure proper
 !! nesting.
 !!
-!! \param lbase base level for current refinement
+!! \param lbase base AMR level for current refinement, which stays
+!!  fixed. Note that **lbase** is always less or equal to **lcheck**
 !! \param lcheck the level being error estimated so that lcheck+1 will be the level of the new grids.
 !! \param nvar number of equations for the system
 !! \param naux  number of auxiliary variables

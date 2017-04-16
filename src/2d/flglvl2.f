@@ -11,10 +11,11 @@ c
 !! \param lcheck level to be flagged
 !! \param nxypts number of flagged points in total
 !! \param index starting index (memory address) in alloc of the flagged points (which occupy 2*nxypts locations)
-!! \param lbase
-!! \param npts
-!! \param start_time
-!  TODO: what's this start_time above
+!! \param lbase  base AMR level for current refinement, which stays
+!! fixed. Note that **lbase** is always less or equal to **lcheck**
+!! \param npts Number of unique flagged cells (after removing
+!! duplicates)
+!! \param[in] start_time start time of current simulation
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c

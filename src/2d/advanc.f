@@ -160,6 +160,7 @@ c
 c
 c --------------------------------------------------------------
 c
+!> Integrate grid **mptr**. grids are done in parallel.
       subroutine par_advanc (mptr,mitot,mjtot,nvar,naux,dtnew)
 c
       use amr_module

@@ -24,8 +24,7 @@ c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 !! \param nvar number of equations for the system
 !! \param naux number of auxiliary variables
 !! \param lcheck flag all level **lcheck** grids
-!! \param start_time 
-!  TODO: what's this start_time above
+!! \param[in] start_time start time of current simulation
 c
 c -----------------------------------------------------------
 c

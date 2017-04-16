@@ -1,6 +1,13 @@
 c :::::::::::::::::::::::::: BUFNST :::::::::::::::::::::::::::::::::::
 !> After error estimation, need to tag the cell for refinement,
 !! buffer the tags, take care of level nesting, etc.
+!!
+!! \param nvar[in] number of equations for the system
+!! \param naux[in] number of auxiliary variables
+!! \param numbad[out] number of flagged cells on level **lcheck**
+!! \param lbase[in] base AMR level for current refinement, which stays
+!!  fixed. Note that **lbase** is always less or equal to **lcheck**
+!! \param lcheck[in] AMR level of grid **mptr**
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 c -------------------------------------------------------------

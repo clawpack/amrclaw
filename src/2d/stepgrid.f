@@ -1,6 +1,26 @@
 c
 c -------------------------------------------------------------
 c
+!> Take a time step on a single grid **mptr** and overwrite solution array **q**. 
+!! A modified version of the clawpack routine step2 is used.
+!! 
+!! Return new solution **q** as well as fluxes in fm,fp and gm,gp.
+!! Patch has room for ghost cells (mbc of them) around the grid.
+!! Everything is the enlarged size (**mitot** by **mjtot**).
+!! 
+!! \param mbc[in] number of ghost cells  (= lwidth)
+!! \param mptr[in] grid number (for debugging)
+!! \param xlow[in] left edge of enlarged grid (including ghost cells).
+!! \param ylow[in] lower edge of enlarged grid (including ghost cells).
+!! \param t[in] incoming time step
+!! \param dx[in] mesh size in x direction for this grid
+!! \param dx[in] mesh size in y direction for this grid
+!! \param q[in,out] solution array
+!! \param dtnew[out]  return suggested new time step for this grid's soln.
+!! \param fm[out] fluxes on the left side of each vertical edge
+!! \param fp[out] fluxes on the right side of each vertical edge
+!! \param gm[out] fluxes on the lower side of each horizontal edge
+!! \param gp[out] fluxes on the upper side of each horizontal edge
       subroutine stepgrid(q,fm,fp,gm,gp,mitot,mjtot,mbc,dt,dtnew,dx,dy,
      &                  nvar,xlow,ylow,time,mptr,maux,aux)
 c

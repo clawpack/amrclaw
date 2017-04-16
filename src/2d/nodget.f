@@ -240,6 +240,9 @@ c     traverse linked list into array. list already sorted by arrangegrids
 c
 c -----------------------------------------------------------------
 c
+!> Free the linked list of intersecting "boundary" grids for grid 'mold'
+!! that is no longer active.
+!! The linked list starts at node(bndListSt, mold).
       subroutine freeBndryList(mold)
 c
       use amr_module
