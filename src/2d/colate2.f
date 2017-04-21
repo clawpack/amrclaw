@@ -173,7 +173,7 @@ c     the variable largestIntEquiv already declared integer*8 above.
       largestIntEquiv =  iregsz(lcheck)+mbuff + 
      .             (iregsz(lcheck)+2*mbuff)*(jregsz(lcheck)+mbuff)
       largestSingle = 2**30
-      if (largestSingle .le. largestIntEquiv) then  
+      if (largestSingle .gt. largestIntEquiv) then  
           nUniquePts =  npts  ! bad name - they are not unique
       else
           call drivesort(npts,badpts,lcheck,nUniquePts,mbuff)

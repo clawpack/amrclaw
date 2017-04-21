@@ -18,7 +18,7 @@ c
 100       format(' out of nodal space - allowed ',i8,' grids')
           do level = 1, lfine
              write(*,101) level,numgrids(level)
- 101         format("    level ",i4," has ",i6,'grids')
+ 101         format("    level ",i4," has ",i7,' grids')
           end do
           write(*,*)" Could need twice as many grids as on any given"
           write(*,*)" level if regridding/birecting"
