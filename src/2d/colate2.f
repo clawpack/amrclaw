@@ -173,7 +173,11 @@ c     the variable largestIntEquiv already declared integer*8 above.
       largestIntEquiv =  iregsz(lcheck)+mbuff + 
      .             (iregsz(lcheck)+2*mbuff)*(jregsz(lcheck)+mbuff)
       largestSingle = 2**30
-      if (largestSingle .gt. largestIntEquiv) then  
+      if (largestIntEquiv .le. 0) then
+c       ## sorting alg will have integer overflow
+c       ## just use all flagged points in making grids
+c       ## this means "efficiency" count will be incorrect for 
+c       ## this and higher levels
           nUniquePts =  npts  ! bad name - they are not unique
       else
           call drivesort(npts,badpts,lcheck,nUniquePts,mbuff)
