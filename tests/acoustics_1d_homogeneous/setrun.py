@@ -217,7 +217,7 @@ def setrun(claw_pkg='amrclaw'):
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, t1, t2]
     rundata.gaugedata.gauges.append([0, 0.0, 0., 0.8])
-    rundata.gaugedata.gauges.append([1, -0.7, 0., 0.8])
+    rundata.gaugedata.gauges.append([1, 0.6, 0., 0.8])
     
     # --------------
     # Checkpointing:
