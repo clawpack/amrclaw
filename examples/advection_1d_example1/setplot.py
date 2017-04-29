@@ -41,12 +41,12 @@ def setplot(plotdata):
     plotdata.clearfigures()  # clear any old figures,axes,items data
 
     # Figure for q[0]
-    plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+    plotfigure = plotdata.new_plotfigure(name='Solution', figno=1)
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = [0,1]
-    plotaxes.ylimits = [-.5,1.3]
+    plotaxes.ylimits = [-.6,1.2]
     plotaxes.title = 'q'
 
     # Set up for item on these axes:
@@ -71,14 +71,21 @@ def setplot(plotdata):
         t = current_data.t
         q = qtrue(x,t)
         plot(x,q,'k',label='true solution')
-        legend(loc='lower right')
+        try:
+            from clawpack.visclaw import legend_tools
+            labels = ['Level 1','Level 2', 'Level 3','True solution']
+            legend_tools.add_legend(labels, colors=['g','b','r','k'],
+                        markers=['^','s','o',''], linestyles=['','','','-'],
+                        loc='lower right')
+        except:
+            legend(loc='lower right')
 
     plotaxes.afteraxes = plot_qtrue_with_legend
 
     # ------------------------------------------
     # Figure with each level plotted separately:
 
-    plotfigure = plotdata.new_plotfigure(name='AMR Levels', figno=2)
+    plotfigure = plotdata.new_plotfigure(name='By AMR Level', figno=2)
     plotfigure.kwargs = {'figsize':(8,10)}
 
 
@@ -110,7 +117,7 @@ def setplot(plotdata):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = 'auto'
-    plotaxes.title = 'Pressure'
+    plotaxes.title = 'Solution'
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
     plotitem.plotstyle = 'b-'

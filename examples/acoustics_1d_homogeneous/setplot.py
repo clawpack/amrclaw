@@ -21,6 +21,17 @@ def setplot(plotdata):
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
 
+    def add_legend(current_data):
+        try:
+            from clawpack.visclaw import legend_tools
+            labels = ['Level 1','Level 2', 'Level 3']
+            legend_tools.add_legend(labels, colors=['g','b','r'],
+                        markers=['^','s','o'], linestyles=['','',''],
+                        loc='upper left')
+        except:
+            pass
+
+
     # Figure for q[0]
     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
     plotfigure.kwargs = {'figsize': (8,8)}
@@ -30,6 +41,7 @@ def setplot(plotdata):
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = [-.5,1.1]
     plotaxes.title = 'Pressure'
+    plotaxes.afteraxes = add_legend
 
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
@@ -37,9 +49,7 @@ def setplot(plotdata):
     plotitem.amr_color = ['g','b','r']
     plotitem.amr_plotstyle = ['^-','s-','o-']
     plotitem.amr_data_show = [1,1,1]
-    plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
-
-
+    plotitem.amr_kwargs = [{'markersize':5},{'markersize':4},{'markersize':3}]
 
     # Figure for q[1]
 
@@ -49,6 +59,7 @@ def setplot(plotdata):
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = [-.5,1.1]
     plotaxes.title = 'Velocity'
+    plotaxes.afteraxes = add_legend
 
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
@@ -56,7 +67,7 @@ def setplot(plotdata):
     plotitem.amr_color = ['g','b','r']
     plotitem.amr_plotstyle = ['^-','s-','o-']
     plotitem.amr_data_show = [1,1,1]
-    plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
+    plotitem.amr_kwargs = [{'markersize':5},{'markersize':4},{'markersize':3}]
 
     
     #-----------------------------------------
@@ -65,13 +76,23 @@ def setplot(plotdata):
     plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
                                          type='each_gauge')
     plotfigure.clf_each_gauge = True
-                                         
+
     plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(211)'
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = 'auto'
     plotaxes.title = 'Pressure'
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
+    plotitem.plotstyle = 'b-'
+
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(212)'
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'Velocity'
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 1
     plotitem.plotstyle = 'b-'
 
     # Parameters used only when creating html and/or latex hardcopy

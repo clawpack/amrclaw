@@ -1,7 +1,17 @@
+
+""" 
+Set up the plot figures, axes, and items to be done for each frame.
+
+This module is imported by the plotting routines and then the
+function setplot is called to set the plot parameters.
+    
+""" 
+
 from __future__ import absolute_import
+from __future__ import print_function
 
 #--------------------------
-def setplot(plotdata=None):
+def setplot(plotdata):
 #--------------------------
     
     """ 
@@ -11,48 +21,100 @@ def setplot(plotdata=None):
     
     """ 
 
-    if plotdata is None:
-        from clawpack.visclaw.data import ClawPlotData
-        plotdata = ClawPlotData()
 
-    plotdata.clearfigures()
+    plotdata.clearfigures()  # clear any old figures,axes,items data
 
-    # Figures corresponding to Figure 9.5 of LeVeque, "Finite Volume
-    # Methods for Hyperbolic Problems," 2002 (though more of them)
+    def draw_interface_add_legend(current_data):
+        from pylab import plot
+        plot([0., 0.], [-1000., 1000.], 'k--')
+        try:
+            from clawpack.visclaw import legend_tools
+            labels = ['Level 1','Level 2', 'Level 3']
+            legend_tools.add_legend(labels, colors=['g','b','r'],
+                        markers=['^','s','o'], linestyles=['','',''],
+                        loc='upper left')
+        except:
+            pass
 
-    # Tuples of (variable name, variable number)
-    figdata = [('Pressure', 0),
-               ('Velocity', 1)]
 
-    # Afteraxes function: draw a vertical dashed line at the interface
-    # between different media
-    def draw_interface(current_data):
-        import pylab
-        pylab.plot([0., 0.], [-1000., 1000.], 'k--')
+    # Figure for q[0]
+    plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+    plotfigure.kwargs = {'figsize': (8,8)}
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,1,1)'   # top figure
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = [-.5,1.1]
+    plotaxes.title = 'Pressure'
+    plotaxes.afteraxes = draw_interface_add_legend
 
-    for varname, varid in figdata:
-        plotfigure = plotdata.new_plotfigure(name=varname, figno=varid)
-        plotfigure.kwargs = {'figsize':(12,6)}
-        
-        plotaxes = plotfigure.new_plotaxes()
-        plotaxes.xlimits = [-5., 5.]
-        plotaxes.ylimits = [-0.5, 1.5]    # Good for both vars because of near-unit impedance
-        plotaxes.title = varname
-        plotaxes.afteraxes = draw_interface
+    # Set up for item on these axes:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 0
+    plotitem.amr_color = ['g','b','r']
+    plotitem.amr_plotstyle = ['^-','s-','o-']
+    plotitem.amr_data_show = [1,1,1]
+    plotitem.amr_kwargs = [{'markersize':5},{'markersize':4},{'markersize':3}]
 
-        plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-        plotitem.plot_var = varid
-        plotitem.amr_color = ['g','b','r']
-        plotitem.amr_plotstyle = ['^-','s-','o-']
-        plotitem.amr_data_show = [1,1,1]
-        plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
+    # Figure for q[1]
 
-    plotdata.printfigs = True          # Whether to output figures
-    plotdata.print_format = 'png'      # What type of output format
-    plotdata.print_framenos = 'all'    # Which frames to output
-    plotdata.print_fignos = 'all'      # Which figures to print
-    plotdata.html = True               # Whether to create HTML files
-    plotdata.latex = False             # Whether to make LaTeX output
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,1,2)'   # bottom figure
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = [-.5,1.1]
+    plotaxes.title = 'Velocity'
+    plotaxes.afteraxes = draw_interface_add_legend
+
+    # Set up for item on these axes:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 1
+    plotitem.amr_color = ['g','b','r']
+    plotitem.amr_plotstyle = ['^-','s-','o-']
+    plotitem.amr_data_show = [1,1,1]
+    plotitem.amr_kwargs = [{'markersize':5},{'markersize':4},{'markersize':3}]
+
+    
+    #-----------------------------------------
+    # Figures for gauges
+    #-----------------------------------------
+    plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
+                                         type='each_gauge')
+    plotfigure.clf_each_gauge = True
+
+                                         
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(211)'
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'Pressure'
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 0
+    plotitem.plotstyle = 'b-'
+
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(212)'
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'Velocity'
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 1
+    plotitem.plotstyle = 'b-'
+
+    # Parameters used only when creating html and/or latex hardcopy
+    # e.g., via clawpack.visclaw.frametools.printframes:
+
+    plotdata.printfigs = True                # print figures
+    plotdata.print_format = 'png'            # file format
+    plotdata.print_framenos = 'all'          # list of frames to print
+    plotdata.print_fignos = 'all'            # list of figures to print
+    plotdata.html = True                     # create html files of plots?
+    plotdata.html_homelink = '../README.html'
+    plotdata.latex = True                    # create latex file of plots?
+    plotdata.latex_figsperline = 2           # layout of plots
+    plotdata.latex_framesperline = 1         # layout of plots
+    plotdata.latex_makepdf = False           # also run pdflatex?
 
     return plotdata
 
+    
