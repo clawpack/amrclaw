@@ -8,7 +8,6 @@ that will be read in by the Fortran code.
 
 import os
 import numpy as np
-from clawpack.pyclaw import io
 
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
