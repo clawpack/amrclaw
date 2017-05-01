@@ -7,7 +7,7 @@ c
        use amr_module
        implicit double precision (a-h, o-z)
 
-       logical debug/.true./
+       logical debug/.false./
        integer ist(3),iend(3),jst(3),jend(3),ishift(3),jshift(3)
        logical borderx, bordery
        integer thisBuff
