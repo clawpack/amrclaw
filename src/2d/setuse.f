@@ -14,10 +14,10 @@ c
 !! A global index for all these segments is represented by **ispot**.
 !! The five entries for the \f$ ispot^{th}\f$ segment are explained as below: 
 !! 
-!! - listbc(1,ispot) stores LOCAL (RALATIVE to left boundary of grid
+!! - listbc(1,ispot) stores LOCAL (RELATIVE to left boundary of grid
 !! **mptr**) *i* index of the cell on grid **mptr** that border this 
 !! segment. 
-!! - listbc(2,ispot) stores LOCAL (RALATIVE to left boundary of grid
+!! - listbc(2,ispot) stores LOCAL (RELATIVE to left boundary of grid
 !! **mptr**) *j* index of the cell on grid **mptr** that border this 
 !! segment. 
 !! - listbc(3,ispot) stores side number, which indicates which side 
