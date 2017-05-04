@@ -138,9 +138,9 @@ c
      &              fm,fp,gm,gp,rpn2,rpt2)
 c
 c
-        write(outunit,1001) mptr, node(nestlevel,mptr),cflgrid
- 1001   format(' Courant # of grid', i4,
-     &        ' on level', i3, ' is  ', e10.3)
+c       write(outunit,1001) mptr, node(nestlevel,mptr),cflgrid
+c1001   format(' Courant # of grid', i4,
+c    &        ' on level', i3, ' is  ', e10.3)
 c
 
 !$OMP  CRITICAL (cflm)
