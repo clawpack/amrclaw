@@ -1,3 +1,9 @@
+!> Compute all fluxes at cell edges 
+!! \param qold[in] solution array for computing fluxes. It is not changed in this subroutine
+!! \param fm[out] fluxes on the left side of each vertical edge
+!! \param fp[out] fluxes on the right side of each vertical edge
+!! \param gm[out] fluxes on the lower side of each horizontal edge
+!! \param gp[out] fluxes on the upper side of each horizontal edge
 subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,rpn2,rpt2)
 !
 !     clawpack routine ...  modified for AMRCLAW
@@ -106,6 +112,8 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
         cflgrid = max(cflgrid,cfl1d)
 
         ! Update fluxes
+        ! here gm(:,i,j) and gp(:,i,j) are the same since
+        ! they are both \tilde{G}_{i-1/2,j} in the textbook
         fm(:,1:mx+1,j) = fm(:,1:mx+1,j) + faddm(:,1:mx+1)
         fp(:,1:mx+1,j) = fp(:,1:mx+1,j) + faddp(:,1:mx+1)
         gm(:,1:mx+1,j) = gm(:,1:mx+1,j) + gaddm(:,1:mx+1,1)

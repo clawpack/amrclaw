@@ -1,38 +1,53 @@
 ! ::::::::::::::::::::: flag2refine ::::::::::::::::::::::::::::::::::
 !
-! User routine to control flagging of points for refinement.
-!
-! Default version computes spatial difference dq in each direction and
-! for each component of q and flags any point where this is greater than
-! the tolerance tolsp.  This is consistent with what the routine errsp did in
-! earlier versions of amrclaw (4.2 and before).
-!
-! This routine can be copied to an application directory and modified to
-! implement some other desired refinement criterion.
-!
-! Points may also be flagged for refining based on a Richardson estimate
-! of the error, obtained by comparing solutions on the current grid and a
-! coarsened grid.  Points are flagged if the estimated error is larger than
-! the parameter tol in amr2ez.data, provided flag_richardson is .true.,
-! otherwise the coarsening and Richardson estimation is not performed!  
-! Points are flagged via Richardson in a separate routine.
-!
-! Once points are flagged via this routine and/or Richardson, the subroutine
-! flagregions is applied to check each point against the min_level and
-! max_level of refinement specified in any "region" set by the user.
-! So flags set here might be over-ruled by region constraints.
-!
-!    q   = grid values including ghost cells (bndry vals at specified
-!          time have already been set, so can use ghost cell values too)
-!
-!  aux   = aux array on this grid patch
-!
-! amrflags  = array to be flagged with either the value
-!             DONTFLAG (no refinement needed)  or
-!             DOFLAG   (refinement desired)    
-!
-! tolsp = tolerance specified by user in input file amr2ez.data, used in default
-!         version of this routine as a tolerance for spatial differences.
+!> \callgraph
+!! \callergraph
+!! User routine to control flagging of points for refinement.
+!!
+!! Default version computes spatial difference dq in each direction and
+!! for each component of q and flags any point where this is greater than
+!! the tolerance tolsp.  
+!! This is consistent with what the routine errsp did in
+!!  earlier versions of amrclaw (4.2 and before).
+!!
+!! This routine can be copied to an application directory and modified to
+!! implement some other desired refinement criterion.
+!!
+!! Points may also be flagged for refining based on a Richardson estimate
+!! of the error, obtained by comparing solutions on the current grid and a
+!! coarsened grid.  Points are flagged if the estimated error is larger than
+!! the parameter tol in amr2ez.data, provided flag_richardson is .true.,
+!! otherwise the coarsening and Richardson estimation is not performed!  
+!! Points are flagged via Richardson in a separate routine.
+!!
+!! Once points are flagged via this routine and/or Richardson, the subroutine
+!! flagregions is applied to check each point against the min_level and
+!! max_level of refinement specified in any "region" set by the user.
+!! So flags set here might be over-ruled by region constraints.
+!!
+!! **output**: amrflags
+!!
+!! \param mx number of cells in *i* direction
+!! \param my number of cells in *j* direction
+!! \param mbc width of ghost cell region
+!! \param mbuff width of buffer region
+!! \param meqn number of equations for the system
+!! \param maux number of auxiliary variables
+!! \param xlower x-coordinate of left physical boundary
+!! \param ylower y-coordinate of lower physical boundary
+!! \param dx spacing in *i* direction
+!! \param dy spacing in *j* direction
+!! \param t simulation time on this grid
+!! \param level AMR level of this grid
+!! \param tolsp tolerance specified by user in input file amr.data, used in default
+!!         version of this routine as a tolerance for spatial differences
+!! \param q grid values including ghost cells (bndry vals at specified
+!!          time have already been set, so can use ghost cell values too)
+!! \param aux auxiliary array on this grid patch
+!! \param amrflags array to be flagged with either the value **DONTFLAG** or **DOFLAG** for each cell. 
+!!        It is enlarged from grid size to include buffer regions around the grid. 
+!! \param DONTFLAG value to be assigned to amrflags for cells that need no refinement
+!! \param DOFLAG value to be assigned to amrflags for cells that do need refinement
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &

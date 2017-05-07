@@ -1,25 +1,40 @@
 ! ::::::::::::::::::::: flagregions ::::::::::::::::::::::::::::::::::
 !
-! Modify array of flagged points to respect minlevels and maxlevels
-! specified by regions.
-!
-! Second version with outer loop on regions, should be faster.
-!
-! amrflags  = array to be flagged with either the value
-!             DONTFLAG (no refinement needed)  or
-!             DOFLAG   (refinement desired)    
-!
-! On input, amrflags is already set by flagger routine using 
-! Richardson extrapolation and/or flag2refine routine, as requested.
-! This routine may change flags only in cells that are (partially)
-! covered by one or more regions.
-!
-! If any part of a grid cell is covered by one or more regions, then
-! refinement is *required* to at least the max of all region min_levels
-! and is *allowed* to at most to the max of all region max_levels.
-!
-! Note that buffering is done *after* this, so additional cells may
-! be refined in areas covered by regions that do not allow it!
+!> Modify array of flagged points to respect minlevels and maxlevels
+!! specified by regions. This subroutine processes ONE grid associated with this amrflags
+!!
+!! Second version with outer loop on regions, should be faster.
+!!
+!! On input, amrflags is already set by flagger routine using 
+!! Richardson extrapolation and/or flag2refine routine, as requested.
+!! This routine may change flags only in cells that are (partially)
+!! covered by one or more regions.
+!!
+!! If any part of a grid cell is covered by one or more regions, then
+!! refinement is *required* to at least the max of all region min_levels
+!! and is *allowed* to at most to the max of all region max_levels.
+!!
+!! Note that buffering is done *after* this, so additional cells may
+!! be refined in areas covered by regions that do not allow it!
+
+!! amrflags  = array to be flagged with either the value
+!!             DONTFLAG (no refinement needed)  or
+!!             DOFLAG   (refinement desired)    
+!!
+!! \param mx number of cells in *i* direction
+!! \param my number of cells in *j* direction
+!! \param mbuff width of buffer region
+!! \param maux number of auxiliary variables
+!! \param xlower x-coordinate of left physical boundary
+!! \param ylower y-coordinate of lower physical boundary
+!! \param dx spacing in *i* direction
+!! \param dy spacing in *j* direction
+!! \param level AMR level of this grid
+!! \param t simulation time on this grid
+!! \param amrflags array to be flagged with either the value **DONTFLAG** or **DOFLAG** for each cell. 
+!!        It is enlarged from grid size to include buffer regions around the grid. 
+!! \param DONTFLAG value to be assigned to amrflags for cells that need no refinement
+!! \param DOFLAG value to be assigned to amrflags for cells that do need refinement
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &

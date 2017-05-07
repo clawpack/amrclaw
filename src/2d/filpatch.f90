@@ -12,6 +12,62 @@
 !
 ! :::::::::::::::::::::::::::::::::::::::;:::::::::::::::::::::::;
 !
+!  Below are comments for Doxygen
+!> Fill a region (patch) described by:
+!! * global indices of its lower left corner: (**ilo**, **jlo**).
+!! * global indices of its upper right corner: (**ihi**, **jhi**). 
+!!
+!! The patch is on grid **msrc** and starts from 
+!! row **nrowst** and column **ncolst** of the grid.
+!!
+!! It first fills the patch with values obtainable from level **level**
+!! grids. if any left unfilled, then enlarge remaining rectangle of
+!! unfilled values by 1 (for later linear interp), and recusively
+!! obtain the remaining values from  coarser levels.
+!!
+!! ## Algorithm
+!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!  procedure filrecur(level, patch_fine, val_fine, firstCall)
+!!      fill patch_fine as much as possible by copy values from other level "level" grids     
+!!      values on patch_fine is stored in array val_fine after the filling
+!!      if this is first call to filrecur() (firstCall == true)
+!!          don't fill cells outside the computational domain (it will be handled elsewhere)
+!!      else
+!!          this is a sencond or higher-level (recursive) call to filrecur()
+!!          fill cells outside the computational domain by calling bc2amr since they are used for interpolation for finer cells above them
+!!      end if
+!!      if not all cells in patch_fine is filled (set)
+!!          find the smallest rectangular patch on level "level-1", patch_coarse, that contains all unset fine cells in patch_fine
+!!          filrecur(level-1, patch_coarse, val_coarse, firstCall=false)
+!!          for each unset fine cells in patch_fine
+!!              interpolate from val_coarse to fill all unset cells on patch_fine 
+!!          end for
+!!      end if
+!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!
+!! \param level AMR level the patch is on
+!! \param nvar number of equations for the system
+!! \param valbig data array for solution \f$q \f$ (cover the whole grid **msrc**)
+!! \param aux data array for auxiliary variables 
+!! \param naux number of auxiliary variables
+!! \param t fill the patch with value at time **t**
+!! \param mitot number of cells in *i* direction on grid **msrc** 
+!! \param mjtot number of cells in *j* direction on grid **msrc**
+!! \param nrowst local *i* index (relative to lower-left corner of grid **msrc**) of the left-most cell of the patch to be filled
+!! \param ncolst local *j* index (relative to lower-left corner of grid **msrc**) of the lower-most cell of the patch to be filled
+!! \param ilo global *i* index of left-most cell of this patch
+!! \param ihi global *i* index of right-most cell of this patch 
+!! \param jlo global *j* index of lower-most cell of this patch 
+!! \param jhi global *j* index of upper-most cell of this patch 
+!! \param patchOnly This is 1) false if this is a first level call to filrecur() and won't set bounday cells outside domain; 2) true
+!!if this is a second or higher level (recursive) call to filrecur() and will call bc2amr() to get values for cells outside domain
+!!(these cells are only for interpolation to fill cells in first level call to filrecur()
+!! \param msrc index of the grid 
+!!
+!! \callgraph
+!! \callergraph
+
+
 recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
      nrowst,ncolst,ilo,ihi,jlo,jhi,patchOnly,msrc)
 
@@ -138,6 +194,14 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
      ! New patch rectangle (after we have partially filled it in) but in the
      ! coarse patches [iplo,iphi,jplo,jphi]
 
+     ! islo = unset_indices(1)
+     ! ishi = unset_indices(2)
+     !                                islo                     ishi 
+     !                     |----|----|----|----|----|----|----|----|
+     ! If following operation is conducted, it will lead to: 
+     !
+     !         iplo                                                        iphi
+     ! |-------------------|-------------------|-------------------|-------------------|
      iplo = (unset_indices(1) - refinement_ratio_x + nghost * refinement_ratio_x) &
           / refinement_ratio_x - nghost
      iphi = (unset_indices(2) + refinement_ratio_x) / refinement_ratio_x
@@ -191,11 +255,16 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
      ratiox = real(refinement_ratio_x,kind=8)
      ratioy = real(refinement_ratio_y,kind=8)
 
+     ! fine below refers to level "level"
+     ! coarse below refers to level "level-1"
      do j_fine  = 1,mjtot_patch
         !j_coarse = 2 + (j_fine - (unset_indices(3) - jlo) - 1) / refinement_ratio_y
         !eta2 = (-0.5d0 + real(mod(j_fine - 1, refinement_ratio_y),kind=8)) &
         !                    / real(refinement_ratio_y,kind=8)
 
+        ! we are now processing the j_fine^{th} column of the fine patch
+        ! this is contained in the j_coarse^{th} column of the coarse patch below it  
+        ! note that these two are not global indices but local indices
         j_coarse =floor((j_fine+jlo-1)/ratioy) - jplo + 1
         ycent_coarse = ylow_coarse + (j_coarse-.5d0)*dy_coarse
         ycent_fine =  ylower + (j_fine-1+jlo + .5d0)*dy_fine
@@ -224,6 +293,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
 
               do n=1,nvar
                  ! write(*,*)n,i_coarse+1,j_coarse,coarse_index(n,i_coarse + 1,j_coarse)
+                 ! QUESTION: why do we interpolate in this way?
                  valp10 = valcrse(coarse_index(n,i_coarse + 1,j_coarse))
                  valm10 = valcrse(coarse_index(n,i_coarse - 1,j_coarse))
                  valc   = valcrse(coarse_index(n,i_coarse    ,j_coarse))

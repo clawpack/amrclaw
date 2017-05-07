@@ -20,11 +20,11 @@ c     include  "call.i"
 
 c
 c :::::::::::::::::::::::::::: TICK :::::::::::::::::::::::::::::
-c  main driver routine.  controls:
-c        integration  of all grids.
-c        error estimation / regridding
-c        output counting
-c        updating of fine to coarse grids
+!> main driver routine.  controls:
+!!       integration  of all grids.
+!!       error estimation / regridding
+!!       output counting
+!!       updating of fine to coarse grids
 
 c  parameters:
 c     nstop   = # of coarse grid time steps to be taken
@@ -124,12 +124,12 @@ c        write(*,*)" old possk is ", possk(1)
          if (.false.) then  
             write(*,122) diffdt,outtime  ! notify of change
  122        format(" Adjusting timestep by ",e10.3,
-     .             " to hit output time of ",e12.6)
+     .             " to hit output time of ",e13.6)
 c           write(*,*)" new possk is ", possk(1)
             if (diffdt .lt. 0.) then ! new step is slightly larger
               pctIncrease = -100.*diffdt/oldposs   ! minus sign to make whole expr. positive
               write(*,123) pctIncrease
- 123          format(" New step is ",e8.2," % larger.",
+ 123          format(" New step is ",f8.2," % larger.",
      .               "  Should still be stable")
               endif
             endif
@@ -249,8 +249,8 @@ c         # rjl & mjb changed to cfl_level, 3/17/10
           if (method(4).ge.level) then
               write(6,100)level,cfl_level,possk(level),timenew
               endif
-100       format(' AMRCLAW: level ',i2,'  CFL = ',e8.3,
-     &           '  dt = ',e10.4,  '  final t = ',e12.6)
+100       format(' AMRCLAW: level ',i2,'  CFL = ',e10.3,
+     &           '  dt = ',e11.4,  '  final t = ',e13.6)
 
 
 c        # to debug individual grid updates...

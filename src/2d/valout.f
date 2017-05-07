@@ -7,13 +7,13 @@ c
       implicit double precision (a-h,o-z)
       character*10  fname1, fname2, fname3, fname4, fname5
 
-c     # Output the results for a general system of conservation laws
-c     # in 2 dimensions
-c
-c     # Write the results to the file fort.q<iframe>
-c     # Use format required by matlab script  plotclaw2.m or Python tools
-c
-c     # set outaux = .true. to also output the aux arrays to fort.a<iframe>
+!> Output the results for a general system of conservation laws
+!! in 2 dimensions
+!!
+!! Write the results to the file fort.q<iframe>
+!! Use format required by matlab script  plotclaw2.m or Python tools
+!!
+!! set outaux = .true. to also output the aux arrays to fort.a<iframe>
 
       logical outaux
       integer output_aux_num 
@@ -248,7 +248,7 @@ c
 
       write(6,601) matlabu,time
   601 format('AMRCLAW: Frame ',i4,
-     &       ' output files done at time t = ', d12.6,/)
+     &       ' output files done at time t = ', d13.6,/)
 
       matlabu = matlabu + 1
 

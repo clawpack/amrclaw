@@ -12,10 +12,10 @@ c
 c
 c :::::::::: PHYSBD ::::::::::::::::::::::::::::::::::::::::::::::;
 c
-c     Take a grid patch with mesh widths hx,hy, of dimensions nrow by
-c     ncol,  and set the values of any piece of
-c     of the patch which extends outside the physical domain 
-c     using the boundary conditions. 
+!>     Take a grid patch with mesh widths hx,hy, of dimensions nrow by
+!!     ncol,  and set the values of any piece of
+!!     of the patch which extends outside the physical domain 
+!!     using the boundary conditions. 
 c
 c     The corners of the grid patch are at 
 c        (xleft,ybot)  --  lower left corner

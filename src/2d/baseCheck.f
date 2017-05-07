@@ -1,4 +1,19 @@
 c
+!> Check that potential grid mnew is completely contained
+!! in coarser grids at level **lbase** (>1) that will
+!! stay fixed during this regridding step
+!! 
+!! This version tries to do it without using domflags
+!! slower but better if cant afford memory over entire domain
+!!
+!! For a grid mnew, find the smallest rectangle expressed in 
+!! **lbase** index space and compare it to each grid on level **lbase**.
+!! If every region in the rectangle has been overlapped during
+!! the comparison, the grid mnew is properly nested and the function returns
+!! true
+!!
+!!
+c
 c ----------------------------------------------------------------
 c
        logical function baseCheck(mnew,lbase,ilo,ihi,jlo,jhi,
@@ -7,7 +22,7 @@ c
        use amr_module
        implicit double precision (a-h, o-z)
 
-       logical debug/.true./
+       logical debug/.false./
        integer ist(3),iend(3),jst(3),jend(3),ishift(3),jshift(3)
        logical borderx, bordery
        integer thisBuff
@@ -36,9 +51,9 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
        bordery = (jlo .eq. 0 .or. jhi .eq. jregsz(levnew)-1)
        
 
-      if (debug) write(outunit,100) mnew,lbase,ilo,ihi,jlo,jhi,levnew
- 100  format("NESTCK2 testing grid ",i5," base level ",i5,/,
-     . " new grid from ilo:hi: ",2i12," to ",2i12," at level ",i4)
+c     if (debug) write(outunit,100) mnew,lbase,ilo,ihi,jlo,jhi,levnew
+c100  format("NESTCK2 testing grid ",i5," base level ",i5,/,
+c    . " new grid from ilo:hi: ",2i12," to ",2i12," at level ",i4)
 c
 c    on to initializing for the given grid and its nest checking
        levratx = 1
@@ -64,26 +79,26 @@ c figure out size for scratch storage on base grid for testing
           ichi = ichi + 1
           jclo = jclo - 1
           jchi = jchi + 1
-          if (debug) then
-             write(outunit,111) lev, iclo,ichi,jclo,jchi
-111          format(10x,"at level",i5," projected coords ilo:hi:",2i10,
-     .           " jlo:hi:",2i10)
-          endif
+c         if (debug) then
+c            write(outunit,111) lev, iclo,ichi,jclo,jchi
+c111         format(10x,"at level",i5," projected coords ilo:hi:",2i10,
+c    .           " jlo:hi:",2i10)
+c         endif
        end do
 c      high end of integer grid index truncates during the divide
 c      if it were exactly lined up with coarser grid it would
 c      not be properly nested, but since we added one to the index 
 c      space, we took care of that already.
-       if (debug) then
-          write(outunit,108) ilo-1,ihi+1,jlo-1,jhi+1
-          write(outunit,109) levratx,levraty
- 108      format(" enlarged (by 1) fine grid from ilo:hi:",2i12,
-     .           " to jlo:hi:", 2i12)
- 109      format(" refinement factors to base grid of ", 2i12)
-          write(outunit,101) iclo,ichi,jclo,jchi
- 101      format("coarsened to lbase, grid from iclo:hi: ",2i12,
-     .        " to jclo:hi:",2i12)
-       endif
+c      if (debug) then
+c         write(outunit,108) ilo-1,ihi+1,jlo-1,jhi+1
+c         write(outunit,109) levratx,levraty
+c108      format(" enlarged (by 1) fine grid from ilo:hi:",2i12,
+c    .           " to jlo:hi:", 2i12)
+c109      format(" refinement factors to base grid of ", 2i12)
+c         write(outunit,101) iclo,ichi,jclo,jchi
+c101      format("coarsened to lbase, grid from iclo:hi: ",2i12,
+c    .        " to jclo:hi:",2i12)
+c      endif
 
        if (.not. (xperdom .and. borderx) .and. 
      .     .not. (yperdom .and. bordery)) then
@@ -197,13 +212,13 @@ c                need to mark nesting of orig coords, not coarsened shifted indi
           if (mptr .ne. 0) go to 20
 
 c     output for debugging
-      if (debug) then
-          do 34 jj = jclo, jchi
-              j = jchi + jclo - jj
-              write(outunit,344)(int(alloc(iadd(i,j))), i=iclo,ichi) 
- 344          format(110i1)
- 34       continue
-       endif
+c     if (debug) then
+c         do 34 jj = jclo, jchi
+c             j = jchi + jclo - jj
+c             write(outunit,344)(int(alloc(iadd(i,j))), i=iclo,ichi) 
+c344          format(110i1)
+c34       continue
+c      endif
 
 c
 c  if any zeroes left mnew not nested

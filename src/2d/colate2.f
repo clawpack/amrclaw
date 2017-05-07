@@ -1,4 +1,10 @@
 c
+!> Takes flagged points on all grids on level lcheck
+!! and pack their (i,j) cell centered
+!! indices into the badpts array.
+!! Points in the badpts array are unique and sorted based on 
+!! one dimensional packing of their 2D indices.
+c
 c -----------------------------------------------------------
 c
       subroutine colate2 (badpts, len, lcheck, nUniquePts, lbase)
@@ -173,7 +179,11 @@ c     the variable largestIntEquiv already declared integer*8 above.
       largestIntEquiv =  iregsz(lcheck)+mbuff + 
      .             (iregsz(lcheck)+2*mbuff)*(jregsz(lcheck)+mbuff)
       largestSingle = 2**30
-      if (largestSingle .le. largestIntEquiv) then  
+      if (largestIntEquiv .le. 0) then
+c       ## sorting alg will have integer overflow
+c       ## just use all flagged points in making grids
+c       ## this means "efficiency" count will be incorrect for 
+c       ## this and higher levels
           nUniquePts =  npts  ! bad name - they are not unique
       else
           call drivesort(npts,badpts,lcheck,nUniquePts,mbuff)

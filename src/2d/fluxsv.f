@@ -1,4 +1,10 @@
-c
+!> When a coarse grid cell is advanced, if it borders a coarse-fine
+!! interface, the flux or wave that emits from the interface and goes into the coarse cell 
+!! is added to the corresponding location in **node(ffluxptr, mkid)**
+!! for conservative fix later, where **mkid** is grid number of the
+!! nested fine grid on the other side of that interface. 
+!! 
+!! 
 c ----------------------------------------------------------
 c
       subroutine fluxsv(mptr,xfluxm,xfluxp,yfluxm,yfluxp,listbc,

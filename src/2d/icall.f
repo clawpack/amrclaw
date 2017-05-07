@@ -1,4 +1,8 @@
 c
+!> For a rectangle defined on level **level** and bound by 
+!! **ilo**, **ihi**, **jlo**, **jhi**, find intersecting grids at the same level
+!! and copy data from intersecting grids to solution and auxiliary variables 
+!! on the rectangle, stored in **val** and **aux** arrays.
 c --------------------------------------------------------------------
 c
        subroutine icall(val,aux,nrow,ncol,nvar,naux,

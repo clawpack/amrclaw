@@ -1,4 +1,7 @@
-c
+!> When a fine grid is updated, this subroutine is called to save fluxes
+!! going into an adjacent coarse cell in **svdflx**, which is for conservative 
+!! fix later.
+!!
 c -------------------------------------------------------
 c
       subroutine fluxad(xfluxm,xfluxp,yfluxm,yfluxp,

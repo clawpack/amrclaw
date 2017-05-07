@@ -1,3 +1,23 @@
+c :::::::::::::::::::: FLGLVL :::::::::::::::::::::::::::::::::
+c
+!> \callgraph
+!! \callergraph
+!! Controls the error estimation/flagging bad pts. for
+!! an entire level of grids.  returns pointer into alloc
+!! where the (x,y) coordinations of the flagged pts. are.
+!!
+!! \param nvar number of equations for the system
+!! \param naux number of auxiliary variables
+!! \param lcheck level to be flagged
+!! \param nxypts number of flagged points in total
+!! \param index starting index (memory address) in alloc of the flagged points (which occupy 2*nxypts locations)
+!! \param lbase  base AMR level for current refinement, which stays
+!! fixed. Note that **lbase** is always less or equal to **lcheck**
+!! \param npts Number of unique flagged cells (after removing
+!! duplicates)
+!! \param[in] start_time start time of current simulation
+c
+c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 c -----------------------------------------------------------
 c
@@ -8,19 +28,6 @@ c
       implicit double precision (a-h,o-z)
       integer clock_start, clock_finish, clock_rate
 c
-c :::::::::::::::::::: FLGLVL :::::::::::::::::::::::::::::::::
-c
-c flglvl = controls the error estimation/flagging bad pts. for
-c          an entire level of grids.  returns pointer into alloc
-c          where the (x,y) coordinations of the flagged pts. are.
-c input parameters:
-c           lcheck = level to be flagged
-c output parameters:
-c           nxypts = no. of flagged pts. total
-c           index  = starting index in alloc of the flagged pts.
-c                    (which occupy 2*nxypts locations).
-c
-c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 c
       nxypts = 0

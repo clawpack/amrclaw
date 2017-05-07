@@ -1,4 +1,10 @@
 c
+!> Integrate all grids at the input **level** by one step of its delta(t)
+!!
+!! this includes:  
+!! - setting the ghost cells 
+!! - advancing the solution on the grid
+!! - adjusting fluxes for flux conservation step later
 c --------------------------------------------------------------
 c
       subroutine advanc (level,nvar,dtlevnew,vtime,naux)
@@ -160,6 +166,7 @@ c
 c
 c --------------------------------------------------------------
 c
+!> Integrate grid **mptr**. grids are done in parallel.
       subroutine par_advanc (mptr,mitot,mjtot,nvar,naux,dtnew)
 c
       use amr_module

@@ -10,8 +10,8 @@ c
        dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
 
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c  setIndices:  for periodicity a region that sticks out is wrapped into
-c               another region.
+!> setIndices:  for periodicity a region that sticks out is wrapped into
+!!              another region.
 c
 c  this is just annoying code this is needed in several places so it became a routine
 c

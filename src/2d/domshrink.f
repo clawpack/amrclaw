@@ -13,9 +13,9 @@ c
 c
 c :::::::::::::::::::::::::  DOMSHRINK ::::::::::::::::::::::::::::
 c
-c  shrink domain flags one cell for allowable properly nested domain
-c  This is needed even for lcheck = lbase. More shrinking needed
-c  for finer levels.
+!>  shrink domain flags one cell for allowable properly nested domain
+!!  This is needed even for lcheck = lbase. More shrinking needed
+!!  for finer levels.
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 

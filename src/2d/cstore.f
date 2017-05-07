@@ -10,7 +10,7 @@ c
        dimension auxc(naux,nrow,ncol)
        dimension auxc1d(naux,lenbc)
 c
-c      store coarse perimeter worth of solution into 1d array.
+!>      store coarse perimeter worth of solution into 1d array.
 c      go around fine grid in following order
 c                2
 c           __________

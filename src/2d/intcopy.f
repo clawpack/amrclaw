@@ -1,4 +1,12 @@
 c
+!> For a rectangle that is on level **level**, described by
+!! **ilo**, **ihi**, **jlo**, **jhi** and made up by 
+!! **mitot** \f$ \times\f$ **mjtot** cells, copy solution from 
+!! all (OLD) grids on level **level** to **val**, which stores
+!! solution on this rectangle.
+!! Some portions of the rectangle may not be filled since they do not
+!! overlap with any level **level** grids.
+!!  
 c --------------------------------------------------------------------
 c
        subroutine intcopy(val,mitot,mjtot,nvar,ilo,ihi,jlo,jhi,level,
