@@ -1,12 +1,3 @@
-!
-! :::::::::::::::::::::::::::::: FILVAL ::::::::::::::::::::::::::
-!
-!
-! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!
-!
-! ------------------------------------------------------------------
-!
 !> Fill grid **mptr** on level **level** by copying values from OLD level **level**
 !! grids if available, otherwise by interpolating values from coarser grids.
 subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic,          &

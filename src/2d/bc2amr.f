@@ -65,7 +65,7 @@
 !!
 !!  Don't overwrite ghost cells in periodic directions!
 !!
-!! \param valbig data array for solution \f$q \f$ (cover the whole grid **msrc**)
+!! \param val data array for solution \f$q \f$ (cover the whole grid **msrc**)
 !! \param aux data array for auxiliary variables 
 !! \param nrow number of cells in *i* direction on this grid
 !! \param ncol number of cells in *j* direction on this grid

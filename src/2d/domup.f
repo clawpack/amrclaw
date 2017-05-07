@@ -13,8 +13,8 @@ c
 c
 c ::::::::::::::::::::::::::: DOMUP :::::::::::::::::::::
 c 
-c  domain flags are in iflags. copy into iflags2, allowing
-c  for change of level and dimension
+!>  domain flags are in iflags. copy into iflags2, allowing
+!!  for change of level and dimension
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 

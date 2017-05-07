@@ -4,8 +4,8 @@ c
       subroutine cleanup(nvar,naux)
 c
 c :::::::::::::::::::::: CLEANUP ::::::::::::::::::::::::::::::::;
-c   this is just a check to make sure all storage was accounted for.
-c   routine is called after all the data has been checkpointed.
+!> this is just a check to make sure all storage was accounted for.
+!! routine is called after all the data has been checkpointed.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       use amr_module

@@ -10,13 +10,13 @@ c
 c
 c :::::::::::::::::::::::::::: REGRID :::::::::::::::::::::::::::::::
 
-c  regrid = flag points on each grid with a level > = lbase.
-c  cluster them, and fit new subgrids around the clusters.
-c  the lbase grids stay fixed during regridding operation.
-c  when a parent grid has its error estimated, add its kid grid
-c  information to the error grid before clustering. (project)
-c  order of grid examination - all grids at the same level, then
-c  do the next coarser level.
+!> Flag points on each grid with a level > = lbase.
+!! cluster them, and fit new subgrids around the clusters.
+!! the lbase grids stay fixed during regridding operation.
+!! when a parent grid has its error estimated, add its kid grid
+!! information to the error grid before clustering. (project)
+!! order of grid examination - all grids at the same level, then
+!! do the next coarser level.
 c
 c input parameters:
 c     lbase  = highest level that stays fixed during regridding

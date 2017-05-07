@@ -11,9 +11,9 @@ c
        character*10  auxtype(naux)
 
 c :::::::::::::::::::::::: COARSEN ::::::::::::::::::::::::::::::::
-c coarsen = coarsen the fine grid auxiliary data (with double the usual
-c           number of ghost cells to prepare coarsened data
-c           for error estimation.
+!> Coarsen the fine grid auxiliary data (with double the usual
+!! number of ghost cells to prepare coarsened data
+!! for error estimation).
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
        do 50 iaux = 1, naux

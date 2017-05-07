@@ -4,7 +4,7 @@ c
       subroutine check(nsteps,time,nvar,naux)
 c
 c :::::::::::::::::::::: CHECK ::::::::::::::::::::::::::::::::;
-c   check point routine - can only call at end of coarse grid cycle
+!>   check point routine - can only call at end of coarse grid cycle
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       use amr_module

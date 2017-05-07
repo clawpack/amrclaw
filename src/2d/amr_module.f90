@@ -6,7 +6,7 @@
 !! Each grid in the grid hierarchy corresponds to a node in the tree. 
 !! When a fine grid is nested in a coarse grid, its corresponding node in the tree 
 !! is an offspring of the parent node corresponding to the coarse grid.
-!! ![Tree data structure for grid management](AMR_tree.png "amr_tree")
+!! ![Tree data structure for grid management](./images/AMR_tree.png "amr_tree")
 !!
 !! Each node has a fixed number of items of information describing the grid,
 !! stored and accessable as **node(property number, node number)** (which returns

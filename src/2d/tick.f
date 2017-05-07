@@ -20,11 +20,11 @@ c     include  "call.i"
 
 c
 c :::::::::::::::::::::::::::: TICK :::::::::::::::::::::::::::::
-c  main driver routine.  controls:
-c        integration  of all grids.
-c        error estimation / regridding
-c        output counting
-c        updating of fine to coarse grids
+!> main driver routine.  controls:
+!!       integration  of all grids.
+!!       error estimation / regridding
+!!       output counting
+!!       updating of fine to coarse grids
 
 c  parameters:
 c     nstop   = # of coarse grid time steps to be taken

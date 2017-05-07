@@ -15,12 +15,12 @@ c   ### stack space
      
  
 c :::::::::::::::::::::::::: ERREST :::::::::::::::::::::::::::::::::::
-c for this grid at level lcheck:
-c  estimate the error by taking a large (2h,2k) step based on the
-c  values in the old storage loc., then take one regular (and for
-c  now wasted) step based on the new info.   compare using an
-c  error relation for a pth order  accurate integration formula.
-c  flag error plane as either bad (needs refinement), or good.
+!> for this grid at level lcheck:
+!!  estimate the error by taking a large (2h,2k) step based on the
+!!  values in the old storage loc., then take one regular (and for
+!!  now wasted) step based on the new info.   compare using an
+!!  error relation for a pth order  accurate integration formula.
+!!  flag error plane as either bad (needs refinement), or good.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
        mitot  = nx + 2*nghost

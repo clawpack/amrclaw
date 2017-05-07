@@ -12,7 +12,7 @@ c
 !! cells on grid **mkid** border one cell on level **level**-1 grids.
 !! \param[in] level boudnary lists of grids on this level get updated
 !! \param[in] nvar number of equations for the system
-!! \param[in] nvar number of auxiliary variables for the system
+!! \param[in] naux number of auxiliary variables for the system
 c ----------------------------------------------------------
 c
       subroutine prepf(level,nvar,naux)

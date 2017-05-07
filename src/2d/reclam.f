@@ -5,10 +5,11 @@ c
 c
 c ::::::::::::::::::::::::: RECLAM :::::::::::::::::::::::::::
 c
-c  return of space. add to free list.
-c  iplace points to next item on free list with larger index than
-c  the item reclaiming, unless said item is greater then
-c  everything on the list.
+!>  return of space. add to free list.
+!!
+!!  iplace points to next item on free list with larger index than
+!!  the item reclaiming, unless said item is greater then
+!!  everything on the list.
 c
 c ::::::::::::::::::::::::::::::::::;:::::::::::::::::::::::::
 c

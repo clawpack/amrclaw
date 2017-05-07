@@ -11,7 +11,7 @@ c
 
 c ::::::::::::::: OUTVAR ::::::::::::::::::::::::::::::::::
 c
-c  dump soln for graphics 
+!>  dump soln for graphics 
 c
 c  only output max - 1 rows and cols, since with cell centered
 c  variables there is one extra cell outside the grid.

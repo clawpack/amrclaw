@@ -1,9 +1,9 @@
 subroutine src2(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux,t,dt)
 
-    ! Called to update q by solving source term equation 
-    ! $q_t = \psi(q)$ over time dt starting at time t.
-    !
-    ! This default version does nothing. 
+!> Called to update q by solving source term equation 
+!! $q_t = \psi(q)$ over time dt starting at time t.
+!!
+!! This default version does nothing. 
  
     implicit none
     integer, intent(in) :: mbc,mx,my,meqn,maux

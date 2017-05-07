@@ -1,28 +1,28 @@
 c
+!> Apply a limiter to the waves.
+!! The limiter is computed by comparing the 2-norm of each wave with
+!! the projection of the wave from the interface to the left or
+!! right onto the current wave.  For a linear system this would
+!! correspond to comparing the norms of the two waves.  For a 
+!! nonlinear problem the eigenvectors are not colinear and so the 
+!! projection is needed to provide more limiting in the case where the
+!! neighboring wave has large norm but points in a different direction
+!! in phase space.
+!! 
+!! The specific limiter used in each family is determined by the
+!! value of the corresponding element of the array mthlim, as used in
+!! the function philim.
+!! Note that a different limiter may be used in each wave family.
+!! 
+!! dotl and dotr denote the inner product of wave with the wave to
+!! the left or right.  The norm of the projections onto the wave are then
+!! given by dotl/wnorm2 and dotr/wnorm2, where wnorm2 is the 2-norm
+!! of wave.
 c
 c     =====================================================
       subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 c     =====================================================
 c
-c     # Apply a limiter to the waves.
-c     # The limiter is computed by comparing the 2-norm of each wave with
-c     # the projection of the wave from the interface to the left or
-c     # right onto the current wave.  For a linear system this would
-c     # correspond to comparing the norms of the two waves.  For a 
-c     # nonlinear problem the eigenvectors are not colinear and so the 
-c     # projection is needed to provide more limiting in the case where the
-c     # neighboring wave has large norm but points in a different direction
-c     # in phase space.
-c
-c     # The specific limiter used in each family is determined by the
-c     # value of the corresponding element of the array mthlim, as used in
-c     # the function philim.
-c     # Note that a different limiter may be used in each wave family.
-c
-c     # dotl and dotr denote the inner product of wave with the wave to
-c     # the left or right.  The norm of the projections onto the wave are then
-c     # given by dotl/wnorm2 and dotr/wnorm2, where wnorm2 is the 2-norm
-c     # of wave.
 c
       implicit double precision (a-h,o-z)
       dimension mthlim(mwaves)
