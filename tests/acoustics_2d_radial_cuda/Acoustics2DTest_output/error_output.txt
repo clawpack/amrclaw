@@ -1,0 +1,6 @@
+Errors from Test Acoustics2DTest
+Started 2017/05/07-02:18.14
+================================================================================
+pgfortran-Error-More than one output file will overwrite /home/xsqin/clawpack/amrclaw/src/2d/amr_module.o
+pgfortran-Error-More than one output file will overwrite /home/xsqin/clawpack/amrclaw/src/2d/gauges_module.o
+pgfortran-Error-More than one output file will overwrite /home/xsqin/clawpack/amrclaw/src/2d/regions_module.o
