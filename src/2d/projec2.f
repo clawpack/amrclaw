@@ -1,38 +1,67 @@
-c
-c ---------------------------------------------------------
+c  ::::::::::::::::::::::: PROJEC2 ::::::::::::::::::::::::::::::
+! For all newly created fine grids, project area onto a coarser
+! grid 2 levels down. Used to recreate grids 1 level down, and
+! insure proper level nesting.
+! create 
+!
+! on entry, all coarse grids have already had error estimated, so
+! add bad flags.   count number of 'added' flags only.
+!
+!
+!> This subroutine projects all level **level**+2 grids
+!! to a level **level** grid and flag the cells being projected as
+!! needing refine.
+!! In other words, the subroutine modify the flag array of the input
+!! grid if part of it is under any grid that is two levels finer.
+!!
+!! This subroutine is to insure proper level nesting. For example, you
+!! just create new level 5 grids. Now you need to ensure that the new
+!! level 4 grids encompass the new level 5 grids. To do this, we project
+!! level 5 grids to level 3 grids, which means that all locations in 
+!! level 3 where level 5 exists are flagged. In this example, level
+!! 3 is the **level** parameter on the arguments list of this subroutine.
+!! So this subroutine is actually used to ensure **level**+1 grids can
+!! encompasses **level**+2 grids.
+!!
+!! However, note that these cells are flagged with **badpro** parameter
+!! defined in [amr_module](@ref amr_module.f90)
+!! (not **badpt** as in [flagregions()](@ref flagregions2.f90) and
+!! [flag2refine2()](@ref flag2refine2.f90)).
+!!
+!! **input**: 
+!! * **level** 
+!! * flag array of the input grid (**rectflags**)
+!!
+!! **output**: 
+!! * **numpro**
+!! * flag array of the input grid (**rectflags**)
+!!       
+!! \param level AMR level of the grid which all fine subgrids are
+!! projected onto
+!! \param numpro number of additional flagged cells at level **level**
+!!               (initialized to 0 in flglvl)
+!! \param rectflags array to be flagged 
+!! \param ilo global *i* index of the left border of the grid being projected to (being flagged) 
+!! \param ihi global *i* index of the right border of the grid being projected to (being flagged) 
+!! \param jlo global *j* index of the lower border of the grid being projected to (being flagged) 
+!! \param jhi global *i* index of the upper border of the grid being projected to (being flagged) 
+!! \param mbuff width of the buffer zone
+c  :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
       subroutine projec2(level,numpro,rectflags,ilo,ihi,jlo,jhi,mbuff)
-c
+
       use amr_module
       implicit double precision (a-h,o-z)
       dimension rectflags(ilo-mbuff:ihi+mbuff,jlo-mbuff:jhi+mbuff)
       logical borderx, bordery
       integer ist(3),iend(3),jst(3),jend(3),ishift(3),jshift(3)
 
-c
-c  ::::::::::::::::::::::: PROJEC2 ::::::::::::::::::::::::::::::
-c  for all newly created fine grids, project area onto a coarser
-c  grid 2 levels down. Used to recreate grids 1 level down, and
-c  insure proper level nesting.
-c
-c  on entry, all coarse grids have already had error estimated, so
-c  add bad flags.   count number of 'added' flags only.
-c
-c input parameters:
-c    level = project all fine subgrids onto grids at this level.
-c output parameters:
-c  numpro = number of additional flagged pts. at 'level'.
-c           (initialized to 0 in flglvl)
-c local variables:
-c     mkid    = grid doing the projecting
-c  :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c
       levpro  =  level + 2
       lrat2x  = intratx(level)*intratx(level+1)
       lrat2y  = intraty(level)*intraty(level+1)
 
-
-c
+! local variables:
+!     mkid    = grid doing the projecting
       mkid = newstl(levpro)
  10   if (mkid .eq. 0) go to 90
        ikidlo = node(ndilo,mkid) 
@@ -76,8 +105,10 @@ c  include mbuff in intersection test here since is ok in new alg. to project to
          jxhi = min(jendc,jhi+mbuff)
 
 c        test if coarsened grid mkid intersects with this grids rectflags 
+         ! has not intersection
          if (.not.((ixlo .le. ixhi) .and. (jxlo .le. jxhi))) go to 80 
 c     
+         ! has intersection
          do 60 j = jxlo, jxhi
          do 60 i = ixlo, ixhi
             if (rectflags(i,j) .eq. goodpt) then

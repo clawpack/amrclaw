@@ -1,4 +1,18 @@
 c
+!> Do conservation fix-up for cells on grid **mptr** that border 
+!! finer grids.
+!! Do this by adding flux differences stored
+!! with each of the fine grids to these cells on grid **mptr**. 
+!! 
+!! \param[in,out] listbc an array that stores information of all cells that
+!! border a finer grids in grid **mptr**. 
+!! \param[in] val pointer to the solution on grid **mptr**
+!! \param[in] nvar number of equations for the system
+!! \param[in] naux number of auxiliary variables
+!! \param[in] mitot total number of cells in *i* direction on grid **mptr**
+!! \param[in] mjtot total number of cells in *j* direction on grid **mptr**
+!! \param[in] maxsp maximum number of segments **lisbc** can describe
+!! \param[in] mptr the grid being processed
 c ------------------------------------------------------------
 c
        subroutine upbnd(listbc,val,nvar,naux,mitot,mjtot,

@@ -1,4 +1,11 @@
 c
+!> This routine is called because regridding just changed the fine grids.
+!! It modifies boundary list of each level **level** grid 
+!! such that each grid knows along its boundary, what fine cells 
+!! its cell borders and where to get saved flux for conservation fix-up
+!! 
+!! \param[in] level boudnary lists of grids on this level get updated
+!! \param[in] nvar number of equations for the system
 c ----------------------------------------------------------
 c
       subroutine prepc(level,nvar)

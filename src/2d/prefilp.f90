@@ -1,18 +1,18 @@
 !  :::::::::::::: PREFILRECUR :::::::::::::::::::::::::::::::::::::::::::
-!     For periodic boundary conditions more work needed to fill the
-!     piece of the boundary. This routine was
-!     called because the patch sticks out of the domain,
-!     and has periodic bc.s preprocess the patch before calling
-!     filpatch to shift the patch periodically back into the domain.
-!
-!     Inputs to this routine:
-!     xl, xr, yb, yt = the location in physical space of
-!     corners of a patch.
-!     fill_indices = the location in index space of this patch.
-!
-!     Outputs from this routine:
-!     The values around the border of the grid are inserted
-!     directly into the enlarged valbig array for this piece.
+!>     For periodic boundary conditions more work needed to fill the
+!!     piece of the boundary. This routine was
+!!     called because the patch sticks out of the domain,
+!!     and has periodic bc.s preprocess the patch before calling
+!!     filpatch to shift the patch periodically back into the domain.
+!!
+!!     Inputs to this routine:
+!!     xl, xr, yb, yt = the location in physical space of
+!!     corners of a patch.
+!!     fill_indices = the location in index space of this patch.
+!!
+!!     Outputs from this routine:
+!!     The values around the border of the grid are inserted
+!!     directly into the enlarged valbig array for this piece.
 !
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,  &  

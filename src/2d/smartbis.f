@@ -1,4 +1,25 @@
 c
+!> Smart bisect rectangles until cutoff reached for each.
+!! replaced old bisection routine that cut all grids in half.
+!! now look for good place to do the cut, based on holes or signatures.
+!!
+!! Reference: Berger, M.J., Rigoutsos, I., 1991. An Algorithm for Point Clustering and Grid Generation. IEEE Trans. Syst. Man Cybern. 21, 1278–1286
+!!
+!! \param[in,out] badpts x,y centered coordinate of all flagged cells.
+!! At output, cells for each cluster are stored consecutively in this
+!! array.
+!! \param[in] npts number of flagged cells
+!! \param[in] cutoff required minimum efficiency of each cluster grid
+!! \param[out] numptc number of cells in each cluster (grid)
+!! \param[out] nclust number of clusters
+!! \param[in] lbase base level of current refinement
+!! \param[out] intcorn Some information of each generated cluster (grid)
+!! \param[in] idim region size (in number of cells) for current AMR level in *i* direction
+!! \param[out] idim region size (in number of cells) for current AMR level in *i* direction
+!!
+!!
+!!
+c
 c ---------------------------------------------------------
 c
       subroutine smartbis(badpts,npts,cutoff,numptc,nclust,
@@ -31,9 +52,9 @@ c     ## initially all points in 1 cluster
       if (gprint) write(outunit,100) nclust
  100  format(' starting smart bisection with ',i5,' clusters')
 c
-      icl         = 1
-      ist         = 1
-      iend        = numptc(icl)
+      icl         = 1 ! cluster iterator 
+      ist         = 1 ! pt iterator in badpts
+      iend        = numptc(icl) ! pt iterator in badpts
 c
  10   call moment(intcorn(1,icl),badpts(1,ist),numptc(icl),usenew)
       if (gprint) write(outunit,101) icl,numptc(icl),usenew

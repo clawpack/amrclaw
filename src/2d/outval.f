@@ -1,4 +1,5 @@
 c
+!> print solution and aux. variables to output. 
 c =======================================================================
       subroutine outval(val,nvar,mitot,mjtot,mptr,outgrd,naux,aux)
 c =======================================================================

@@ -1,6 +1,12 @@
 c
 c ------------------------------------------------------------
 c
+!> Get first free node of the linked list kept in node
+!! array. adjust pointers accordingly.
+!!
+!! This function is used to create a new grid descriptor, like
+!! mptr = new grid_class in c++.
+!!
       integer function nodget()
 c
       use amr_module
@@ -89,6 +95,16 @@ c
 c
 c -----------------------------------------------------------------
 c
+!> Make (modify) array of grid numbers, listOfGrids, (after sorting them 
+!! in the linked list so they are in decreasing order of workload, 
+!! done in arrangeGrid()).
+!!
+!! This is done every time there is regridding, initial gridding,
+!! or restarting.  Most often finest level is regridded, so
+!! put it last in array. **lbase** is the level that didnt change, so 
+!! only redo from lbase+1 to lfine.
+!! \param[in] lbase all levels from **lbase**+1 to the finest get
+!! modifed in the array, listOfGrids
       subroutine makeGridList(lbase)
 c
       use amr_module
@@ -148,6 +164,21 @@ c
 c
 c -----------------------------------------------------------------
 c
+!> Preprocess each grid on level **level** to have a linked list of 
+!! other grids at the same level that supply ghost cells.
+!!
+!! The linked list is implemented with an array.
+!! Each node in this linked list is represented by a row (with 2 elements) 
+!! in the array, named **bndList**.
+!!
+!! bndList(pos,gridNbor) is grid number stored at node **pos**
+!! bndList(pos,nextfree) is pointer to next node in the linked list
+!!
+!! node(bndListSt,mptr) point to the head node in this linked list.
+!! Thus bndList(node(bndListSt,mptr),gridNbor) is grid number 
+!! stored at first node of the linked list.
+!!
+!!
       subroutine makeBndryList(level)
 c
       use amr_module
@@ -209,6 +240,9 @@ c     traverse linked list into array. list already sorted by arrangegrids
 c
 c -----------------------------------------------------------------
 c
+!> Free the linked list of intersecting "boundary" grids for grid 'mold'
+!! that is no longer active.
+!! The linked list starts at node(bndListSt, mold).
       subroutine freeBndryList(mold)
 c
       use amr_module

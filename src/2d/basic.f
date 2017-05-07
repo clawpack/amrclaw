@@ -1,4 +1,8 @@
 c
+!> outputs basic information needed by the other graphics
+!! output routines (valout) at the given time,
+!! write the entire levellist, from level 1 to lfine,
+!! and the tree structure from level lst to lend.
 c ------------------------------------------------------
 c
       subroutine basic (time,lst,lend)

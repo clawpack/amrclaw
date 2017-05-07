@@ -1,3 +1,6 @@
+!> Sort 2D points (stored in badpts) based on their equivalent 
+!! integer value (based on their x,y coordinates). Also remove
+!! duplicate points in badpts.
 c
 c -------------------------------------------------------------
 c

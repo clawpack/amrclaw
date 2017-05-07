@@ -1,4 +1,8 @@
 c
+!> Flag a whole subregion from (ixlo,ixhi) to (jxlo, jxhi) with integer
+!! 1. 
+!! The subregion is inside a grid described by (ilo_coarse, jlo_coarse)
+!! and (ihi_coarse, jhi_coarse)
 c -------------------------------------------------------------
 c
        subroutine coarseGridFlagSet(iflags,ixlo,ixhi,jxlo,jxhi,

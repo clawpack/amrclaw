@@ -1,13 +1,25 @@
 c
 c -----------------------------------------------------------
 c
+!> Synchronize between all grids on level **level** and grids on
+!! level **level**+1.
+!! The synchronization includes averaging solution from 
+!! level **level**+1 down to level **level** and conservation
+!! fix-up near the fine-coarse interface between level **level**
+!! grids and level **level**+1 grids.
+!!
+!! This routine assumes cell centered variables.
+!! \param[in] level the only level to be updated (synchronized on). levels coarser than
+!! this will be at a diffeent time.
+!! \param[in] nvar number of equations for the system
+!! \param[in] naux number of auxiliary variables
       subroutine update (level, nvar, naux)
 c
-      use amr_module
-      implicit double precision (a-h,o-z)
+          use amr_module
+          implicit double precision (a-h,o-z)
 
 
-      integer listgrids(numgrids(level))
+          integer listgrids(numgrids(level))
 
 c$$$  OLD INDEXING
 c$$$      iadd(i,j,ivar)  = loc     + i - 1 + mitot*((ivar-1)*mjtot+j-1)
@@ -16,10 +28,10 @@ c$$$      iaddfaux(i,j)   = locfaux + i - 1 + mi*((mcapa-1)*mj + (j-1))
 c$$$      iaddcaux(i,j)   = loccaux + i - 1 + mitot*((mcapa-1)*mjtot+(j-1))
 
 c   NEW INDEXING, ORDER SWITCHED
-      iadd(ivar,i,j)  = loc    + ivar-1 + nvar*((j-1)*mitot+i-1)
-      iaddf(ivar,i,j) = locf   + ivar-1 + nvar*((j-1)*mi+i-1)
-      iaddfaux(i,j)   = locfaux + mcapa-1 + naux*((j-1)*mi + (i-1))
-      iaddcaux(i,j)   = loccaux + mcapa-1 + naux*((j-1)*mitot+(i-1))
+          iadd(ivar,i,j)  = loc    + ivar-1 + nvar*((j-1)*mitot+i-1)
+          iaddf(ivar,i,j) = locf   + ivar-1 + nvar*((j-1)*mi+i-1)
+          iaddfaux(i,j)   = locfaux + mcapa-1 + naux*((j-1)*mi + (i-1))
+          iaddcaux(i,j)   = loccaux + mcapa-1 + naux*((j-1)*mitot+(i-1))
 c
 c
 c :::::::::::::::::::::::::: UPDATE :::::::::::::::::::::::::::::::::

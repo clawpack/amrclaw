@@ -1,5 +1,7 @@
 c
 c ----------------------------------------------------------
+!> Reclaim list space in nodes cfluxptr and ffluxptr for all grids at level
+!! **level**
 c
       subroutine putsp(lbase,level,nvar,naux)
 c

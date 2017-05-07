@@ -12,7 +12,7 @@ c
 c
 c ::::::::::::::::::::::::::: PREPDOM :::::::::::::::::::::
 c 
-c  prepare 2 dimensional array of domain for proper nesting
+!>  prepare 2 dimensional array of domain for proper nesting
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
