@@ -47,8 +47,6 @@ c so can save appropriate fluxes.  (dont know why we didnt have
 c which flux to save directly (i.e. put i+1,j to save that flux
 c rather than putting in cell center coords).
 
-         ! these values stored in alloc(inlist + ivar) will be applied to
-         ! corresponding cells in upbnd() later.
          if (listbc(3,ispot) .eq. 1) then
 c           ::::: Cell i,j is on right side of a fine grid
             do 100 ivar = 1, nvar

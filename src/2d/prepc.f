@@ -60,13 +60,6 @@ c
        ilo     = node(ndilo,mpar)
        jlo     = node(ndjlo,mpar)
        ihi     = node(ndihi,mpar)
-       jhi     = node(ndjhi,mpar)
-       ! QUESTION: maxsp is too much? I think is for all level "level"
-       ! grid. Here each level "level" grid get such a space.
-       locbc   = igetsp(5*maxsp)
-c      #  initialize list to 0 (0 terminator indicates end of bc list)
-       do 35 i = 1,5*maxsp
- 35      alloc(locbc+i-1) = 0.d0
        node(cfluxptr,mpar) = locbc
 c
        mkid = lstart(level+1)

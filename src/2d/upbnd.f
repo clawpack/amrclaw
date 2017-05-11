@@ -86,8 +86,6 @@ c        to mapped bcs. should still only have one update per side of coarse cel
          lkid = listbc(5,ispot)
 c         if (mod(iside,4).gt.1) then
 c         modified to include other side options
-          !iside = 1 corresponds to left side of a grid and number increase
-          !as we go around the grid clockwise
           if (iside .eq. 2 .or. iside .eq. 3 .or. iside .eq. 6) then
 c           (iside .eq. 2 .or. iside .eq. 3)
             sgnm = -1.
