@@ -60,6 +60,11 @@ c
        ilo     = node(ndilo,mpar)
        jlo     = node(ndjlo,mpar)
        ihi     = node(ndihi,mpar)
+       jhi     = node(ndjhi,mpar)
+       locbc   = igetsp(5*maxsp)
+!      initialize list to 0 (0 terminator indicates end of bc list)
+       do 35 i = 1,5*maxsp
+ 35      alloc(locbc+i-1) = 0.d0
        node(cfluxptr,mpar) = locbc
 c
        mkid = lstart(level+1)
