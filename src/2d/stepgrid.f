@@ -43,6 +43,7 @@
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
       use amr_module
+      use parallel_advanc_module, only: tcom
       implicit double precision (a-h,o-z)
       external rpn2,rpt2
 

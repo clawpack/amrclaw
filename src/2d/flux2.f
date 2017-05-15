@@ -76,7 +76,7 @@ c        where A^* represents either A^- or A^+.
 c
 c
       use amr_module
-      use parallel_advanc, only: dtcom, dxcom, dycom, tcom, icom, jcom
+      use parallel_advanc_module, only: icom, jcom
       implicit double precision (a-h,o-z)
       external rpn2, rpt2
       dimension    q1d(meqn,1-mbc:maxm+mbc)

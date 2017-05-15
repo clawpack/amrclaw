@@ -20,7 +20,7 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
 !
     
     use amr_module
-    use parallel_advanc, only: dtcom, dxcom, dycom, tcom, icom, jcom
+    use parallel_advanc_module, only: dtcom, dxcom, dycom, icom, jcom
 
     implicit none
     

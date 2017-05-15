@@ -1,7 +1,7 @@
 ! --------------------------------------------------------------
 !
 !> Integrate grid **mptr**. grids are done in parallel.
-module parallel_advanc
+module parallel_advanc_module
     double precision :: dtcom,dxcom,dycom,tcom
     integer :: icom,jcom
 contains
@@ -126,4 +126,4 @@ contains
 !
         return
     end subroutine par_advanc
-end module parallel_advanc
+end module parallel_advanc_module

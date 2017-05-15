@@ -9,7 +9,7 @@
       subroutine advanc (level,nvar,dtlevnew,vtime,naux)
 !
       use amr_module 
-      use parallel_advanc
+      use parallel_advanc_module
       implicit double precision (a-h,o-z)
 
 
