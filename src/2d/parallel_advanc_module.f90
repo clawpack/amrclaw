@@ -2,6 +2,8 @@
 !
 !> Integrate grid **mptr**. grids are done in parallel.
 module parallel_advanc
+    double precision :: dtcom,dxcom,dycom,tcom
+    integer :: icom,jcom
 contains
     subroutine par_advanc (mptr,mitot,mjtot,nvar,naux,dtnew)
         use amr_module

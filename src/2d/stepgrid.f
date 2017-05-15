@@ -46,7 +46,7 @@
       implicit double precision (a-h,o-z)
       external rpn2,rpt2
 
-      common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
+      ! common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
 
       parameter (msize=max1d+4)
       parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))

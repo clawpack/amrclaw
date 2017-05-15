@@ -76,6 +76,7 @@ c        where A^* represents either A^- or A^+.
 c
 c
       use amr_module
+      use parallel_advanc, only: dtcom, dxcom, dycom, tcom, icom, jcom
       implicit double precision (a-h,o-z)
       external rpn2, rpt2
       dimension    q1d(meqn,1-mbc:maxm+mbc)
@@ -97,7 +98,7 @@ c
       dimension  wave(meqn, mwaves, 1-mbc:maxm+mbc)
 c
       logical limit
-      common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
+      ! common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
 c
       limit = .false.
       do 5 mw=1,mwaves

@@ -20,6 +20,7 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
 !
     
     use amr_module
+    use parallel_advanc, only: dtcom, dxcom, dycom, tcom, icom, jcom
 
     implicit none
     
@@ -63,9 +64,9 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
     real(kind=8) :: dtdx,dtdy,cfl1d
     
     ! Common block storage
-    integer :: icom,jcom
-    real(kind=8) :: dtcom,dxcom,dycom,tcom
-    common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
+    ! integer :: icom,jcom
+    ! real(kind=8) :: dtcom,dxcom,dycom,tcom
+    ! common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
     
     ! Store mesh parameters in common block
     dxcom = dx
