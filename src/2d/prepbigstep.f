@@ -5,6 +5,7 @@ c
      .                       valbgc,auxbgc,mi2tot,mj2tot)
 
        use amr_module
+       use parallel_advanc_module, only: stepgrid
        implicit double precision (a-h,o-z)
 
        double precision valdub(nvar,midub,mjdub)

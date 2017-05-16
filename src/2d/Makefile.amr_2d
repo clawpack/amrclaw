@@ -21,7 +21,6 @@ COMMON_SOURCES += \
   $(AMRLIB)/src1d.f90 \
   $(AMRLIB)/advanc.f \
   $(AMRLIB)/bound.f90 \
-  $(AMRLIB)/stepgrid.f \
   $(AMRLIB)/stepgrid_dimSplit.f \
   $(AMRLIB)/zeroin.f \
   $(AMRLIB)/auxcoarsen.f \
