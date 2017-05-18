@@ -345,9 +345,13 @@ contains
             dimension aux(maux,mitot,mjtot)
 
             ! variables for CUDA
+            ! these also allocate space on device memory
             double precision, device :: q_d(nvar,mitot,mjtot)
             double precision, device :: fp_d(nvar,mitot,mjtot),gp_d(nvar,mitot,mjtot)
             double precision, device :: fm_d(nvar,mitot,mjtot),gm_d(nvar,mitot,mjtot)
+            ! TODO: for now I assume maux = 0
+            ! If I uncomment this statement below and maux = 0, the program has runtime 
+            ! error since it cannot assign 0 bytes on device
             ! double precision, device :: aux_d(maux,mitot,mjtot)
             type(dim3) :: gridSize, blockSize 
 
