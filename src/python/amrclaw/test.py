@@ -18,13 +18,23 @@ if "CLAW" in os.environ:
     CLAW = os.environ["CLAW"]
 else:
     raise ValueError("Need to set CLAW environment variable.")
-
+# remove *.o and *.mod files in $CLAW/amrclaw/src/2d and $CLAW/amrclaw/src/3d
 for lib_path in [os.path.join(CLAW,"amrclaw","src","2d"),
                  os.path.join(CLAW,"amrclaw","src","3d")]:
     for path in glob.glob(os.path.join(lib_path,"*.o")):
         os.remove(path)
     for path in glob.glob(os.path.join(lib_path,"*.mod")):
         os.remove(path)
+# remove *.o and *.mod files in $CLAW/riemann/src
+for path in glob.glob(os.path.join(CLAW,"riemann","src","*.o")):
+    os.remove(path)
+for path in glob.glob(os.path.join(CLAW,"riemann","src","*.mod")):
+    os.remove(path)
+# remove *.o and *.mod files in $CLAW/classic/src
+for path in glob.glob(os.path.join(CLAW,"classic","src","*.o")):
+    os.remove(path)
+for path in glob.glob(os.path.join(CLAW,"classic","src","*.mod")):
+    os.remove(path)
 
 
 class AMRClawRegressionTest(clawpack.clawutil.test.ClawpackRegressionTest):
