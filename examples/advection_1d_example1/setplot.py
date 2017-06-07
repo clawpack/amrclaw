@@ -7,11 +7,14 @@ function setplot is called to set the plot parameters.
     
 """ 
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 from clawpack.clawutil.data import ClawData
 from numpy import linspace
 probdata = ClawData()
 probdata.read('setprob.data', force=True)
-print "Parameters: u = %g, beta = %g" % (probdata.u, probdata.beta)
+print("Parameters: u = %g, beta = %g" % (probdata.u, probdata.beta))
 
 def qtrue(x,t):
     """
@@ -54,7 +57,7 @@ def setplot(plotdata):
     plotitem.plot_var = 0
     plotitem.amr_color = ['g','b','r']
     plotitem.amr_plotstyle = ['^-','s-','o-']
-    plotitem.amr_data_show = [1,1,1]
+    plotitem.amr_data_show = [1]
     plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
 
     # Plot true solution for comparison:
