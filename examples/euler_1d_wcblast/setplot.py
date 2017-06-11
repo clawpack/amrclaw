@@ -95,7 +95,7 @@ def setplot(plotdata=None):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(1,2,1)'   # left figure
     plotaxes.xlimits = [0.5,0.9]
-    plotaxes.ylimits = [0,6.2]
+    plotaxes.ylimits = [0,7]
     plotaxes.title = 'Density'
     #plotaxes.afteraxes = add_legend
 

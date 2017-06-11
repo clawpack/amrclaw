@@ -52,6 +52,7 @@ MODULES = \
 SOURCES = \
   qinit.f90 \
   setprob.f90 \
+  flag2refine1.f90 \
   $(CLAW)/riemann/src/rp1_euler_with_efix.f90
 
 

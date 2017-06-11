@@ -116,7 +116,7 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
         clawdata.output_step_interval = 1
-        clawdata.total_steps = 500
+        clawdata.total_steps = 50
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
@@ -253,8 +253,8 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.amr_levels_max = 4
     
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    amrdata.refinement_ratios_x = [2, 4, 8]
-    amrdata.refinement_ratios_t = [2, 4, 8]
+    amrdata.refinement_ratios_x = [2, 6, 10]
+    amrdata.refinement_ratios_t = [2, 6, 10]
     
     
     # Specify type of each aux variable in clawdata.auxtype.
@@ -269,7 +269,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 100 # tolerance used in this routine
+    amrdata.flag2refine_tol = 0.1 # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
     # between a cell and each of its neighbors.
@@ -292,9 +292,12 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     # Regions:
     # ---------------
-    rundata.regiondata.regions = []
+    regions = rundata.regiondata.regions
     # to specify regions of refinement append lines of the form
-    #  [minlevel,maxlevel,t1,t2,x1,x2]
+    #  [minlevel,maxlevel, t1,t2, x1,x2]
+    regions.append([1,4, 0,1e9, 0,1.])
+    regions.append([4,4, 0,0.002, 0.05,0.15])
+    regions.append([4,4, 0,0.002, 0.85,0.95])
     
     
     #  ----- For developers -----
