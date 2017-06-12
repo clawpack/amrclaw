@@ -54,12 +54,10 @@ module amr_module
     integer, parameter :: maxlv = 10
     integer, parameter :: maxcl = 5000
 
-    ! The max1d parameter should be changed if using OpenMP grid based 
-    ! looping, usually set to max1d = 60
-    integer, parameter :: max1d = 60
-    !integer, parameter :: max1d = 100 
-    !integer, parameter :: max1d = 80 
-    !integer, parameter :: max1d = 500 
+    ! The max1d parameter controls the number of grid cells in 
+    ! any single grid patch before breaking up. 
+    ! Might want to set smaller to break up into more patches for OpenMP
+    integer, parameter :: max1d = 500 
 
     integer, parameter :: maxvar = 10
     integer, parameter :: maxaux = 20
