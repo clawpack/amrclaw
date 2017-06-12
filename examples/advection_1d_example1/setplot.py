@@ -57,7 +57,7 @@ def setplot(plotdata):
     plotitem.plot_var = 0
     plotitem.amr_color = ['g','b','r']
     plotitem.amr_plotstyle = ['^-','s-','o-']
-    plotitem.amr_data_show = [1]
+    plotitem.amr_data_show = [1,1,1]
     plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
 
     # Plot true solution for comparison:
