@@ -11,7 +11,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 #--------------------------
-def setplot(plotdata):
+def setplot(plotdata=None):
 #--------------------------
     
     """ 
@@ -21,6 +21,10 @@ def setplot(plotdata):
     
     """ 
 
+
+    if plotdata is None:
+        from clawpack.visclaw.data import ClawPlotData
+        plotdata = ClawPlotData()
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
 
