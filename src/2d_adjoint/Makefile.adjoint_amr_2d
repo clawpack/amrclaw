@@ -4,6 +4,7 @@ ADJLIB:=$(CLAW)/amrclaw/src/2d_adjoint
 
 #list of common sources for amr 2d codes
 COMMON_MODULES += \
+  $(CLAW)/classic/src/utility_module.f90 \
   $(AMRLIB)/amr_module.f90 \
   $(AMRLIB)/gauges_module.f90 \
   $(AMRLIB)/regions_module.f90 
