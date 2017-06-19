@@ -1,3 +1,15 @@
+!> Compute signatures of a rectangle
+!! Signature is defined as number of flagged cells in each row/column.
+!! Also return first and last nonzero row/column (in **ilo**, **ihi**, 
+!! **jlo**, **jhi**), so don't have to waste time over entire region.
+!!
+!! \param[out] ilo first nonzero row
+!! \param[out] ihi last nonzero row
+!! \param[out] jlo first nonzero column
+!! \param[out] jhi last nonzero column
+!! \param[out] iscr horizontal signature, as a function of i
+!! \param[out] jscr vertical signature, as a function of j
+!!
 c
 c --------------------------------------------------------------------
 c
@@ -6,13 +18,9 @@ c
 c
        implicit double precision (a-h,o-z)
        dimension badpts(2,npts)
+       ! TODO: can iscr use an array, say ihi-ilo?
        dimension iscr(idim), jscr(jdim)
 c
-c :::::::::::::::::::::::::::: SIGNS ::::::::::::::::::::::::::::::
-c  compute signatures = number of flagged cells in each row/column.
-c  also return first and last nonzero row/column, so don't have
-c  to waste time over entire region.
-c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
        ilo= 1
        ihi= idim

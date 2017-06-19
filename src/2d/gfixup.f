@@ -1,4 +1,6 @@
 c
+!> Interpolate initial values for the newly created grids,
+!! whose levels start from level **lbase**+1.
 c  -----------------------------------------------------------
 c
       subroutine gfixup(lbase, lfnew, nvar, naux, newnumgrids,

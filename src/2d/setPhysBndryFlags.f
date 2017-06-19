@@ -1,3 +1,27 @@
+c ****************************************************************
+!> If grid borders the physical domain then
+!! set domain flags to 1 in buffer zone (which is outside the physical
+!! domain). 
+!! That way when shrink
+!! by 1 to get proper nested domain, you wont lose the first
+!! border cell of a grid
+!!
+!! flag array uses 0-based index space
+!! 
+!! if periodic, then have to look elsewhere to see if
+!! last interior row/col that is flagged is ok.
+!! this is done in the calling routine that
+!! transfers flagged points to base grids
+!!
+!! \param iflags array that stores the flags for this grid
+!! \param ilo global *i* index of left border of the grid
+!! \param ihi global *i* index of right border of the grid
+!! \param jlo global *j* index of lower border of the grid
+!! \param jhi global *j* index of upper border of the grid
+!! \param mbuff width of buffer zone
+!! \param level AMR level of the grid being flagged
+c ****************************************************************
+
 c
 c -----------------------------------------------------------
 c
@@ -7,20 +31,6 @@ c
        implicit double precision (a-h, o-z)
 
        integer*1  iflags(ilo-mbuff:ihi+mbuff, jlo-mbuff:jhi+mbuff)
-
-c ****************************************************************
-c  setPhysBndryFlags = if grid borders the physical domain then
-c                 set domain flags to 1 in buffer zone. That way when shrink
-c                 by 1 to get proper nested domain, you wont lose the first
-c                 border cell of a grid
-c
-c                 flag array uses 0-based index space
-c              
-c                 if periodic, then have to look elsewhere to see if
-c                 last interior row/col that is flagged is ok.
-c                 this is done in the calling routine that
-c                 transfers flagged points to base grids
-c ****************************************************************
 
        if (ilo-mbuff .lt. 0 .and. .not. xperdom) then  ! grid extends out of left side of domain
 c       set left flagged points to be ok

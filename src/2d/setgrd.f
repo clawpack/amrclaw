@@ -12,10 +12,10 @@ c
 c     # may as well not bother to calculate time step for error est.
 c
 c :::::::::::::::::::::::::::: SETGRD :::::::::::::::::::::::::::::::;
-c  set up the entire tree/grid structure.  only at this time t = 0
-c  can we take advantage of initialization routines.
-c  remember that regridding/error estimation needs to have two
-c  time steps of soln. values.
+!>  set up the entire tree/grid structure.  only at this time t = 0
+!!  can we take advantage of initialization routines.
+!!  remember that regridding/error estimation needs to have two
+!!  time steps of soln. values.
 c  6/21/05: added dtinit arg. to allow for better choice of initial timestep
 c   as discovered by advance/setgrd in first step.
 c ::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::::;

@@ -1,6 +1,12 @@
 c
 c --------------------------------------------------------------
 c
+!> Output a subtree of the grids. All grids from the grid level of 
+!! grid **mlev** to the finest level are output.
+!! \param[in] mlev root grid for current output.
+!! \param[in] outgrd If true, output value on grid
+!! \param[in] nvar number of equations for the system
+!! \param[in] naux number of auxiliary variables
       subroutine outtre(mlev,outgrd,nvar,naux)
 c
       use amr_module
@@ -40,6 +46,11 @@ c
 c
 c --------------------------------------------------------------
 c
+!> Output all grids on the same level as grid **mlev**.
+!! \param[in] mlev representative grid of the grid level being output
+!! \param[in] outgrd If true, output value on grid
+!! \param[in] nvar number of equations for the system
+!! \param[in] naux number of auxiliary variables
       subroutine outlev(mlev,outgrd,nvar,naux)
 c
       use amr_module

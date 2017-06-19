@@ -1,7 +1,7 @@
 ! ::::::::::::::::::::: flagregions ::::::::::::::::::::::::::::::::::
 !
-! Modify array of flagged points to respect minlevels and maxlevels
-! specified by regions.
+!> Modify array of flagged points to respect minlevels and maxlevels
+!! specified by regions.
 !
 !
 ! amrflags  = array to be flagged with either the value

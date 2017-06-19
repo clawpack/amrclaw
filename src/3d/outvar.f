@@ -25,7 +25,7 @@ c
          write(pltunit1,101) (((rect(ivar,i,j,k),i=ng+1,mitot-ng),
      .                                           j=ng+1,mjtot-ng),
      .                                           k=ng+1,mktot-ng)
- 101     format(5e12.6)
+ 101     format(5e13.6)
  20   continue
 c
       return

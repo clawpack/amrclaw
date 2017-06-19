@@ -1,4 +1,9 @@
 c
+!> For each coarse-fine interface, a Riemann problem between an inner
+!! ghost cell value on the fine grid and cell value in the adjacent coarse
+!! cell must be solved and added to corresponding location in
+!! **node(ffluxptr, mptr)** for conservative fix later
+!!
 c -------------------------------------------------------------
 c
        subroutine qad(valbig,mitot,mjtot,nvar,
@@ -19,8 +24,6 @@ c
 
 c
 c ::::::::::::::::::::::::::: QAD ::::::::::::::::::::::::::::::::::
-c  solve RP between ghost cell value on fine grid and coarse grid
-c  value that ghost cell overlaps. The resulting fluctuations
 c  are added in to coarse grid value, as a conservation fixup. 
 c  Done each fine grid time step. If source terms are present, the
 c  coarse grid value is advanced by source terms each fine time step too.

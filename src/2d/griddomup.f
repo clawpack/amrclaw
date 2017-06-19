@@ -1,4 +1,16 @@
 c
+!> **iflags** described flagged cells in a rectangular region
+!! described by **ilo**, **ihi**, **jlo**, **jhi** in level **lev**
+!! index space
+!! This subroutine projects **iflags** to **iflag**, which has flagging
+!! information in a rectangular region described by **ilofine**,
+!! **ihifine**, **jlofine**, **jhifine** in level **lev**+1 index space
+!!
+!!
+!! **input**:
+!! * iflags
+!! **output**:
+!! * iflags2
 c ----------------------------------------------------
 c
       subroutine griddomup(iflags,iflags2,ilo,ihi,jlo,jhi,

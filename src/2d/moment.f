@@ -1,3 +1,15 @@
+!> Compute enclosing rectangle around flagged points.
+!! save some info., even tho. usage might be low and rect. scrapped.
+!! 
+!! \param[in] badpts  x,y coords of cells around which a rectangle 
+!! is to be made and compute efficiency on
+!! \param[in] npt     num. of badpts. in the cluster.
+!! \param[out] usage   ratio of flagged to unflagged badpts. in new grid
+!!                measures goodness of fit and clustering
+!! \param[out] intrect stores some info. for grid created herein.
+!!                sometimes rect = rnode, sometimes = temp. array.
+!!                sometimes intrect = node.
+!!                depending on calling prog. (grdfit or expand)
 c
 c ----------------------------------------------------------
 c

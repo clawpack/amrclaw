@@ -13,7 +13,7 @@ c
 c
 c ::::::::::::::::::::::::::: DOMCOPY :::::::::::::::::::::
 c 
-c  domain flags are in iflags. copy into iflags2.
+!>  domain flags are in iflags. copy into iflags2.
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 

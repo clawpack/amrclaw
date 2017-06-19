@@ -8,7 +8,6 @@ that will be read in by the Fortran code.
 
 import os
 import numpy as np
-from clawpack.pyclaw import io
 
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
@@ -65,7 +64,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[0] = 3.           # xupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 100      # mx
+    clawdata.num_cells[0] = 20       # mx
     
 
     # ---------------
@@ -221,8 +220,8 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, t1, t2]
-    rundata.gaugedata.gauges.append([0, 0.0, 0., 5.])
-    rundata.gaugedata.gauges.append([1, -2.0, 0., 5.])
+    rundata.gaugedata.gauges.append([0, -1.0, 0., 1e9])
+    rundata.gaugedata.gauges.append([1,  1.0, 0., 1e9])
     
     # --------------
     # Checkpointing:
@@ -260,8 +259,8 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.amr_levels_max = 3
     
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    amrdata.refinement_ratios_x = [2, 2]
-    amrdata.refinement_ratios_t = [2, 2]
+    amrdata.refinement_ratios_x = [4, 4]
+    amrdata.refinement_ratios_t = [4, 4]
     
     
     # Specify type of each aux variable in clawdata.auxtype.
@@ -276,7 +275,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 0.01 # tolerance used in this routine
+    amrdata.flag2refine_tol = 0.1 # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
     # between a cell and each of its neighbors.

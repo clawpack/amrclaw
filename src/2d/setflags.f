@@ -12,9 +12,9 @@ c
       integer(kind=1) iflags(0:isize+1,0:jsize+1)
 
 c :::::::::::::::::::::: SETFLAGS ::::::::::::::::::::::::::::::::::
-c transfer flagged arrays into 1 large array of entire domain
-c makes buffering, projecting, etc. easier without searching 
-c through all kinds of grids
+!> transfer flagged arrays into 1 large array of entire domain
+!! makes buffering, projecting, etc. easier without searching 
+!! through all kinds of grids
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 

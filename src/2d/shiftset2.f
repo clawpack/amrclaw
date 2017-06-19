@@ -1,3 +1,24 @@
+c :::::::::::::::::::::: CSHIFT :::::::::::::::::::::::::::::::
+!> For an input grid, flag cells near the previously flagged cells for
+!! creating buffer zone.
+!!
+!! Shift by + or - 1 in either direction to do 
+!! bitwise calculus for proper nesting, buffering, etc.
+!! similar to cshift on CM machine.
+!! includes periodic buffering as well.
+!!
+!! NEWER VERSION: DOES ALL DIRS AT SAME TIME
+!! rectflags array has been augmented by enough border
+!!           cells to do buffering in place in the grid
+!! later will look to see if flagged pts are properly nested
+!!
+!! \param rectflags array to be flagged 
+!! \param ilo global *i* index of the left border of the grid being projected to (being flagged) 
+!! \param ihi global *i* index of the right border of the grid being projected to (being flagged) 
+!! \param jlo global *j* index of the lower border of the grid being projected to (being flagged) 
+!! \param jhi global *i* index of the upper border of the grid being projected to (being flagged) 
+!! \param mbuff width of the buffer zone
+c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 c ----------------------------------------------------------
 c
@@ -7,20 +28,6 @@ c
        implicit double precision (a-h, o-z)
        dimension rectflags(ilo-mbuff:ihi+mbuff,jlo-mbuff:jhi+mbuff)
        dimension copyflags(ilo-mbuff:ihi+mbuff,jlo-mbuff:jhi+mbuff)
-
-
-c :::::::::::::::::::::: CSHIFT :::::::::::::::::::::::::::::::
-c shift by + or - 1 in either direction to do 
-c  bitwise calculus for proper nesting, buffering, etc.
-c similar to cshift on CM machine.
-c includes periodic buffering as well.
-c
-c NEWER VERSION: DOES ALL DIRS AT SAME TIME
-c rectflags array has been augmented by enough border
-c           cells to do buffering in place in the grid
-c later will look to see if flagged pts are properly nested
-c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 
        do j = jlo-mbuff, jhi+mbuff
        do i = ilo-mbuff, ihi+mbuff

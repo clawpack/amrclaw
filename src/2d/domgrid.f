@@ -8,8 +8,8 @@ c
 
       mbuff = max(nghost,ibuff+1)
 c
-c  loop over base grids to get proper nesting domain for grids at level lcheck
-c  but only upsize to the lcheck grids dimensions
+!>  loop over base grids to get proper nesting domain for grids at level lcheck
+!!  but only upsize to the lcheck grids dimensions
 c
 
       mptr = lstart(lcheck)

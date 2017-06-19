@@ -1,3 +1,30 @@
+c ::::::::::::::::::::: FLAGGER :::::::::::::::::::::::::
+c
+c flagger = set up for and call two routines that flag using
+c    (a) spatial gradients, or other user-specified criteria
+c    (b) richardson error estimates
+c
+c the two approaches share an array with boundary ghost values 
+c
+c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+!  Below are comments for Doxygen
+!> \callgraph
+!! \callergraph
+!! Set up for and call two routines that flag using
+!!    (a) spatial gradients, or other user-specified criteria
+!!    (b) richardson error estimates
+!!
+!! the two approaches share an array with boundary ghost values 
+!! before parallel loop give grids the extra storage they need for error estimation
+!!
+!! **input**: AMR level on which all grids need to be flagged
+!! **output**: flag arrays that are stored with each grid node,
+!!             accessable through node(storeflags, mptr)
+!!
+!! \param nvar number of equations for the system
+!! \param naux number of auxiliary variables
+!! \param lcheck flag all level **lcheck** grids
+!! \param[in] start_time start time of current simulation
 c
 c -----------------------------------------------------------
 c
@@ -10,18 +37,8 @@ c
       integer mythread/0/, maxthreads/1/
       integer listgrids(numgrids(lcheck)), locuse
 
-c ::::::::::::::::::::: FLAGGER :::::::::::::::::::::::::
-c
-c flagger = set up for and call two routines that flag using
-c    (a) spatial gradients, or other user-specified criteria
-c    (b) richardson error estimates
-c
-c the two approaches share an array with boundary ghost values 
-c
-c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 c      call prepgrids(listgrids,numgrids(lcheck),lcheck)
-         mbuff = max(nghost,ibuff+1)  
+      mbuff = max(nghost,ibuff+1)  
 c before parallel loop give grids the extra storage they need for error estimation
          do  jg = 1, numgrids(lcheck)
 c            mptr = listgrids(jg)
