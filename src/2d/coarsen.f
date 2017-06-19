@@ -1,6 +1,3 @@
-
-
-
 c
 c ---------------------------------------------------
 c
@@ -12,9 +9,9 @@ c
        dimension  valbgc(nvar,mi2tot,mj2tot)
 
 c :::::::::::::::::::::::: COARSEN ::::::::::::::::::::::::::::::::
-c coarsen = coarsen the fine grid data (with double the usual
-c           number of ghost cells to prepare coarsened
-c           grid for error estimation.
+!> coarsen the fine grid data (with double the usual
+!! number of ghost cells to prepare coarsened
+!! grid for error estimation.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
        do 10 j = 1, mj2tot

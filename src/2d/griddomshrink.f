@@ -1,4 +1,24 @@
 c
+c :::::::::::::::::::::::::  GRIDDOMSHRINK ::::::::::::::::::::::::::::
+c
+!> Shrink domain flags one cell for allowable properly nested domain
+!! This is needed even for lcheck = lbase. More shrinking needed
+!! for finer levels.
+!! Flags starts in iflags2, should end in iflags array
+!!
+!! The output **iflags** has flagged zone one cell smaller (shrinked)
+!!than input **iflags2.
+!! 
+!! The flags and indices, **ilo**, **ihi**, **jlo** and **jhi** are all with
+!! respect to level **level** index space
+!!
+!! **input**:
+!! * iflags2
+!! **output**:
+!! * iflags
+c
+c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+c
 c ----------------------------------------------------
 c
       subroutine griddomshrink(iflags2,ilo,ihi,jlo,jhi,mbuff,iflags,
@@ -12,15 +32,6 @@ c
       integer*1  iflags2(ilo-mbuff:ihi+mbuff,jlo-mbuff:jhi+mbuff)
 
 
-c
-c :::::::::::::::::::::::::  GRIDDOMSHRINK ::::::::::::::::::::::::::::
-c
-c  shrink domain flags one cell for allowable properly nested domain
-c  This is needed even for lcheck = lbase. More shrinking needed
-c  for finer levels.
-c  flags starts in iflags2, should end in iflags array
-c
-c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
       if (dprint) then
         write(outunit,*)" from griddomshrink: on entry, iflags2"

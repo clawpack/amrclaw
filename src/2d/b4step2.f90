@@ -1,10 +1,9 @@
-
+!> Called before each call to step2.
+!! Use to set time-dependent aux arrays or perform other tasks.
+!!
+!! This default version does nothing. 
 subroutine b4step2(mbc,mx,my,meqn,q,xlower,ylower,dx,dy,t,dt,maux,aux)
 
-    ! Called before each call to step2.
-    ! Use to set time-dependent aux arrays or perform other tasks.
-    !
-    ! This default version does nothing. 
  
     implicit none
     integer, intent(in) :: mbc,mx,my,meqn,maux

@@ -1,4 +1,20 @@
 c
+!> This subroutine is called by setgrd and regrid to actually fit the new grids
+!! on each level. lcheck is the level being error estimated
+!! so that lcheck+1 will be the level of the new grids.
+!!
+!! It generates all grids on level **lcheck**+1 and ensure proper
+!! nesting.
+!!
+!! \param lbase base AMR level for current refinement, which stays
+!!  fixed. Note that **lbase** is always less or equal to **lcheck**
+!! \param lcheck the level being error estimated so that lcheck+1 will be the level of the new grids.
+!! \param nvar number of equations for the system
+!! \param naux  number of auxiliary variables
+!! \param cut efficiency threshold for the clustering algorithm
+!! \param time current simulation time
+!! \param start_time start time of current simulation
+c
 c ---------------------------------------------------------
 c
       subroutine grdfit (lbase,lcheck,nvar,naux,cut,time,
@@ -15,11 +31,6 @@ c
       logical    fit2, nestck2
       data       cout/.false./
 c
-c ::::::::::::::::::::: GRDFIT :::::::::::::::::::::::::::::::::;
-c  grdfit called by setgrd and regrid to actually fit the new grids
-c         on each level. lcheck is the level being error estimated
-c         so that lcheck+1 will be the level of the new grids.
-c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
       call system_clock(clock_start,clock_rate)
 

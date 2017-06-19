@@ -18,6 +18,83 @@
 !  after intersections at specified level.
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 !
+!
+!> Fill values for a patch at the specified level and
+!! location, using values from grids at level **level** ONLY!
+!! Leave cells that are not filled unchanged.
+!!
+!! Search the intersection of a grid patch with corners at **ilo**,**ihi**,
+!! **jlo**,**jhi** and all grids **mptr** on level **level**.  
+!! If there is a non-null intersection,
+!! copy the solution \f$q\f$ and auxiliary values from grid **mptr** into **val** array.
+!!
+!! Assume called in correct order of levels, so that when copying
+!! is ok to overwrite.
+!! 
+!! It uses array, **flaguse**, to indicate whether each cell is filled. 
+!! All cells outside computational domain will be marked as "used" as well
+!! and will be processed later by [bc2amr()](@ref bc2amr) in [filrecur()](@ref filrecur).
+!!
+!! **Input**: 
+!! * a patch that needs to be filled
+!! * global indices that describe the patch to be filled
+!! * the grid **msrc** that might contain with the patch
+!! * relative position of the patch to grid **msrc** (nrowst, ncolst)
+!!
+!! **Output**:
+!! * data array **val** that stores the new values 
+!! * flagging array, **flaguse** that indicates whether a cell is filled
+!! 
+!! ## Algorithm
+!!
+!! If **msrc** \f$ = -1 \f$, this patch is not associated with any grid.
+!! So the ''group of grids'', **S**, below contains all level **level** grids.
+!!
+!! If **msrc** \f$ \neq -1 \f$, this patch is contained in grid **msrc**.
+!! So the ''group of grids'', **S**, below only contains 
+!! level **level** grids that intersect with grid **msrc**. 
+!! Size of **S** is smaller in this case.
+!!
+!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!  procedure intfil()
+!!      for each grid mptr in a group of grids, S, do
+!!          if grid mptr intersect with the patch
+!!              if grid mptr has values at the time needed
+!!                  copy values inside the intersection from grid mptr to val      
+!!                  mark cells in this intersection as "used"
+!!              else
+!!                  interpolate from values on grid mptr at two different time
+!!                  fill the intersection with interpolated values              
+!!                  mark cells in this intersection as "used"
+!!              end if
+!!          end if
+!!      end for            
+!!      mark any portion of the patch that is out of whole computational domain as "used", 
+!!      which will be processed by bc2amr elsewhere later
+!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!
+!!
+!! \param val array where values are copied to. The array covers the whole grid **msrc**
+!! \param mi size of **val** array in *i* direction
+!! \param mj size of **val** array in *j* direction
+!! \param time simulation time of the values in **val** array
+!! \param flaguse marks indicating whether a position in **val** is filled
+!! \param nrowst local *i* index (relative to lower-left corner of grid **msrc**) of the left-most cell of the patch to be filled
+!! \param ncolst local *j* index (relative to lower-left corner of grid **msrc**) of the lower-most cell of the patch to be filled
+!! \param ilo global *i* index of left-most cell  of the patch to be filled
+!! \param ihi global *i* index of right-most cell of the patch to be filled
+!! \param jlo global *j* index of lower-most cell of the patch to be filled
+!! \param jhi global *j* index of upper-most cell of the patch to be filled
+!! \param level This patch is on level **level**
+!! \param nvar number of equations for the system
+!! \param naux number of auxiliary variables
+!! \param msrc index of the grid that contains this patch
+!!
+!! \callgraph
+!! \callergraph
+
+
+
 subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nvar,naux,msrc)
 
     use amr_module, only: possk, mxnest, iregsz, jregsz, nghost, outunit, alloc
@@ -130,6 +207,7 @@ subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nva
             ! Check if we should interpolate in time
             t_interpolate = .false.
             if (abs(alphai - 1.d0) < t_epsilon) then
+                ! need no interpolation
                 loc = node(store1,mptr)
             else if (dabs(alphai) .lt. t_epsilon) then
                 loc = node(store2,mptr)

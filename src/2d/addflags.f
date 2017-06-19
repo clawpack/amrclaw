@@ -1,6 +1,9 @@
 c
-c --------------------------------------------------------------
-c
+!> Transfer flagged arrays from errest into the one from spatial differencing 
+!!
+!! NOTE: not dimensioned the same. rectflags is possibly larger to accomodate
+!! in-place buffering.
+
       subroutine addflags(rectflags,mibuff,mjbuff,
      1                    rctold,idim3,mitot,mjtot,mptr)
 c

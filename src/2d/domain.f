@@ -8,8 +8,8 @@ c
       logical    vtime
 
 c
-c  allocate initial coarse grid domain. set node info & initialize grid
-c  initial space and time step set here too
+!>  allocate initial coarse grid domain. set node info & initialize grid
+!!  initial space and time step set here too
 c
       mstart = nodget()
 c

@@ -150,7 +150,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Initial time step for variable dt.  
     # (If dt_variable==0 then dt=dt_initial for all steps)
-    clawdata.dt_initial = 1.000000e-01
+    clawdata.dt_initial = 0.01
     
     # Max time step to be allowed if variable dt used:
     clawdata.dt_max = 1.000000e+99
@@ -215,8 +215,8 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, t1, t2]
-    rundata.gaugedata.gauges.append([0, 0, 0., 0.8])
-    rundata.gaugedata.gauges.append([1, 1, 0., 0.8])
+    rundata.gaugedata.gauges.append([0, 0.2, 0, 1e9])
+    rundata.gaugedata.gauges.append([1, 0.9, 0, 1e9])
     
     # --------------
     # Checkpointing:

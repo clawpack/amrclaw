@@ -1,4 +1,14 @@
 c
+!> Prepare new fine grids to save fluxes after each integration step
+!! for future conservative fix-up on coarse grids.
+!! For each grid mkid on level **level**, first allocate temporary space
+!! for storing solution on a rectangle on level **level**-1, which is 
+!! enlarged from grid mkid by one level **level**-1 cell on each 
+!! side. 
+!! Then copy solution from overlapping level **level**-1 grids to this
+!! rectangle. 
+!! Finally, fill node(ffluxptr, mkid) with solutions in cells that 
+!! are on the rectangle and border the boundary of grid mkid. 
 c  ================================================================
       subroutine saveqc(level,nvar,naux)
 c  ================================================================

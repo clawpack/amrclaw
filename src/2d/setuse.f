@@ -1,4 +1,61 @@
 c
+!> Add intersection information between grid **mptr** and a finer grid
+!! **mkid** to the boundary list, **listbc**, of grid **mptr**, to be used by fluxsv. 
+!!
+!! ### About **listbc**
+!! **listbc** for grid **mptr** is a 5 by maxsp array and is saved at  
+!! address point to by alloc(node(cfluxptr, mptr)). It stores information 
+!! about interface between grid **mptr** and all grids one
+!! level finer if they intersect. 
+!! These interfaces consist of multiple cell edges (or segments,
+!! whose length = cell size on grid **mptr**).
+!! Each column in **listbc** has five entries and stores information 
+!! associated with one segment. 
+!! A global index for all these segments is represented by **ispot**.
+!! The five entries for the \f$ ispot^{th}\f$ segment are explained as below: 
+!! 
+!! - listbc(1,ispot) stores LOCAL (RELATIVE to left boundary of grid
+!! **mptr**) *i* index of the cell on grid **mptr** that border this 
+!! segment. 
+!! - listbc(2,ispot) stores LOCAL (RELATIVE to left boundary of grid
+!! **mptr**) *j* index of the cell on grid **mptr** that border this 
+!! segment. 
+!! - listbc(3,ispot) stores side number, which indicates which side 
+!! of this segment is a cell of grid **mptr** (coarse cell).
+!! If this segment is the left edge of a cell on grid **mptr**, this 
+!! number is 1. The number increases (2, 3, 4) as it goes around a coarse cell
+!! clockwise (top edge, right edge, bottom edge).
+!! - listbc(4,ispot) stores grid number of the finer grid that borders
+!! this segment
+!! - listbc(5,ispot) stores the position of this segment with respect to 
+!! the perimeter of this finer grid (grid listbc(4,ispot)). 
+!! The fine grid will save all its fluxes all around its
+!! perimeter. This entry tells where the coarse grid should
+!! take them from. Note that number of fluxes saved here is equal 
+!! to number of such segments (length = coarse cell size) needed to make
+!! up the perimeter.
+!!
+!! \param[in,out] listbc the array that stores boundary information 
+!! for grid **mptr**
+!! \param[in] maxsp maximum number of segments **lisbc** can describe
+!! \param[in,out] ispot global index of a segment among all segments
+!! that make up the interface between grid **mptr** and ANY finer grids
+!! \param[in] mkid the finer grid that may intersect with grid **mptr**
+!! \param[in] ilo global *i* index of left border of grid **mptr**
+!! \param[in] ihi global *i* index of right border of grid **mptr**
+!! \param[in] jlo global *j* index of lower border of grid **mptr**
+!! \param[in] jhi global *j* index of upper border of grid **mptr**
+!! \param[in] iclo global *i* index of left border of grid **mkid**, 
+!! in level of grid **mptr** index space
+!! \param[in] ichi global *i* index of right border of grid **mptr**,
+!! in level of grid **mptr** index space
+!! \param[in] jclo global *j* index of lower border of grid **mptr**,
+!! in level of grid **mptr** index space
+!! \param[in] jchi global *j* index of upper border of grid **mptr**,
+!! in level of grid **mptr** index space
+!! \param[in] kflag indicate what type of domain is being used, regular 
+!! cartesian or spherical domain
+
 c ----------------------------------------------------------------
 c
        subroutine setuse(listbc,maxsp,ispot,mkid,

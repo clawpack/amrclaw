@@ -1,3 +1,6 @@
+!> Find best place to split the 2D array of flagged points.
+!! Either split at a hole, or use signatures to find
+!! zero crossing of laplacian.
 c
 c -----------------------------------------------------------
 c
@@ -14,6 +17,8 @@ c
       implicit double precision (a-h,o-z)
 
 
+      ! TODO: not necessarily use array of size idim?
+      ! For higher level AMR grids, most elements in isrc will be zero?
       dimension iscr(idim), jscr(jdim)
 
 c Modified 6/02:

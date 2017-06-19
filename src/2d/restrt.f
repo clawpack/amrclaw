@@ -13,7 +13,7 @@ c
       dimension intrtx(maxlv),intrty(maxlv),intrtt(maxlv)
 c
 c :::::::::::::::::::::::::::: RESTRT ::::::::::::::::::::::::::::::::
-c read back in the check point files written by subr. check.
+!> read back in the check point files written by subr. check.
 c
 c some input variables might have changed, and also the
 c alloc array could have been written with a smaller size at checkpoint

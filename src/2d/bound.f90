@@ -16,6 +16,38 @@
 !     appropriate intersecting regions, and interpolates the remaining
 !     cells from coarser grids as required.
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!
+!  Below are comments for Doxygen
+!>
+!! \callgraph
+!! \callergraph
+!! This routine sets the boundary values for a given grid 
+!! at level level. It sets the values for a strip ng zones wide all
+!! the way around the border, in 4 rectangular strips.
+!!
+!!
+!! This routine calls the routine filpatch()
+!! which for any block of mesh points on a given level,
+!! intersects that block with all grids on that level,
+!! copies the values into the appropriate intersecting regions, 
+!! and interpolates the remaining cells from coarser grids as required.
+!! After calling filpatch for four regions around the border, call bc2amr()
+!! to set any regions that are outside physical boundary.
+!!
+!! **Output**:
+!!
+!! The values around the border of the grid are inserted directly into the enlarged valbig array.
+!!
+!! \param time the grid **mptr** needs ghost cell values at time **t**
+!! \param nvar number of equations for the system
+!! \param ng width of ghost regions on each side
+!! \param valbig data array for solution \f$q \f$ (cover the whole grid **msrc**)
+!! \param mitot number of cells in *i* direction on grid **mptr** 
+!! \param mjtot number of cells in *j* direction on grid **mptr**
+!! \param mptr index of the grid to be processed
+!! \param aux data array for auxiliary variables 
+!! \param naux number of auxiliary variables
+!!
 subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
 
   use amr_module, only: rnode, node, hxposs, hyposs, cornxlo, cornxhi

@@ -1,5 +1,12 @@
 c
-c ---------------------------------------------------------
+!> Output the grid descriptor of grid **mptr** and optionally the values on
+!! the grid (for a single grid - see "outtre" for outputing
+!! a subtree)
+!! 
+!! \param[in] mptr pointer to (grid number of) the grid descriptor 
+!! \param[in] outgrd If true, output value on grid
+!! \param[in] nvar number of equations for the system
+!! \param[in] naux number of auxiliary variables
 c
       subroutine outmsh(mptr,outgrd,nvar,naux)
       use amr_module

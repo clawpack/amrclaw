@@ -9,14 +9,14 @@ c
        dimension rectflags(ilo-mbuff:ihi+mbuff, jlo-mbuff:jhi+mbuff)
 
 c ****************************************************************
-c  setPhysBndry = if grid borders the physical domain then
-c                 turn off any flagged points in buffer zone = those points
-c                 are not properly nested (and it doesnt matter).
-c                 But last row/col interior to grid if flagged is ok
-c              
-c                 if periodic, then have to look elsewhere to see if
-c                 last interior row/col that is flagged is ok.
-c                 (done in rest of colate2)
+!> If grid borders the physical domain then
+!! turn off any flagged points in buffer zone = those points
+!! are not properly nested (and it doesnt matter).
+!! But last row/col interior to grid if flagged is ok
+!! 
+!! if periodic, then have to look elsewhere to see if
+!! last interior row/col that is flagged is ok.
+!! (done in rest of colate2)
 c ****************************************************************
 
        if (ilo .eq. 0 .and. .not. xperdom) then

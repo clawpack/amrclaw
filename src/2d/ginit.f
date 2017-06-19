@@ -1,4 +1,17 @@
 c
+!> Initializes solution on all grids at level of grid **msave**, 
+!! by calling qinit().
+!! If **first** = true, (first call to init), then allocate the
+!! soln storage area too, else was already allocated.
+!!
+!! \param msave First grid in the grid list that stores all grids at
+!! this level
+!! \param first Is this the first call to init?
+!! \param nvar number of equations for the system
+!! \param naux  number of auxiliary variables
+!! \param start_time start time of current simulation
+!!
+c
 c -------------------------------------------------------------
 c
       subroutine ginit(msave, first, nvar, naux, start_time)

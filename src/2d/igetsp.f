@@ -1,4 +1,8 @@
 c
+!> Allocate contiguous space of length nword in main storage array
+!! alloc. 
+!!
+!! Return pointer to this storage
 c ----------------------------------------------------------
 c
       function igetsp (nwords)

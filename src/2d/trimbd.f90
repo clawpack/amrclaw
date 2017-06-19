@@ -5,6 +5,30 @@
 !  rectangle containing all unset points in il,ir,jb,jt.
 ! ::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::;
 !
+!> Examine the setting status of a patch.
+!!
+!! If used array is completely set (=1.) then return set=true, 
+!! otherwise return false, along with the dimensions of the smallest 
+!! rectangle containing all unset points in unset_rect(4)
+!!
+!! **Input**: 
+!! * an array of flags for the patch
+!! * size of the patch
+!!
+!! **Output**:
+!! * examine results
+!! * which region is not set
+!! 
+!! \param used flags for the whole patch
+!! \param nrow size of the patch in *i* direction
+!! \param ncol size of the patch in *j* direction
+!! \param set output whether the patch is completely set
+!! \param unset_rect the smallest rectangle that contains all unset points. 
+!! The rectangle is described by its lower left corner, (unset_rect(1), unset_rect(3)), 
+!! and its upper right corner, (unset_rect(2), unset_rect(4)).
+!!
+!! \callgraph
+!! \callergraph
 subroutine trimbd(used,nrow,ncol,set,unset_rect)
 
     implicit none

@@ -1,4 +1,18 @@
 c
+!> For new fine grids (grids on level **level**), allocate space for 
+!! saving fluxes at boundary (even if it's physical boundary) after 
+!! each integration step.
+!! These fluxes are for future conservative fixing of coarse grids
+!! (level **level**-1 grids).
+!! The address of this space is stored in node(ffluxptr, mkid) for grid
+!! mkid. 
+!!
+!! Note that if the refinment ratio is r, fluxes from every r cells 
+!! on grid **mkid** are saved to one slot in this space, since every r
+!! cells on grid **mkid** border one cell on level **level**-1 grids.
+!! \param[in] level boudnary lists of grids on this level get updated
+!! \param[in] nvar number of equations for the system
+!! \param[in] naux number of auxiliary variables for the system
 c ----------------------------------------------------------
 c
       subroutine prepf(level,nvar,naux)

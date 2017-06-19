@@ -1,12 +1,5 @@
-!
-! :::::::::::::::::::::::::::::: FILVAL ::::::::::::::::::::::::::
-!
-!
-! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!
-!
-! ------------------------------------------------------------------
-!
+!> Fill grid **mptr** on level **level** by copying values from OLD level **level**
+!! grids if available, otherwise by interpolating values from coarser grids.
 subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic,          &
                   mjc, xleft, xright, ybot, ytop, nvar, mptr, ilo, ihi,  &
                   jlo, jhi, aux, naux)
@@ -37,7 +30,6 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic,          &
     integer :: mjb
     integer :: jm, im, nm 
     logical :: sticksoutxfine, sticksoutyfine,sticksoutxcrse,sticksoutycrse
-    logical :: DIAGONAL_CORNER
     
     !for setaux timing
     integer :: clock_start, clock_finish, clock_rate
@@ -47,12 +39,6 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic,          &
     ! External function definitions
     real(kind=8) :: get_max_speed
 
-
-     DIAGONAL_CORNER(im,jm,mic,mjc) = (im .eq. 1   .and. jm .eq. mjc)  .or.     &
-                                      (im .eq. mic .and. jm .eq. mjc) .or.     &
-                                      (im .eq. 1   .and. jm .eq. 1)    .or.     &
-                                      (im .eq. mic .and. jm .eq. 1)
-     
 
     refinement_ratio_x = intratx(level-1)
     refinement_ratio_y = intraty(level-1)

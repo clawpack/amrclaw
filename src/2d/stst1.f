@@ -106,7 +106,6 @@ c
       timeFlglvl         = 0
       timeFlglvlTot      = 0
       timeGrdfit2        = 0
-      timeFilval         = 0
       timeRegridding     = 0
       timeRegriddingCPU  = 0.d0
       timeTick           = 0
