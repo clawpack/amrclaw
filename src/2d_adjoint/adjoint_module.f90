@@ -76,7 +76,12 @@ contains
             20  continue
             close(iunit)
 
-            finalT = adj_times(1)
+            if (size(adj_times) > 0) then
+                finalT = adj_times(1)
+            else
+                print *, 'Error: no adjoint output files found.'
+                stop
+            endif
 
             do 60 k = 1, totnum_adjoints
                 ! Reverse times
