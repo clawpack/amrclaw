@@ -31,40 +31,52 @@ def setplot(plotdata):
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
     
-    
+    def draw_interface_add_legend(current_data):
+        try:
+            from clawpack.visclaw import legend_tools
+            labels = ['Level 1','Level 2', 'Level 3']
+            legend_tools.add_legend(labels, colors=['g','b','r'],
+                                    markers=['^','s','o'], linestyles=['','',''],
+                                    loc='upper left')
+        except:
+            pass
 
     # Figure for q[0]
-    plotfigure = plotdata.new_plotfigure(name='Pressure', figno=0)
-    
+    plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+    plotfigure.kwargs = {'figsize': (8,8)}
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = [-4.0,8.0]
-    plotaxes.ylimits = [-0.5,3.0]
+    plotaxes.axescmd = 'subplot(2,1,1)'   # top figure
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = [-.5,3.1]
     plotaxes.title = 'Pressure'
+    plotaxes.afteraxes = draw_interface_add_legend
     
     # Set up for item on these axes:
-    plotitem = plotaxes.new_plotitem(plot_type='1d')
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
-    plotitem.plotstyle = 'o'
-    plotitem.color = 'b'
-    plotitem.show = True       # show on plot?
-    
+    plotitem.amr_color = ['g','b','r']
+    plotitem.amr_plotstyle = ['^-','s-','o-']
+    plotitem.amr_data_show = [1,1,1]
+    plotitem.amr_kwargs = [{'markersize':5},{'markersize':4},{'markersize':3}]
     
     # Figure for q[1]
-    plotfigure = plotdata.new_plotfigure(name='Velocity', figno=1)
     
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,1,2)'   # bottom figure
     plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = 'auto'
+    plotaxes.ylimits = [-.5,1.1]
     plotaxes.title = 'Velocity'
+    plotaxes.afteraxes = draw_interface_add_legend
     
     # Set up for item on these axes:
-    plotitem = plotaxes.new_plotitem(plot_type='1d')
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 1
-    plotitem.plotstyle = 'o'
-    plotitem.color = 'b'
-    plotitem.show = True       # show on plot?
+    plotitem.amr_color = ['g','b','r']
+    plotitem.amr_plotstyle = ['^-','s-','o-']
+    plotitem.amr_data_show = [1,1,1]
+    plotitem.amr_kwargs = [{'markersize':5},{'markersize':4},{'markersize':3}]
     
     # Figure for inner product
     plotfigure = plotdata.new_plotfigure(name='Inner Product', figno=10)
@@ -78,7 +90,7 @@ def setplot(plotdata):
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='1d')
     plotitem.plot_var = 2
-    plotitem.plotstyle = 'o'
+    plotitem.plotstyle = 'o-'
     plotitem.color = 'b'
     plotitem.amr_data_show = [1,1,0]
     plotitem.show = True       # show on plot?
