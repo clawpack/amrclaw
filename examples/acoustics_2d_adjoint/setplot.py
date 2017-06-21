@@ -27,11 +27,9 @@ def setplot(plotdata):
     # -------------------
 
     plotfigure = plotdata.new_plotfigure(name='Pressure', figno=0)
-    plotfigure.kwargs = {'figsize': (11,5)}
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.axescmd = 'axes([-0.15,0.1,0.8,0.8])'
     plotaxes.xlimits = [-4,8]
     plotaxes.ylimits = [-1,11]
     plotaxes.title = 'Pressure'
@@ -49,12 +47,14 @@ def setplot(plotdata):
     plotitem.amr_patchedges_show = [1,1,1]
     plotitem.amr_celledges_show = [0,0,0]
     
-    # Adding innerproduct plot
+    # Figure for inner product
+    # -------------------
+    
+    plotfigure = plotdata.new_plotfigure(name='Inner Product', figno=1)
     
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.title = 'Inner Product'
-    plotaxes.axescmd = 'axes([0.35,0.1,0.8,0.8])'
     plotaxes.xlimits = [-4,8]
     plotaxes.ylimits = [-1,11]
     plotaxes.title = 'Inner Product'
@@ -120,23 +120,11 @@ def addgauges(current_data):
 
 def fixup(current_data):
     import pylab
-    size = 28
     addgauges(current_data)
-    pylab.title('Forward Pressure', fontsize=size)
-    pylab.xticks(fontsize=size)
-    pylab.yticks(fontsize=size)
 
 def fixup_innerprod(current_data):
     import pylab
-    size = 28
     addgauges(current_data)
-    pylab.title('Inner Product', fontsize=size)
-    pylab.xticks(fontsize=size)
-    pylab.tick_params(axis='y', labelleft='off')
 
 def fixup_gauge(current_data):
     import pylab
-    size = 34
-    pylab.title('Pressure at Gauge 0', fontsize=size)
-    pylab.xticks([1.0, 1.5, 2.0, 2.5, 3.0], fontsize=size)
-    pylab.yticks([-0.3, -0.1, 0.1, 0.3, 0.5], fontsize=size)

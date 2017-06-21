@@ -4,7 +4,7 @@ Module to set up run time parameters for Clawpack.
 The values set in the function setrun are then written out to data files
 that will be read in by the Fortran code.
     
-""" 
+"""
 
 import os
 import numpy as np
@@ -23,22 +23,21 @@ def setrun(claw_pkg='amrclaw'):
         rundata - object of class ClawRunData 
     
     """ 
+
+    from clawpack.clawutil import data
     
-    from clawpack.clawutil import data 
-    
+ 
     assert claw_pkg.lower() == 'amrclaw',  "Expected claw_pkg = 'amrclaw'"
 
     num_dim = 2
     rundata = data.ClawRunData(claw_pkg, num_dim)
 
-
     #------------------------------------------------------------------
     # Problem-specific parameters to be written to setprob.data:
     #------------------------------------------------------------------
-
-    probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('rho',     1.,  'density of medium')
-    probdata.add_param('bulk',    4.,  'bulk modulus')
+    
+    # see setadjoint function below
+    
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -78,7 +77,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_eqn = 3
 
     # Number of auxiliary variables in the aux array (initialized in setaux)
-    clawdata.num_aux = 0
+    # see setadjoint
     
     # Index of aux array corresponding to capacity function, if there is one:
     clawdata.capa_index = 0
@@ -114,8 +113,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 30
-        clawdata.tfinal = 1.5
+        clawdata.num_output_times = 20
+        clawdata.tfinal = 6.0
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -132,6 +131,10 @@ def setrun(claw_pkg='amrclaw'):
 
     clawdata.output_format = 'ascii'       # 'ascii', 'binary', 'netcdf'
 
+    clawdata.output_q_components = 'all'   # could be list such as [True,True]
+    clawdata.output_aux_components = 'none'  # could be list
+    clawdata.output_aux_onlyonce = False    # output aux arrays only at t0
+    
 
     # ---------------------------------------------------
     # Verbosity of messages to screen during integration:  
@@ -198,14 +201,12 @@ def setrun(claw_pkg='amrclaw'):
     #   4 or 'mc'       ==> MC limiter
     clawdata.limiter = ['vanleer','vanleer']
     
-    clawdata.use_fwaves = True    # True ==> use f-wave version of algorithms
+    clawdata.use_fwaves = False    # True ==> use f-wave version of algorithms
     
     # Source terms splitting:
-    #   src_split == 0 or 'none'    ==> no source term (src routine never
-    #   called)
+    #   src_split == 0 or 'none'    ==> no source term (src routine never called)
     #   src_split == 1 or 'godunov' ==> Godunov (1st order) splitting used, 
-    #   src_split == 2 or 'strang'  ==> Strang (2nd order) splitting used,
-    #   not recommended.
+    #   src_split == 2 or 'strang'  ==> Strang (2nd order) splitting used,  not recommended.
     clawdata.source_split = 0
     
     
@@ -217,36 +218,35 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_ghost = 2
     
     # Choice of BCs at xlower and xupper:
-    #   0 or 'user'     => user specified (must modify bcNamr.f to use this
-    #   option)
+    #   0 or 'user'     => user specified (must modify bcNamr.f to use this option)
     #   1 or 'extrap'   => extrapolation (non-reflecting outflow)
     #   2 or 'periodic' => periodic (must specify this at both boundaries)
-    #   3 or 'wall'     => solid wall for systems where q(2) is normal
-    #   velocity
+    #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
     
-    clawdata.bc_lower[0] = 'wall'   # at xlower
+    clawdata.bc_lower[0] = 'extrap'   # at xlower
     clawdata.bc_upper[0] = 'wall'   # at xupper
 
     clawdata.bc_lower[1] = 'wall'   # at ylower
-    clawdata.bc_upper[1] = 'wall'   # at yupper
+    clawdata.bc_upper[1] = 'extrap'   # at yupper
+                         
 
     # ---------------
     # Gauges:
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    rundata.gaugedata.gauges.append([0, 3.5, 0.5, 2.7, 2.85])
+    rundata.gaugedata.gauges.append([0, 3.5, 0.5, 1.22, 2.85])
     #rundata.gaugedata.gauges.append([1, 3.6, 0.5, 2.7, 2.85])
-    
+
     # --------------
     # Checkpointing:
     # --------------
-    
+
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
-    
-    clawdata.checkpt_style = 3
-    
+
+    clawdata.checkpt_style = 0
+
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all
         pass
@@ -254,71 +254,76 @@ def setrun(claw_pkg='amrclaw'):
     elif clawdata.checkpt_style == 1:
         # Checkpoint only at tfinal.
         pass
-    
+
     elif clawdata.checkpt_style == 2:
-        # Specify a list of checkpoint times.
+        # Specify a list of checkpoint times.  
         clawdata.checkpt_times = [0.1,0.15]
 
     elif clawdata.checkpt_style == 3:
         # Checkpoint every checkpt_interval timesteps (on Level 1)
         # and at the final time.
-        clawdata.checkpt_interval = 3
+        clawdata.checkpt_interval = 5
+
     
+
     # ---------------
     # AMR parameters:
     # ---------------
-    
+
     amrdata = rundata.amrdata
-    
+
     # max number of refinement levels:
-    amrdata.amr_levels_max = 1
-    
+    amrdata.amr_levels_max = 3
+
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    amrdata.refinement_ratios_x = [2]
-    amrdata.refinement_ratios_y = [2]
-    amrdata.refinement_ratios_t = [2]
-    
-    
+    amrdata.refinement_ratios_x = [2, 2]
+    amrdata.refinement_ratios_y = [2, 2]
+    amrdata.refinement_ratios_t = [2, 2]
+
+
     # Specify type of each aux variable in clawdata.auxtype.
     # This must be a list of length num_aux, each element of which is one of:
     #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
-    amrdata.aux_type = []
     
-    
+    # need 1 value, set in setadjoint
+
+
     # Flag for refinement based on Richardson error estimater:
     amrdata.flag_richardson = False    # use Richardson?
-    amrdata.flag_richardson_tol = 0.001000e+00  # Richardson tolerance
+    amrdata.flag_richardson_tol = 0.00004  # Richardson tolerance
     
     # Flag for refinement using routine flag2refine:
-    amrdata.flag2refine = False      # use this?
-    amrdata.flag2refine_tol = 0.05 # tolerance used in this routine
-    # User can modify flag2refine to change the criterion for flagging.
-    # Default: check maximum absolute difference of first component of q
-    # between a cell and each of its neighbors.
-    
+    amrdata.flag2refine = True      # for adjoint flagging
+    # see setadjoint to set tolerance for adjoint flagging
+
     # steps to take on each level L between regriddings of level L+1:
-    amrdata.regrid_interval = 2
-    
+    amrdata.regrid_interval = 2       
+
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
     amrdata.regrid_buffer_width  = 2
-    
+
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)
     amrdata.clustering_cutoff = 0.7
-    
+
     # print info about each regridding up to this level:
-    amrdata.verbosity_regrid = 0
-    
-    
+    amrdata.verbosity_regrid = 0      
+
+
     # ---------------
     # Regions:
     # ---------------
     rundata.regiondata.regions = []
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
-    
-    
+
+    #------------------------------------------------------------------
+    # Adjoint specific data:
+    #------------------------------------------------------------------
+    rundata = setadjoint(rundata)
+
+
     #  ----- For developers -----
     # Toggle debugging print statements:
     amrdata.dprint = False      # print domain flags
@@ -337,9 +342,66 @@ def setrun(claw_pkg='amrclaw'):
     # end of function setrun
     # ----------------------
 
+#-------------------
+def setadjoint(rundata):
+    #-------------------
+    
+    """
+        Setting up adjoint variables and
+        reading in all of the checkpointed Adjoint files
+        """
+    
+    import glob
+    
+    # Set these parameters....
+    
+    # Path to adjoint solution:
+    adjointFolder = 'adjoint'
+    adjoint_output = 'adjoint/_output'  # switch to this?
+    
+    # Time period of interest:
+    t1 = 1.
+    t2 = 6.
+    
+    # tolerance for adjoint flagging:
+    rundata.amrdata.flag2refine = True  # for adjoint flagging
+    rundata.amrdata.flag2refine_tol = 0.02
+    
+    
+    # You don't need to modify the rest of this function...
+    
+    rundata.clawdata.num_aux = 1   # 4 required for adjoint flagging
+    rundata.amrdata.aux_type = ['center']
+    
+    probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
+    probdata.add_param('rho',     1.,  'density of medium')
+    probdata.add_param('bulk',    4.,  'bulk modulus')
+    probdata.add_param('adjointFolder',adjointFolder,'adjointFolder')
+    probdata.add_param('t1',t1,'t1, start time of interest')
+    probdata.add_param('t2',t2,'t2, final time of interest')
+    
+    files = glob.glob("adjoint/_output/fort.tck*")
+    files.sort()
+    
+    adjointdata = rundata.new_UserData(name='adjointdata',fname='adjoint.data')
+    adjointdata.add_param('numadjoints', len(files), 'Number of adjoint checkpoint files.')
+    adjointdata.add_param('innerprod_index', 1, 'Index for innerproduct data in aux array.')
+    
+    counter = 1
+    for fname in files:
+        f = open(fname)
+        time = f.readline().split()[-1]
+        fname = '../' + fname.replace('tck','chk')
+        adjointdata.add_param('file' + str(counter), fname, 'Checkpoint file' + str(counter))
+        counter = counter + 1
+    
+    return rundata
+# end of function setadjoint
+# ----------------------
 
 if __name__ == '__main__':
     # Set up run-time parameters and write all data files.
     import sys
     rundata = setrun(*sys.argv[1:])
     rundata.write()
+    
