@@ -35,15 +35,9 @@ def setrun(claw_pkg='amrclaw'):
     #------------------------------------------------------------------
     # Problem-specific parameters to be written to setprob.data:
     #------------------------------------------------------------------
-
-    probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('rho',     1.,  'density of medium')
-    probdata.add_param('bulk',    4.,  'bulk modulus')
     
-    #------------------------------------------------------------------
-    # Adjoint specific data:
-    #------------------------------------------------------------------
-    rundata = setadjoint(rundata)
+    # see setadjoint function below
+    
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -83,7 +77,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_eqn = 3
 
     # Number of auxiliary variables in the aux array (initialized in setaux)
-    clawdata.num_aux = 1
+    # see setadjoint
     
     # Index of aux array corresponding to capacity function, if there is one:
     clawdata.capa_index = 0
@@ -290,7 +284,8 @@ def setrun(claw_pkg='amrclaw'):
     # Specify type of each aux variable in clawdata.auxtype.
     # This must be a list of length num_aux, each element of which is one of:
     #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
-    amrdata.aux_type = ['center']
+    
+    # need 1 value, set in setadjoint
 
 
     # Flag for refinement based on Richardson error estimater:
@@ -298,9 +293,8 @@ def setrun(claw_pkg='amrclaw'):
     amrdata.flag_richardson_tol = 0.00004  # Richardson tolerance
     
     # Flag for refinement using routine flag2refine:
-    amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 0.02 # tolerance used in this routine
-    # User can modify flag2refine to change the criterion for flagging.
+    amrdata.flag2refine = True      # for adjoint flagging
+    # see setadjoint to set tolerance for adjoint flagging
 
     # steps to take on each level L between regriddings of level L+1:
     amrdata.regrid_interval = 2       
@@ -324,8 +318,13 @@ def setrun(claw_pkg='amrclaw'):
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
 
+    #------------------------------------------------------------------
+    # Adjoint specific data:
+    #------------------------------------------------------------------
+    rundata = setadjoint(rundata)
 
-    #  ----- For developers ----- 
+
+    #  ----- For developers -----
     # Toggle debugging print statements:
     amrdata.dprint = False      # print domain flags
     amrdata.eprint = False      # print err est flags
@@ -354,20 +353,46 @@ def setadjoint(rundata):
     
     import glob
     
+    # Set these parameters....
+    
+    # Path to adjoint solution:
+    adjointFolder = 'adjoint'
+    adjoint_output = 'adjoint/_output'  # switch to this?
+    
+    # Time period of interest:
+    t1 = 1.
+    t2 = 6.
+    
+    # tolerance for adjoint flagging:
+    rundata.amrdata.flag2refine = True  # for adjoint flagging
+    rundata.amrdata.flag2refine_tol = 0.02
+    
+    
+    # You don't need to modify the rest of this function...
+    
+    rundata.clawdata.num_aux = 1   # 4 required for adjoint flagging
+    rundata.amrdata.aux_type = ['center']
+    
+    probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
+    probdata.add_param('rho',     1.,  'density of medium')
+    probdata.add_param('bulk',    4.,  'bulk modulus')
+    probdata.add_param('adjointFolder',adjointFolder,'adjointFolder')
+    probdata.add_param('t1',t1,'t1, start time of interest')
+    probdata.add_param('t2',t2,'t2, final time of interest')
+    
     files = glob.glob("adjoint/_output/fort.tck*")
     files.sort()
     
-    probdata = rundata.new_UserData(name='adjointdata',fname='adjoint.data')
-    probdata.add_param('numadjoints', len(files), 'Number of adjoint checkpoint files.')
-    probdata.add_param('innerprod_index', 1, 'Index for innerproduct data in aux array.')
+    adjointdata = rundata.new_UserData(name='adjointdata',fname='adjoint.data')
+    adjointdata.add_param('numadjoints', len(files), 'Number of adjoint checkpoint files.')
+    adjointdata.add_param('innerprod_index', 1, 'Index for innerproduct data in aux array.')
     
     counter = 1
     for fname in files:
         f = open(fname)
         time = f.readline().split()[-1]
         fname = '../' + fname.replace('tck','chk')
-        probdata.add_param('file' + str(counter), fname, 'Checkpoint file' + str(counter))
-        probdata.add_param('time' + str(counter), float(time), 'Time for file' + str(counter))
+        adjointdata.add_param('file' + str(counter), fname, 'Checkpoint file' + str(counter))
         counter = counter + 1
     
     return rundata
