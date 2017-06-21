@@ -29,7 +29,7 @@ def setplot(plotdata):
     # Figure for pressure
     # -------------------
 
-    plotfigure = plotdata.new_plotfigure(name='Pressure', figno=0)
+    plotfigure = plotdata.new_plotfigure(name='Adjoint', figno=0)
     plotfigure.kwargs = {'figsize': (5.5,5)}
 
     # Set up for axes in this figure:
@@ -37,7 +37,7 @@ def setplot(plotdata):
     plotaxes.axescmd = 'axes([0.1,0.1,0.8,0.8])'
     plotaxes.xlimits = [-4,8]
     plotaxes.ylimits = [-1,11]
-    plotaxes.title = 'Pressure'
+    plotaxes.title = 'Adjoint'
     plotaxes.scaled = True      # so aspect ratio is 1
     plotaxes.afteraxes = fixup_adjoint
 
@@ -76,8 +76,4 @@ def addgauges(current_data):
 
 def fixup_adjoint(current_data):
     import pylab
-    size = 30
     addgauges(current_data)
-    pylab.title('Adjoint Pressure', fontsize=size)
-    pylab.xticks(fontsize=size)
-    pylab.yticks(fontsize=size)
