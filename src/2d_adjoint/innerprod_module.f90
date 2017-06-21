@@ -23,10 +23,9 @@ contains
               t_nm = 0.d0
           endif
 
-          if (t <= adjoints(r)%time .and. &
-              min((t + (tfinal - trange_start)),tfinal) >= t_nm) then
+          if ((t+adjoints(r)%time) >= trange_start .and. &
+              (t+adjoints(r)%time) <=trange_final) then
 
-            !write (*,*) "About to interpolate."
             q_interp = interpolate_adjoint(1,adjoints(r)%lfine,nvar,x_c,y_c,r)
             q_innerprod1 = abs( q1 * q_interp(1) &
                   + q2 * q_interp(2) + q3 * q_interp(3))
