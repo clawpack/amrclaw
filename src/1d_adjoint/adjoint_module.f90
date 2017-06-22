@@ -36,7 +36,6 @@ module adjoint_module
     integer :: totnum_adjoints, nvar, naux, &
                counter, innerprod_index
     real(kind=8) :: trange_start, trange_final
-    real(kind=8), allocatable :: adj_times(:)
     character(len=365), allocatable :: adj_files(:)
     logical :: adjoint_flagging
 
@@ -66,26 +65,17 @@ contains
 
             read(iunit,*) totnum_adjoints
             read(iunit,*) innerprod_index
-            allocate(adj_times(totnum_adjoints))
             allocate(adj_files(totnum_adjoints))
 
             do 20 k = 1, totnum_adjoints
                 read(iunit,*) adj_files(totnum_adjoints + 1 - k)
-                read(iunit,*) adj_times(totnum_adjoints + 1 - k)
             20  continue
             close(iunit)
 
-            if (size(adj_times) > 0) then
-                finalT = adj_times(1)
-            else
+            if (size(adj_files) <= 0) then
                 print *, 'Error: no adjoint output files found.'
                 stop
             endif
-
-            do 60 k = 1, totnum_adjoints
-                ! Reverse times
-                adj_times(k) = finalT - adj_times(k)
-            60  continue
 
             ! Allocate space for the number of needed checkpoint files
             allocate(adjoints(totnum_adjoints))
@@ -93,10 +83,6 @@ contains
             do 50 k = 1, totnum_adjoints
                 ! Load checkpoint files
                 call reload(adj_files(k),k)
-
-                ! Reverse times
-                adjoints(k)%time = adj_times(k)
-
             50 continue
 
         else

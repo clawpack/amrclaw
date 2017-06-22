@@ -112,3 +112,4 @@ COMMON_SOURCES += \
   $(ADJLIB)/setaux.f90 \
   $(ADJLIB)/amr1_reload.f90 \
   $(ADJLIB)/reload.f \
+  $(ADJLIB)/interp_adjoint.f90 \
