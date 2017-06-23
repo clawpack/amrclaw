@@ -9,6 +9,24 @@ that will be read in by the Fortran code.
 import os
 import numpy as np
 
+
+#-----------------------------------------------
+# Set these parameters for adjoint flagging....
+
+# location of output from computing adjoint:
+adjoint_output = os.path.abspath('adjoint/_output')
+print('Will flag using adjoint solution from  %s' % adjoint_output)
+
+# Time period of interest:
+t1 = 1.
+t2 = 6.
+
+# tolerance for adjoint flagging:
+adjoint_flag_tolerance = 0.02
+#-----------------------------------------------
+
+
+
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
 #------------------------------
@@ -344,7 +362,7 @@ def setrun(claw_pkg='amrclaw'):
 
 #-------------------
 def setadjoint(rundata):
-    #-------------------
+#-------------------
     
     """
         Setting up adjoint variables and
@@ -353,22 +371,14 @@ def setadjoint(rundata):
     
     import glob
     
-    # Set these parameters....
-    
-    # Path to adjoint solution:
-    adjointFolder = 'adjoint'
-    adjoint_output = 'adjoint/_output'  # switch to this?
-    
-    # Time period of interest:
-    t1 = 1.
-    t2 = 6.
-    
-    # tolerance for adjoint flagging:
+
+    # Set these parameters at top of this file:
+    # adjoint_flag_tolerance, t1, t2, adjoint_output
+    # Then you don't need to modify this function...
+
     rundata.amrdata.flag2refine = True  # for adjoint flagging
-    rundata.amrdata.flag2refine_tol = 0.02
+    rundata.amrdata.flag2refine_tol = adjoint_flag_tolerance
     
-    
-    # You don't need to modify the rest of this function...
     
     rundata.clawdata.num_aux = 1   # 4 required for adjoint flagging
     rundata.amrdata.aux_type = ['center']
@@ -376,14 +386,15 @@ def setadjoint(rundata):
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
     probdata.add_param('rho',     1.,  'density of medium')
     probdata.add_param('bulk',    4.,  'bulk modulus')
-    probdata.add_param('adjointFolder',adjointFolder,'adjointFolder')
-    probdata.add_param('t1',t1,'t1, start time of interest')
-    probdata.add_param('t2',t2,'t2, final time of interest')
-    
-    files = glob.glob("adjoint/_output/fort.tck*")
-    files.sort()
     
     adjointdata = rundata.new_UserData(name='adjointdata',fname='adjoint.data')
+    adjointdata.add_param('adjoint_output',adjoint_output,'adjoint_output')
+    adjointdata.add_param('t1',t1,'t1, start time of interest')
+    adjointdata.add_param('t2',t2,'t2, final time of interest')
+
+    files = glob.glob(os.path.join(adjoint_output,"fort.tck*"))
+    files.sort()
+    
     adjointdata.add_param('numadjoints', len(files), 'Number of adjoint checkpoint files.')
     adjointdata.add_param('innerprod_index', 1, 'Index for innerproduct data in aux array.')
     
@@ -391,7 +402,7 @@ def setadjoint(rundata):
     for fname in files:
         f = open(fname)
         time = f.readline().split()[-1]
-        fname = '../' + fname.replace('tck','chk')
+        fname = fname.replace('tck','chk')
         adjointdata.add_param('file' + str(counter), fname, 'Checkpoint file' + str(counter))
         counter = counter + 1
     

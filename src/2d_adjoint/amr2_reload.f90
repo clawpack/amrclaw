@@ -3,7 +3,7 @@
 ! :::::   Allows for storage of amr parameters from adjoint run.
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-subroutine amr2_reload(adjointFolder)
+subroutine amr2_reload(adjoint_output)
 
     use amr_reload_module
     use adjoint_module, only: nvar, naux
@@ -34,14 +34,14 @@ subroutine amr2_reload(adjointFolder)
     character(len=364) :: parmfile
 
     character(len=200) :: rstfile_ignore
-    character(len=*), intent(in) :: adjointFolder
+    character(len=*), intent(in) :: adjoint_output
 
-    clawfile = '../' // adjointFolder // '/_output/claw.data'
-    amrfile = '../' // adjointFolder // '/_output/amr.data'
-    outfile = '../' // adjointFolder // '/_output/fort.amr'
-    dbugfile = '../' // adjointFolder // '/_output/fort.debug'
-    matfile = '../' // adjointFolder // '/_output/fort.nplot'
-    parmfile = '../' // adjointFolder // '/_output/fort.parameters'
+    clawfile = adjoint_output // '//claw.data'
+    amrfile = adjoint_output // '//amr.data'
+    outfile = adjoint_output // '//fort.amr'
+    dbugfile = adjoint_output // '//fort.debug'
+    matfile = adjoint_output // '//fort.nplot'
+    parmfile = adjoint_output // '//fort.parameters'
 
     ! Read in claw.data and amr.data files to get parameters
     ! that were used in the axisymmetric run.  Many of these
