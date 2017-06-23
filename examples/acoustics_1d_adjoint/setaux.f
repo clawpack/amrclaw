@@ -36,12 +36,9 @@ c
          endif
       enddo
 
-      ! If a new grid has been created, but hadn't been flagged
-      ! set innerproduct to zero.
+      ! Initialize innerproduct to zero.
       do ii=1-mbc,mx+mbc
-          if (aux(innerprod_index,ii) .eq. NEEDS_TO_BE_SET) then
-              aux(innerprod_index,ii) = 0.d0
-          endif
+          aux(innerprod_index,ii) = 0.d0
       enddo
 
       return
