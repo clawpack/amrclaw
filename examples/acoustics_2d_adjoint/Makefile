@@ -52,7 +52,7 @@ MODULES = \
 
 SOURCES = \
   qinit.f \
-  setprob.f \
+  setprob.f90 \
   $(CLAW)/riemann/src/rpn2_acoustics.f \
   $(CLAW)/riemann/src/rpt2_acoustics.f \
 

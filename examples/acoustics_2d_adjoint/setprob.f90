@@ -1,9 +1,8 @@
 subroutine setprob
 
-    implicit none
-
     use adjoint_module, only: read_adjoint_data
     implicit none
+
     character*25 :: fname
     integer :: iunit
     
