@@ -41,28 +41,39 @@ module adjoint_module
 
 contains
 
-    subroutine read_adjoint_data(adjointFolder)
+    subroutine read_adjoint_data()
 
         use amr_reload_module
         implicit none
 
         ! Function Arguments
         character(len=*), parameter :: adjointfile = 'adjoint.data'
-        character(len=*), intent(in) :: adjointFolder
+        character(len=200) :: adjoint_output
         logical :: fileExists
         integer :: iunit, k, r
         integer :: fileStatus = 0
         real(kind=8) :: finalT
+        real(kind=8) :: t1,t2
+
+        ! Read adjoint specific information
 
         adjoint_flagging = .true.
 
         inquire(file=adjointfile, exist=fileExists)
         if (fileExists) then
 
-            ! Reload adjoint files
-            call amr2_reload(adjointFolder)
             iunit = 16
             call opendatafile(iunit,adjointfile)
+            read(iunit,*) adjoint_output
+
+            ! time period of interest:
+            read(iunit,*) t1
+            read(iunit,*) t2
+
+            call set_time_window(t1, t2)
+
+            ! Reload adjoint files
+            call amr2_reload(trim(adjoint_output))
 
             read(iunit,*) totnum_adjoints
             read(iunit,*) innerprod_index
@@ -105,5 +116,6 @@ contains
         write(*,*) "Time range: ", t1, t2
 
     end subroutine set_time_window
+
 
 end module adjoint_module
