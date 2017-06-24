@@ -54,8 +54,9 @@ def setrun(claw_pkg='amrclaw'):
     # Problem-specific parameters to be written to setprob.data:
     #------------------------------------------------------------------
     
-    # see setadjoint function below
-    
+    probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
+    probdata.add_param('rho',     1.,  'density of medium')
+    probdata.add_param('bulk',    4.,  'bulk modulus')
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -380,12 +381,8 @@ def setadjoint(rundata):
     rundata.amrdata.flag2refine_tol = adjoint_flag_tolerance
     
     
-    rundata.clawdata.num_aux = 1   # 4 required for adjoint flagging
+    rundata.clawdata.num_aux = 1   # 1 required for adjoint flagging
     rundata.amrdata.aux_type = ['center']
-    
-    probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('rho',     1.,  'density of medium')
-    probdata.add_param('bulk',    4.,  'bulk modulus')
     
     adjointdata = rundata.new_UserData(name='adjointdata',fname='adjoint.data')
     adjointdata.add_param('adjoint_output',adjoint_output,'adjoint_output')
