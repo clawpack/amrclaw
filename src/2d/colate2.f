@@ -171,7 +171,7 @@ c
 c colate flagged points into single integer array for quicksorting
 c
 c     sorting uses one dimensional packing of 2D indices
-c     check if domain will fit  in integer*4.
+c     check if domain will fit  in integer*4.  (largestSingle approx 2**30)
 c     if not, just leave the duplicate, but rememer that efficiency
 c     of grids won't be correct (since divide by number of flaged pts in grid)
 c     If necessary, do whole process in integer*8 - then will have enough
@@ -181,12 +181,8 @@ c     the variable largestIntEquiv already declared integer*8 above.
       ifac2 = jregsz(lcheck)
       largestIntEquiv =  ifac1+mbuff +
      .             (ifac1+2*mbuff)*(ifac2+mbuff)
-      write(*,*) 'level ',lcheck
-      write(*,*) largestIntEquiv
       largestIntEquiv_default =  iregsz(lcheck)+mbuff +
      .             (iregsz(lcheck)+2*mbuff)*(jregsz(lcheck)+mbuff)
-      write(*,*) largestIntEquiv_default
-c     largestSingle = 2**30
 
 c     ! if get different answer with extra precision then bypass sorting alg.
       if (largestIntEquiv .ne. largestIntEquiv_default) then
