@@ -70,12 +70,37 @@ c
       do while (istatus > 0)
           factor = 0.5d0 * factor
           if (factor < 0.1d0) then
-              print *, 'Allocation failed, not enough memory'
-              stop
+            write(*,*)'Memory allocation failed'
+            write(outunit,*)'Memory allocation failed'
+            write(*,*)'Current memory size ',memsize
+            write(outunit,*)'Current memory size ',memsize
+            stop
           endif
-          new_size = ceiling((1.d0+factor) * memsize)
-          iadd_size = ceiling(factor * memsize)
-          call resize_storage(new_size,istatus)
+c
+c         # test to make sure not overflowing integer indexing range.
+c         # with integer*4, maximum integer is roughly 2**30, so indexing
+c         # doesn't work if array is longer than this!
+
+          max_size = huge(memsize)  ! maximum integer based on type(memsize)
+          iprev_max_size = max_size / ceiling(1.d0+factor)
+          ! If memsize is bigger than iprev_max_size then 
+          ! memsize * ceiling(1.d0+factor) will be too big.
+          ! Need to test this way to avoid possible integer overflow in test.
+          if (memsize > iprev_max_size ) then
+            write(*,*)"Requested memory larger than can be "
+            write(*,*)" indexed by default integer size. "
+            write(*,*)" Suggest compiling with integer*8 option"
+            write(*,*)" Asking for less memory: factor=",factor
+            write(outunit,*)"Requested memory larger than can be "
+            write(outunit,*)" indexed with default integer size. "
+            write(outunit,*)" Suggest compiling with integer*8 option"
+            write(outunit,*)" Asking for less memory for now:",factor
+            cycle
+          else
+            new_size = ceiling((1.d0+factor) * memsize)
+            iadd_size = ceiling(factor * memsize)
+            call resize_storage(new_size,istatus) ! success returns istatus 0
+          endif
       enddo
           
       if (lfree(lenf-1,1) + lfree(lenf-1,2) - 1 .eq. old_memsize) then
