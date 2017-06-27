@@ -1,0 +1,90 @@
+Clawpack Git Status 
+Diffs can be found in /Users/rjl/git/clawpack/amrclaw/tests/euler_1d_wcblast/regression_data/claw_git_diffs.txt
+
+Sun, 11 Jun 2017 14:52:02 PDT
+$CLAW = /Users/rjl/git/clawpack
+$FC = gfortran
+
+
+===========
+classic
+===========
+/Users/rjl/git/clawpack/classic
+
+--- last commit ---
+8c4ef32 Merge pull request #79 from rjleveque/restart_None
+
+--- branch and status ---
+## master...origin/master
+
+
+===========
+amrclaw
+===========
+/Users/rjl/git/clawpack/amrclaw
+
+--- last commit ---
+13a15ec Change default max1d to 500 for 1d amr
+
+--- branch and status ---
+## wcblast
+
+
+===========
+clawutil
+===========
+/Users/rjl/git/clawpack/clawutil
+
+--- last commit ---
+e36e650 Merge pull request #119 from rjleveque/runclaw_remove_old_gauge_output
+
+--- branch and status ---
+## master...origin/master
+
+
+===========
+pyclaw
+===========
+/Users/rjl/git/clawpack/pyclaw
+
+--- last commit ---
+da56bf9 Merge pull request #574 from rjleveque/gauges_1d
+
+--- branch and status ---
+## master...origin/master
+
+
+===========
+visclaw
+===========
+/Users/rjl/git/clawpack/visclaw
+
+--- last commit ---
+205b25c add plot_type 1d_pwconst option to frametools. (#216)
+
+--- branch and status ---
+## master...origin/master
+
+
+===========
+riemann
+===========
+/Users/rjl/git/clawpack/riemann
+
+--- last commit ---
+5533382 Merge pull request #126 from ketch/shallow_fwave
+
+--- branch and status ---
+## master...origin/master
+
+
+===========
+geoclaw
+===========
+/Users/rjl/git/clawpack/geoclaw
+
+--- last commit ---
+a68b046 Merge pull request #263 from rjleveque/sift_shift
+
+--- branch and status ---
+## master...origin/master
