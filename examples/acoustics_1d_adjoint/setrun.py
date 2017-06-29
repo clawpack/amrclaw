@@ -9,6 +9,24 @@ that will be read in by the Fortran code.
 import os
 import numpy as np
 
+
+#-----------------------------------------------
+# Set these parameters for adjoint flagging....
+
+# location of output from computing adjoint:
+adjoint_output = os.path.abspath('adjoint/_output')
+print('Will flag using adjoint solution from  %s' % adjoint_output)
+
+# Time period of interest:
+t1 = 1.
+t2 = 6.
+
+# tolerance for adjoint flagging:
+adjoint_flag_tolerance = 0.1
+#-----------------------------------------------
+
+
+
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
 #------------------------------
@@ -36,8 +54,13 @@ def setrun(claw_pkg='amrclaw'):
     # Problem-specific parameters to be written to setprob.data:
     #------------------------------------------------------------------
 
-    # see setadjoint function below.
-    
+    probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
+    probdata.add_param('ic',    3, 'Initial condition type')
+    probdata.add_param('beta', 50., 'Gaussian hump width parameter')
+    probdata.add_param('rhol', 1., 'Density left of interface')
+    probdata.add_param('cl',   1., 'Sound speed left of interface')
+    probdata.add_param('rhor', 4., 'Density right of interface')
+    probdata.add_param('cr',  0.5, 'Sound speed right of interface')
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -331,47 +354,25 @@ def setadjoint(rundata):
     import glob
     import os
     
-    # Set these parameters....
-    
-    # Path to adjoint solution:
-    adjointFolder = 'adjoint'
-    adjoint_output = 'adjoint/_output'  # switch to this??
-    
-    # Time period of interest:
-    t1 = 1.
-    t2 = 6.
+    # Set these parameters at top of this file:
+    # adjoint_flag_tolerance, t1, t2, adjoint_output
+    # Then you don't need to modify this function...
     
     # tolerance for adjoint flagging:
     rundata.amrdata.flag2refine = True  # for adjoint flagging
-    rundata.amrdata.flag2refine_tol = 0.1
-    
-    
-    # You don't need to modify the rest of this function...
+    rundata.amrdata.flag2refine_tol = adjoint_flag_tolerance
     
     rundata.clawdata.num_aux = 3   # 3 required for adjoint flagging
     rundata.amrdata.aux_type = ['center','center','center']
+
+    adjointdata = rundata.new_UserData(name='adjointdata',fname='adjoint.data')
+    adjointdata.add_param('adjoint_output',adjoint_output,'adjoint_output')
+    adjointdata.add_param('t1',t1,'t1, start time of interest')
+    adjointdata.add_param('t2',t2,'t2, final time of interest')
     
-    probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('ic',    3, 'Initial condition type')
-    probdata.add_param('beta', 50., 'Gaussian hump width parameter')
-    probdata.add_param('rhol', 1., 'Density left of interface')
-    probdata.add_param('cl',   1., 'Sound speed left of interface')
-    probdata.add_param('rhor', 4., 'Density right of interface')
-    probdata.add_param('cr',  0.5, 'Sound speed right of interface')
-    probdata.add_param('adjointFolder',adjointFolder,'adjointFolder')
-    probdata.add_param('t1',t1,'t1, start time of interest')
-    probdata.add_param('t2',t2,'t2, final time of interest')
-    
-    if os.path.exists('./adjoint/_output'):
-        adj_dir = os.path.abspath('./adjoint/_output/fort.tck*')
-        files = glob.glob(adj_dir)
-    else:
-        qref_dir = None
-        print "Directory ./adjoint/_output not found"
-    
+    files = glob.glob(os.path.join(adjoint_output,"fort.tck*"))
     files.sort()
     
-    adjointdata = rundata.new_UserData(name='adjointdata',fname='adjoint.data')
     adjointdata.add_param('numadjoints', len(files), 'Number of adjoint checkpoint files.')
     adjointdata.add_param('innerprod_index', 3, 'Index for innerproduct data in aux array.')
     

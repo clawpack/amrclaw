@@ -1,6 +1,6 @@
       subroutine setprob
 
-      use adjoint_module, only: read_adjoint_data, set_time_window
+      use adjoint_module, only: read_adjoint_data
       implicit double precision (a-h,o-z)
 
       common /cqinit/ beta,ic
@@ -13,7 +13,6 @@ c
 c     # Set the material parameters for the acoustic equations
 c
       character*25 fname
-      character*7 adjointFolder
 
       fname = 'setprob.data'
       call opendatafile(7, fname)
@@ -33,15 +32,7 @@ c     # Density and sound speed to left and right:
       read(7,*) cr
       Zr = rhor*cr
 
-      ! Read data for adjoint problem
-      read(7,*) adjointFolder
-
-      ! time period of interest:
-      read(7,*) t1
-      read(7,*) t2
-
-      call set_time_window(t1, t2)                   !# Set time window
-      call read_adjoint_data(trim(adjointFolder))    !# Read adjoint solution
+      call read_adjoint_data()    !# Read adjoint info and solution
 
       return
       end
