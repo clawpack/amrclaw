@@ -21,8 +21,15 @@ print('Will flag using adjoint solution from  %s' % adjoint_output)
 t1 = 1.
 t2 = 6.
 
+# Determining type of adjoint flagging:
+
+# taking inner product with forward solution or Richardson error:
+flag_forward_adjoint = True
+flag_richardson_adjoint = False
+
 # tolerance for adjoint flagging:
-adjoint_flag_tolerance = 0.1
+adjoint_flag_tolerance = 0.05       # suggested if using forward solution
+#adjoint_flag_tolerance = 0.1e-4    # suggested if using Richardson error
 #-----------------------------------------------
 
 
@@ -288,12 +295,12 @@ def setrun(claw_pkg='amrclaw'):
     
     
     # Flag for refinement based on Richardson error estimater:
-    amrdata.flag_richardson = False    # use Richardson?
-    amrdata.flag_richardson_tol = 0.000001e+00  # Richardson tolerance
+    amrdata.flag_richardson = False
     
     # Flag for refinement using routine flag2refine:
-    amrdata.flag2refine = True      # for adjoint flagging
-    # see setadjoint to set tolerance for adjoint flagging
+    amrdata.flag2refine = False
+    
+    # see setadjoint to set tolerance and flag for adjoint flagging
     
     # steps to take on each level L between regriddings of level L+1:
     amrdata.regrid_interval = 2
@@ -358,9 +365,17 @@ def setadjoint(rundata):
     # adjoint_flag_tolerance, t1, t2, adjoint_output
     # Then you don't need to modify this function...
     
-    # tolerance for adjoint flagging:
-    rundata.amrdata.flag2refine = True  # for adjoint flagging
-    rundata.amrdata.flag2refine_tol = adjoint_flag_tolerance
+    # flag and tolerance for adjoint flagging:
+    if flag_forward_adjoint == True:
+        # setting up taking inner product with forward solution
+        rundata.amrdata.flag2refine = True
+        rundata.amrdata.flag2refine_tol = adjoint_flag_tolerance
+    elif flag_richardson_adjoint == True:
+        # setting up taking inner product with Richardson error
+        rundata.amrdata.flag_richardson = True
+        rundata.amrdata.flag_richardson_tol = adjoint_flag_tolerance
+    else:
+        print("No refinement flag set!")
     
     rundata.clawdata.num_aux = 3   # 3 required for adjoint flagging
     rundata.amrdata.aux_type = ['center','center','center']
