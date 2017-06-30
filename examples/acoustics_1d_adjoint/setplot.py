@@ -97,7 +97,8 @@ def setplot(plotdata=None):
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = [-.5,1.1]
+    plotaxes.ylimits = [-.5,1.1]      # use when taking inner product with forward solution
+    #plotaxes.ylimits = [-0.01,0.02]    # use when taking inner product with Richardson error
     plotaxes.title = 'Inner Product'
     plotaxes.afteraxes = draw_interface_add_legend_innerprod
     
