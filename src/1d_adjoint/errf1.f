@@ -68,7 +68,7 @@ c             # divide by (aval*order) for relative error
               est(k)   =  dabs((aval-rctcrse(k,i))/ order)
 
 c             retaining directionality of the wave
-              if (k .ne. 1) est(k) = sign(est(k),term1)
+              if (k .ne. 1) est(k) = sign(est(k),rctcrse(k,i))
 
  50       continue
 
