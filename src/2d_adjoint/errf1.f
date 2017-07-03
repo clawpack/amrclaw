@@ -79,6 +79,9 @@ c         calculate error in each term of coarse grid
 c             # divide by (aval*order) for relative error
               aval  = (term1+term2+term3+term4)/4.d0
               est(k)   =  dabs((aval-rctcrse(k,i,j))/ order)
+
+c             retaining directionality of the wave
+              if (k .ne. 1) est(k) = sign(est(k),rctcrse(k,i,j))
  50       continue
 
 c         set innerproduct for fine grid
