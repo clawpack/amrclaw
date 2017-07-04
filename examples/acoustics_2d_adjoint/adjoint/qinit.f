@@ -17,10 +17,6 @@ c
 
              if (dabs(xcell-3.5d0) .le. dx
      &            .and. dabs(ycell-0.5d0) .le. dy) then
-                 print *, xcell
-                 print *, xcell + dx
-                 print *, ycell
-                 print *, ycell + dy
                  pressure = 2.d0
              else
                  pressure = 0.d0
