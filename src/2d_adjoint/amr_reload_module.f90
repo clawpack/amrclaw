@@ -58,7 +58,7 @@ module amr_reload_module
     integer, parameter :: iinfinity = 999999999
     integer, parameter :: horizontal = 1
     integer, parameter :: vertical = 2
-    integer, parameter :: maxgr = 15000
+    integer, parameter :: maxgr = 50000
     integer, parameter :: maxlv = 10
     integer, parameter :: maxcl = 5000
 
