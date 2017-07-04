@@ -132,8 +132,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 20
-        clawdata.tfinal = 6.0
+        clawdata.num_output_times = 28
+        clawdata.tfinal = 7.0
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -254,8 +254,7 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    rundata.gaugedata.gauges.append([0, 3.5, 0.5, 1.22, 2.85])
-    #rundata.gaugedata.gauges.append([1, 3.6, 0.5, 2.7, 2.85])
+    rundata.gaugedata.gauges.append([0, 3.5, 0.5, 0., 1e9])
 
     # --------------
     # Checkpointing:
