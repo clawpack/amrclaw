@@ -81,7 +81,7 @@ c             # divide by (aval*order) for relative error
               est(k)   =  dabs((aval-rctcrse(k,i,j))/ order)
 
 c             retaining directionality of the wave
-              if (k .ne. 1) est(k) = sign(est(k),rctcrse(k,i,j))
+              est(k) = sign(est(k),rctcrse(k,i,j))
  50       continue
 
 c         set innerproduct for fine grid

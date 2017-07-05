@@ -29,7 +29,7 @@ flag_richardson_adjoint = False
 
 # tolerance for adjoint flagging:
 adjoint_flag_tolerance = 0.02       # suggested if using forward solution
-#adjoint_flag_tolerance = 0.2e-3    # suggested if using Richardson error
+#adjoint_flag_tolerance = 0.25e-3    # suggested if using Richardson error
 #-----------------------------------------------
 
 
