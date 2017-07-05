@@ -85,7 +85,7 @@ def setplot(plotdata):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = 'auto'
-    plotaxes.xlimits = [1,3]
+    plotaxes.xlimits = [0,7]
     plotaxes.ylimits = [-0.4,0.5]
     plotaxes.title = 'Pressure'
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')

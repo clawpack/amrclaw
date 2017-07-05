@@ -17,7 +17,7 @@ COMMON_MODULES += \
 
 COMMON_SOURCES += \
   $(AMRLIB)/qinit.f \
-  $(AMRLIB)/setprob.f \
+  $(ADJLIB)/setprob.f \
   $(AMRLIB)/amr2.f90 \
   $(AMRLIB)/bc2amr.f \
   $(AMRLIB)/b4step2.f90 \
