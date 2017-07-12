@@ -63,7 +63,7 @@ def main():
                         x = xc_centers[i,j]
                         y = yc_centers[i,j]
 
-                        innerprod = calculate_innerprod(q,innerprod,x,y,i,j,framesoln_a)
+                        calculate_innerprod(q,innerprod,x,y,i,j,framesoln_a)
                     # done looping over cells in row
                 # done looping over rows in patch
                 pcolor(xc_edges, yc_edges, innerprod, cmap=white_red)
@@ -154,8 +154,6 @@ def calculate_innerprod(q,innerprod,x,y,i,j,framesoln_a):
         # leaving off the last term in q, because that is the inner product
         # that was calculated during the actual Clawpack run
         innerprod[i,j] = abs(np.sum(q[:-1,i,j]*q_interp))
-
-        return innerprod
 
 if __name__ == '__main__':
     main()
