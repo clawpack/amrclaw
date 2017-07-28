@@ -5,25 +5,74 @@
 !! Use format required by matlab script  plotclaw2.m or Python tools
 !!
 !! set outaux = .true. to also output the aux arrays to fort.a<iframe>
-subroutine valout(lst, lend, time, num_eqn, num_aux)
+subroutine new_valout(level_begin, level_end, time, num_eqn, num_aux)
 
     use amr_module, only: t0, output_aux_onlyonce, output_aux_components
+    use amr_module, only: frame => matlabu, num_grids => ngrids
+    use amr_module, only: num_ghost => nghost, lstart, output_format
+    use amr_module, only: hxposs, hyposs,
+
+#ifdef NETCDF
+    use netcdf
+#endif
 
     implicit none
 
     ! Input
-    integer :: lst, lend, num_eqn, num_aux
+    integer :: level_begin, level_end, num_eqn, num_aux
     real(kind=8) :: time
 
     ! Locals
-    integer :: i
-
+    integer, parameter :: out_unit = 50
+    integer :: i, j, m, level, output_aux_num, num_stop, digit, num_dim
+    integer :: level_ptr, num_cells(2), num_grids
+    real(kind=8) :: lower_corner(2), delta(2)
     logical :: out_aux
-    integer :: output_aux_num
-    integer :: clock_start, clock_finish, clock_rate
-    real(kind=8) cpu_start, cpu_finish
     character(len=10) :: file_name(5)
 
+    integer :: clock_start, clock_finish, clock_rate
+    real(kind=8) cpu_start, cpu_finish
+
+    character(len=*), parameter :: q_header_format_1d =                        &
+                                    "(i6,'                 grid_number',/," // &
+                                     "i6,'                 AMR_level',/,"   // &
+                                     "i6,'                 mx',/,"          // &
+                                     "e26.16,'    xlow', /, "               // &
+                                     "e26.16,'    dx',/)"
+    character(len=*), parameter :: q_header_format_2d =                        &
+                                    "(i6,'                 grid_number',/," // &
+                                     "i6,'                 AMR_level',/,"   // &
+                                     "i6,'                 mx',/,"          // &
+                                     "i6,'                 my',/"           // &
+                                     "e26.16,'    xlow', /, "               // &
+                                     "e26.16,'    ylow', /,"                // &
+                                     "e26.16,'    dx', /,"                  // &
+                                     "e26.16,'    dy',/)"
+    character(len=*), parameter :: q_file_format = "()"
+    character(len=*), parameter :: t_file_format = "(e18.8,'    time', /,"  // &
+                                           "i6,'                 meqn'/,"   // &
+                                           "i6,'                 ngrids'/," // &
+                                           "i6,'                 naux'/,"   // &
+                                           "i6,'                 ndim'/,"   // &
+                                           "i6,'                 nghost'/,/)"
+    character(len=*), parameter :: console_format = "('AMRCLAW: Frame " // &
+                              "',i4,' output files done at time t = ', d13.6,/)"
+
+    !
+    !
+    pure integer function iadd(ivar, i, j)
+        implicit none
+        iadd = q_loc + ivar - 1 + nvar*((j-1)*mitot+i-1)
+    end function iadd
+
+    !
+    !
+    pure integer function iaddaux(ivar, i, j)
+        implicit none
+        iadd = aux_loc + ivar- 1 + num_aux * (i - 1) + num_aux * mitot * (j - 1)
+    end function iaddaux
+
+    ! Output timing
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
 
@@ -42,242 +91,131 @@ subroutine valout(lst, lend, time, num_eqn, num_aux)
     file_name(2) = 'fort.txxxx'
     file_name(3) = 'fort.axxxx'
     file_name(4) = 'fort.bxxxx'
-    out_unit = 50
-    do position=10, 7, -1
+    num_stop = frame
+    do i = 10, 7, -1
         digit = mod(num_stop, 10)
+        do j = 1, 4
+            file_name(j)(i:i) = char(ichar('0') + digit)
+        end do
+        num_stop = num_stop / 10
     end do
 
+    ! ==========================================================================
+    ! Write out fort.q file (and fort.bXXXX or fort.bXXXX.nc files if necessary)
+    ! Here we let fort.q be out_unit and the the other two be out_unit + 1
+    open(unit=out_unit, file=file_name(1), status='unknown', form='formatted')
+    if (output_style == 3) then
+        open(unit=out_unit + 1, file=file_name(4), status="unknown",    &
+             access='stream')
+    else if (output_style == 4) then
+        stop
+    end if
+    num_grids = 0
 
-c     ### Python graphics output
-c
+    ! Loop over levels
+    do level = level_begin, level_end
+        level_ptr = lstart(level)
+        ! Loop over grids on each level
+        do while (level_ptr /= 0)
+            ! Extract grid data
+            num_grids = num_grids + 1
+            num_cells(1) = node(ndihi, level_ptr) - node(ndilo, level_ptr) + 1
+            num_cells(2) = node(ndjhi, level_ptr) - node(ndjlo, level_ptr) + 1
+            q_loc = node(store1, level_ptr)
+            lower_corner = [rnode(cornxlo, level_ptr), rnode(cornylo, level_ptr)]
+            delta = [hxposs(level), hyposs(level)]
 
-c        ###  make the file names and open output files
-         fname1 = 'fort.qxxxx'
-         fname2 = 'fort.txxxx'
-         fname3 = 'fort.axxxx'
-         fname4 = 'fort.bxxxx'
-         matunit1 = 50
-         matunit2 = 60
-         matunit3 = 70
-         matunit4 = 71
-         nstp     = matlabu
-         do 55 ipos = 10, 7, -1
-            idigit = mod(nstp,10)
-            fname1(ipos:ipos) = char(ichar('0') + idigit)
-            fname2(ipos:ipos) = char(ichar('0') + idigit)
-            fname3(ipos:ipos) = char(ichar('0') + idigit)
-            fname4(ipos:ipos) = char(ichar('0') + idigit)
-            nstp = nstp / 10
- 55      continue
+            if (num_dim == 1) then
+                write(out_unit, q_header_format_1d) level_ptr, level,          &
+                                                    num_cells(1),              &
+                                                    lower_corner(1),           &
+                                                    delta(1)
+            else
+                write(out_unit, q_header_format_2d) level_ptr, level,          &
+                                                    num_cells(1),              &
+                                                    num_cells(2),              &
+                                                    lower_corner(1),           &
+                                                    lower_corner(2),           &
+                                                    delta(1), delta(2)
+            end if
 
-         open(unit=matunit1,file=fname1,status='unknown',
-     .       form='formatted')
+            ! Output grids
+            select case(output_format)
+                ! ASCII output
+                case(1)
+                    ! Round off if nearly zero
+                    do j = num_ghost + 1, num_cells(2) + num_ghost
+                        do i = num_ghost + 1, num_cells(1) + num_ghost
+                            write(out_unit, "(50e26.16)")                      &
+                                            (alloc(iadd(m, i, j)), m=1, num_eqn)
+                        end do
+                        write(out_unit, *) ' '
+                    end do
 
-         if (output_format == 3) then
-c            # binary output          
-             open(unit=matunit4,file=fname4,status='unknown',
-     &               access='stream')
-             endif
+                ! What is case 2?
+                case(2)
+                    stop "Unknown format."
 
-         level = lst
-         ngrids = 0
-c65      if (level .gt. lfine) go to 90
- 65      if (level .gt. lend) go to 90
-            mptr = lstart(level)
- 70         if (mptr .eq. 0) go to 80
-              ngrids  = ngrids + 1
-              nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
-              ny      = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-              loc     = node(store1, mptr)
-              locaux  = node(storeaux,mptr)
-              mitot   = nx + 2*nghost
-              mjtot   = ny + 2*nghost
-              if (ny.gt.1) then
-                  write(matunit1,1001) mptr, level, nx, ny
+                ! Binary output
+                case(3)
+                    ! Note: We are writing out ghost cell data also
+                    write(out_unit + 1) alloc(iadd(1, 1, 1):                   &
+                                             (iadd(num_eqn,                    &
+                                                 num_cells(1) + 2 * num_ghost, &
+                                                 num_cells(2) + 2 * num_ghost))
+
+                ! NetCDF output
+                case(4)
+#ifdef NETCDF
+                    stop "NetCDF output not yet implemented!"
+#else
+                    print *, "ERROR:  NetCDF library is not available."
+                    print *, "  Check the documentation as to how to include"
+                    print *, "  the ability to output in NetCDF formats."
+                    stop
+#endif
                 else
-c                 # output in 1d format if ny=1:
-                  write(matunit1,1003) mptr, level, nx
-                endif
- 1001 format(i6,'                 grid_number',/,
-     &       i6,'                 AMR_level',/,
-     &       i6,'                 mx',/,
-     &       i6,'                 my')
- 1003 format(i6,'                 grid_number',/,
-     &       i6,'                 AMR_level',/,
-     &       i6,'                 mx')
+                    stop "Unsupported output format", output_format,"."
+
+            end select
+            level_ptr = node(levelptr, level_ptr)
+        end do
+    end do
+
+    ! ==========================================================================
+    ! Write out fort.a file
+    stop "Aux files not implemented"
+
+    ! ==========================================================================
+    ! Write fort.t file
+    open(unit=out_unit, file=file_name(2), status='unknown', form='formatted')
+
+    ! Handle special case of using 2D AMR to do 1D AMR
+    if (num_cells(2) > 1) then
+        num_dim = 2
+    else
+        num_dum = 1
+    end if
+
+    ! Note:  We need to print out num_ghost too in order to strip ghost cells
+    !        from q array when reading in pyclaw.io.binary
+    write(out_unit, t_file_format) time, num_eqn, num_grids, num_aux, num_dim, &
+                                   num_ghost
+    close(out_unit)
+
+    ! ==========================================================================
+    ! Print output info
+    print console_format, frame, time
+
+    ! Increment frame counter
+    frame = frame + 1
+
+    ! Ouptut timing
+    call system_clock(clock_finish,clock_rate)
+    call cpu_time(cpu_finish)
+    timeValout = timeValout + clock_finish - clock_start
+    timeValoutCPU = timeValoutCPU + cpu_finish - cpu_start
+
+end subroutine new_valout
 
 
-              xlow = rnode(cornxlo,mptr)
-              ylow = rnode(cornylo,mptr)
-              if (ny.gt.1) then
-                  write(matunit1,1002)
-     &              xlow,ylow,hxposs(level),hyposs(level)
-                else
-                  write(matunit1,1004)
-     &              xlow,hxposs(level)
-                endif
- 1002 format(e26.16,'    xlow', /,
-     &       e26.16,'    ylow', /,
-     &       e26.16,'    dx', /,
-     &       e26.16,'    dy',/)
- 1004 format(e26.16,'    xlow', /,
-     &       e26.16,'    dx', /)
-
-
-        if (output_format == 1) then
-             do j = nghost+1, mjtot-nghost
-                do i = nghost+1, mitot-nghost
-                   do ivar=1,nvar
-                      if (abs(alloc(iadd(ivar,i,j))) < 1d-90) then
-                         alloc(iadd(ivar,i,j)) = 0.d0
-                      endif
-                   enddo
-                   write(matunit1,109) 
-     &                (alloc(iadd(ivar,i,j)), ivar=1,nvar)
-                enddo
-                write(matunit1,*) ' '
-             enddo
-  109        format(50e26.16)
-         endif
-
-         if (output_format == 3) then
-c            # binary output          
-             i1 = iadd(1,1,1)
-             i2 = iadd(nvar,mitot,mjtot)
-c            # NOTE: we are writing out ghost cell data also, unlike ascii
-             write(matunit4) alloc(i1:i2)
-             endif
-
-            mptr = node(levelptr, mptr)
-            go to 70
- 80      level = level + 1
-         go to 65
-
- 90     continue
-
-c       -------------------
-c       # output aux arrays
-c       -------------------
-
-        if (outaux) then
-c     # output aux array to fort.aXXXX
-
-           level = lst
- 165       if (level .gt. lfine) go to 190
-           mptr = lstart(level)
- 170       if (mptr .eq. 0) go to 180
-           nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
-           ny      = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-           locaux  = node(storeaux,mptr)
-           mitot   = nx + 2*nghost
-           mjtot   = ny + 2*nghost
-
-
-           if (output_format == 1) then
-              open(unit=matunit3,file=fname3,status='unknown',
-     .             form='formatted')
-              if (ny.gt.1) then
-                 write(matunit3,1001) mptr, level, nx, ny
-              else
-c     # output in 1d format if ny=1:
-                 write(matunit3,1003) mptr, level, nx
-              endif
-              xlow = rnode(cornxlo,mptr)
-              ylow = rnode(cornylo,mptr)
-              if (ny.gt.1) then
-                 write(matunit3,1002)
-     &                xlow,ylow,hxposs(level),hyposs(level)
-              else
-                 write(matunit3,1004)
-     &                xlow,hxposs(level)
-              endif
-
-              do j = nghost+1, mjtot-nghost
-                 do i = nghost+1, mitot-nghost
-                    do ivar=1,naux
-                       if (abs(alloc(iaddaux(ivar,i,j))) .lt. 1d-90) 
-     &                      alloc(iaddaux(ivar,i,j)) = 0.d0
-                    enddo
-                    write(matunit3,109) (alloc(iaddaux(ivar,i,j)), 
-     &                   ivar=1,naux)
-                 enddo
-                 write(matunit3,*) ' '
-              enddo
-           endif
-           
-           if (output_format == 3) then
-c     # binary output          
-              open(unit=matunit3,file=fname3,status='unknown',
-     &             access='stream')
-              i1 = iaddaux(1,1,1)
-              i2 = iaddaux(naux,mitot,mjtot)
-c     # NOTE: we are writing out ghost cell data also, unlike ascii
-              write(matunit3) alloc(i1:i2)
-           endif
-
-
-           mptr = node(levelptr, mptr)
-           go to 170
- 180       level = level + 1
-           go to 165
-
- 190       continue
-           close(unit=matunit3)
-        endif                   !# end outputting aux array
-
-
-c     --------------
-c     # fort.t file:
-c     --------------
-
-      open(unit=matunit2,file=fname2,status='unknown',
-     .       form='formatted')
-      if (ny.gt.1) then 
-          ndim = 2
-        else
-c         # special case where 2d AMR is used for a 1d problem
-c         # and we want to use 1d plotting routines
-          ndim = 1
-        endif
-
-c     # NOTE: we need to print out nghost too in order to strip
-c     #       ghost cells from q when reading in pyclaw.io.binary
-      write(matunit2,1000) time,nvar,ngrids,naux,ndim,nghost
- 1000 format(e18.8,'    time', /,
-     &       i6,'                 meqn'/,
-     &       i6,'                 ngrids'/,
-     &       i6,'                 naux'/,
-     &       i6,'                 ndim'/,
-     &       i6,'                 nghost'/,/)
-c
-
-      write(6,601) matlabu,time
-  601 format('AMRCLAW: Frame ',i4,
-     &       ' output files done at time t = ', d13.6,/)
-
-      matlabu = matlabu + 1
-
-      close(unit=matunit1)
-      close(unit=matunit2)
-      if (output_format == 3) then
-          close(unit=matunit4)
-      endif
-
-      call system_clock(clock_finish,clock_rate)
-      call cpu_time(cpu_finish)
-      timeValout = timeValout + clock_finish - clock_start
-      timeValoutCPU = timeValoutCPU + cpu_finish - cpu_start
-
-end subroutine valout
-
-
-
-pure integer function iadd(ivar, i, j)
-    implicit none
-    iadd = loc + ivar - 1 + nvar*((j-1)*mitot+i-1)
-end function iadd
-
-pure integer function iaddaux(ivar, i, j)
-    implicit none
-    iadd = locaux + iaux-1 + naux*(i-1) + naux*mitot*(j-1)
-end function iaddaux
