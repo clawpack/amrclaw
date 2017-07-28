@@ -103,6 +103,8 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     ! Loop over levels
     do level = level_begin, level_end
         grid_ptr = lstart(level)
+        delta = [hxposs(level), hyposs(level)]
+
         ! Loop over grids on each level
         do while (grid_ptr /= 0)
             ! Extract grid data
@@ -111,7 +113,6 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
             num_cells(2) = node(ndjhi, grid_ptr) - node(ndjlo, grid_ptr) + 1
             q_loc = node(store1, grid_ptr)
             lower_corner = [rnode(cornxlo, grid_ptr), rnode(cornylo, grid_ptr)]
-            delta = [hxposs(level), hyposs(level)]
 
             ! Write out header data                 
             if (num_dim == 1) then
@@ -196,14 +197,16 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
         do level = level_begin, level_end
             grid_ptr = lstart(level)
+            delta = [hxposs(level), hyposs(level)]
+
             ! Loop over grids on each level
             do while (grid_ptr /= 0)
                 ! Extract grid data
                 num_cells(1) = node(ndihi, grid_ptr) - node(ndilo, grid_ptr) + 1
                 num_cells(2) = node(ndjhi, grid_ptr) - node(ndjlo, grid_ptr) + 1
                 aux_loc = node(storeaux, grid_ptr)
-                lower_corner = [rnode(cornxlo, grid_ptr), rnode(cornylo, grid_ptr)]
-                delta = [hxposs(level), hyposs(level)]
+                lower_corner = [rnode(cornxlo, grid_ptr),           &
+                                rnode(cornylo, grid_ptr)]
 
                 ! Output grids
                 select case(output_format)
@@ -250,9 +253,9 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                     ! Binary output
                     case(3)
                         ! Note: We are writing out ghost cell data also
-                        i = (iadd(num_aux, num_cells(1) + 2 * num_ghost, &
-                                           num_cells(2) + 2 * num_ghost))
-                        write(out_unit + 1) alloc(iaddaux(1, 1, 1):i)
+                        i = (iaddaux(num_aux, num_cells(1) + 2 * num_ghost, &
+                                              num_cells(2) + 2 * num_ghost))
+                        write(out_unit) alloc(iaddaux(1, 1, 1):i)
 
                     ! NetCDF output
                     case(4)
