@@ -5,12 +5,12 @@
 !! Use format required by matlab script  plotclaw2.m or Python tools
 !!
 !! set outaux = .true. to also output the aux arrays to fort.a<iframe>
-subroutine new_valout(level_begin, level_end, time, num_eqn, num_aux)
+subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
-    use amr_module, only: t0, output_aux_onlyonce, output_aux_components
-    use amr_module, only: frame => matlabu, num_grids => ngrids
-    use amr_module, only: num_ghost => nghost, lstart, output_format
-    use amr_module, only: hxposs, hyposs,
+    use amr_module, only: alloc, t0, output_aux_onlyonce, output_aux_components
+    use amr_module, only: frame => matlabu, num_ghost => nghost, lstart
+    use amr_module, only: hxposs, hyposs, output_format, store1, node, rnode, ndilo, ndihi, ndjlo, ndjhi, cornxlo, cornylo
+    use amr_module, only: timeValout, timeValoutCPU, levelptr
 
 #ifdef NETCDF
     use netcdf
@@ -19,13 +19,13 @@ subroutine new_valout(level_begin, level_end, time, num_eqn, num_aux)
     implicit none
 
     ! Input
-    integer :: level_begin, level_end, num_eqn, num_aux
-    real(kind=8) :: time
+    integer, intent(in) :: level_begin, level_end, num_eqn, num_aux
+    real(kind=8), intent(in) :: time
 
     ! Locals
     integer, parameter :: out_unit = 50
     integer :: i, j, m, level, output_aux_num, num_stop, digit, num_dim
-    integer :: level_ptr, num_cells(2), num_grids
+    integer :: grid_ptr, num_cells(2), num_grids, q_loc, aux_loc
     real(kind=8) :: lower_corner(2), delta(2)
     logical :: out_aux
     character(len=10) :: file_name(5)
@@ -48,7 +48,6 @@ subroutine new_valout(level_begin, level_end, time, num_eqn, num_aux)
                                      "e26.16,'    ylow', /,"                // &
                                      "e26.16,'    dx', /,"                  // &
                                      "e26.16,'    dy',/)"
-    character(len=*), parameter :: q_file_format = "()"
     character(len=*), parameter :: t_file_format = "(e18.8,'    time', /,"  // &
                                            "i6,'                 meqn'/,"   // &
                                            "i6,'                 ngrids'/," // &
@@ -57,20 +56,6 @@ subroutine new_valout(level_begin, level_end, time, num_eqn, num_aux)
                                            "i6,'                 nghost'/,/)"
     character(len=*), parameter :: console_format = "('AMRCLAW: Frame " // &
                               "',i4,' output files done at time t = ', d13.6,/)"
-
-    !
-    !
-    pure integer function iadd(ivar, i, j)
-        implicit none
-        iadd = q_loc + ivar - 1 + nvar*((j-1)*mitot+i-1)
-    end function iadd
-
-    !
-    !
-    pure integer function iaddaux(ivar, i, j)
-        implicit none
-        iadd = aux_loc + ivar- 1 + num_aux * (i - 1) + num_aux * mitot * (j - 1)
-    end function iaddaux
 
     ! Output timing
     call system_clock(clock_start,clock_rate)
@@ -84,7 +69,7 @@ subroutine new_valout(level_begin, level_end, time, num_eqn, num_aux)
 
     ! Note:  Currently outputs all aux components if any are requested
     out_aux = ((output_aux_num > 0) .and.               &
-              ((.not. output_aux_onlyonce) .or. (time == t0)))
+              ((.not. output_aux_onlyonce) .or. (abs(time - t0) < 1d-90)))
                 
     ! Construct file names
     file_name(1) = 'fort.qxxxx'
@@ -104,34 +89,34 @@ subroutine new_valout(level_begin, level_end, time, num_eqn, num_aux)
     ! Write out fort.q file (and fort.bXXXX or fort.bXXXX.nc files if necessary)
     ! Here we let fort.q be out_unit and the the other two be out_unit + 1
     open(unit=out_unit, file=file_name(1), status='unknown', form='formatted')
-    if (output_style == 3) then
+    if (output_format == 3) then
         open(unit=out_unit + 1, file=file_name(4), status="unknown",    &
              access='stream')
-    else if (output_style == 4) then
+    else if (output_format == 4) then
         stop
     end if
     num_grids = 0
 
     ! Loop over levels
     do level = level_begin, level_end
-        level_ptr = lstart(level)
+        grid_ptr = lstart(level)
         ! Loop over grids on each level
-        do while (level_ptr /= 0)
+        do while (grid_ptr /= 0)
             ! Extract grid data
             num_grids = num_grids + 1
-            num_cells(1) = node(ndihi, level_ptr) - node(ndilo, level_ptr) + 1
-            num_cells(2) = node(ndjhi, level_ptr) - node(ndjlo, level_ptr) + 1
-            q_loc = node(store1, level_ptr)
-            lower_corner = [rnode(cornxlo, level_ptr), rnode(cornylo, level_ptr)]
+            num_cells(1) = node(ndihi, grid_ptr) - node(ndilo, grid_ptr) + 1
+            num_cells(2) = node(ndjhi, grid_ptr) - node(ndjlo, grid_ptr) + 1
+            q_loc = node(store1, grid_ptr)
+            lower_corner = [rnode(cornxlo, grid_ptr), rnode(cornylo, grid_ptr)]
             delta = [hxposs(level), hyposs(level)]
 
             if (num_dim == 1) then
-                write(out_unit, q_header_format_1d) level_ptr, level,          &
+                write(out_unit, q_header_format_1d) grid_ptr, level,          &
                                                     num_cells(1),              &
                                                     lower_corner(1),           &
                                                     delta(1)
             else
-                write(out_unit, q_header_format_2d) level_ptr, level,          &
+                write(out_unit, q_header_format_2d) grid_ptr, level,          &
                                                     num_cells(1),              &
                                                     num_cells(2),              &
                                                     lower_corner(1),           &
@@ -159,10 +144,9 @@ subroutine new_valout(level_begin, level_end, time, num_eqn, num_aux)
                 ! Binary output
                 case(3)
                     ! Note: We are writing out ghost cell data also
-                    write(out_unit + 1) alloc(iadd(1, 1, 1):                   &
-                                             (iadd(num_eqn,                    &
-                                                 num_cells(1) + 2 * num_ghost, &
-                                                 num_cells(2) + 2 * num_ghost))
+                    i = (iadd(num_eqn, num_cells(1) + 2 * num_ghost, &
+                                       num_cells(2) + 2 * num_ghost))
+                    write(out_unit + 1) alloc(iadd(1, 1, 1):i)
 
                 ! NetCDF output
                 case(4)
@@ -174,17 +158,18 @@ subroutine new_valout(level_begin, level_end, time, num_eqn, num_aux)
                     print *, "  the ability to output in NetCDF formats."
                     stop
 #endif
-                else
-                    stop "Unsupported output format", output_format,"."
+                case default
+                    print *, "Unsupported output format", output_format,"."
+                    stop 
 
             end select
-            level_ptr = node(levelptr, level_ptr)
+            grid_ptr = node(levelptr, grid_ptr)
         end do
     end do
 
     ! ==========================================================================
     ! Write out fort.a file
-    stop "Aux files not implemented"
+    ! stop "Aux files not implemented"
 
     ! ==========================================================================
     ! Write fort.t file
@@ -194,7 +179,7 @@ subroutine new_valout(level_begin, level_end, time, num_eqn, num_aux)
     if (num_cells(2) > 1) then
         num_dim = 2
     else
-        num_dum = 1
+        num_dim = 1
     end if
 
     ! Note:  We need to print out num_ghost too in order to strip ghost cells
@@ -216,6 +201,24 @@ subroutine new_valout(level_begin, level_end, time, num_eqn, num_aux)
     timeValout = timeValout + clock_finish - clock_start
     timeValoutCPU = timeValoutCPU + cpu_finish - cpu_start
 
-end subroutine new_valout
+contains
+
+    !
+    !
+    pure integer function iadd(m, i, j)
+        implicit none
+        integer, intent(in) :: m, i, j
+        iadd = q_loc + m - 1 + num_eqn * ((j - 1) * (num_cells(1) + 2 * num_ghost) + i - 1)
+    end function iadd
+
+    !
+    !
+    pure integer function iaddaux(m, i, j)
+        implicit none
+        integer, intent(in) :: m, i, j
+        iaddaux = aux_loc + m - 1 + num_aux * (i - 1) + num_aux * (num_cells(1) + 2 * num_ghost) * (j - 1)
+    end function iaddaux
+
+end subroutine valout
 
 
