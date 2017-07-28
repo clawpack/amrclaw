@@ -9,7 +9,8 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
     use amr_module, only: alloc, t0, output_aux_onlyonce, output_aux_components
     use amr_module, only: frame => matlabu, num_ghost => nghost, lstart
-    use amr_module, only: hxposs, hyposs, output_format, store1, node, rnode, ndilo, ndihi, ndjlo, ndjhi, cornxlo, cornylo
+    use amr_module, only: hxposs, hyposs, output_format, store1, storeaux
+    use amr_module, only: node, rnode, ndilo, ndihi, ndjlo, ndjhi, cornxlo, cornylo
     use amr_module, only: timeValout, timeValoutCPU, levelptr
 
 #ifdef NETCDF
@@ -33,13 +34,13 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     integer :: clock_start, clock_finish, clock_rate
     real(kind=8) cpu_start, cpu_finish
 
-    character(len=*), parameter :: q_header_format_1d =                        &
+    character(len=*), parameter :: header_format_1d =                          &
                                     "(i6,'                 grid_number',/," // &
                                      "i6,'                 AMR_level',/,"   // &
                                      "i6,'                 mx',/,"          // &
                                      "e26.16,'    xlow', /, "               // &
                                      "e26.16,'    dx',/)"
-    character(len=*), parameter :: q_header_format_2d =                        &
+    character(len=*), parameter :: header_format_2d =                          &
                                     "(i6,'                 grid_number',/," // &
                                      "i6,'                 AMR_level',/,"   // &
                                      "i6,'                 mx',/,"          // &
@@ -54,8 +55,8 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                                            "i6,'                 naux'/,"   // &
                                            "i6,'                 ndim'/,"   // &
                                            "i6,'                 nghost'/,/)"
-    character(len=*), parameter :: console_format = "('AMRCLAW: Frame " // &
-                              "',i4,' output files done at time t = ', d13.6,/)"
+    character(len=*), parameter :: console_format = &
+             "('AMRCLAW: Frame ',i4,' output files done at time t = ', d13.6,/)"
 
     ! Output timing
     call system_clock(clock_start,clock_rate)
@@ -94,6 +95,8 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
              access='stream')
     else if (output_format == 4) then
         stop
+        ! open(unit=out_unit + 1, file=file_name(4) // ".nc", status="unknown",  &
+        !      access='stream')
     end if
     num_grids = 0
 
@@ -110,18 +113,19 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
             lower_corner = [rnode(cornxlo, grid_ptr), rnode(cornylo, grid_ptr)]
             delta = [hxposs(level), hyposs(level)]
 
+            ! Write out header data                 
             if (num_dim == 1) then
-                write(out_unit, q_header_format_1d) grid_ptr, level,          &
-                                                    num_cells(1),              &
-                                                    lower_corner(1),           &
-                                                    delta(1)
+                write(out_unit, header_format_1d) grid_ptr, level,             &
+                                                  num_cells(1),                &
+                                                  lower_corner(1),             &
+                                                  delta(1)
             else
-                write(out_unit, q_header_format_2d) grid_ptr, level,          &
-                                                    num_cells(1),              &
-                                                    num_cells(2),              &
-                                                    lower_corner(1),           &
-                                                    lower_corner(2),           &
-                                                    delta(1), delta(2)
+                write(out_unit, header_format_2d) grid_ptr, level,             &
+                                                  num_cells(1),                &
+                                                  num_cells(2),                &
+                                                  lower_corner(1),             &
+                                                  lower_corner(2),             &
+                                                  delta(1), delta(2)
             end if
 
             ! Output grids
@@ -129,6 +133,14 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                 ! ASCII output
                 case(1)
                     ! Round off if nearly zero
+                    forall (m = 1:num_eqn,                              &
+                            i=num_ghost + 1:num_cells(1) + num_ghost,   &
+                            j=num_ghost + 1:num_cells(2) + num_ghost,   &
+                            abs(alloc(iadd(m, i, j))) < 1d-90)
+
+                        alloc(iadd(m, i, j)) = 0.d0
+                    end forall
+
                     do j = num_ghost + 1, num_cells(2) + num_ghost
                         do i = num_ghost + 1, num_cells(1) + num_ghost
                             write(out_unit, "(50e26.16)")                      &
@@ -169,7 +181,98 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
     ! ==========================================================================
     ! Write out fort.a file
-    ! stop "Aux files not implemented"
+    if (out_aux) then
+        if (output_format == 1) then
+            open(unit=out_unit, file=file_name(3), status='unknown',        &
+                 form='formatted')
+        else if (output_format == 3) then
+            open(unit=out_unit, file=file_name(3), status='unknown',        &
+                 access='stream')
+        else if (output_format == 4) then
+            stop
+            ! open(unit=out_unit, file=file_name(3) // ".nc", status='unknown',  &
+            !      access='stream')
+        end if
+
+        do level = level_begin, level_end
+            grid_ptr = lstart(level)
+            ! Loop over grids on each level
+            do while (grid_ptr /= 0)
+                ! Extract grid data
+                num_cells(1) = node(ndihi, grid_ptr) - node(ndilo, grid_ptr) + 1
+                num_cells(2) = node(ndjhi, grid_ptr) - node(ndjlo, grid_ptr) + 1
+                aux_loc = node(storeaux, grid_ptr)
+                lower_corner = [rnode(cornxlo, grid_ptr), rnode(cornylo, grid_ptr)]
+                delta = [hxposs(level), hyposs(level)]
+
+                ! Output grids
+                select case(output_format)
+                    ! ASCII output
+                    case(1)
+
+                        ! We only output header info for aux data if writing 
+                        ! ASCII data
+                        if (num_dim == 1) then
+                            write(out_unit, header_format_1d) grid_ptr, level, &
+                                                              num_cells(1),    &
+                                                              lower_corner(1), &
+                                                              delta(1)
+                        else
+                            write(out_unit, header_format_2d) grid_ptr, level, &
+                                                              num_cells(1),    &
+                                                              num_cells(2),    &
+                                                              lower_corner(1), &
+                                                              lower_corner(2), &
+                                                              delta(1), delta(2)
+                        end if
+
+                        ! Round off if nearly zero
+                        forall (m = 1:num_aux,                              &
+                                i=num_ghost + 1:num_cells(1) + num_ghost,   &
+                                j=num_ghost + 1:num_cells(2) + num_ghost,   &
+                                abs(alloc(iaddaux(m, i, j))) < 1d-90)
+
+                            alloc(iaddaux(m, i, j)) = 0.d0
+                        end forall
+
+                        do j = num_ghost + 1, num_cells(2) + num_ghost
+                            do i = num_ghost + 1, num_cells(1) + num_ghost
+                                write(out_unit, "(50e26.16)")                   &
+                                         (alloc(iaddaux(m, i, j)), m=1, num_aux)
+                            end do
+                            write(out_unit, *) ' '
+                        end do
+
+                    ! What is case 2?
+                    case(2)
+                        stop "Unknown format."
+
+                    ! Binary output
+                    case(3)
+                        ! Note: We are writing out ghost cell data also
+                        i = (iadd(num_aux, num_cells(1) + 2 * num_ghost, &
+                                           num_cells(2) + 2 * num_ghost))
+                        write(out_unit + 1) alloc(iaddaux(1, 1, 1):i)
+
+                    ! NetCDF output
+                    case(4)
+#ifdef NETCDF
+                        stop "NetCDF output not yet implemented!"
+#else
+                        print *, "ERROR:  NetCDF library is not available."
+                        print *, "  Check the documentation as to how to include"
+                        print *, "  the ability to output in NetCDF formats."
+                        stop
+#endif
+                    case default
+                        print *, "Unsupported output format", output_format,"."
+                        stop 
+
+                end select
+                grid_ptr = node(levelptr, grid_ptr)
+            end do
+        end do
+    end if
 
     ! ==========================================================================
     ! Write fort.t file
