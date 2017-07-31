@@ -13,8 +13,8 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     use amr_module, only: node, rnode, ndilo, ndihi, cornxlo
     use amr_module, only: timeValout, timeValoutCPU, levelptr
 
-#ifdef NETCDF
-    use netcdf
+#ifdef HDF5
+    use hdf5
 #endif
 
     implicit none
@@ -135,14 +135,14 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                     i = iadd(num_eqn, num_cells + 2 * num_ghost)
                     write(out_unit + 1) alloc(iadd(1, 1):i)
 
-                ! NetCDF output
+                ! HDF5 output
                 case(4)
-#ifdef NETCDF
-                    stop "NetCDF output not yet implemented!"
+#ifdef HDF5
+                    stop "HDF5 output not yet implemented!"
 #else
-                    print *, "ERROR:  NetCDF library is not available."
+                    print *, "ERROR:  HDF5 library is not available."
                     print *, "  Check the documentation as to how to include"
-                    print *, "  the ability to output in NetCDF formats."
+                    print *, "  the ability to output in HDF5 formats."
                     stop
 #endif
                 case default

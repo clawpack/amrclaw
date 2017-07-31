@@ -9,12 +9,12 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
     use amr_module, only: alloc, t0, output_aux_onlyonce, output_aux_components
     use amr_module, only: frame => matlabu, num_ghost => nghost, lstart
-    use amr_module, only: hxposs, hyposs, output_format, store1, storeaux
-    use amr_module, only: node, rnode, ndilo, ndihi, ndjlo, ndjhi, cornxlo, cornylo
+    use amr_module, only: hxposs, hyposs, hzposs, output_format, store1, storeaux
+    use amr_module, only: node, rnode, ndilo, ndihi, ndjlo, ndjhi, ndklo, ndkhi, cornxlo, cornylo, cornzlo
     use amr_module, only: timeValout, timeValoutCPU, levelptr
 
 #ifdef HDF5
-    use hdf5
+    use HDF5
 #endif
 
     implicit none
@@ -25,30 +25,27 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
     ! Locals
     integer, parameter :: out_unit = 50
-    integer :: i, j, m, level, output_aux_num, num_stop, digit, num_dim
-    integer :: grid_ptr, num_cells(2), num_grids, q_loc, aux_loc
-    real(kind=8) :: lower_corner(2), delta(2)
+    integer :: i, j, k, m, level, output_aux_num, num_stop, digit
+    integer :: grid_ptr, num_cells(3), num_grids, q_loc, aux_loc
+    real(kind=8) :: lower_corner(3), delta(3)
     logical :: out_aux
     character(len=10) :: file_name(5)
 
     integer :: clock_start, clock_finish, clock_rate
     real(kind=8) cpu_start, cpu_finish
 
-    character(len=*), parameter :: header_format_1d =                          &
-                                    "(i6,'                 grid_number',/," // &
-                                     "i6,'                 AMR_level',/,"   // &
-                                     "i6,'                 mx',/,"          // &
-                                     "e26.16,'    xlow', /, "               // &
-                                     "e26.16,'    dx',/)"
-    character(len=*), parameter :: header_format_2d =                          &
+    character(len=*), parameter :: header_format =                             &
                                     "(i6,'                 grid_number',/," // &
                                      "i6,'                 AMR_level',/,"   // &
                                      "i6,'                 mx',/,"          // &
                                      "i6,'                 my',/"           // &
+                                     "i6,'                 mz',/"           // &
                                      "e26.16,'    xlow', /, "               // &
                                      "e26.16,'    ylow', /,"                // &
+                                     "e26.16,'    zlow', /,"                // &
                                      "e26.16,'    dx', /,"                  // &
-                                     "e26.16,'    dy',/)"
+                                     "e26.16,'    dy', /,"                  // &
+                                     "e26.16,'    dz',/)"
     character(len=*), parameter :: t_file_format = "(e18.8,'    time', /,"  // &
                                            "i6,'                 meqn'/,"   // &
                                            "i6,'                 ngrids'/," // &
@@ -103,7 +100,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     ! Loop over levels
     do level = level_begin, level_end
         grid_ptr = lstart(level)
-        delta = [hxposs(level), hyposs(level)]
+        delta = [hxposs(level), hyposs(level), hzposs(level)]
 
         ! Loop over grids on each level
         do while (grid_ptr /= 0)
@@ -111,23 +108,17 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
             num_grids = num_grids + 1
             num_cells(1) = node(ndihi, grid_ptr) - node(ndilo, grid_ptr) + 1
             num_cells(2) = node(ndjhi, grid_ptr) - node(ndjlo, grid_ptr) + 1
+            num_cells(3) = node(ndkhi, grid_ptr) - node(ndklo, grid_ptr) + 1
             q_loc = node(store1, grid_ptr)
-            lower_corner = [rnode(cornxlo, grid_ptr), rnode(cornylo, grid_ptr)]
+            lower_corner = [rnode(cornxlo, grid_ptr),       &
+                            rnode(cornylo, grid_ptr),       &
+                            rnode(cornzlo, grid_ptr)]
 
-            ! Write out header data                 
-            if (num_dim == 1) then
-                write(out_unit, header_format_1d) grid_ptr, level,             &
-                                                  num_cells(1),                &
-                                                  lower_corner(1),             &
-                                                  delta(1)
-            else
-                write(out_unit, header_format_2d) grid_ptr, level,             &
-                                                  num_cells(1),                &
-                                                  num_cells(2),                &
-                                                  lower_corner(1),             &
-                                                  lower_corner(2),             &
-                                                  delta(1), delta(2)
-            end if
+            ! Write out header data
+            write(out_unit, header_format) grid_ptr, level,                    &
+                            num_cells(1), num_cells(2), num_cells(3),          &
+                            lower_corner(1), lower_corner(2), lower_corner(3), &
+                            delta(1), delta(2), delta(3)
 
             ! Output grids
             select case(output_format)
@@ -137,18 +128,23 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                     forall (m = 1:num_eqn,                              &
                             i=num_ghost + 1:num_cells(1) + num_ghost,   &
                             j=num_ghost + 1:num_cells(2) + num_ghost,   &
-                            abs(alloc(iadd(m, i, j))) < 1d-90)
+                            k=num_ghost + 1:num_cells(3) + num_ghost,   &
+                            abs(alloc(iadd(m, i, j, k))) < 1d-90)
 
-                        alloc(iadd(m, i, j)) = 0.d0
+                        alloc(iadd(m, i, j, k)) = 0.d0
                     end forall
 
-                    do j = num_ghost + 1, num_cells(2) + num_ghost
-                        do i = num_ghost + 1, num_cells(1) + num_ghost
-                            write(out_unit, "(50e26.16)")                      &
-                                            (alloc(iadd(m, i, j)), m=1, num_eqn)
+                    do k = num_ghost + 1, num_cells(3) + num_ghost
+                        do j = num_ghost + 1, num_cells(2) + num_ghost
+                            do i = num_ghost + 1, num_cells(1) + num_ghost
+                                write(out_unit, "(50e26.16)")                  &
+                                         (alloc(iadd(m, i, j, k)), m=1, num_eqn)
+                            end do
+                            write(out_unit, *) ' '
                         end do
                         write(out_unit, *) ' '
                     end do
+                    write(out_unit, *) ' '
 
                 ! What is case 2?
                 case(2)
@@ -158,13 +154,14 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                 case(3)
                     ! Note: We are writing out ghost cell data also
                     i = (iadd(num_eqn, num_cells(1) + 2 * num_ghost, &
-                                       num_cells(2) + 2 * num_ghost))
-                    write(out_unit + 1) alloc(iadd(1, 1, 1):i)
+                                       num_cells(2) + 2 * num_ghost, &
+                                       num_cells(3) + 2 * num_ghost))
+                    write(out_unit + 1) alloc(iadd(1, 1, 1, 1):i)
 
                 ! HDF5 output
                 case(4)
 #ifdef HDF5
-                    stop "HDF5 output not yet implemented!"
+                    stop "HSF5 output not yet implemented!"
 #else
                     print *, "ERROR:  HDF5 library is not available."
                     print *, "  Check the documentation as to how to include"
@@ -197,16 +194,18 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
         do level = level_begin, level_end
             grid_ptr = lstart(level)
-            delta = [hxposs(level), hyposs(level)]
+            delta = [hxposs(level), hyposs(level), hzposs(level)]
 
             ! Loop over grids on each level
             do while (grid_ptr /= 0)
                 ! Extract grid data
                 num_cells(1) = node(ndihi, grid_ptr) - node(ndilo, grid_ptr) + 1
                 num_cells(2) = node(ndjhi, grid_ptr) - node(ndjlo, grid_ptr) + 1
+                num_cells(3) = node(ndkhi, grid_ptr) - node(ndklo, grid_ptr) + 1
                 aux_loc = node(storeaux, grid_ptr)
                 lower_corner = [rnode(cornxlo, grid_ptr),           &
-                                rnode(cornylo, grid_ptr)]
+                                rnode(cornylo, grid_ptr),           &
+                                rnode(cornzlo, grid_ptr)]
 
                 ! Output grids
                 select case(output_format)
@@ -215,36 +214,32 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
                         ! We only output header info for aux data if writing 
                         ! ASCII data
-                        if (num_dim == 1) then
-                            write(out_unit, header_format_1d) grid_ptr, level, &
-                                                              num_cells(1),    &
-                                                              lower_corner(1), &
-                                                              delta(1)
-                        else
-                            write(out_unit, header_format_2d) grid_ptr, level, &
-                                                              num_cells(1),    &
-                                                              num_cells(2),    &
-                                                              lower_corner(1), &
-                                                              lower_corner(2), &
-                                                              delta(1), delta(2)
-                        end if
+                        write(out_unit, header_format) grid_ptr, level,        &
+                            num_cells(1), num_cells(2), num_cells(3),          &
+                            lower_corner(1), lower_corner(2), lower_corner(3), &
+                            delta(1), delta(2), delta(3)
 
                         ! Round off if nearly zero
-                        forall (m = 1:num_aux,                              &
+                        forall (m = 1:num_eqn,                              &
                                 i=num_ghost + 1:num_cells(1) + num_ghost,   &
                                 j=num_ghost + 1:num_cells(2) + num_ghost,   &
-                                abs(alloc(iaddaux(m, i, j))) < 1d-90)
+                                k=num_ghost + 1:num_cells(3) + num_ghost,   &
+                                abs(alloc(iadd(m, i, j, k))) < 1d-90)
 
-                            alloc(iaddaux(m, i, j)) = 0.d0
+                            alloc(iadd(m, i, j, k)) = 0.d0
                         end forall
 
-                        do j = num_ghost + 1, num_cells(2) + num_ghost
-                            do i = num_ghost + 1, num_cells(1) + num_ghost
-                                write(out_unit, "(50e26.16)")                   &
-                                         (alloc(iaddaux(m, i, j)), m=1, num_aux)
+                        do k = num_ghost + 1, num_cells(3) + num_ghost
+                            do j = num_ghost + 1, num_cells(2) + num_ghost
+                                do i = num_ghost + 1, num_cells(1) + num_ghost
+                                    write(out_unit, "(50e26.16)")              &
+                                      (alloc(iaddaux(m, i, j, k)), m=1, num_aux)
+                                end do
+                                write(out_unit, *) ' '
                             end do
                             write(out_unit, *) ' '
                         end do
+                        write(out_unit, *) ' '
 
                     ! What is case 2?
                     case(2)
@@ -254,8 +249,9 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                     case(3)
                         ! Note: We are writing out ghost cell data also
                         i = (iaddaux(num_aux, num_cells(1) + 2 * num_ghost, &
-                                              num_cells(2) + 2 * num_ghost))
-                        write(out_unit) alloc(iaddaux(1, 1, 1):i)
+                                              num_cells(2) + 2 * num_ghost, &
+                                              num_cells(3) + 2 * num_ghost))
+                        write(out_unit) alloc(iaddaux(1, 1, 1, 1):i)
 
                     ! NetCDF output
                     case(4)
@@ -281,16 +277,9 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     ! Write fort.t file
     open(unit=out_unit, file=file_name(2), status='unknown', form='formatted')
 
-    ! Handle special case of using 2D AMR to do 1D AMR
-    if (num_cells(2) > 1) then
-        num_dim = 2
-    else
-        num_dim = 1
-    end if
-
     ! Note:  We need to print out num_ghost too in order to strip ghost cells
     !        from q array when reading in pyclaw.io.binary
-    write(out_unit, t_file_format) time, num_eqn, num_grids, num_aux, num_dim, &
+    write(out_unit, t_file_format) time, num_eqn, num_grids, num_aux, 3, &
                                    num_ghost
     close(out_unit)
 
@@ -311,18 +300,24 @@ contains
 
     !
     !
-    pure integer function iadd(m, i, j)
+    pure integer function iadd(m, i, j, k)
         implicit none
-        integer, intent(in) :: m, i, j
-        iadd = q_loc + m - 1 + num_eqn * ((j - 1) * (num_cells(1) + 2 * num_ghost) + i - 1)
+        integer, intent(in) :: m, i, j, k
+        iadd = q_loc + (m - 1) + (i - 1) * num_eqn +                          &
+                       (j - 1) * num_eqn * (num_cells(1) + 2 * num_ghost) +   &
+                       (k - 1) * num_eqn * (num_cells(1) + 2 * num_ghost) *   &
+                       (num_cells(2) + 2 * num_ghost)
     end function iadd
 
     !
     !
-    pure integer function iaddaux(m, i, j)
+    pure integer function iaddaux(m, i, j, k)
         implicit none
-        integer, intent(in) :: m, i, j
-        iaddaux = aux_loc + m - 1 + num_aux * (i - 1) + num_aux * (num_cells(1) + 2 * num_ghost) * (j - 1)
+        integer, intent(in) :: m, i, j, k
+        iaddaux = aux_loc + (m - 1) + (i - 1) * num_aux +                      &
+                          (j - 1) * num_aux * (num_cells(1) + 2 * num_ghost) + &
+                          (k - 1) * num_aux * (num_cells(1) + 2 * num_ghost) * &
+                          (num_cells(2) + 2 * num_ghost)
     end function iaddaux
 
 end subroutine valout
