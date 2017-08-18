@@ -27,6 +27,7 @@ def setplot(plotdata=None):
         plotdata = ClawPlotData()
 
     plotdata.clearfigures()  # clear any old figures,axes,items data
+    plotdata.format = 'binary'      # 'ascii', 'binary', 'netcdf'
 
     def draw_interface_add_legend(current_data):
         from pylab import plot
