@@ -11,7 +11,6 @@ COMMON_MODULES += \
 
 #list of common sources needed for adjoint code
 COMMON_MODULES += \
-  $(ADJLIB)/amr_reload_module.f90 \
   $(ADJLIB)/adjoint_module.f90 \
   $(ADJLIB)/innerprod_module.f90
 
@@ -128,6 +127,5 @@ COMMON_SOURCES += \
   $(ADJLIB)/errf1.f \
   $(ADJLIB)/errest.f \
   $(ADJLIB)/setaux.f90 \
-  $(ADJLIB)/amr2_reload.f90 \
   $(ADJLIB)/reload.f \
   $(ADJLIB)/interp_adjoint.f \

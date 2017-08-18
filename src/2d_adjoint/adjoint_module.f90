@@ -3,37 +3,23 @@
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 module adjoint_module
-    use amr_reload_module
+    use amr_module
 
     type adjointData_type
 
-        integer lenmax, lendim, isize, lentot
         real(kind=8), allocatable, dimension(:) :: alloc
 
-        real(kind=8) hxposs(maxlv), hyposs(maxlv),possk(maxlv)
-        integer icheck(maxlv)
+        real(kind=8) hxposs(maxlv),hyposs(maxlv)
 
-        ! for space management of alloc array
-        integer lfree(lfdim,2),lenf
-
-        real(kind=8) rnode(rsize, maxgr)
-        integer node(nsize, maxgr), lstart(maxlv),newstl(maxlv), &
-                listsp(maxlv)
-        integer ibuff, mstart, ndfree, ndfree_bnd, lfine, iorder, mxnest, &
-                intratx(maxlv),intraty(maxlv), kratio(maxlv), &
-                iregsz(maxlv),jregsz(maxlv), iregst(maxlv),jregst(maxlv), &
-                iregend(maxlv),jregend(maxlv), numgrids(maxlv), kcheck, &
-                nsteps, matlabu, iregridcount(maxlv)
-        real(kind=8) time, tol, rvoll(maxlv),evol,rvol, &
-                     cflmax, avenumgrids(maxlv)
-
-        ! variable for conservation checking
-        real(kind=8) tmass0
+        integer meqn, ngrids, naux, ndim, nghost, lfine
+        real(kind=8) time, xlowvals(maxgr), ylowvals(maxgr)
+        integer ncellsx(maxgr), ncellsy(maxgr), loc(maxgr)
+        integer gridlevel(maxgr), gridpointer(maxgr)
 
     end type adjointData_type
 
     type(adjointData_type), allocatable :: adjoints(:)
-    integer :: totnum_adjoints, nvar, naux, &
+    integer :: totnum_adjoints, &
                counter, innerprod_index
     real(kind=8) :: trange_start, trange_final
     character(len=365), allocatable :: adj_files(:)
@@ -71,9 +57,6 @@ contains
             read(iunit,*) t2
 
             call set_time_window(t1, t2)
-
-            ! Reload adjoint files
-            call amr2_reload(trim(adjoint_output))
 
             read(iunit,*) totnum_adjoints
             read(iunit,*) innerprod_index

@@ -6,6 +6,8 @@ contains
 
         use adjoint_module
 
+        implicit none
+
         real(kind=8), intent(in) :: t
         integer :: r
         real(kind=8) :: q_innerprod1, q_innerprod2, q_innerprod, max_innerprod
@@ -13,7 +15,9 @@ contains
         real(kind=8) :: x_c,y_c,q1,q2,q3
         real(kind=8) :: t_nm
 
-        allocate(q_interp(nvar+1))
+        ! All of the adjoints should have the same number of
+        ! variables, so only allocate q_interp once
+        allocate(q_interp(adjoints(1)%meqn))
 
         max_innerprod = 0.d0
         ! Select adjoint data
@@ -31,13 +35,13 @@ contains
             q_innerprod1 = 0.d0
             q_innerprod2 = 0.d0
 
-            call interp_adjoint(1, adjoints(r)%lfine, nvar, &
+            call interp_adjoint(adjoints(r)%meqn, &
                  x_c,y_c,q_interp,r)
             q_innerprod1 = abs( q1 * q_interp(1) &
                   + q2 * q_interp(2) + q3 * q_interp(3))
 
             if (r .ne. 1) then
-                call interp_adjoint(1, adjoints(r)%lfine, nvar, &
+                call interp_adjoint(adjoints(r)%meqn, &
                      x_c,y_c,q_interp, r-1)
                 q_innerprod2 = abs(q1 * q_interp(1) &
                     + q2 * q_interp(2) + q3 * q_interp(3))
