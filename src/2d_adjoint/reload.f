@@ -25,6 +25,9 @@ c
       iadd(ivar,i,j)  = adjoints(k)%loc(mptr)
      .        + ivar - 1 + adjoints(k)%meqn*((j-1)*mitot+i-1)
 
+c     Initializing all levels to zero
+      adjoints(k)%gridlevel(:) = 0
+
 c     ! Checking to see if fort.t file exists
       write(6,*) 'Attempting to reload data '
       write(6,*) '  fort.t* file: ',trim(adjfile)
@@ -119,6 +122,8 @@ c       ! This is the bulk of the reading
 
       close(10)
       close(20)
+
+      adjoints(k)%lfine = maxval(adjoints(k)%gridlevel)
 
       return
       end
