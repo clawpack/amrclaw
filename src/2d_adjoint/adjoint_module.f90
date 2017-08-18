@@ -29,7 +29,6 @@ contains
 
     subroutine read_adjoint_data()
 
-        use amr_reload_module
         implicit none
 
         ! Function Arguments
