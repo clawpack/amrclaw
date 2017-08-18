@@ -126,7 +126,7 @@ def setrun(claw_pkg='amrclaw'):
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
-    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
+    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
 
     clawdata.output_q_components = 'all'   # could be list such as [True,True]
     clawdata.output_aux_components = 'none'  # could be list
@@ -229,7 +229,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
     
-    clawdata.checkpt_style = 3
+    clawdata.checkpt_style = 0
     
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all

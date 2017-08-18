@@ -416,7 +416,7 @@ def setadjoint(rundata):
     for fname in files:
         f = open(fname)
         time = f.readline().split()[-1]
-        adjointdata.add_param('file' + str(counter), fname, 'Checkpoint file' + str(counter))
+        adjointdata.add_param('file' + str(counter), fname, 'Binary file' + str(counter))
         counter = counter + 1
     
     return rundata
