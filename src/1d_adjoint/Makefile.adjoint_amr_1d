@@ -10,13 +10,11 @@ COMMON_MODULES += \
 
 #list of common sources needed for adjoint code
 COMMON_MODULES += \
-  $(ADJLIB)/amr_reload_module.f90 \
   $(ADJLIB)/adjoint_module.f90 \
   $(ADJLIB)/innerprod_module.f90
 
 COMMON_SOURCES += \
   $(AMRLIB)/qinit.f \
-  $(AMRLIB)/setprob.f \
   $(AMRLIB)/amr1.f90 \
   $(AMRLIB)/bc1amr.f \
   $(AMRLIB)/b4step1.f90 \
@@ -105,11 +103,11 @@ COMMON_SOURCES += \
 
 # list of source files from ADJLIB library. 
 COMMON_SOURCES += \
+  $(AMRLIB)/setprob.f \
   $(ADJLIB)/flag2refine1.f90 \
   $(ADJLIB)/valout.f \
   $(ADJLIB)/errf1.f \
   $(ADJLIB)/errest.f \
   $(ADJLIB)/setaux.f90 \
-  $(ADJLIB)/amr1_reload.f90 \
   $(ADJLIB)/reload.f \
   $(ADJLIB)/interp_adjoint.f90 \
