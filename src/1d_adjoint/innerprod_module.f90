@@ -13,7 +13,7 @@ contains
         real(kind=8) :: x_c,q1,q2
         real(kind=8) :: t_nm
 
-        allocate(q_interp(nvar+1))
+        allocate(q_interp(adjoints(1)%meqn))
 
         max_innerprod = 0.d0
         ! Select adjoint data
@@ -28,7 +28,7 @@ contains
           if ((t+adjoints(r)%time) >= trange_start .and. &
               (t+adjoints(r)%time) <=trange_final) then
 
-            call interp_adjoint(1, adjoints(r)%lfine, nvar, &
+            call interp_adjoint(adjoints(r)%meqn, &
                 x_c,q_interp,r)
             q_innerprod1 = abs( q1 * q_interp(1) &
                   + q2 * q_interp(2))
@@ -36,7 +36,7 @@ contains
             q_innerprod2 = 0.d0
             q_innerprod = q_innerprod1
             if (r .ne. 1) then
-                call interp_adjoint(1, adjoints(r)%lfine, nvar, &
+                call interp_adjoint(adjoints(r)%meqn, &
                     x_c,q_interp, r-1)
 
                 q_innerprod2 = abs(q1 * q_interp(1) &

@@ -8,65 +8,119 @@ c ---------------------------------------------------------
 c
       subroutine reload(adjfile, k)
 c
-      use amr_reload_module
       use adjoint_module
 
-      implicit none
+      implicit double precision (a-h,o-z)
 
       integer, intent(in) :: k
-      integer :: i
-      character(len=*), intent(in) :: adjfile
+      integer :: mptr, level, ladjfile
+      integer :: mitot, mjtot, i1, i2
+      integer :: i, ivar, z, loc
+      integer :: allocsize, new_size
+      character(len=*):: adjfile
       logical foundFile, initial
 
-c     ! Checking to see if file exists
+      real(kind=8), allocatable, target, dimension(:) :: new_storage
+      iadd(ivar,i)  = adjoints(k)%loc(mptr)
+     .        + ivar - 1 + adjoints(k)%meqn*(i-1)
+
+c     Initializing all levels to zero
+      adjoints(k)%gridlevel(:) = 0
+
+c     ! Checking to see if fort.t file exists
+      ladjfile = len(trim(adjfile))
+      adjfile(ladjfile-4:ladjfile-4) = 't'
       write(6,*) 'Attempting to reload data '
-      write(6,*) '  checkpoint file: ',trim(adjfile)
+      write(6,*) '  fort.t* file: ',trim(adjfile)
       inquire(file=trim(adjfile),exist=foundFile)
       if (.not. foundFile) then
-        write(*,*)" Did not find checkpoint file!"
-        stop
+          write(*,*)" Did not find fort.t* file!"
+          stop
       endif
-      open(rstunit,file=trim(adjfile),status='old',form='unformatted')
-      rewind rstunit
+      open(9,file=trim(adjfile),status='old',form='formatted')
+      rewind 9
 
-c     ! Starting the bulk of the reading
-      read(rstunit) adjoints(k)%lenmax,adjoints(k)%lendim,
-     .    adjoints(k)%isize
+c     ! Reading from fort.t file
+      read(9, "(e18.8)") adjoints(k)%time
+      read(9, "(i6)") adjoints(k)%meqn
+      read(9, "(i6)") adjoints(k)%ngrids
+      read(9, "(i6)") adjoints(k)%naux
+      read(9, "(i6)") adjoints(k)%ndim
+      read(9, "(i6)") adjoints(k)%nghost
 
-      allocate(adjoints(k)%alloc(adjoints(k)%isize))
+      close(9)
 
-      memsize = adjoints(k)%isize
+c     ! Allocating memory for alloc array
+      allocsize = 4000000
+      allocate(adjoints(k)%alloc(allocsize))
 
-      read(rstunit) (adjoints(k)%alloc(i),i=1,adjoints(k)%lendim)
-      read(rstunit) adjoints(k)%hxposs,
-     .       adjoints(k)%possk,adjoints(k)%icheck
-      read(rstunit) adjoints(k)%lfree,adjoints(k)%lenf
-      read(rstunit) adjoints(k)%rnode,adjoints(k)%node,
-     1       adjoints(k)%lstart,adjoints(k)%newstl,
-     1       adjoints(k)%listsp, adjoints(k)%tol,
-     1       adjoints(k)%ibuff,adjoints(k)%mstart,
-     1       adjoints(k)%ndfree,adjoints(k)%ndfree_bnd,
-     1       adjoints(k)%lfine,
-     1       adjoints(k)%iorder,adjoints(k)%mxnest,
-     2       adjoints(k)%intratx,
-     2       adjoints(k)%kratio,adjoints(k)%iregsz,
-     2       adjoints(k)%iregst,
-     2       adjoints(k)%iregend,
-     2        adjoints(k)%numgrids,
-     3       adjoints(k)%kcheck,adjoints(k)%nsteps,
-     3       adjoints(k)%time, adjoints(k)%matlabu
-      read(rstunit) adjoints(k)%avenumgrids,
-     1              adjoints(k)%iregridcount, adjoints(k)%evol,
-     1              adjoints(k)%rvol,adjoints(k)%rvoll,
-     1              adjoints(k)%lentot,adjoints(k)%tmass0,
-     1              adjoints(k)%cflmax
+c     ! Checking to see if fort.q file exists
+      adjfile(ladjfile-4:ladjfile-4) = 'q'
+      write(6,*) 'Attempting to reload data '
+      write(6,*) '  fort.q* file: ',trim(adjfile)
+      inquire(file=trim(adjfile),exist=foundFile)
+      if (.not. foundFile) then
+          write(*,*)" Did not find fort.q* file!"
+          stop
+      endif
+      open(10,file=trim(adjfile),status='old',form='formatted')
+      rewind 10
 
-      close(rstunit)
+c     ! Checking to see if fort.b file exists
+      adjfile(ladjfile-4:ladjfile-4) = 'b'
+      write(6,*) 'Attempting to reload data '
+      write(6,*) '  fort.b* file: ',trim(adjfile)
+      inquire(file=trim(adjfile),exist=foundFile)
+      if (.not. foundFile) then
+          write(*,*)" Did not find fort.b* file!"
+          stop
+      endif
+      open(20,file=trim(adjfile),status='unknown',access='stream')
+      rewind 20
 
-      write(outunit,100) adjoints(k)%nsteps,adjoints(k)%time
-      write(6,100) adjoints(k)%nsteps,adjoints(k)%time
- 100  format(/,' Data comes from calculating over ',i5,' steps',
-     1        /,'  (time = ',e15.7,')')
+c     ! Reading from fort.q* file and fort.b* files
+      loc = 1
+      do z = 1, adjoints(k)%ngrids
+          read(10,"(i6)") mptr
+          adjoints(k)%gridpointer(z) = mptr
+
+          read(10,"(i6)") level
+          adjoints(k)%gridlevel(mptr) = level
+
+          read(10,"(i6)") adjoints(k)%ncellsx(mptr)
+          read(10,"(e26.16)") adjoints(k)%xlowvals(mptr)
+          read(10,"(e26.16)") adjoints(k)%hxposs(level)
+          read(10,*)
+
+          mitot = adjoints(k)%ncellsx(mptr) + 2*adjoints(k)%nghost
+
+          adjoints(k)%loc(mptr) = loc
+          loc = loc + mitot*adjoints(k)%meqn
+
+c         Checking to see if the alloc array is large enough
+c         to hold the new grid
+c         If not, making the alloc array larger
+          if (allocsize .lt. loc) then
+              new_size = 2*allocsize
+              allocate(new_storage(new_size))
+
+              new_storage(1:allocsize) = adjoints(k)%alloc
+              call move_alloc(new_storage,adjoints(k)%alloc)
+              allocsize = new_size
+          endif
+
+c       ! This is the bulk of the reading
+          i1 = iadd(1,1)
+          i2 = iadd(adjoints(k)%meqn,mitot)
+          read(20) adjoints(k)%alloc(i1:i2)
+
+      enddo
+
+      close(10)
+      close(20)
+
+      adjoints(k)%lfine = maxval(adjoints(k)%gridlevel)
 
       return
       end
+
