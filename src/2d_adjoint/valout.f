@@ -130,11 +130,6 @@ c                 # output in 1d format if ny=1:
                       endif
                    enddo
 
-                   ! Extract pressure and speed
-                   p = alloc(iadd(1,i,j))
-                   u = alloc(iadd(2,i,j))
-                   v = alloc(iadd(3,i,j))
-
                    ! Adding innerproduct
                    innerprod = alloc(iaddaux(innerprod_index,i,j))
 
