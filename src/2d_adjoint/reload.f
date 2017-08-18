@@ -29,6 +29,8 @@ c     Initializing all levels to zero
       adjoints(k)%gridlevel(:) = 0
 
 c     ! Checking to see if fort.t file exists
+      ladjfile = len(trim(adjfile))
+      adjfile(ladjfile-4:ladjfile-4) = 't'
       write(6,*) 'Attempting to reload data '
       write(6,*) '  fort.t* file: ',trim(adjfile)
       inquire(file=trim(adjfile),exist=foundFile)
@@ -54,7 +56,6 @@ c     ! Allocating memory for alloc array
       allocate(adjoints(k)%alloc(allocsize))
 
 c     ! Checking to see if fort.q file exists
-      ladjfile = len(trim(adjfile))
       adjfile(ladjfile-4:ladjfile-4) = 'q'
       write(6,*) 'Attempting to reload data '
       write(6,*) '  fort.q* file: ',trim(adjfile)
