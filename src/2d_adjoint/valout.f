@@ -290,7 +290,6 @@ c
 
       call system_clock(clock_finish,clock_rate)
       timeValout = timeValout + clock_finish - clock_start
-      write(*,*) "done with valout"
 
       return
       end
