@@ -22,12 +22,14 @@ c     # set outaux = .true. to also output the aux arrays to fort.a<iframe>
       integer output_aux_num
       real(kind=8) :: p, u, v, x_c, y_c, innerprod
       integer clock_start, clock_finish, clock_rate
+      real(kind=8), allocatable :: qmod(:)
 
 c      iadd(i,j,ivar) = loc + i - 1 + mitot*((ivar-1)*mjtot+j-1)
 c      iaddaux(i,j,ivar) = locaux + i - 1 + mitot*((ivar-1)*mjtot+j-1)
       iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)*mitot+i-1)
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
      .                                      naux*mitot*(j-1)
+      iaddqmod(ivar,i,j)  = 1 + ivar - 1 + (nvar+1)*((j-1)*mitot+i-1)
 c
 
       call system_clock(clock_start,clock_rate)
@@ -143,14 +145,31 @@ c                 # output in 1d format if ny=1:
 
          if (output_format == 3) then
 c            # binary output          
-             i1 = iadd(1,1,1)
-             i2 = iadd(nvar,mitot,mjtot)
+c            # Need to augment q with max innerproduct:
+             allocate(qmod((nvar+1)*mitot*mjtot))
 
-             ! Adding innerproduct
-             innerprod = alloc(iaddaux(innerprod_index,i,j))
+             do j=1,mjtot
+                 do i=1,mitot
+                     do m=1,nvar
+                        qmod(iaddqmod(m,i,j)) = alloc(iadd(m,i,j))
+                     enddo
+
+                     ! Adding innerproduct
+                     innerprod = alloc(iaddaux(innerprod_index,i,j))
+
+                     if (abs(innerprod) < 1d-90) then
+                         innerprod = 0.d0
+                     endif
+
+                     qmod(iaddqmod(nvar+1,i,j)) = innerprod
+
+                 enddo
+             enddo
 
 c            # NOTE: we are writing out ghost cell data also, unlike ascii
-             write(matunit4) alloc(i1:i2), innerprod
+             write(matunit4) qmod
+
+             deallocate(qmod)
              endif
 
             mptr = node(levelptr, mptr)
@@ -271,6 +290,7 @@ c
 
       call system_clock(clock_finish,clock_rate)
       timeValout = timeValout + clock_finish - clock_start
+      write(*,*) "done with valout"
 
       return
       end
