@@ -87,7 +87,7 @@ c             retaining directionality of the wave
 c         set innerproduct for fine grid
           auxfine(innerprod_index,ifine,jfine) =
      .        calculate_max_innerproduct(time,xofi,yofj,
-     .        est(1),est(2),est(3))
+     .        est)
 
           auxfine(innerprod_index,ifine+1,jfine)  =
      .                          auxfine(innerprod_index,ifine,jfine)

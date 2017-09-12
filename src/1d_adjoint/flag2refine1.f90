@@ -74,7 +74,7 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
         x_hi = xlower + i * dx
 
         aux(innerprod_index,i) =  &
-           calculate_max_innerproduct(t,x_c,q(1,i),q(2,i))
+           calculate_max_innerproduct(t,x_c,q(:,i))
 
         if (aux(innerprod_index,i) > tolsp) then
             amrflags(i) = DOFLAG

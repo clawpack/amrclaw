@@ -2,7 +2,7 @@ module innerprod_module
 
 contains
 
-    function calculate_max_innerproduct(t,x_c,y_c,q1,q2,q3) result(max_innerprod)
+    function calculate_max_innerproduct(t,x_c,y_c,q) result(max_innerprod)
 
         use adjoint_module
 
@@ -12,7 +12,8 @@ contains
         integer :: r
         real(kind=8) :: q_innerprod1, q_innerprod2, q_innerprod, max_innerprod
         double precision, allocatable :: q_interp(:)
-        real(kind=8) :: x_c,y_c,q1,q2,q3
+        double precision, intent(in) :: q(:)
+        real(kind=8) :: x_c,y_c
         real(kind=8) :: t_nm
 
         ! All of the adjoints should have the same number of
@@ -37,14 +38,12 @@ contains
 
             call interp_adjoint(adjoints(r)%meqn, &
                  x_c,y_c,q_interp,r)
-            q_innerprod1 = abs( q1 * q_interp(1) &
-                  + q2 * q_interp(2) + q3 * q_interp(3))
+            q_innerprod1 = abs(dot_product(q,q_interp))
 
             if (r .ne. 1) then
                 call interp_adjoint(adjoints(r)%meqn, &
                      x_c,y_c,q_interp, r-1)
-                q_innerprod2 = abs(q1 * q_interp(1) &
-                    + q2 * q_interp(2) + q3 * q_interp(3))
+                q_innerprod2 = abs(dot_product(q,q_interp))
             endif
 
             ! Assign max value to q_innerprod
