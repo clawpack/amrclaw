@@ -94,6 +94,10 @@ program amr2
     use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
 
+#ifdef HDF5
+    use hdf5
+#endif
+
     implicit none
 
     ! Local variables
@@ -109,6 +113,10 @@ program amr2
     real(kind=8) ::ttotalcpu, cpu_start,cpu_finish 
     integer :: clock_start, clock_finish, clock_rate  
 
+#ifdef HDF5
+    ! HDF5 Output
+    integer :: hdf_error
+#endif
 
     ! Common block variables
     real(kind=8) :: dxmin, dymin
@@ -202,6 +210,17 @@ program amr2
         read(inunit,*) (output_aux_components(i),i=1,naux)
         read(inunit,*) output_aux_onlyonce
     endif
+    if (output_format == 4) then
+#ifdef HDF5
+        ! Initialize HDF interface
+        call h5open_f(hdf_error)
+#else                    
+        print *, "ERROR:  HDF5 library is not available."
+        print *, "  Check the documentation as to how to include"
+        print *, "  the ability to output in HDF5 formats."
+        stop
+#endif
+    end if
     ! ==========================================================================
 
     ! ==========================================================================

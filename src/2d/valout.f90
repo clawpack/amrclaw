@@ -29,8 +29,16 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     integer :: grid_ptr, num_cells(2), num_grids, q_loc, aux_loc
     real(kind=8) :: lower_corner(2), delta(2)
     logical :: out_aux
-    character(len=10) :: file_name(5)
+    character(len=11) :: file_name(5)
 
+#ifdef HDF5
+    ! HDF writing
+    integer :: hdf_error
+    integer(hid_t) :: hdf_file, data_space, data_set
+    integer(hsize_t) :: dims(2)
+#endif
+
+    ! Timing
     integer :: clock_start, clock_finish, clock_rate
     real(kind=8) cpu_start, cpu_finish
 
@@ -85,18 +93,30 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
         end do
         num_stop = num_stop / 10
     end do
+    ! Slightly modified for HDF file output
+    file_name(5) = 'clawxxxx.h5'
+    num_stop = frame
+    do i = 8, 5, -1
+        digit = mod(num_stop, 10)
+        file_name(5)(i:i) = char(ichar('0') + digit)
+        num_stop = num_stop / 10
+    end do
 
     ! ==========================================================================
-    ! Write out fort.q file (and fort.bXXXX or fort.bXXXX.nc files if necessary)
+    ! Write out fort.q file (and fort.bXXXX and clawxxxx.h5 files if necessary)
     ! Here we let fort.q be out_unit and the the other two be out_unit + 1
     open(unit=out_unit, file=file_name(1), status='unknown', form='formatted')
     if (output_format == 3) then
         open(unit=out_unit + 1, file=file_name(4), status="unknown",    &
              access='stream')
     else if (output_format == 4) then
-        stop
-        ! open(unit=out_unit + 1, file=file_name(4) // ".nc", status="unknown",  &
-        !      access='stream')
+#ifdef HDF5
+        ! Note that we will use this file for both q and aux data
+        call h5create_f(file_name(5), H5F_ACC_TRUNC_F, hdf_file, hdf_error)
+
+        ! Create group for q
+        call h5gcreate_f(hdf_file, "/q", q_group, hdf_error)
+#endif
     end if
     num_grids = 0
 
@@ -164,12 +184,24 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                 ! HDF5 output
                 case(4)
 #ifdef HDF5
-                    stop "HDF5 output not yet implemented!"
-#else
-                    print *, "ERROR:  HDF5 library is not available."
-                    print *, "  Check the documentation as to how to include"
-                    print *, "  the ability to output in HDF5 formats."
-                    stop
+                ! Create data space - handles dimensions of the corresponding 
+                ! data set - annoyingling need to stick grid size into other
+                ! data type
+                dims = (/ num_eqn, num_cells(1) + 2 * num_ghost,               &
+                                   num_cells(2) + 2 * num_ghost /)
+                call h5screate_simple_f(2, dims, data_space, hdf_error)
+
+                ! Create new dataset for this grid
+                call h5dcreate_f(hdf_file, data_set, H5T_IEEE_F64LE,           &
+                                 data_space, data_set, hdf_error)
+
+                ! Write q into file
+                i = (iadd(num_eqn, num_cells(1) + 2 * num_ghost,               &
+                                   num_cells(2) + 2 * num_ghost))
+                call h5dwrite_f(data_set, H5T_NATIVE_DOUBLE,                   &
+                                alloc(iadd(1, 1, 1):i), hdf_error)
+                call h5dclose_f(data_set, hdf_error)
+                call h5sclose_f(data_space, hdf_error)
 #endif
                 case default
                     print *, "Unsupported output format", output_format,"."
@@ -179,6 +211,12 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
             grid_ptr = node(levelptr, grid_ptr)
         end do
     end do
+    close(out_unit)
+#ifdef HDF5
+    if (output_format == 4) then
+        call h5gclose_f(q_group, hdf_error)
+    end if
+#endif
 
     ! ==========================================================================
     ! Write out fort.a file
@@ -190,9 +228,10 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
             open(unit=out_unit, file=file_name(3), status='unknown',        &
                  access='stream')
         else if (output_format == 4) then
-            stop
-            ! open(unit=out_unit, file=file_name(3) // ".nc", status='unknown',  &
-            !      access='stream')
+#ifdef HDF5
+        ! Create group for aux
+        call h5gcreate_f(hdf_file, "/aux", aux_group, hdf_error)
+#endif            
         end if
 
         do level = level_begin, level_end
@@ -257,15 +296,30 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                                               num_cells(2) + 2 * num_ghost))
                         write(out_unit) alloc(iaddaux(1, 1, 1):i)
 
-                    ! NetCDF output
+                    ! HDF5 output
                     case(4)
-#ifdef NETCDF
-                        stop "NetCDF output not yet implemented!"
-#else
-                        print *, "ERROR:  NetCDF library is not available."
-                        print *, "  Check the documentation as to how to include"
-                        print *, "  the ability to output in NetCDF formats."
-                        stop
+#ifdef HDF5
+                ! Create data space - handles dimensions of the corresponding 
+                ! data set - annoyingling need to stick grid size into other
+                ! data type
+                dims = (/ num_aux, num_cells(1) + 2 * num_ghost,               &
+                                   num_cells(2) + 2 * num_ghost /)
+                call h5screate_simple_f(2, dims, data_space, hdf_error)
+
+                ! Create new dataset for this grid
+                call h5dcreate_f(hdf_file, data_set, H5T_IEEE_F64LE,           &
+                                 data_space, data_set, hdf_error)
+
+                call h5dcreate_f(hdf_file, data_set, H5T_IEEE_F64LE,           &
+                                 data_space, data_set, hdf_error)
+
+                ! Write q into file
+                i = (iadd_aux(num_aux, num_cells(1) + 2 * num_ghost,           &
+                                       num_cells(2) + 2 * num_ghost))
+                call h5dwrite_f(data_set, H5T_NATIVE_DOUBLE,                   &
+                                alloc(iadd_aux(1, 1, 1):i), hdf_error)
+                call h5dclose_f(data_set, hdf_error)
+                call h5sclose_f(data_space, hdf_error)
 #endif
                     case default
                         print *, "Unsupported output format", output_format,"."
@@ -276,6 +330,13 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
             end do
         end do
     end if
+#ifdef HDF5
+    if (out_aux) then
+        call h5gclose_f(aux_group, hdf_error)
+    end if
+    call h5fclose_f(hdf_file, hdf_error)
+#endif
+
 
     ! ==========================================================================
     ! Write fort.t file
