@@ -10,6 +10,8 @@ c
 
        dimension fp(nvar,mitot,mjtot),gp(nvar,mitot,mjtot)
        dimension fm(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
+       double precision :: valbig(nvar,mitot,mjtot)
+       double precision :: auxbig(naux,mitot,mjtot)
 
 
        hx   = hxposs(lcheck)
