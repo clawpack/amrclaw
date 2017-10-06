@@ -94,6 +94,11 @@ program amr2
     use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
 
+
+#ifdef CUDA
+   use cuda_module, only: initialize_cuda
+#endif
+
     implicit none
 
     ! Local variables
@@ -307,6 +312,13 @@ program amr2
     endif
 
     close(inunit)
+
+#ifdef CUDA
+    ! ==========================================================================
+    ! GPU setups
+    call initialize_cuda()
+    ! END GPU setups==========================================================================
+#endif
 
     ! ==========================================================================
     !  Refinement Control

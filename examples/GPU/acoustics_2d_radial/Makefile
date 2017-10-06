@@ -21,8 +21,12 @@ PLOTDIR = _plots                    # Directory for plots
 
 OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
 
-USE_CUDA = FALSE 
+FC = pgi
+USE_CUDA = TRUE
+# FC = gfortran
+# USE_CUDA = FALSE
 DEBUG = FALSE
+DIM = 2
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 

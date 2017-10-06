@@ -87,14 +87,14 @@ contains
 !
         if (dimensional_split .eq. 0) then
 !           # Unsplit method
-        ! call stepgrid(alloc(locnew),fm,fp,gm,gp, &
-        !                 mitot,mjtot,nghost, &
-        !                 delt,dtnew,hx,hy,nvar, &
-        !                 xlow,ylow,time,mptr,naux,alloc(locaux))
-        call stepgrid_cuda(alloc(locnew),fm,fp,gm,gp, &
+        call stepgrid(alloc(locnew),fm,fp,gm,gp, &
                         mitot,mjtot,nghost, &
                         delt,dtnew,hx,hy,nvar, &
                         xlow,ylow,time,mptr,naux,alloc(locaux))
+        ! call stepgrid_cuda(alloc(locnew),fm,fp,gm,gp, &
+        !                 mitot,mjtot,nghost, &
+        !                 delt,dtnew,hx,hy,nvar, &
+        !                 xlow,ylow,time,mptr,naux,alloc(locaux))
         else if (dimensional_split .eq. 1) then
 !           # Godunov splitting
         call stepgrid_dimSplit(alloc(locnew),fm,fp,gm,gp, &
@@ -150,12 +150,8 @@ contains
             nvar,xlow,ylow,time,mptr,maux,aux)
 
       use amr_module
-      use cudafor
-      ! use parallel_advanc_module, only: tcom
       implicit double precision (a-h,o-z)
       external rpn2,rpt2
-
-      ! common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
 
       parameter (msize=max1d+4)
       parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
@@ -308,196 +304,4 @@ contains
       return
       end subroutine stepgrid
 
-! ::::::::::::::::::: STEPGRID_CUDA ::::::::::::::::::::::::::::::::::::
-! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-        subroutine stepgrid_cuda (q,fm,fp,gm,gp,mitot,mjtot,mbc,dt,dtnew,dx,dy, &
-                    nvar,xlow,ylow,time,mptr,maux,aux)
-        ! ::::::::::::::::::: STEPGRID ::::::::::::::::::::::::::::::::::::
-        ! take a time step on a single grid. overwrite solution array q. 
-        ! A modified version of the clawpack routine step2 is used.
-        ! 
-        ! return fluxes in fm,fp and gm,gp.
-        ! patch has room for ghost cells (mbc of them) around the grid.
-        ! everything is the enlarged size (mitot by mjtot).
-        ! 
-        ! mbc       = number of ghost cells  (= lwidth)
-        ! mptr      = grid number  (for debugging)
-        ! xlow,ylow = lower left corner of enlarged grid (including ghost cells).
-        ! dt         = incoming time step
-        ! dx,dy      = mesh widths for this grid
-        ! dtnew      = return suggested new time step for this grid's soln.
-        ! 
-        ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-            use amr_module
-            use cudafor
-            implicit double precision (a-h,o-z)
-            external rpn2,rpt2
-
-            ! common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
-
-            parameter (msize=max1d+4)
-            parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
-
-            dimension q(nvar,mitot,mjtot)
-            dimension fp(nvar,mitot,mjtot),gp(nvar,mitot,mjtot)
-            dimension fm(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
-            dimension aux(maux,mitot,mjtot)
-
-            ! variables for CUDA
-            ! these also allocate space on device memory
-            double precision, device :: q_d(nvar,mitot,mjtot)
-            double precision, device :: fp_d(nvar,mitot,mjtot),gp_d(nvar,mitot,mjtot)
-            double precision, device :: fm_d(nvar,mitot,mjtot),gm_d(nvar,mitot,mjtot)
-            ! TODO: for now I assume maux = 0
-            ! If I uncomment this statement below and maux = 0, the program has runtime 
-            ! error since it cannot assign 0 bytes on device
-            ! double precision, device :: aux_d(maux,mitot,mjtot)
-            type(dim3) :: gridSize, blockSize 
-
-
-
-            logical    debug,  dump
-            data       debug/.false./,  dump/.false./
-
-        ! 
-        !     # set tcom = time.  This is in the common block comxyt that could
-        !     # be included in the Riemann solver, for example, if t is explicitly
-        !     # needed there.
-
-            tcom = time
-
-            ! if (dump) then
-            !     write(outunit,*) "dumping grid ",mptr," at time ",time
-            !     do i = 1, mitot
-            !         do j = 1, mjtot
-            !             write(outunit,545) i,j,(q(ivar,i,j),ivar=1,nvar) 
-            ! 545         format(2i4,5e15.7)
-            !         end do
-            !     end do
-            ! endif
-        ! 
-            meqn   = nvar
-            mx = mitot - 2*mbc
-            my = mjtot - 2*mbc
-            maxm = max(mx,my)       !# size for 1d scratch array
-            mbig = maxm
-            xlowmbc = xlow + mbc*dx
-            ylowmbc = ylow + mbc*dy
-
-            method(1) = 0
-            ! TODO: write CUDA version of b4step2
-            call b4step2(mbc,mx,my,nvar,q, &
-                    xlowmbc,ylowmbc,dx,dy,time,dt,maux,aux)
-            ! take one step on the conservation law:
-            call step2(mbig,nvar,maux, &
-                    mbc,mx,my, &
-                    q,aux,dx,dy,dt,cflgrid, &
-                    fm,fp,gm,gp,rpn2,rpt2)
-
-            cfl_level = dmax1(cfl_level,cflgrid)
-
-
-            dtdx = dt/dx
-            dtdy = dt/dy
-
-            ! copy data to device
-            ! istat = cudaSetDevice(1)
-            ! istat = cudaGetDevice( current_dev )
-            ! write(*,*) 'We are currently using device: ',current_dev
-            ! write(*,*) 'maux: ',maux
-            istat = cudaMemcpy(q_d, q, nvar*mitot*mjtot, cudaMemcpyHostToDevice)
-            istat = cudaMemcpy(fp_d, fp, nvar*mitot*mjtot, cudaMemcpyHostToDevice)
-            istat = cudaMemcpy(fm_d, fm, nvar*mitot*mjtot, cudaMemcpyHostToDevice)
-            istat = cudaMemcpy(gp_d, gp, nvar*mitot*mjtot, cudaMemcpyHostToDevice)
-            istat = cudaMemcpy(gm_d, gm, nvar*mitot*mjtot, cudaMemcpyHostToDevice)
-            ! istat = cudaMemcpy(aux_d, aux, maux*mitot*mjtot, cudaMemcpyHostToDevice)
-
-            blockSize = dim3(16, 16, 1)
-            gridSize = dim3(ceiling(real(mitot-2*mbc)/blockSize%x), &
-                ceiling(real(mjtot-2*mbc)/blockSize%y), 1)
-            call add_to_q<<<gridSize, blockSize>>> (q_d, fm_d, fp_d, gm_d, gp_d, &
-                mbc, mcapa, mitot, mjtot, nvar, maux, &
-                dtdx, dtdy)
-
-            ! copy data back
-            istat = cudaMemcpy(q, q_d, nvar*mitot*mjtot, cudaMemcpyDeviceToHost)
-            istat = cudaMemcpy(fp, fp_d, nvar*mitot*mjtot, cudaMemcpyDeviceToHost)
-            istat = cudaMemcpy(fm, fm_d, nvar*mitot*mjtot, cudaMemcpyDeviceToHost)
-            istat = cudaMemcpy(gp, gp_d, nvar*mitot*mjtot, cudaMemcpyDeviceToHost)
-            istat = cudaMemcpy(gm, gm_d, nvar*mitot*mjtot, cudaMemcpyDeviceToHost)
-            ! istat = cudaMemcpy(aux, aux_d, maux*mitot*mjtot, cudaMemcpyDeviceToHost)
-
-
-        ! 
-        ! 
-            if (method(5).eq.1) then
-        !        # with source term:   use Godunov splitting
-                call src2(nvar,mbc,mx,my,xlowmbc,ylowmbc,dx,dy, &
-                        q,maux,aux,time,dt)
-            endif
-        ! 
-        ! For variable time stepping, use max speed seen on this grid to 
-        ! choose the allowable new time step dtnew.  This will later be 
-        ! compared to values seen on other grids.
-        ! 
-            if (cflgrid .gt. 0.d0) then
-                dtnew = dt*cfl/cflgrid
-            else
-        !          # velocities are all zero on this grid so there's no 
-        !          # time step restriction coming from this grid.
-                dtnew = rinfinity
-            endif
-
-            ! give a warning if Courant number too large...
-            ! if (cflgrid .gt. cflv1) then
-            !     write(*,810) cflgrid
-            !     write(outunit,810) cflgrid, cflv1
-            ! 810 format('*** WARNING *** Courant number  =', d12.4, &
-            !     ' is larger than input cfl_max = ', d12.4)
-            ! endif
-        ! 
-            return
-        end subroutine stepgrid_cuda
-
-
-        ! assume maux = 0
-        attributes(global) subroutine add_to_q (q, fm, fp, gm, gp, &
-                mbc, mcapa, mitot, mjtot, nvar, maux, &
-                dtdx, dtdy)
-            implicit none
-            double precision, intent(out) :: q(nvar,mitot,mjtot)
-            double precision, intent(in) :: fp(nvar,mitot,mjtot),gp(nvar,mitot,mjtot)
-            double precision, intent(in) :: fm(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
-            ! double precision, intent(in) :: aux(maux,mitot,mjtot)
-            integer :: tx, ty, i, j, m
-            ! TODO: maybe able to compute size of these arrays in this subroutine
-            ! and thus avoid passing so many parameters
-            ! passed by value
-            integer, value :: mbc, mcapa, mitot, mjtot, nvar, maux
-            double precision, value :: dtdx, dtdy
-            tx = threadIdx%x 
-            ty = threadIdx%y 
-            i =  (blockIdx%x-1)*blockDim%x + tx + mbc
-            j =  (blockIdx%y-1)*blockDim%y + ty + mbc
-            ! each thread will handle all m unknowns of of a cell
-            if ( i <= mitot-mbc .and. j <= mjtot-mbc ) then
-                if (mcapa.eq.0) then
-                ! no capa array.  Standard flux differencing:
-                    do m = 1, nvar
-                        q(m,i,j) = q(m,i,j) &
-                            - dtdx * (fm(m,i+1,j) - fp(m,i,j)) &
-                            - dtdy * (gm(m,i,j+1) - gp(m,i,j)) 
-                    end do
-                else
-                ! with capa array.
-                    write(*,*) "Not handling mcapa > 0"
-                    ! do m = 1, nvar
-                    !     q(m,i,j) = q(m,i,j) &
-                    !         - (dtdx * (fm(m,i+1,j) - fp(m,i,j)) &
-                    !         +  dtdy * (gm(m,i,j+1) - gp(m,i,j))) / aux(mcapa,i,j)
-                    ! end do
-                endif
-            endif
-        end subroutine add_to_q
 end module parallel_advanc_module

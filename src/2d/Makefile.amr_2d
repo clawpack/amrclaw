@@ -7,7 +7,13 @@ COMMON_MODULES += \
   $(AMRLIB)/amr_module.f90 \
   $(AMRLIB)/gauges_module.f90 \
   $(AMRLIB)/regions_module.f90 \
-  $(AMRLIB)/parallel_advanc_module.f90
+  $(AMRLIB)/parallel_advanc_module.f90 
+
+ifeq ($(USE_CUDA), TRUE)
+COMMON_MODULES += \
+  $(AMRLIB)/cuda_module.f90 \
+  $(AMRLIB)/memory_module.f90
+endif
 
 COMMON_SOURCES += \
   $(AMRLIB)/qinit.f \
