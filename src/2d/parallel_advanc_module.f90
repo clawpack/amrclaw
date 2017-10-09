@@ -91,10 +91,6 @@ contains
                         mitot,mjtot,nghost, &
                         delt,dtnew,hx,hy,nvar, &
                         xlow,ylow,time,mptr,naux,alloc(locaux))
-        ! call stepgrid_cuda(alloc(locnew),fm,fp,gm,gp, &
-        !                 mitot,mjtot,nghost, &
-        !                 delt,dtnew,hx,hy,nvar, &
-        !                 xlow,ylow,time,mptr,naux,alloc(locaux))
         else if (dimensional_split .eq. 1) then
 !           # Godunov splitting
         call stepgrid_dimSplit(alloc(locnew),fm,fp,gm,gp, &
@@ -149,22 +145,47 @@ contains
     subroutine stepgrid(q,fm,fp,gm,gp,mitot,mjtot,mbc,dt,dtnew,dx,dy, &
             nvar,xlow,ylow,time,mptr,maux,aux)
 
-      use amr_module
-      implicit double precision (a-h,o-z)
-      external rpn2,rpt2
+        use amr_module
+#ifdef CUDA
+        use memory_module, only: gpu_allocate, gpu_deallocate
+        use cuda_module, only: device_id, wait_for_all_gpu_tasks
+        use cudafor
+#endif
+        implicit double precision (a-h,o-z)
+        external rpn2,rpt2
 
-      parameter (msize=max1d+4)
-      parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
+        parameter (msize=max1d+4)
+        parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
 
-      dimension q(nvar,mitot,mjtot)
-      dimension fp(nvar,mitot,mjtot),gp(nvar,mitot,mjtot)
-      dimension fm(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
-      dimension aux(maux,mitot,mjtot)
-! 	  dimension work(mwork)
+        dimension q(nvar,mitot,mjtot)
+        dimension fp(nvar,mitot,mjtot),gp(nvar,mitot,mjtot)
+        dimension fm(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
+        dimension aux(maux,mitot,mjtot)
 
-      logical    debug,  dump
-      data       debug/.false./,  dump/.false./
+        double precision :: dtdx, dtdy
+        integer :: i,j,m
 
+#ifdef CUDA
+        double precision, dimension(:,:,:), pointer, contiguous, device :: &
+            q_d, fp_d, gp_d, fm_d, gm_d, aux_d
+        integer :: data_size, aux_size
+        integer :: cudaResult
+#endif
+        ! 	  dimension work(mwork)
+
+        logical    debug,  dump
+        data       debug/.false./,  dump/.false./
+
+#ifdef CUDA
+        call gpu_allocate(q_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
+        call gpu_allocate(fp_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
+        call gpu_allocate(gp_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
+        call gpu_allocate(fm_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
+        call gpu_allocate(gm_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
+        call gpu_allocate(aux_d, device_id, 1, maux, 1, mitot, 1, mjtot) 
+        data_size = nvar*mitot*mjtot 
+        aux_size = maux*mitot*mjtot 
+#endif
 
 !
 !     # set tcom = time.  This is in the common block comxyt that could
@@ -222,28 +243,56 @@ contains
 
 !$OMP END CRITICAL (cflm)
 
+#ifdef CUDA
+        cudaResult = cudaMemcpy(  q_d,  q,data_size, cudaMemcpyHostToDevice)
+        cudaResult = cudaMemcpy( fm_d, fm,data_size, cudaMemcpyHostToDevice)
+        cudaResult = cudaMemcpy( fp_d, fp,data_size, cudaMemcpyHostToDevice)
+        cudaResult = cudaMemcpy( gm_d, gm,data_size, cudaMemcpyHostToDevice)
+        cudaResult = cudaMemcpy( gp_d, gp,data_size, cudaMemcpyHostToDevice)
+        cudaResult = cudaMemcpy(aux_d,aux, aux_size, cudaMemcpyHostToDevice)
+#endif
 !
 !       # update q
         dtdx = dt/dx
         dtdy = dt/dy
-        do 50 j=mbc+1,mjtot-mbc
-        do 50 i=mbc+1,mitot-mbc
-        do 50 m=1,nvar
-         if (mcapa.eq.0) then
-!
-!            # no capa array.  Standard flux differencing:
 
-           q(m,i,j) = q(m,i,j) &
-               - dtdx * (fm(m,i+1,j) - fp(m,i,j)) &
-               - dtdy * (gm(m,i,j+1) - gp(m,i,j)) 
-         else
-!            # with capa array.
-           q(m,i,j) = q(m,i,j) &
-               - (dtdx * (fm(m,i+1,j) - fp(m,i,j)) &
-               +  dtdy * (gm(m,i,j+1) - gp(m,i,j))) / aux(mcapa,i,j)
-         endif
+        !$cuf kernel do(3) <<<*, *>>>
+        do j=mbc+1,mjtot-mbc
+            do i=mbc+1,mitot-mbc
+                do m=1,nvar
+                    if (mcapa.eq.0) then
+                        !            # no capa array.  Standard flux differencing:
+                        q_d(m,i,j) = q_d(m,i,j) &
+                            - dtdx * (fm_d(m,i+1,j) - fp_d(m,i,j)) &
+                            - dtdy * (gm_d(m,i,j+1) - gp_d(m,i,j)) 
+                    else
+                        !            # with capa array.
+                        q_d(m,i,j) = q_d(m,i,j) &
+                            - (dtdx * (fm_d(m,i+1,j) - fp_d(m,i,j)) &
+                            +  dtdy * (gm_d(m,i,j+1) - gp_d(m,i,j))) / aux_d(mcapa,i,j)
+                    endif
+                enddo
+            enddo
+        enddo
 
- 50      continue
+#ifdef CUDA
+        cudaResult = cudaMemcpy(q,q_d,  data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(fm,fm_d,data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(fp,fp_d,data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(gm,gm_d,data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(gp,gp_d,data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(aux,aux_d,aux_size, cudaMemcpyDeviceToHost)
+#endif
+
+#ifdef CUDA
+        call gpu_deallocate(q_d) 
+        call gpu_deallocate(fp_d) 
+        call gpu_deallocate(gp_d) 
+        call gpu_deallocate(fm_d) 
+        call gpu_deallocate(gm_d) 
+        call gpu_deallocate(aux_d) 
+#endif
+
 !
 !
       if (method(5).eq.1) then
