@@ -256,7 +256,9 @@ contains
         dtdx = dt/dx
         dtdy = dt/dy
 
+#ifdef CUDA
         !$cuf kernel do(3) <<<*, *>>>
+#endif
         do j=mbc+1,mjtot-mbc
             do i=mbc+1,mitot-mbc
                 do m=1,nvar

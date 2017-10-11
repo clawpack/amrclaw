@@ -75,8 +75,14 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
 !
     use amr_module
     use parallel_advanc_module, only: icom, jcom
+
+#ifdef CUDA
+        use memory_module, only: gpu_allocate, gpu_deallocate
+        use cuda_module, only: device_id, wait_for_all_gpu_tasks
+        use cudafor, only: cudaMemcpy, cudaMemcpyDeviceToHost, cudaMemcpyHostToDevice
+#endif
     implicit double precision (a-h,o-z)
-    external rpn2, rpt2
+    external rpn2, rpt2, rpn2_no_aux
     dimension    q1d(meqn,1-mbc:maxm+mbc)
     dimension   amdq(meqn,1-mbc:maxm+mbc)
     dimension   apdq(meqn,1-mbc:maxm+mbc)
@@ -98,6 +104,50 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
     logical limit
     ! common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
     !
+#ifdef CUDA
+    double precision, dimension(:,:), pointer, contiguous, device :: &
+        q1d_d, aux2_d, s_d, amdq_d, apdq_d
+
+    double precision, dimension(:,:), pointer, contiguous, device :: &
+        faddm_d, faddp_d, bmasdq_d, bpasdq_d, cqxx_d
+  
+    double precision, dimension(:,:,:), pointer, contiguous, device :: &
+        wave_d
+
+    double precision, dimension(:,:,:), pointer, contiguous, device :: &
+        gaddm_d, gaddp_d
+
+    double precision, dimension(:), pointer, contiguous, device :: &
+        dtdx1d_d
+
+    integer :: data_size, aux_size, s_size, wave_size
+    integer :: cudaResult
+#endif
+
+#ifdef CUDA
+        call gpu_allocate(q1d_d,  device_id, 1, meqn,   1-mbc, maxm+mbc) 
+        call gpu_allocate(amdq_d, device_id, 1, meqn,   1-mbc, maxm+mbc) 
+        call gpu_allocate(apdq_d, device_id, 1, meqn,   1-mbc, maxm+mbc) 
+        call gpu_allocate(s_d,    device_id, 1, mwaves, 1-mbc, maxm+mbc)
+        call gpu_allocate(wave_d, device_id, 1, meqn,   1,     mwaves, 1-mbc, maxm+mbc)
+        data_size = meqn * (maxm + 2*mbc)
+        s_size =  mwaves * (maxm + 2*mbc)
+        wave_size = mwaves * meqn * (maxm + 2*mbc)
+        aux_size =  maux * (maxm + 2*mbc)
+        if (maux > 0) then
+            call gpu_allocate(aux2_d, device_id, 1, maux,   1-mbc, maxm+mbc)
+        endif
+
+        call gpu_allocate(faddm_d,  device_id, 1, meqn,   1-mbc, maxm+mbc) 
+        call gpu_allocate(faddp_d,  device_id, 1, meqn,   1-mbc, maxm+mbc) 
+        call gpu_allocate(bmasdq_d,  device_id, 1, meqn,   1-mbc, maxm+mbc) 
+        call gpu_allocate(bpasdq_d,  device_id, 1, meqn,   1-mbc, maxm+mbc) 
+        call gpu_allocate(cqxx_d,  device_id, 1, meqn,   1-mbc, maxm+mbc) 
+        call gpu_allocate(gaddm_d,  device_id, 1, meqn,   1-mbc, maxm+mbc, 1, 2) 
+        call gpu_allocate(gaddp_d,  device_id, 1, meqn,   1-mbc, maxm+mbc, 1, 2) 
+        call gpu_allocate(dtdx1d_d, device_id, 1-mbc, maxm+mbc)
+
+#endif
     limit = .false.
     do mw=1,mwaves
         if (mthlim(mw) .gt. 0) limit = .true.
@@ -116,24 +166,87 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
             gaddp(m,i,2) = 0.d0
         enddo
     enddo
+
+#ifdef CUDA
+    !$cuf kernel do(2) <<<*, *>>>
+    do i = 1-mbc, mx+mbc
+        do m=1,meqn
+            faddm_d(m,i) = 0.d0
+            faddp_d(m,i) = 0.d0
+            gaddm_d(m,i,1) = 0.d0
+            gaddp_d(m,i,1) = 0.d0
+            gaddm_d(m,i,2) = 0.d0
+            gaddp_d(m,i,2) = 0.d0
+        enddo
+    enddo
+#endif
     !
     !
     !     # solve Riemann problem at each interface and compute Godunov updates
     !     ---------------------------------------------------------------------
     !
+
+#ifdef CUDA
+    cudaResult = cudaMemcpy(q1d_d,  q1d,  data_size, cudaMemcpyHostToDevice)
+    if (maux > 0) then
+        cudaResult = cudaMemcpy(aux2_d, aux2, aux_size,  cudaMemcpyHostToDevice)
+    endif
+    cudaResult = cudaMemcpy(dtdx1d_d,  dtdx1d,  maxm+2*mbc, cudaMemcpyHostToDevice)
+#endif
+
+
+
+#ifdef CUDA
+!TODO: overload rpn2 here
+!TODO: handle cases where maux != 0
+    call rpn2_no_aux(ixy,maxm,meqn,mwaves,mbc,mx,q1d_d,q1d_d, &
+        wave_d,s_d,amdq_d,apdq_d)
+#else
     call rpn2(ixy,maxm,meqn,mwaves,maux,mbc,mx,q1d,q1d, &
         aux2,aux2,wave,s,amdq,apdq)
+#endif
+
+
+
     !
     !     # Set fadd for the donor-cell upwind method (Godunov)
+#ifdef CUDA
+    !$cuf kernel do(2) <<<*, *>>>
+    do i=1,mx+1
+        do m=1,meqn
+            faddp_d(m,i) = faddp_d(m,i) - apdq_d(m,i)
+            faddm_d(m,i) = faddm_d(m,i) + amdq_d(m,i)
+        enddo
+    enddo
+#else
     do i=1,mx+1
         do m=1,meqn
             faddp(m,i) = faddp(m,i) - apdq(m,i)
             faddm(m,i) = faddm(m,i) + amdq(m,i)
         enddo
     enddo
+#endif
     !
     !     # compute maximum wave speed for checking Courant number:
+#ifdef CUDA
+    cudaResult = cudaMemcpy(amdq, amdq_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(apdq, apdq_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(faddp, faddp_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(faddm, faddm_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(s,       s_d,     s_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(wave, wave_d,  wave_size, cudaMemcpyDeviceToHost)
+#endif
     cfl1d = 0.d0
+#ifdef CUDA
+    !$cuf kernel do(2) <<<*, *>>>
+    do mw=1,mwaves
+        do i=1,mx+1
+            !          # if s>0 use dtdx1d(i) to compute CFL,
+            !          # if s<0 use dtdx1d(i-1) to compute CFL:
+            cfl1d = dmax1(cfl1d, dtdx1d_d(i)*s_d(mw,i),-dtdx1d_d(i-1)*s_d(mw,i))
+        enddo
+    enddo
+#else
     do mw=1,mwaves
         do i=1,mx+1
             !          # if s>0 use dtdx1d(i) to compute CFL,
@@ -141,6 +254,7 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
             cfl1d = dmax1(cfl1d, dtdx1d(i)*s(mw,i),-dtdx1d(i-1)*s(mw,i))
         enddo
     enddo
+#endif
     !
     if (method(2).eq.1) go to 130
     !
@@ -237,5 +351,24 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
     enddo
     !
     999 continue
+
+#ifdef CUDA
+    call gpu_deallocate(q1d_d) 
+    call gpu_deallocate(amdq_d) 
+    call gpu_deallocate(apdq_d) 
+    if (maux > 0) then
+        call gpu_deallocate(aux2_d)
+    endif
+    call gpu_deallocate(s_d)
+    call gpu_deallocate(wave_d)
+    call gpu_deallocate(faddm_d) 
+    call gpu_deallocate(faddp_d) 
+    call gpu_deallocate(bmasdq_d) 
+    call gpu_deallocate(bpasdq_d) 
+    call gpu_deallocate(cqxx_d) 
+    call gpu_deallocate(gaddm_d) 
+    call gpu_deallocate(gaddp_d) 
+    call gpu_deallocate(dtdx1d_d) 
+#endif
     return
 end subroutine flux2
