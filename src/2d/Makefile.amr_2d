@@ -100,7 +100,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/step2y.f90 \
   $(AMRLIB)/flux2.f90 \
   $(AMRLIB)/flux2_dimSplit.f \
-  $(AMRLIB)/inlinelimiter.f \
+  $(AMRLIB)/inlinelimiter.f90 \
   $(AMRLIB)/cstore.f \
   $(AMRLIB)/saveqc.f \
   $(AMRLIB)/valout.f \

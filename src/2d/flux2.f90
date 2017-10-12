@@ -228,14 +228,6 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
 #endif
     !
     !     # compute maximum wave speed for checking Courant number:
-#ifdef CUDA
-    cudaResult = cudaMemcpy(amdq, amdq_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(apdq, apdq_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(faddp, faddp_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(faddm, faddm_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(s,       s_d,     s_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(wave, wave_d,  wave_size, cudaMemcpyDeviceToHost)
-#endif
     cfl1d = 0.d0
 #ifdef CUDA
     !$cuf kernel do(2) <<<*, *>>>
@@ -262,7 +254,20 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
     !     -----------------------------------------------------------
     !
     !     # apply limiter to waves:
+#ifdef CUDA
+    if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave_d,s_d,mthlim)
+#else
     if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
+#endif
+
+#ifdef CUDA
+    cudaResult = cudaMemcpy(amdq, amdq_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(apdq, apdq_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(faddp, faddp_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(faddm, faddm_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(wave, wave_d,  wave_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(s,       s_d,     s_size, cudaMemcpyDeviceToHost)
+#endif
     !
     do i = 1, mx+1
         !

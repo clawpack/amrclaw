@@ -258,7 +258,6 @@ contains
 
 #ifdef CUDA
         !$cuf kernel do(3) <<<*, *>>>
-#endif
         do j=mbc+1,mjtot-mbc
             do i=mbc+1,mitot-mbc
                 do m=1,nvar
@@ -276,6 +275,25 @@ contains
                 enddo
             enddo
         enddo
+#else
+        do j=mbc+1,mjtot-mbc
+            do i=mbc+1,mitot-mbc
+                do m=1,nvar
+                    if (mcapa.eq.0) then
+                        !            # no capa array.  Standard flux differencing:
+                        q(m,i,j) = q(m,i,j) &
+                            - dtdx * (fm(m,i+1,j) - fp(m,i,j)) &
+                            - dtdy * (gm(m,i,j+1) - gp(m,i,j)) 
+                    else
+                        !            # with capa array.
+                        q(m,i,j) = q(m,i,j) &
+                            - (dtdx * (fm(m,i+1,j) - fp(m,i,j)) &
+                            +  dtdy * (gm(m,i,j+1) - gp(m,i,j))) / aux(mcapa,i,j)
+                    endif
+                enddo
+            enddo
+        enddo
+#endif
 
 #ifdef CUDA
         cudaResult = cudaMemcpy(q,q_d,  data_size, cudaMemcpyDeviceToHost)

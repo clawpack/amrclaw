@@ -32,6 +32,89 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
     dimension wave(meqn, mwaves, 1-mbc:maxm+mbc)
     dimension    s(mwaves, 1-mbc:maxm+mbc)
 
+#ifdef CUDA
+    attributes(device) :: wave, s
+    integer, device :: mthlim_d(mwaves)
+    ! put this on stack
+    double precision, device :: wave_tmp(meqn, mwaves, 1-mbc:maxm+mbc)
+#endif
+
+#ifdef CUDA
+    ! TODO: see if cudaMemcpy is invoked behind these
+    mthlim_d = mthlim
+    wave_tmp = wave
+#endif
+
+
+#ifdef CUDA
+    !$cuf kernel do(2) <<<*, *>>>
+    do mw=1,mwaves
+        do i = 1, mx+1
+            if (mthlim_d(mw) .eq. 0) cycle
+            dot = 0.d0
+            wnorm2 = 0.d0
+            do m=1,meqn
+                wnorm2 = wnorm2 + wave_tmp(m,mw,i)**2
+            enddo
+            if (wnorm2.eq.0.d0) cycle
+
+            if (s(mw,i) .gt. 0.d0) then
+                do m=1,meqn
+                    dot = dot + wave(m,mw,i)*wave(m,mw,i-1)
+                enddo
+            else
+                do m=1,meqn
+                    dot = dot + wave(m,mw,i)*wave(m,mw,i+1)
+                enddo
+            endif
+
+            r = dot / wnorm2
+
+            if (mthlim_d(mw) .eq. 1) then
+!               --------
+!               # minmod
+!               --------
+                wlimitr = dmax1(0.d0, dmin1(1.d0, r))
+
+            else if (mthlim_d(mw) .eq. 2) then
+!               ----------
+!               # superbee
+!               ----------
+                wlimitr = dmax1(0.d0, dmin1(1.d0, 2.d0*r), dmin1(2.d0, r))
+
+            else if (mthlim_d(mw) .eq. 3) then
+!               ----------
+!               # van Leer
+!               ----------
+                wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
+
+            else if (mthlim_d(mw) .eq. 4) then
+!               ------------------------------
+!               # monotinized centered
+!               ------------------------------
+                c = (1.d0 + r)/2.d0
+                wlimitr = dmax1(0.d0, dmin1(c, 2.d0, 2.d0*r))
+            else if (mthlim_d(mw) .eq. 5) then
+!               ------------------------------
+!               # Beam-Warming
+!               ------------------------------
+                wlimitr = r
+            else
+                print *, 'Unrecognized limiter.'
+                stop
+            endif
+!
+!           # apply limiter to waves:
+!
+            do m=1,meqn
+                wave(m,mw,i) = wlimitr * wave_tmp(m,mw,i)
+            enddo
+        enddo
+    enddo
+    return
+
+#else
+
     do mw=1,mwaves
         if (mthlim(mw) .eq. 0) cycle
         dotr = 0.d0
@@ -50,6 +133,7 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
             else
                 r = dotr / wnorm2
             endif
+
 
             go to (10,20,30,40,50) mthlim(mw)
 
@@ -98,5 +182,5 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
             enddo
         enddo
     enddo
-    return
+#endif
 end subroutine limiter
