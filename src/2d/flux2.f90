@@ -248,158 +248,152 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
     enddo
 #endif
     !
-    if (method(2).eq.1) go to 130
-    !
-    !     # modify F fluxes for second order q_{xx} correction terms:
-    !     -----------------------------------------------------------
-    !
-    !     # apply limiter to waves:
+    if (method(2).ne.1) then
+        !
+        !     # modify F fluxes for second order q_{xx} correction terms:
+        !     -----------------------------------------------------------
+        !
+        !     # apply limiter to waves:
 #ifdef CUDA
-    if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave_d,s_d,mthlim)
+        if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave_d,s_d,mthlim)
 #else
-    if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
+        if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 #endif
 
 
-#ifdef CUDA
-    !$cuf kernel do(2) <<<*, *>>>
-    do i = 1, mx+1
-        do m=1,meqn
-            !        # For correction terms below, need average of dtdx in cell
-            !        # i-1 and i.  Compute these and overwrite dtdx1d:
-            !
-            !        # modified in Version 4.3 to use average only in cqxx, not transverse
-            !
-            !        # second order corrections:
-            dtdxave = 0.5d0 * (dtdx1d_d(i-1) + dtdx1d_d(i))
-            cqxx_d(m,i) = 0.d0
-            do mw=1,mwaves
-                !
-                if (use_fwaves) then
-                    abs_sign = dsign(1.d0,s_d(mw,i))
-                else
-                    abs_sign = dabs(s_d(mw,i))
-                endif
-
-                cqxx_d(m,i) = cqxx_d(m,i) + abs_sign * &
-                    (1.d0 - dabs(s_d(mw,i))*dtdxave) * wave_d(m,mw,i)
-                !
-            enddo
-            faddm_d(m,i) = faddm_d(m,i) + 0.5d0 * cqxx_d(m,i)
-            faddp_d(m,i) = faddp_d(m,i) + 0.5d0 * cqxx_d(m,i)
-        enddo
-    enddo
-#else
-    do i = 1, mx+1
-        !
-        !        # For correction terms below, need average of dtdx in cell
-        !        # i-1 and i.  Compute these and overwrite dtdx1d:
-        !
-        !        # modified in Version 4.3 to use average only in cqxx, not transverse
-        dtdxave = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i))
-
-        !
-        !        # second order corrections:
-
-        do m=1,meqn
-            cqxx(m,i) = 0.d0
-            do mw=1,mwaves
-                !
-                if (use_fwaves) then
-                    abs_sign = dsign(1.d0,s(mw,i))
-                else
-                    abs_sign = dabs(s(mw,i))
-                endif
-
-                cqxx(m,i) = cqxx(m,i) + abs_sign * &
-                    (1.d0 - dabs(s(mw,i))*dtdxave) * wave(m,mw,i)
-                !
-            enddo
-            faddm(m,i) = faddm(m,i) + 0.5d0 * cqxx(m,i)
-            faddp(m,i) = faddp(m,i) + 0.5d0 * cqxx(m,i)
-        enddo
-    enddo
-#endif
-
-#ifdef CUDA
-    ! It's weird that I have to put a cudaMemcpy otherwise it can't compile
-    ! looks like a compiler bug
-    cudaResult = cudaMemcpy(s,       s_d,     s_size, cudaMemcpyDeviceToHost)
-#endif
-
-    130  continue
-    !
-    if (method(3).eq.0) go to 999   !# no transverse propagation
-    !
-    if (method(2).gt.1 .and. method(3).eq.2) then
-        !         # incorporate cqxx into amdq and apdq so that it is split also.
 #ifdef CUDA
         !$cuf kernel do(2) <<<*, *>>>
         do i = 1, mx+1
             do m=1,meqn
-                amdq_d(m,i) = amdq_d(m,i) + cqxx_d(m,i)
-                apdq_d(m,i) = apdq_d(m,i) - cqxx_d(m,i)
+                !        # For correction terms below, need average of dtdx in cell
+                !        # i-1 and i.  Compute these and overwrite dtdx1d:
+                !
+                !        # modified in Version 4.3 to use average only in cqxx, not transverse
+                !
+                !        # second order corrections:
+                dtdxave = 0.5d0 * (dtdx1d_d(i-1) + dtdx1d_d(i))
+                cqxx_d(m,i) = 0.d0
+                do mw=1,mwaves
+                    !
+                    if (use_fwaves) then
+                        abs_sign = dsign(1.d0,s_d(mw,i))
+                    else
+                        abs_sign = dabs(s_d(mw,i))
+                    endif
+
+                    cqxx_d(m,i) = cqxx_d(m,i) + abs_sign * &
+                        (1.d0 - dabs(s_d(mw,i))*dtdxave) * wave_d(m,mw,i)
+                    !
+                enddo
+                faddm_d(m,i) = faddm_d(m,i) + 0.5d0 * cqxx_d(m,i)
+                faddp_d(m,i) = faddp_d(m,i) + 0.5d0 * cqxx_d(m,i)
             enddo
         enddo
 #else
         do i = 1, mx+1
+            !
+            !        # For correction terms below, need average of dtdx in cell
+            !        # i-1 and i.  Compute these and overwrite dtdx1d:
+            !
+            !        # modified in Version 4.3 to use average only in cqxx, not transverse
+            dtdxave = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i))
+
+            !
+            !        # second order corrections:
+
             do m=1,meqn
-                amdq(m,i) = amdq(m,i) + cqxx(m,i)
-                apdq(m,i) = apdq(m,i) - cqxx(m,i)
+                cqxx(m,i) = 0.d0
+                do mw=1,mwaves
+                    !
+                    if (use_fwaves) then
+                        abs_sign = dsign(1.d0,s(mw,i))
+                    else
+                        abs_sign = dabs(s(mw,i))
+                    endif
+
+                    cqxx(m,i) = cqxx(m,i) + abs_sign * &
+                        (1.d0 - dabs(s(mw,i))*dtdxave) * wave(m,mw,i)
+                    !
+                enddo
+                faddm(m,i) = faddm(m,i) + 0.5d0 * cqxx(m,i)
+                faddp(m,i) = faddp(m,i) + 0.5d0 * cqxx(m,i)
             enddo
         enddo
 #endif
+
     endif
+
+    !
+    if (method(3).ne.0) then !# has transverse propagation
+        if (method(2).gt.1 .and. method(3).eq.2) then
+            !         # incorporate cqxx into amdq and apdq so that it is split also.
 #ifdef CUDA
-    cudaResult = cudaMemcpy(amdq, amdq_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(apdq, apdq_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(faddp, faddp_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(faddm, faddm_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(wave, wave_d,  wave_size, cudaMemcpyDeviceToHost)
+            !$cuf kernel do(2) <<<*, *>>>
+            do i = 1, mx+1
+                do m=1,meqn
+                    amdq_d(m,i) = amdq_d(m,i) + cqxx_d(m,i)
+                    apdq_d(m,i) = apdq_d(m,i) - cqxx_d(m,i)
+                enddo
+            enddo
+#else
+            do i = 1, mx+1
+                do m=1,meqn
+                    amdq(m,i) = amdq(m,i) + cqxx(m,i)
+                    apdq(m,i) = apdq(m,i) - cqxx(m,i)
+                enddo
+            enddo
 #endif
-    !
-    !
-    !      # modify G fluxes for transverse propagation
-    !      --------------------------------------------
-    !
-    !
-    !     # split the left-going flux difference into down-going and up-going:
-    call rpt2(ixy,1,maxm,meqn,mwaves,maux,mbc,mx, &
-        q1d,q1d,aux1,aux2,aux3, &
-        amdq,bmasdq,bpasdq)
-    !
-    !     # modify flux below and above by B^- A^- Delta q and  B^+ A^- Delta q:
-    do i = 1, mx+1
-        do m=1,meqn
-            gupdate = 0.5d0*dtdx1d(i-1) * bmasdq(m,i)
-            gaddm(m,i-1,1) = gaddm(m,i-1,1) - gupdate
-            gaddp(m,i-1,1) = gaddp(m,i-1,1) - gupdate
-            !
-            gupdate = 0.5d0*dtdx1d(i-1) * bpasdq(m,i)
-            gaddm(m,i-1,2) = gaddm(m,i-1,2) - gupdate
-            gaddp(m,i-1,2) = gaddp(m,i-1,2) - gupdate
+        endif
+#ifdef CUDA
+        cudaResult = cudaMemcpy(amdq, amdq_d,  data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(apdq, apdq_d,  data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(faddp, faddp_d,  data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(faddm, faddm_d,  data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(wave, wave_d,  wave_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(s,       s_d,     s_size, cudaMemcpyDeviceToHost)
+#endif
+        !
+        !
+        !      # modify G fluxes for transverse propagation
+        !      --------------------------------------------
+        !
+        !
+        !     # split the left-going flux difference into down-going and up-going:
+        call rpt2(ixy,1,maxm,meqn,mwaves,maux,mbc,mx, &
+            q1d,q1d,aux1,aux2,aux3, &
+            amdq,bmasdq,bpasdq)
+        !
+        !     # modify flux below and above by B^- A^- Delta q and  B^+ A^- Delta q:
+        do i = 1, mx+1
+            do m=1,meqn
+                gupdate = 0.5d0*dtdx1d(i-1) * bmasdq(m,i)
+                gaddm(m,i-1,1) = gaddm(m,i-1,1) - gupdate
+                gaddp(m,i-1,1) = gaddp(m,i-1,1) - gupdate
+                !
+                gupdate = 0.5d0*dtdx1d(i-1) * bpasdq(m,i)
+                gaddm(m,i-1,2) = gaddm(m,i-1,2) - gupdate
+                gaddp(m,i-1,2) = gaddp(m,i-1,2) - gupdate
+            enddo
         enddo
-    enddo
-    !
-    !     # split the right-going flux difference into down-going and up-going:
-    call rpt2(ixy,2,maxm,meqn,mwaves,maux,mbc,mx, &
-        q1d,q1d,aux1,aux2,aux3, &
-        apdq,bmasdq,bpasdq)
-    !
-    !     # modify flux below and above by B^- A^+ Delta q and  B^+ A^+ Delta q:
-    do i = 1, mx+1
-        do m=1,meqn
-            gupdate = 0.5d0*dtdx1d(i) * bmasdq(m,i)
-            gaddm(m,i,1) = gaddm(m,i,1) - gupdate
-            gaddp(m,i,1) = gaddp(m,i,1) - gupdate
-            !
-            gupdate = 0.5d0*dtdx1d(i) * bpasdq(m,i)
-            gaddm(m,i,2) = gaddm(m,i,2) - gupdate
-            gaddp(m,i,2) = gaddp(m,i,2) - gupdate
+        !
+        !     # split the right-going flux difference into down-going and up-going:
+        call rpt2(ixy,2,maxm,meqn,mwaves,maux,mbc,mx, &
+            q1d,q1d,aux1,aux2,aux3, &
+            apdq,bmasdq,bpasdq)
+        !
+        !     # modify flux below and above by B^- A^+ Delta q and  B^+ A^+ Delta q:
+        do i = 1, mx+1
+            do m=1,meqn
+                gupdate = 0.5d0*dtdx1d(i) * bmasdq(m,i)
+                gaddm(m,i,1) = gaddm(m,i,1) - gupdate
+                gaddp(m,i,1) = gaddp(m,i,1) - gupdate
+                !
+                gupdate = 0.5d0*dtdx1d(i) * bpasdq(m,i)
+                gaddm(m,i,2) = gaddm(m,i,2) - gupdate
+                gaddp(m,i,2) = gaddp(m,i,2) - gupdate
+            enddo
         enddo
-    enddo
-    !
-    999 continue
+    endif
 
 #ifdef CUDA
     call gpu_deallocate(q1d_d) 
