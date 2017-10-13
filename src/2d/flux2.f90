@@ -260,15 +260,36 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
     if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 #endif
 
+
 #ifdef CUDA
-    cudaResult = cudaMemcpy(amdq, amdq_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(apdq, apdq_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(faddp, faddp_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(faddm, faddm_d,  data_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(wave, wave_d,  wave_size, cudaMemcpyDeviceToHost)
-    cudaResult = cudaMemcpy(s,       s_d,     s_size, cudaMemcpyDeviceToHost)
-#endif
-    !
+    !$cuf kernel do(2) <<<*, *>>>
+    do i = 1, mx+1
+        do m=1,meqn
+            !        # For correction terms below, need average of dtdx in cell
+            !        # i-1 and i.  Compute these and overwrite dtdx1d:
+            !
+            !        # modified in Version 4.3 to use average only in cqxx, not transverse
+            !
+            !        # second order corrections:
+            dtdxave = 0.5d0 * (dtdx1d_d(i-1) + dtdx1d_d(i))
+            cqxx_d(m,i) = 0.d0
+            do mw=1,mwaves
+                !
+                if (use_fwaves) then
+                    abs_sign = dsign(1.d0,s_d(mw,i))
+                else
+                    abs_sign = dabs(s_d(mw,i))
+                endif
+
+                cqxx_d(m,i) = cqxx_d(m,i) + abs_sign * &
+                    (1.d0 - dabs(s_d(mw,i))*dtdxave) * wave_d(m,mw,i)
+                !
+            enddo
+            faddm_d(m,i) = faddm_d(m,i) + 0.5d0 * cqxx_d(m,i)
+            faddp_d(m,i) = faddp_d(m,i) + 0.5d0 * cqxx_d(m,i)
+        enddo
+    enddo
+#else
     do i = 1, mx+1
         !
         !        # For correction terms below, need average of dtdx in cell
@@ -298,21 +319,44 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
             faddp(m,i) = faddp(m,i) + 0.5d0 * cqxx(m,i)
         enddo
     enddo
-    !
-    !
+#endif
+
+#ifdef CUDA
+    ! It's weird that I have to put a cudaMemcpy otherwise it can't compile
+    ! looks like a compiler bug
+    cudaResult = cudaMemcpy(s,       s_d,     s_size, cudaMemcpyDeviceToHost)
+#endif
+
     130  continue
     !
     if (method(3).eq.0) go to 999   !# no transverse propagation
     !
     if (method(2).gt.1 .and. method(3).eq.2) then
         !         # incorporate cqxx into amdq and apdq so that it is split also.
+#ifdef CUDA
+        !$cuf kernel do(2) <<<*, *>>>
+        do i = 1, mx+1
+            do m=1,meqn
+                amdq_d(m,i) = amdq_d(m,i) + cqxx_d(m,i)
+                apdq_d(m,i) = apdq_d(m,i) - cqxx_d(m,i)
+            enddo
+        enddo
+#else
         do i = 1, mx+1
             do m=1,meqn
                 amdq(m,i) = amdq(m,i) + cqxx(m,i)
                 apdq(m,i) = apdq(m,i) - cqxx(m,i)
             enddo
         enddo
+#endif
     endif
+#ifdef CUDA
+    cudaResult = cudaMemcpy(amdq, amdq_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(apdq, apdq_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(faddp, faddp_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(faddm, faddm_d,  data_size, cudaMemcpyDeviceToHost)
+    cudaResult = cudaMemcpy(wave, wave_d,  wave_size, cudaMemcpyDeviceToHost)
+#endif
     !
     !
     !      # modify G fluxes for transverse propagation
