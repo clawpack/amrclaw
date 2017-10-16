@@ -114,8 +114,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
             dtdx1d = dtdx
         endif
 
-        ! do i = 2-mbc, mx+mbc
-        do i = 1, mx+1
+        do i = 2-mbc, mx+mbc
             ! solve Riemann problem between cell (i-1,j) and (i,j)
             mu = 2
             mv = 3
@@ -222,7 +221,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                 !
                 !        # modified in Version 4.3 to use average only in cqxx, not transverse
                 dtdxave = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i))
-                !        # second order corrections:
+                ! second order corrections:
                 do m=1,meqn
                     cqxx(m,i) = 0.d0
                     do mw=1,mwaves
@@ -243,7 +242,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
 !     -----------------------------------------------------------
 !     # END modify F fluxes for second order q_{xx} correction terms:
 !     -----------------------------------------------------------
-
     enddo
 
     ! ============================================================================
@@ -256,8 +254,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
             dtdy1d = dtdy
         endif
 
-        ! do j = 2-mbc, my+mbc
-        do j = 1, my+1
+        do j = 2-mbc, my+mbc
             ! solve Riemann problem between cell (i,j-1) and (i,j)
             mu = 3
             mv = 2
