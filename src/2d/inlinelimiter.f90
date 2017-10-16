@@ -58,6 +58,7 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
             enddo
             if (wnorm2.eq.0.d0) cycle
 
+            ! TODO: might need to replace wave with wave_tmp
             if (s(mw,i) .gt. 0.d0) then
                 do m=1,meqn
                     dot = dot + wave(m,mw,i)*wave(m,mw,i-1)
