@@ -63,14 +63,17 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     real(kind=8) :: delta1, delta2, a1, a2
     integer :: m, mw, mu, mv
     real(kind=8) :: rho, bulk, cc, zz
-    real(kind=8) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc)
+    real(kind=8) :: s_x(mwaves, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(kind=8) :: s_y(mwaves, 1:mx, 1-mbc:my + mbc)
+    real(kind=8) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    ! real(kind=8) :: wave_y(meqn, mwaves, 1:mx, 1-mbc:my+mbc)
     real(kind=8) :: wave_y(meqn, mwaves, 1-mbc:my+mbc)
-    real(kind=8) :: amdq(meqn,1-mbc:mx + mbc)
-    real(kind=8) :: apdq(meqn,1-mbc:mx + mbc)
+    real(kind=8) :: amdq, apdq
     real(kind=8) :: bmdq(meqn,1-mbc:my + mbc)
     real(kind=8) :: bpdq(meqn,1-mbc:my + mbc)
     ! For 2nd order corrections
-    real(kind=8) :: wave_x_tmp(meqn, mwaves, 1-mbc:mx+mbc)
+    real(kind=8) :: wave_x_tmp(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    ! real(kind=8) :: wave_y_tmp(meqn, mwaves, 1:mx, 1-mbc:my+mbc)
     real(kind=8) :: wave_y_tmp(meqn, mwaves, 1-mbc:my+mbc)
     real(kind=8) :: dot, wnorm2, wlimitr, dtdxave, dtdyave, abs_sign, c, r
     real(kind=8) :: cqxx(meqn,1-mbc:mx + mbc)
@@ -123,50 +126,52 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
             a1 = (-delta1 + zz*delta2) / (2.d0*zz)
             a2 = (delta1 + zz*delta2) / (2.d0*zz)
             !        # Compute the waves.
-            wave_x(1,1,i) = -a1*zz
-            wave_x(mu,1,i) = a1
-            wave_x(mv,1,i) = 0.d0
-            s(1,i) = -cc
+            wave_x(1,1,i,j) = -a1*zz
+            wave_x(mu,1,i,j) = a1
+            wave_x(mv,1,i,j) = 0.d0
+            s_x(1,i,j) = -cc
 
-            wave_x(1,2,i) = a2*zz
-            wave_x(mu,2,i) = a2
-            wave_x(mv,2,i) = 0.d0
-            s(2,i) = cc
+            wave_x(1,2,i,j) = a2*zz
+            wave_x(mu,2,i,j) = a2
+            wave_x(mv,2,i,j) = 0.d0
+            s_x(2,i,j) = cc
             do m = 1,meqn
-                amdq(m,i) = s(1,i)*wave_x(m,1,i)
-                apdq(m,i) = s(2,i)*wave_x(m,2,i)
-                fm(m,i,j) = fm(m,i,j) + amdq(m,i)
-                fp(m,i,j) = fp(m,i,j) - apdq(m,i)
+                amdq = s_x(1,i,j)*wave_x(m,1,i,j)
+                apdq = s_x(2,i,j)*wave_x(m,2,i,j)
+                fm(m,i,j) = fm(m,i,j) + amdq
+                fp(m,i,j) = fp(m,i,j) - apdq
             enddo
             do mw=1,mwaves
-                cflgrid = dmax1(cflgrid, dtdx1d(i)*s(mw,i),-dtdx1d(i-1)*s(mw,i))
+                cflgrid = dmax1(cflgrid, dtdx1d(i)*s_x(mw,i,j),-dtdx1d(i-1)*s_x(mw,i,j))
             enddo
         enddo
+    enddo
 
 !     -----------------------------------------------------------
 !     # modify F fluxes for second order q_{xx} correction terms:
 !     -----------------------------------------------------------
-        if (method(2).ne.1) then ! if second-order
-            ! # apply limiter to waves:
-            if (limit) then ! limiter if
-                wave_x_tmp = wave_x
-                do mw=1,mwaves ! mwaves loop
-                    do i = 1, mx+1 ! mx loop
+    if (method(2).ne.1) then ! if second-order
+        wave_x_tmp = wave_x
+        do j = 0,my+1 ! my loop
+            do i = 1, mx+1 ! mx loop
+                ! # apply limiter to waves:
+                if (limit) then ! limiter if
+                    do mw=1,mwaves ! mwaves loop
                         if (mthlim(mw) .eq. 0) cycle
                         dot = 0.d0
                         wnorm2 = 0.d0
                         do m=1,meqn
-                            wnorm2 = wnorm2 + wave_x_tmp(m,mw,i)**2
+                            wnorm2 = wnorm2 + wave_x_tmp(m,mw,i,j)**2
                         enddo
                         if (wnorm2.eq.0.d0) cycle
 
-                        if (s(mw,i) .gt. 0.d0) then
+                        if (s_x(mw,i,j) .gt. 0.d0) then
                             do m=1,meqn
-                                dot = dot + wave_x_tmp(m,mw,i)*wave_x_tmp(m,mw,i-1)
+                                dot = dot + wave_x_tmp(m,mw,i,j)*wave_x_tmp(m,mw,i-1,j)
                             enddo
                         else
                             do m=1,meqn
-                                dot = dot + wave_x_tmp(m,mw,i)*wave_x_tmp(m,mw,i+1)
+                                dot = dot + wave_x_tmp(m,mw,i,j)*wave_x_tmp(m,mw,i+1,j)
                             enddo
                         endif
 
@@ -210,39 +215,60 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                         !  # apply limiter to waves:
                         !
                         do m=1,meqn
-                            wave_x(m,mw,i) = wlimitr * wave_x(m,mw,i)
+                            wave_x(m,mw,i,j) = wlimitr * wave_x(m,mw,i,j)
                         enddo
-                    enddo ! end mx loop
-                enddo ! end mwave loop
-            endif ! end limiter if
-            do i = 1, mx+1 ! mx loop
-                !        # For correction terms below, need average of dtdx in cell
-                !        # i-1 and i.  Compute these and overwrite dtdx1d:
-                !
-                !        # modified in Version 4.3 to use average only in cqxx, not transverse
-                dtdxave = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i))
-                ! second order corrections:
-                do m=1,meqn
-                    cqxx(m,i) = 0.d0
-                    do mw=1,mwaves
-                        if (use_fwaves) then
-                            abs_sign = dsign(1.d0,s(mw,i))
-                        else
-                            abs_sign = dabs(s(mw,i))
-                        endif
+                    enddo ! end mwave loop
 
-                        cqxx(m,i) = cqxx(m,i) + abs_sign * &
-                            (1.d0 - dabs(s(mw,i))*dtdxave) * wave_x(m,mw,i)
+                    !        # For correction terms below, need average of dtdx in cell
+                    !        # i-1 and i.  Compute these and overwrite dtdx1d:
+                    !
+                    !        # modified in Version 4.3 to use average only in cqxx, not transverse
+                    dtdxave = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i))
+                    ! second order corrections:
+                    do m=1,meqn
+                        cqxx(m,i) = 0.d0
+                        do mw=1,mwaves
+                            if (use_fwaves) then
+                                abs_sign = dsign(1.d0,s_x(mw,i,j))
+                            else
+                                abs_sign = dabs(s_x(mw,i,j))
+                            endif
+
+                            cqxx(m,i) = cqxx(m,i) + abs_sign * &
+                                (1.d0 - dabs(s_x(mw,i,j))*dtdxave) * wave_x(m,mw,i,j)
+                        enddo
+                        fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m,i)
+                        fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m,i)
                     enddo
-                    fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m,i)
-                    fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m,i)
-                enddo
+                endif ! end limiter if
             enddo ! end mx loop
-        endif ! end if second-order 
+        enddo ! end my loop
+    endif ! end if second-order 
 !     -----------------------------------------------------------
 !     # END modify F fluxes for second order q_{xx} correction terms:
 !     -----------------------------------------------------------
-    enddo
+
+        ! if (method(3).ne.0) then !# has transverse propagation
+        !     if (method(2).gt.1 .and. method(3).eq.2) then
+        !         ! # incorporate cqxx into amdq and apdq so that it is split also.
+        !         do i = 1, mx+1
+        !             do m=1,meqn
+        !                 amdq(m,i) = amdq(m,i) + cqxx(m,i)
+        !                 apdq(m,i) = apdq(m,i) - cqxx(m,i)
+        !             enddo
+        !         enddo
+        !     endif
+        ! endif
+
+!     -----------------------------------------------------------
+!     # modify G fluxes for transverse propagation
+!     -----------------------------------------------------------
+        ! # split the left-going flux difference into down-going and up-going:
+        ! # split the right-going flux difference into down-going and up-going:
+!     -----------------------------------------------------------
+!     # END modify G fluxes for transverse propagation
+!     -----------------------------------------------------------
+
 
     ! ============================================================================
     !  y-sweeps    
@@ -385,3 +411,83 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
 
 
 end subroutine step2_fused
+
+! Algorithm1 (don't use shared memory):
+!
+! # x-sweep 
+!
+! kernel1:
+! * READ q from DRAM
+! Compute amdq and apdq:
+!   store amdq, apdq, s and wave in register
+! * READ fp and fm from DRAM
+! add amdq and apdq to fp and fm
+! * WRITE s, wave, fm, fp to DRAM
+!
+! kernel2:
+! * READ s, wave, fm, fp from DRAM
+! Use s and wave to compute cqxx
+! Add cqxx to fm and fp
+! Compute new amdq and apdq from s, wave and cqxx
+! * READ gm and gp from DRAM
+! Compute bpapdq, bmapdq, bpamdq, bmamdq and add them to gm and gp
+! * WRITE gm and gp to DRAM
+! 
+! 
+! # y-sweep 
+!
+! kernel1:
+! * READ q from DRAM
+! Compute bmdq and bpdq:
+!   store bmdq, bpdq, s and wave in register
+! * READ gp and gm from DRAM
+! add bmdq and bpdq to gp and gm
+! * WRITE s, wave, gm, gp to DRAM
+!
+! kernel2:
+! * READ s, wave, gm, gp from DRAM
+! Use s and wave to compute cqyy
+! Add cqyy to gm and gp
+! Compute new bmdq and bpdq from s, wave and cqyy
+! * READ fm and fp from DRAM
+! Compute apbpdq, ambpdq, apbmdq, ambmdq and add them to fm and fp
+! * WRITE fm and fp to DRAM
+! 
+
+
+! Algorithm2 (use shared memory):
+!
+! # x-sweep 
+!
+! kernel:
+! * READ q from DRAM
+! Compute amdq and apdq:
+!   store amdq, apdq, s and wave in register
+! * READ fp and fm from DRAM
+! add amdq and apdq to fp and fm
+! * store s, wave in shared memory
+! synchronize all threads in a block
+! Use s and wave to compute cqxx
+! Add cqxx to fm and fp
+! Compute new amdq and apdq from s, wave and cqxx
+! * READ gm and gp from DRAM
+! Compute bpapdq, bmapdq, bpamdq, bmamdq and add them to gm and gp
+! * WRITE fm, fp, gm and gp to DRAM
+! 
+! 
+! # y-sweep 
+!
+! kernel1:
+! * READ q from DRAM
+! Compute bmdq and bpdq:
+!   store bmdq, bpdq, s and wave in register
+! * READ gp and gm from DRAM
+! add bmdq and bpdq to gp and gm
+! * store s, wave in shared memory
+! synchronize all threads in a block
+! Use s and wave to compute cqyy
+! Add cqyy to gm and gp
+! Compute new bmdq and bpdq from s, wave and cqyy
+! * READ fm and fp from DRAM
+! Compute apbpdq, ambpdq, apbmdq, ambmdq and add them to fm and fp
+! * WRITE fm, fp, gm and gp to DRAM
