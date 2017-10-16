@@ -96,6 +96,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/icall.f \
   $(AMRLIB)/preicall.f \
   $(AMRLIB)/step2.f90 \
+  $(AMRLIB)/step2_fused.f90 \
   $(AMRLIB)/step2x.f90 \
   $(AMRLIB)/step2y.f90 \
   $(AMRLIB)/flux2.f90 \

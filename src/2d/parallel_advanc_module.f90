@@ -226,7 +226,12 @@ contains
 !
 !     # take one step on the conservation law:
 !
-      call step2(mbig,nvar,maux, &
+      ! call step2(mbig,nvar,maux, &
+      !     mbc,mx,my, &
+      !     q,aux,dx,dy,dt,cflgrid, &
+      !     fm,fp,gm,gp,rpn2,rpt2)
+
+      call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
           q,aux,dx,dy,dt,cflgrid, &
           fm,fp,gm,gp,rpn2,rpt2)
