@@ -44,38 +44,32 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     real(kind=8) :: gaddp(meqn,1-mbc:maxm+mbc,2)
     
     ! Scratch storage for Sweeps and Riemann problems
-    real(kind=8) ::  q1d(meqn,1-mbc:maxm+mbc)
     real(kind=8) :: aux1(maux,1-mbc:maxm+mbc)
     real(kind=8) :: aux2(maux,1-mbc:maxm+mbc)
     real(kind=8) :: aux3(maux,1-mbc:maxm+mbc)
-    ! real(kind=8) :: dtdx1d(1-mbc:maxm+mbc)
-    real(kind=8) :: dtdy1d(1-mbc:maxm+mbc)
     
-    real(kind=8) ::     s(mwaves, 1-mbc:maxm + mbc)
     real(kind=8) :: bmadq(meqn,1-mbc:maxm + mbc)
     real(kind=8) :: bpadq(meqn,1-mbc:maxm + mbc)
     
     ! Looping scalar storage
     integer :: i,j,thread_num
-    real(kind=8) :: dtdx,dtdy,cfl1d
+    real(kind=8) :: dtdx,dtdy
 
     ! Local variables for the Riemann solver
     real(kind=8) :: delta1, delta2, a1, a2
     integer :: m, mw, mu, mv
     real(kind=8) :: rho, bulk, cc, zz
     real(kind=8) :: s_x(mwaves, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8) :: s_y(mwaves, 1:mx, 1-mbc:my + mbc)
+    real(kind=8) :: s_y(mwaves, 2-mbc:mx+mbc-1, 1-mbc:my + mbc)
     real(kind=8) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    real(kind=8) :: dtdxr, dtdxl
-    ! real(kind=8) :: wave_y(meqn, mwaves, 1:mx, 1-mbc:my+mbc)
-    real(kind=8) :: wave_y(meqn, mwaves, 1-mbc:my+mbc)
+    real(kind=8) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
+    real(kind=8) :: dtdxr, dtdxl, dtdyr, dtdyl
     real(kind=8) :: amdq, apdq
     real(kind=8) :: bmdq(meqn,1-mbc:my + mbc)
     real(kind=8) :: bpdq(meqn,1-mbc:my + mbc)
     ! For 2nd order corrections
     real(kind=8) :: wave_x_tmp(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    ! real(kind=8) :: wave_y_tmp(meqn, mwaves, 1:mx, 1-mbc:my+mbc)
-    real(kind=8) :: wave_y_tmp(meqn, mwaves, 1-mbc:my+mbc)
+    real(kind=8) :: wave_y_tmp(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
     real(kind=8) :: dot, wnorm2, wlimitr, dtdxave, dtdyave, abs_sign, c, r
     real(kind=8) :: cqxx(meqn,1-mbc:mx + mbc)
     real(kind=8) :: cqyy(meqn,1-mbc:my + mbc)
@@ -147,7 +141,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
             enddo
         enddo
     enddo
-
 !     -----------------------------------------------------------
 !     # modify F fluxes for second order q_{xx} correction terms:
 !     -----------------------------------------------------------
@@ -277,13 +270,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     ! ============================================================================
     !  y-sweeps    
     do i = 0,mx+1
-        ! Set dtdx slice if a capacity array exists
-        if (mcapa > 0) then
-            dtdy1d(1-mbc:my+mbc) = dtdy / aux(mcapa,i,1-mbc:my+mbc)
-        else
-            dtdy1d = dtdy
-        endif
-
         do j = 2-mbc, my+mbc
             ! solve Riemann problem between cell (i,j-1) and (i,j)
             mu = 3
@@ -293,49 +279,58 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
             a1 = (-delta1 + zz*delta2) / (2.d0*zz)
             a2 = (delta1 + zz*delta2) / (2.d0*zz)
             !        # Compute the waves.
-            wave_y(1,1,j) = -a1*zz
-            wave_y(mu,1,j) = a1
-            wave_y(mv,1,j) = 0.d0
-            s(1,j) = -cc
+            wave_y(1,1,i,j) = -a1*zz
+            wave_y(mu,1,i,j) = a1
+            wave_y(mv,1,i,j) = 0.d0
+            s_y(1,i,j) = -cc
 
-            wave_y(1,2,j) = a2*zz
-            wave_y(mu,2,j) = a2
-            wave_y(mv,2,j) = 0.d0
-            s(2,j) = cc
+            wave_y(1,2,i,j) = a2*zz
+            wave_y(mu,2,i,j) = a2
+            wave_y(mv,2,i,j) = 0.d0
+            s_y(2,i,j) = cc
             do m = 1,meqn
-                bmdq(m,j) = s(1,j)*wave_y(m,1,j)
-                bpdq(m,j) = s(2,j)*wave_y(m,2,j)
+                bmdq(m,j) = s_y(1,i,j)*wave_y(m,1,i,j)
+                bpdq(m,j) = s_y(2,i,j)*wave_y(m,2,i,j)
                 gm(m,i,j) = gm(m,i,j) + bmdq(m,j)
                 gp(m,i,j) = gp(m,i,j) - bpdq(m,j)
             enddo
+            if (mcapa > 0)  then
+                dtdyl = dtdy / aux(mcapa,i-1,j)
+                dtdyr = dtdy / aux(mcapa,i,j)
+            else
+                dtdyl = dtdy
+                dtdyr = dtdy
+            endif
             do mw=1,mwaves
-                cflgrid = dmax1(cflgrid, dtdy1d(j)*s(mw,j),-dtdy1d(j-1)*s(mw,j))
+                cflgrid = dmax1(cflgrid, dtdyr*s_y(mw,i,j),-dtdyl*s_y(mw,i,j))
             enddo
         enddo
+    enddo
 !     -----------------------------------------------------------
 !     # modify G fluxes for second order q_{yy} correction terms:
 !     -----------------------------------------------------------
-        if (method(2).ne.1) then ! if second-order
-            ! # apply limiter to waves:
-            if (limit) then ! limiter if
-                wave_y_tmp = wave_y
-                do mw=1,mwaves ! mwaves loop
-                    do j = 1, my+1 ! my loop
+    if (method(2).ne.1) then ! if second-order
+        wave_y_tmp = wave_y
+        do i = 0, mx+1 ! mx loop
+            do j = 1, my+1 ! my loop
+                ! # apply limiter to waves:
+                if (limit) then ! limiter if
+                    do mw=1,mwaves ! mwaves loop
                         if (mthlim(mw) .eq. 0) cycle
                         dot = 0.d0
                         wnorm2 = 0.d0
                         do m=1,meqn
-                            wnorm2 = wnorm2 + wave_y_tmp(m,mw,j)**2
+                            wnorm2 = wnorm2 + wave_y_tmp(m,mw,i,j)**2
                         enddo
                         if (wnorm2.eq.0.d0) cycle
 
-                        if (s(mw,j) .gt. 0.d0) then
+                        if (s_y(mw,i,j) .gt. 0.d0) then
                             do m=1,meqn
-                                dot = dot + wave_y_tmp(m,mw,j)*wave_y_tmp(m,mw,j-1)
+                                dot = dot + wave_y_tmp(m,mw,i,j)*wave_y_tmp(m,mw,i,j-1)
                             enddo
                         else
                             do m=1,meqn
-                                dot = dot + wave_y_tmp(m,mw,j)*wave_y_tmp(m,mw,j+1)
+                                dot = dot + wave_y_tmp(m,mw,i,j)*wave_y_tmp(m,mw,i,j+1)
                             enddo
                         endif
 
@@ -379,39 +374,40 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                         !  # apply limiter to waves:
                         !
                         do m=1,meqn
-                            wave_y(m,mw,j) = wlimitr * wave_y(m,mw,j)
+                            wave_y(m,mw,i,j) = wlimitr * wave_y(m,mw,i,j)
                         enddo
-                    enddo ! end my loop
-                enddo ! end mwave loop
-            endif ! end limiter if
-            do j = 1, my+1 ! my loop
-                !        # For correction terms below, need average of dtdx in cell
-                !        # j-1 and j.  Compute these and overwrite dtdx1d:
-                !
-                !        # modified in Version 4.3 to use average only in cqyy, not transverse
-                dtdyave = 0.5d0 * (dtdy1d(j-1) + dtdy1d(j))
-                !        # second order corrections:
+                    enddo ! end mwave loop
+                endif ! end limiter if
+                if (mcapa > 0)  then
+                    dtdyl = dtdy / aux(mcapa,i,j-1)
+                    dtdyr = dtdy / aux(mcapa,i,j)
+                else
+                    dtdyl = dtdy
+                    dtdyr = dtdy
+                endif
+                dtdyave = 0.5d0 * (dtdyl + dtdyr)
+                ! second order corrections:
                 do m=1,meqn
                     cqyy(m,j) = 0.d0
                     do mw=1,mwaves
                         if (use_fwaves) then
-                            abs_sign = dsign(1.d0,s(mw,j))
+                            abs_sign = dsign(1.d0,s_y(mw,i,j))
                         else
-                            abs_sign = dabs(s(mw,j))
+                            abs_sign = dabs(s_y(mw,i,j))
                         endif
 
                         cqyy(m,j) = cqyy(m,j) + abs_sign * &
-                            (1.d0 - dabs(s(mw,j))*dtdyave) * wave_y(m,mw,j)
+                            (1.d0 - dabs(s_y(mw,i,j))*dtdyave) * wave_y(m,mw,i,j)
                     enddo
                     gp(m,i,j) = gp(m,i,j) + 0.5d0 * cqyy(m,j)
                     gm(m,i,j) = gm(m,i,j) + 0.5d0 * cqyy(m,j)
                 enddo
             enddo ! end my loop
-        endif ! end if second-order 
+        enddo ! end mx loop
+    endif ! end if second-order 
 !     -----------------------------------------------------------
 !     # END modify G fluxes for second order q_{yy} correction terms:
 !     -----------------------------------------------------------
-    enddo
 
 
 end subroutine step2_fused
