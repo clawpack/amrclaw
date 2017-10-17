@@ -64,15 +64,18 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     real(kind=8) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
     real(kind=8) :: dtdxr, dtdxl, dtdyr, dtdyl
-    real(kind=8) :: amdq, apdq
-    real(kind=8) :: bmdq(meqn,1-mbc:my + mbc)
-    real(kind=8) :: bpdq(meqn,1-mbc:my + mbc)
+    real(kind=8) :: amdq(meqn), apdq(meqn)
+    real(kind=8) :: bmdq(meqn), bpdq(meqn)
     ! For 2nd order corrections
-    real(kind=8) :: wave_x_tmp(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    real(kind=8) :: wave_y_tmp(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
+    real(kind=8) :: wave_x_tilde(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8) :: wave_y_tilde(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
     real(kind=8) :: dot, wnorm2, wlimitr, dtdxave, dtdyave, abs_sign, c, r
+    ! TODO: cqxx and cqyy can be only dimension(meqn)
     real(kind=8) :: cqxx(meqn,1-mbc:mx + mbc)
     real(kind=8) :: cqyy(meqn,1-mbc:my + mbc)
+    ! For transverse waves
+    real(kind=8) :: bpamdq(meqn), bmamdq(meqn), bpapdq(meqn), bmapdq(meqn)
+    real(kind=8) :: apbmdq(meqn), ambmdq(meqn), apbpdq(meqn), ambpdq(meqn)
     logical limit
 
     common /cparam/ rho,bulk,cc,zz
@@ -124,10 +127,12 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
             wave_x(mv,2,i,j) = 0.d0
             s_x(2,i,j) = cc
             do m = 1,meqn
-                amdq = s_x(1,i,j)*wave_x(m,1,i,j)
-                apdq = s_x(2,i,j)*wave_x(m,2,i,j)
-                fm(m,i,j) = fm(m,i,j) + amdq
-                fp(m,i,j) = fp(m,i,j) - apdq
+                amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
+                apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
+                if (i >= 1 .and. i<=(mx+1)) then
+                    fm(m,i,j) = fm(m,i,j) + amdq(m)
+                    fp(m,i,j) = fp(m,i,j) - apdq(m)
+                endif
             enddo
             if (mcapa > 0)  then
                 dtdxl = dtdx / aux(mcapa,i-1,j)
@@ -137,17 +142,22 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                 dtdxr = dtdx
             endif
             do mw=1,mwaves
-                cflgrid = dmax1(cflgrid, dtdxr*s_x(mw,i,j),-dtdxl*s_x(mw,i,j))
+                if (i >= 1 .and. i<=(mx+1)) then
+                    cflgrid = dmax1(cflgrid, dtdxr*s_x(mw,i,j),-dtdxl*s_x(mw,i,j))
+                endif
             enddo
         enddo
     enddo
 !     -----------------------------------------------------------
-!     # modify F fluxes for second order q_{xx} correction terms:
+!     # modify F fluxes for second order q_{xx} correction terms
+!     # and solve for transverse waves
 !     -----------------------------------------------------------
     if (method(2).ne.1) then ! if second-order
-        wave_x_tmp = wave_x
-        do j = 0,my+1 ! my loop
-            do i = 1, mx+1 ! mx loop
+        wave_x_tilde = wave_x
+    endif
+    do j = 0,my+1 ! my loop
+        do i = 1, mx+1 ! mx loop
+            if (method(2).ne.1) then ! if second-order
                 ! # apply limiter to waves:
                 if (limit) then ! limiter if
                     do mw=1,mwaves ! mwaves loop
@@ -155,17 +165,17 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                         dot = 0.d0
                         wnorm2 = 0.d0
                         do m=1,meqn
-                            wnorm2 = wnorm2 + wave_x_tmp(m,mw,i,j)**2
+                            wnorm2 = wnorm2 + wave_x(m,mw,i,j)**2
                         enddo
                         if (wnorm2.eq.0.d0) cycle
 
                         if (s_x(mw,i,j) .gt. 0.d0) then
                             do m=1,meqn
-                                dot = dot + wave_x_tmp(m,mw,i,j)*wave_x_tmp(m,mw,i-1,j)
+                                dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i-1,j)
                             enddo
                         else
                             do m=1,meqn
-                                dot = dot + wave_x_tmp(m,mw,i,j)*wave_x_tmp(m,mw,i+1,j)
+                                dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i+1,j)
                             enddo
                         endif
 
@@ -209,7 +219,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                         !  # apply limiter to waves:
                         !
                         do m=1,meqn
-                            wave_x(m,mw,i,j) = wlimitr * wave_x(m,mw,i,j)
+                            wave_x_tilde(m,mw,i,j) = wlimitr * wave_x_tilde(m,mw,i,j)
                         enddo
                     enddo ! end mwave loop
                 endif ! end limiter if
@@ -233,37 +243,85 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                         endif
 
                         cqxx(m,i) = cqxx(m,i) + abs_sign * &
-                            (1.d0 - dabs(s_x(mw,i,j))*dtdxave) * wave_x(m,mw,i,j)
+                            (1.d0 - dabs(s_x(mw,i,j))*dtdxave) * wave_x_tilde(m,mw,i,j)
                     enddo
                     fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m,i)
                     fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m,i)
                 enddo
-            enddo ! end mx loop
-        enddo ! end my loop
-    endif ! end if second-order 
+            endif ! end if second-order 
+    ! ##### solve for transverse waves and add to gp and gm
+            if (method(3).ne.0) then ! if transverse propagation
+                ! reconstruct amdq and apdq
+                do m=1,meqn
+                    amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
+                    apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
+                enddo
+                if (method(2).gt.1 .and. method(3).eq.2) then
+                    ! incorporate cqxx into amdq and apdq so that it is split also.
+                    do m=1,meqn
+                        amdq(m) = amdq(m) + cqxx(m,i)
+                        apdq(m) = apdq(m) - cqxx(m,i)
+                    enddo
+                endif
+
+                mu = 2
+                mv = 3
+                ! ##### solve for bpamdq and bmamdq
+                a1 = (-amdq(1) + zz*amdq(mv)) / (2.d0*zz)
+                a2 = (amdq(1) + zz*amdq(mv)) / (2.d0*zz)
+                !        # The down-going flux difference bmasdq is the product  -c * wave
+                bmamdq(1) = cc * a1*zz
+                bmamdq(mu) = 0.d0
+                bmamdq(mv) = -cc * a1
+                !        # The up-going flux difference bpasdq is the product  c * wave
+                bpamdq(1) = cc * a2*zz
+                bpamdq(mu) = 0.d0
+                bpamdq(mv) = cc * a2
+
+                if (mcapa > 0)  then
+                    !todo
+                    print * , "To be implemented"
+                else
+                    do m =1,meqn
+                        gm(m,i-1,j) = gm(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
+                        gp(m,i-1,j) = gp(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
+
+                        gm(m,i-1,j+1) = gm(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
+                        gp(m,i-1,j+1) = gp(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
+                    enddo
+                endif
+
+                ! # solve for bpapdq and bmapdq
+                a1 = (-apdq(1) + zz*apdq(mv)) / (2.d0*zz)
+                a2 = (apdq(1) + zz*apdq(mv)) / (2.d0*zz)
+                !        # The down-going flux difference bmasdq is the product  -c * wave
+                bmapdq(1) = cc * a1*zz
+                bmapdq(mu) = 0.d0
+                bmapdq(mv) = -cc * a1
+                !        # The up-going flux difference bpasdq is the product  c * wave
+                bpapdq(1) = cc * a2*zz
+                bpapdq(mu) = 0.d0
+                bpapdq(mv) = cc * a2
+
+                if (mcapa > 0)  then
+                    !todo
+                    print * , "To be implemented"
+                else
+                    do m =1,meqn
+                        gm(m,i,j) = gm(m,i,j) - 0.5d0*dtdx * bmapdq(m)
+                        gp(m,i,j) = gp(m,i,j) - 0.5d0*dtdx * bmapdq(m)
+
+                        gm(m,i,j+1) = gm(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
+                        gp(m,i,j+1) = gp(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
+                    enddo
+                endif
+            endif ! end if transverse propagation
+    ! ##### END solve for transverse waves and add to gp and gm
+        enddo ! end mx loop
+    enddo ! end my loop
 !     -----------------------------------------------------------
 !     # END modify F fluxes for second order q_{xx} correction terms:
-!     -----------------------------------------------------------
-
-        ! if (method(3).ne.0) then !# has transverse propagation
-        !     if (method(2).gt.1 .and. method(3).eq.2) then
-        !         ! # incorporate cqxx into amdq and apdq so that it is split also.
-        !         do i = 1, mx+1
-        !             do m=1,meqn
-        !                 amdq(m,i) = amdq(m,i) + cqxx(m,i)
-        !                 apdq(m,i) = apdq(m,i) - cqxx(m,i)
-        !             enddo
-        !         enddo
-        !     endif
-        ! endif
-
-!     -----------------------------------------------------------
-!     # modify G fluxes for transverse propagation
-!     -----------------------------------------------------------
-        ! # split the left-going flux difference into down-going and up-going:
-        ! # split the right-going flux difference into down-going and up-going:
-!     -----------------------------------------------------------
-!     # END modify G fluxes for transverse propagation
+!     # and solve for transverse waves
 !     -----------------------------------------------------------
 
 
@@ -289,10 +347,10 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
             wave_y(mv,2,i,j) = 0.d0
             s_y(2,i,j) = cc
             do m = 1,meqn
-                bmdq(m,j) = s_y(1,i,j)*wave_y(m,1,i,j)
-                bpdq(m,j) = s_y(2,i,j)*wave_y(m,2,i,j)
-                gm(m,i,j) = gm(m,i,j) + bmdq(m,j)
-                gp(m,i,j) = gp(m,i,j) - bpdq(m,j)
+                bmdq(m) = s_y(1,i,j)*wave_y(m,1,i,j)
+                bpdq(m) = s_y(2,i,j)*wave_y(m,2,i,j)
+                gm(m,i,j) = gm(m,i,j) + bmdq(m)
+                gp(m,i,j) = gp(m,i,j) - bpdq(m)
             enddo
             if (mcapa > 0)  then
                 dtdyl = dtdy / aux(mcapa,i-1,j)
@@ -308,11 +366,14 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     enddo
 !     -----------------------------------------------------------
 !     # modify G fluxes for second order q_{yy} correction terms:
+!     # and transverse waves
 !     -----------------------------------------------------------
     if (method(2).ne.1) then ! if second-order
-        wave_y_tmp = wave_y
-        do i = 0, mx+1 ! mx loop
-            do j = 1, my+1 ! my loop
+        wave_y_tilde = wave_y
+    endif
+    do i = 0, mx+1 ! mx loop
+        do j = 1, my+1 ! my loop
+            if (method(2).ne.1) then ! if second-order
                 ! # apply limiter to waves:
                 if (limit) then ! limiter if
                     do mw=1,mwaves ! mwaves loop
@@ -320,17 +381,17 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                         dot = 0.d0
                         wnorm2 = 0.d0
                         do m=1,meqn
-                            wnorm2 = wnorm2 + wave_y_tmp(m,mw,i,j)**2
+                            wnorm2 = wnorm2 + wave_y(m,mw,i,j)**2
                         enddo
                         if (wnorm2.eq.0.d0) cycle
 
                         if (s_y(mw,i,j) .gt. 0.d0) then
                             do m=1,meqn
-                                dot = dot + wave_y_tmp(m,mw,i,j)*wave_y_tmp(m,mw,i,j-1)
+                                dot = dot + wave_y(m,mw,i,j)*wave_y(m,mw,i,j-1)
                             enddo
                         else
                             do m=1,meqn
-                                dot = dot + wave_y_tmp(m,mw,i,j)*wave_y_tmp(m,mw,i,j+1)
+                                dot = dot + wave_y(m,mw,i,j)*wave_y(m,mw,i,j+1)
                             enddo
                         endif
 
@@ -374,7 +435,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                         !  # apply limiter to waves:
                         !
                         do m=1,meqn
-                            wave_y(m,mw,i,j) = wlimitr * wave_y(m,mw,i,j)
+                            wave_y_tilde(m,mw,i,j) = wlimitr * wave_y_tilde(m,mw,i,j)
                         enddo
                     enddo ! end mwave loop
                 endif ! end limiter if
@@ -397,16 +458,84 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                         endif
 
                         cqyy(m,j) = cqyy(m,j) + abs_sign * &
-                            (1.d0 - dabs(s_y(mw,i,j))*dtdyave) * wave_y(m,mw,i,j)
+                            (1.d0 - dabs(s_y(mw,i,j))*dtdyave) * wave_y_tilde(m,mw,i,j)
                     enddo
                     gp(m,i,j) = gp(m,i,j) + 0.5d0 * cqyy(m,j)
                     gm(m,i,j) = gm(m,i,j) + 0.5d0 * cqyy(m,j)
                 enddo
-            enddo ! end my loop
-        enddo ! end mx loop
-    endif ! end if second-order 
+            endif ! end if second-order 
+    ! ##### solve for transverse waves and add to fp and fm
+            if (method(3).ne.0) then ! if transverse propagation
+                ! reconstruct bmdq and bpdq
+                do m=1,meqn
+                    bmdq(m) = s_y(1,i,j)*wave_y(m,1,i,j)
+                    bpdq(m) = s_y(2,i,j)*wave_y(m,2,i,j)
+                enddo
+                if (method(2).gt.1 .and. method(3).eq.2) then
+                    ! incorporate cqyy into bmdq and bpdq so that it is split also.
+                    ! also reconstruct bmdq and bpdq
+                    do m=1,meqn
+                        bmdq(m) = bmdq(m) + cqyy(m,j)
+                        bpdq(m) = bpdq(m) - cqyy(m,j)
+                    enddo
+                endif
+
+                mu = 3
+                mv = 2
+                ! ##### solve for apbmdq and ambmdq
+                a1 = (-bmdq(1) + zz*bmdq(mv)) / (2.d0*zz)
+                a2 = (bmdq(1) + zz*bmdq(mv)) / (2.d0*zz)
+                ambmdq(1) = cc * a1*zz
+                ambmdq(mu) = 0.d0
+                ambmdq(mv) = -cc * a1
+                apbmdq(1) = cc * a2*zz
+                apbmdq(mu) = 0.d0
+                apbmdq(mv) = cc * a2
+
+                if (mcapa > 0)  then
+                    !todo
+                    print * , "To be implemented"
+                else
+                    do m =1,meqn
+                        fm(m,i,j-1) = fm(m,i,j-1) - 0.5d0*dtdy * ambmdq(m)
+                        fp(m,i,j-1) = fp(m,i,j-1) - 0.5d0*dtdy * ambmdq(m)
+
+                        fm(m,i+1,j-1) = fm(m,i+1,j-1) - 0.5d0*dtdy * apbmdq(m)
+                        fp(m,i+1,j-1) = fp(m,i+1,j-1) - 0.5d0*dtdy * apbmdq(m)
+                    enddo
+                endif
+
+                ! # solve for bpapdq and bmapdq
+                a1 = (-bpdq(1) + zz*bpdq(mv)) / (2.d0*zz)
+                a2 = (bpdq(1) + zz*bpdq(mv)) / (2.d0*zz)
+                !        # The down-going flux difference bmasdq is the product  -c * wave
+                ambpdq(1) = cc * a1*zz
+                ambpdq(mu) = 0.d0
+                ambpdq(mv) = -cc * a1
+                !        # The up-going flux difference bpasdq is the product  c * wave
+                apbpdq(1) = cc * a2*zz
+                apbpdq(mu) = 0.d0
+                apbpdq(mv) = cc * a2
+
+                if (mcapa > 0)  then
+                    !todo
+                    print * , "To be implemented"
+                else
+                    do m =1,meqn
+                        fm(m,i,j) = fm(m,i,j) - 0.5d0*dtdy * ambpdq(m)
+                        fp(m,i,j) = fp(m,i,j) - 0.5d0*dtdy * ambpdq(m)
+
+                        fm(m,i+1,j) = fm(m,i+1,j) - 0.5d0*dtdy * apbpdq(m)
+                        fp(m,i+1,j) = fp(m,i+1,j) - 0.5d0*dtdy * apbpdq(m)
+                    enddo
+                endif
+            endif ! end if transverse propagation
+    ! ##### END solve for transverse waves and add to fp and fm
+        enddo ! end my loop
+    enddo ! end mx loop
 !     -----------------------------------------------------------
 !     # END modify G fluxes for second order q_{yy} correction terms:
+!     # and transverse waves
 !     -----------------------------------------------------------
 
 
