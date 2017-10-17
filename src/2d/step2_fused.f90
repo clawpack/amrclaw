@@ -37,19 +37,10 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     
-    ! Local storage for flux accumulation
-    real(kind=8) :: faddm(meqn,1-mbc:maxm+mbc)
-    real(kind=8) :: faddp(meqn,1-mbc:maxm+mbc)
-    real(kind=8) :: gaddm(meqn,1-mbc:maxm+mbc,2)
-    real(kind=8) :: gaddp(meqn,1-mbc:maxm+mbc,2)
-    
     ! Scratch storage for Sweeps and Riemann problems
     real(kind=8) :: aux1(maux,1-mbc:maxm+mbc)
     real(kind=8) :: aux2(maux,1-mbc:maxm+mbc)
     real(kind=8) :: aux3(maux,1-mbc:maxm+mbc)
-    
-    real(kind=8) :: bmadq(meqn,1-mbc:maxm + mbc)
-    real(kind=8) :: bpadq(meqn,1-mbc:maxm + mbc)
     
     ! Looping scalar storage
     integer :: i,j,thread_num
@@ -70,9 +61,9 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     real(kind=8) :: wave_x_tilde(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8) :: wave_y_tilde(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
     real(kind=8) :: dot, wnorm2, wlimitr, dtdxave, dtdyave, abs_sign, c, r
-    ! TODO: cqxx and cqyy can be only dimension(meqn)
-    real(kind=8) :: cqxx(meqn,1-mbc:mx + mbc)
-    real(kind=8) :: cqyy(meqn,1-mbc:my + mbc)
+    real(kind=8) :: cqxx(meqn)
+    real(kind=8) :: cqyy(meqn)
+
     ! For transverse waves
     real(kind=8) :: bpamdq(meqn), bmamdq(meqn), bpapdq(meqn), bmapdq(meqn)
     real(kind=8) :: apbmdq(meqn), ambmdq(meqn), apbpdq(meqn), ambpdq(meqn)
@@ -80,11 +71,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
 
     common /cparam/ rho,bulk,cc,zz
 
-    
-    ! Common block storage
-    ! integer :: icom,jcom
-    ! real(kind=8) :: dtcom,dxcom,dycom,tcom
-    ! common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
     
     ! Store mesh parameters in common block
     dxcom = dx
@@ -234,7 +220,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                 dtdxave = 0.5d0 * (dtdxl + dtdxr)
                 ! second order corrections:
                 do m=1,meqn
-                    cqxx(m,i) = 0.d0
+                    cqxx(m) = 0.d0
                     do mw=1,mwaves
                         if (use_fwaves) then
                             abs_sign = dsign(1.d0,s_x(mw,i,j))
@@ -242,11 +228,11 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                             abs_sign = dabs(s_x(mw,i,j))
                         endif
 
-                        cqxx(m,i) = cqxx(m,i) + abs_sign * &
+                        cqxx(m) = cqxx(m) + abs_sign * &
                             (1.d0 - dabs(s_x(mw,i,j))*dtdxave) * wave_x_tilde(m,mw,i,j)
                     enddo
-                    fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m,i)
-                    fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m,i)
+                    fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m)
+                    fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m)
                 enddo
             endif ! end if second-order 
     ! ##### solve for transverse waves and add to gp and gm
@@ -259,8 +245,8 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                 if (method(2).gt.1 .and. method(3).eq.2) then
                     ! incorporate cqxx into amdq and apdq so that it is split also.
                     do m=1,meqn
-                        amdq(m) = amdq(m) + cqxx(m,i)
-                        apdq(m) = apdq(m) - cqxx(m,i)
+                        amdq(m) = amdq(m) + cqxx(m)
+                        apdq(m) = apdq(m) - cqxx(m)
                     enddo
                 endif
 
@@ -449,7 +435,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                 dtdyave = 0.5d0 * (dtdyl + dtdyr)
                 ! second order corrections:
                 do m=1,meqn
-                    cqyy(m,j) = 0.d0
+                    cqyy(m) = 0.d0
                     do mw=1,mwaves
                         if (use_fwaves) then
                             abs_sign = dsign(1.d0,s_y(mw,i,j))
@@ -457,11 +443,11 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                             abs_sign = dabs(s_y(mw,i,j))
                         endif
 
-                        cqyy(m,j) = cqyy(m,j) + abs_sign * &
+                        cqyy(m) = cqyy(m) + abs_sign * &
                             (1.d0 - dabs(s_y(mw,i,j))*dtdyave) * wave_y_tilde(m,mw,i,j)
                     enddo
-                    gp(m,i,j) = gp(m,i,j) + 0.5d0 * cqyy(m,j)
-                    gm(m,i,j) = gm(m,i,j) + 0.5d0 * cqyy(m,j)
+                    gp(m,i,j) = gp(m,i,j) + 0.5d0 * cqyy(m)
+                    gm(m,i,j) = gm(m,i,j) + 0.5d0 * cqyy(m)
                 enddo
             endif ! end if second-order 
     ! ##### solve for transverse waves and add to fp and fm
@@ -475,8 +461,8 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                     ! incorporate cqyy into bmdq and bpdq so that it is split also.
                     ! also reconstruct bmdq and bpdq
                     do m=1,meqn
-                        bmdq(m) = bmdq(m) + cqyy(m,j)
-                        bpdq(m) = bpdq(m) - cqyy(m,j)
+                        bmdq(m) = bmdq(m) + cqyy(m)
+                        bpdq(m) = bpdq(m) - cqyy(m)
                     enddo
                 endif
 
