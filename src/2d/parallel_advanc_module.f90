@@ -182,7 +182,9 @@ contains
         call gpu_allocate(gp_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
         call gpu_allocate(fm_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
         call gpu_allocate(gm_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
-        call gpu_allocate(aux_d, device_id, 1, maux, 1, mitot, 1, mjtot) 
+        if (maux > 0) then
+            call gpu_allocate(aux_d, device_id, 1, maux, 1, mitot, 1, mjtot) 
+        endif
         data_size = nvar*mitot*mjtot 
         aux_size = maux*mitot*mjtot 
 #endif
@@ -231,10 +233,29 @@ contains
       !     q,aux,dx,dy,dt,cflgrid, &
       !     fm,fp,gm,gp,rpn2,rpt2)
 
+#ifdef CUDA
+        cudaResult = cudaMemcpy(  q_d,  q,data_size, cudaMemcpyHostToDevice)
+        cudaResult = cudaMemcpy( fm_d, fm,data_size, cudaMemcpyHostToDevice)
+        cudaResult = cudaMemcpy( fp_d, fp,data_size, cudaMemcpyHostToDevice)
+        cudaResult = cudaMemcpy( gm_d, gm,data_size, cudaMemcpyHostToDevice)
+        cudaResult = cudaMemcpy( gp_d, gp,data_size, cudaMemcpyHostToDevice)
+        if (maux > 0) then
+            cudaResult = cudaMemcpy(aux_d,aux, aux_size, cudaMemcpyHostToDevice)
+        endif
+#endif
+
+! assume no aux here
+#ifdef CUDA
       call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
-          q,aux,dx,dy,dt,cflgrid, &
+          q_d,,dx,dy,dt,cflgrid, &
+          fm_d,fp_d,gm_d,gp_d,rpn2,rpt2)
+#else
+      call step2_fused(mbig,nvar,maux, &
+          mbc,mx,my, &
+          q,dx,dy,dt,cflgrid, &
           fm,fp,gm,gp,rpn2,rpt2)
+#endif
 !
 !
 !       write(outunit,1001) mptr, node(nestlevel,mptr),cflgrid
@@ -248,14 +269,6 @@ contains
 
 !$OMP END CRITICAL (cflm)
 
-#ifdef CUDA
-        cudaResult = cudaMemcpy(  q_d,  q,data_size, cudaMemcpyHostToDevice)
-        cudaResult = cudaMemcpy( fm_d, fm,data_size, cudaMemcpyHostToDevice)
-        cudaResult = cudaMemcpy( fp_d, fp,data_size, cudaMemcpyHostToDevice)
-        cudaResult = cudaMemcpy( gm_d, gm,data_size, cudaMemcpyHostToDevice)
-        cudaResult = cudaMemcpy( gp_d, gp,data_size, cudaMemcpyHostToDevice)
-        cudaResult = cudaMemcpy(aux_d,aux, aux_size, cudaMemcpyHostToDevice)
-#endif
 !
 !       # update q
         dtdx = dt/dx
@@ -306,7 +319,9 @@ contains
         cudaResult = cudaMemcpy(fp,fp_d,data_size, cudaMemcpyDeviceToHost)
         cudaResult = cudaMemcpy(gm,gm_d,data_size, cudaMemcpyDeviceToHost)
         cudaResult = cudaMemcpy(gp,gp_d,data_size, cudaMemcpyDeviceToHost)
-        cudaResult = cudaMemcpy(aux,aux_d,aux_size, cudaMemcpyDeviceToHost)
+        if (maux > 0) then
+            cudaResult = cudaMemcpy(aux,aux_d,aux_size, cudaMemcpyDeviceToHost)
+        endif
 #endif
 
 #ifdef CUDA
@@ -315,7 +330,9 @@ contains
         call gpu_deallocate(gp_d) 
         call gpu_deallocate(fm_d) 
         call gpu_deallocate(gm_d) 
-        call gpu_deallocate(aux_d) 
+        if (maux > 0) then
+            call gpu_deallocate(aux_d) 
+        endif
 #endif
 
 !

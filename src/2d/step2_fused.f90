@@ -4,7 +4,7 @@
 !! \param fp[out] fluxes on the right side of each vertical edge
 !! \param gm[out] fluxes on the lower side of each horizontal edge
 !! \param gp[out] fluxes on the upper side of each horizontal edge
-subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,rpn2,rpt2)
+subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,dx,dy,dt,cflgrid,fm,fp,gm,gp,rpn2,rpt2)
 !
 !     clawpack routine ...  modified for AMRCLAW
 !
@@ -31,16 +31,15 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     real(kind=8), intent(in) :: dx,dy,dt
     real(kind=8), intent(inout) :: cflgrid
     real(kind=8), intent(inout) :: qold(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    ! real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: fp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    
-    ! Scratch storage for Sweeps and Riemann problems
-    real(kind=8) :: aux1(maux,1-mbc:maxm+mbc)
-    real(kind=8) :: aux2(maux,1-mbc:maxm+mbc)
-    real(kind=8) :: aux3(maux,1-mbc:maxm+mbc)
+
+#ifdef CUDA
+    attributes(device) :: qold, fm, fp, gm, gp
+#endif
     
     ! Looping scalar storage
     integer :: i,j,thread_num
@@ -54,13 +53,15 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     real(kind=8) :: s_y(mwaves, 2-mbc:mx+mbc-1, 1-mbc:my + mbc)
     real(kind=8) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
-    real(kind=8) :: dtdxr, dtdxl, dtdyr, dtdyl
     real(kind=8) :: amdq(meqn), apdq(meqn)
     real(kind=8) :: bmdq(meqn), bpdq(meqn)
+
     ! For 2nd order corrections
     real(kind=8) :: wave_x_tilde(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8) :: wave_y_tilde(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
-    real(kind=8) :: dot, wnorm2, wlimitr, dtdxave, dtdyave, abs_sign, c, r
+
+    ! real(kind=8) :: dtdxave, dtdyave
+    real(kind=8) :: dot, wnorm2, wlimitr, abs_sign, c, r
     real(kind=8) :: cqxx(meqn)
     real(kind=8) :: cqyy(meqn)
 
@@ -120,16 +121,17 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                     fp(m,i,j) = fp(m,i,j) - apdq(m)
                 endif
             enddo
-            if (mcapa > 0)  then
-                dtdxl = dtdx / aux(mcapa,i-1,j)
-                dtdxr = dtdx / aux(mcapa,i,j)
-            else
-                dtdxl = dtdx
-                dtdxr = dtdx
-            endif
+            ! if (mcapa > 0)  then
+            !     dtdxl = dtdx / aux(mcapa,i-1,j)
+            !     dtdxr = dtdx / aux(mcapa,i,j)
+            ! else
+            !     dtdxl = dtdx
+            !     dtdxr = dtdx
+            ! endif
             do mw=1,mwaves
                 if (i >= 1 .and. i<=(mx+1)) then
-                    cflgrid = dmax1(cflgrid, dtdxr*s_x(mw,i,j),-dtdxl*s_x(mw,i,j))
+                    ! cflgrid = dmax1(cflgrid, dtdxr*s_x(mw,i,j),-dtdxl*s_x(mw,i,j))
+                    cflgrid = dmax1(cflgrid, dtdx*s_x(mw,i,j),-dtdx*s_x(mw,i,j))
                 endif
             enddo
         enddo
@@ -210,14 +212,15 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                     enddo ! end mwave loop
                 endif ! end limiter if
 
-                if (mcapa > 0)  then
-                    dtdxl = dtdx / aux(mcapa,i-1,j)
-                    dtdxr = dtdx / aux(mcapa,i,j)
-                else
-                    dtdxl = dtdx
-                    dtdxr = dtdx
-                endif
-                dtdxave = 0.5d0 * (dtdxl + dtdxr)
+                ! if (mcapa > 0)  then
+                !     dtdxl = dtdx / aux(mcapa,i-1,j)
+                !     dtdxr = dtdx / aux(mcapa,i,j)
+                ! else
+                !     dtdxl = dtdx
+                !     dtdxr = dtdx
+                ! endif
+                ! dtdxave = 0.5d0 * (dtdxl + dtdxr)
+
                 ! second order corrections:
                 do m=1,meqn
                     cqxx(m) = 0.d0
@@ -229,7 +232,8 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                         endif
 
                         cqxx(m) = cqxx(m) + abs_sign * &
-                            (1.d0 - dabs(s_x(mw,i,j))*dtdxave) * wave_x_tilde(m,mw,i,j)
+                            ! (1.d0 - dabs(s_x(mw,i,j))*dtdxave) * wave_x_tilde(m,mw,i,j)
+                            (1.d0 - dabs(s_x(mw,i,j))*dtdx) * wave_x_tilde(m,mw,i,j)
                     enddo
                     fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m)
                     fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m)
@@ -338,15 +342,16 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                 gm(m,i,j) = gm(m,i,j) + bmdq(m)
                 gp(m,i,j) = gp(m,i,j) - bpdq(m)
             enddo
-            if (mcapa > 0)  then
-                dtdyl = dtdy / aux(mcapa,i-1,j)
-                dtdyr = dtdy / aux(mcapa,i,j)
-            else
-                dtdyl = dtdy
-                dtdyr = dtdy
-            endif
+            ! if (mcapa > 0)  then
+            !     dtdyl = dtdy / aux(mcapa,i-1,j)
+            !     dtdyr = dtdy / aux(mcapa,i,j)
+            ! else
+            !     dtdyl = dtdy
+            !     dtdyr = dtdy
+            ! endif
             do mw=1,mwaves
-                cflgrid = dmax1(cflgrid, dtdyr*s_y(mw,i,j),-dtdyl*s_y(mw,i,j))
+                ! cflgrid = dmax1(cflgrid, dtdyr*s_y(mw,i,j),-dtdyl*s_y(mw,i,j))
+                cflgrid = dmax1(cflgrid, dtdy*s_y(mw,i,j),-dtdy*s_y(mw,i,j))
             enddo
         enddo
     enddo
@@ -425,14 +430,15 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                         enddo
                     enddo ! end mwave loop
                 endif ! end limiter if
-                if (mcapa > 0)  then
-                    dtdyl = dtdy / aux(mcapa,i,j-1)
-                    dtdyr = dtdy / aux(mcapa,i,j)
-                else
-                    dtdyl = dtdy
-                    dtdyr = dtdy
-                endif
-                dtdyave = 0.5d0 * (dtdyl + dtdyr)
+                ! if (mcapa > 0)  then
+                !     dtdyl = dtdy / aux(mcapa,i,j-1)
+                !     dtdyr = dtdy / aux(mcapa,i,j)
+                ! else
+                !     dtdyl = dtdy
+                !     dtdyr = dtdy
+                ! endif
+                ! dtdyave = 0.5d0 * (dtdyl + dtdyr)
+
                 ! second order corrections:
                 do m=1,meqn
                     cqyy(m) = 0.d0
@@ -444,7 +450,8 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                         endif
 
                         cqyy(m) = cqyy(m) + abs_sign * &
-                            (1.d0 - dabs(s_y(mw,i,j))*dtdyave) * wave_y_tilde(m,mw,i,j)
+                            ! (1.d0 - dabs(s_y(mw,i,j))*dtdyave) * wave_y_tilde(m,mw,i,j)
+                            (1.d0 - dabs(s_y(mw,i,j))*dtdy) * wave_y_tilde(m,mw,i,j)
                     enddo
                     gp(m,i,j) = gp(m,i,j) + 0.5d0 * cqyy(m)
                     gm(m,i,j) = gm(m,i,j) + 0.5d0 * cqyy(m)
