@@ -48,7 +48,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     real(kind=8) :: aux1(maux,1-mbc:maxm+mbc)
     real(kind=8) :: aux2(maux,1-mbc:maxm+mbc)
     real(kind=8) :: aux3(maux,1-mbc:maxm+mbc)
-    real(kind=8) :: dtdx1d(1-mbc:maxm+mbc)
+    ! real(kind=8) :: dtdx1d(1-mbc:maxm+mbc)
     real(kind=8) :: dtdy1d(1-mbc:maxm+mbc)
     
     real(kind=8) ::     s(mwaves, 1-mbc:maxm + mbc)
@@ -66,6 +66,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     real(kind=8) :: s_x(mwaves, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
     real(kind=8) :: s_y(mwaves, 1:mx, 1-mbc:my + mbc)
     real(kind=8) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8) :: dtdxr, dtdxl
     ! real(kind=8) :: wave_y(meqn, mwaves, 1:mx, 1-mbc:my+mbc)
     real(kind=8) :: wave_y(meqn, mwaves, 1-mbc:my+mbc)
     real(kind=8) :: amdq, apdq
@@ -110,13 +111,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
     ! ============================================================================
     ! Perform X-Sweeps
     do j = 0,my+1
-        ! Set dtdx slice if a capacity array exists
-        if (mcapa > 0)  then
-            dtdx1d(1-mbc:mx+mbc) = dtdx / aux(mcapa,1-mbc:mx+mbc,j)
-        else
-            dtdx1d = dtdx
-        endif
-
         do i = 2-mbc, mx+mbc
             ! solve Riemann problem between cell (i-1,j) and (i,j)
             mu = 2
@@ -141,8 +135,15 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                 fm(m,i,j) = fm(m,i,j) + amdq
                 fp(m,i,j) = fp(m,i,j) - apdq
             enddo
+            if (mcapa > 0)  then
+                dtdxl = dtdx / aux(mcapa,i-1,j)
+                dtdxr = dtdx / aux(mcapa,i,j)
+            else
+                dtdxl = dtdx
+                dtdxr = dtdx
+            endif
             do mw=1,mwaves
-                cflgrid = dmax1(cflgrid, dtdx1d(i)*s_x(mw,i,j),-dtdx1d(i-1)*s_x(mw,i,j))
+                cflgrid = dmax1(cflgrid, dtdxr*s_x(mw,i,j),-dtdxl*s_x(mw,i,j))
             enddo
         enddo
     enddo
@@ -218,29 +219,32 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,
                             wave_x(m,mw,i,j) = wlimitr * wave_x(m,mw,i,j)
                         enddo
                     enddo ! end mwave loop
-
-                    !        # For correction terms below, need average of dtdx in cell
-                    !        # i-1 and i.  Compute these and overwrite dtdx1d:
-                    !
-                    !        # modified in Version 4.3 to use average only in cqxx, not transverse
-                    dtdxave = 0.5d0 * (dtdx1d(i-1) + dtdx1d(i))
-                    ! second order corrections:
-                    do m=1,meqn
-                        cqxx(m,i) = 0.d0
-                        do mw=1,mwaves
-                            if (use_fwaves) then
-                                abs_sign = dsign(1.d0,s_x(mw,i,j))
-                            else
-                                abs_sign = dabs(s_x(mw,i,j))
-                            endif
-
-                            cqxx(m,i) = cqxx(m,i) + abs_sign * &
-                                (1.d0 - dabs(s_x(mw,i,j))*dtdxave) * wave_x(m,mw,i,j)
-                        enddo
-                        fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m,i)
-                        fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m,i)
-                    enddo
                 endif ! end limiter if
+
+                if (mcapa > 0)  then
+                    dtdxl = dtdx / aux(mcapa,i-1,j)
+                    dtdxr = dtdx / aux(mcapa,i,j)
+                else
+                    dtdxl = dtdx
+                    dtdxr = dtdx
+                endif
+                dtdxave = 0.5d0 * (dtdxl + dtdxr)
+                ! second order corrections:
+                do m=1,meqn
+                    cqxx(m,i) = 0.d0
+                    do mw=1,mwaves
+                        if (use_fwaves) then
+                            abs_sign = dsign(1.d0,s_x(mw,i,j))
+                        else
+                            abs_sign = dabs(s_x(mw,i,j))
+                        endif
+
+                        cqxx(m,i) = cqxx(m,i) + abs_sign * &
+                            (1.d0 - dabs(s_x(mw,i,j))*dtdxave) * wave_x(m,mw,i,j)
+                    enddo
+                    fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m,i)
+                    fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m,i)
+                enddo
             enddo ! end mx loop
         enddo ! end my loop
     endif ! end if second-order 
