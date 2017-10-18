@@ -21,6 +21,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,dx,dy,dt,cflgrid,fm,fp,gm,g
     
     use amr_module
     use parallel_advanc_module, only: dtcom, dxcom, dycom, icom, jcom
+    use sweep_module, only: x_sweep_1st_order, x_sweep_2nd_order, y_sweep_1st_order, y_sweep_2nd_order 
 
     implicit none
     
@@ -42,7 +43,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,dx,dy,dt,cflgrid,fm,fp,gm,g
 #endif
     
     ! Looping scalar storage
-    integer :: i,j,thread_num
+    integer :: i,j
     real(kind=8) :: dtdx,dtdy
 
     ! Local variables for the Riemann solver
@@ -87,55 +88,60 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,dx,dy,dt,cflgrid,fm,fp,gm,g
     gm = 0.d0
     gp = 0.d0
 
+    call x_sweep_1st_order(qold, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx, cflgrid)
+    ! call x_sweep_2nd_order(qold, fm, fp, gm, gp, s_x, wave_x)
+    ! call y_sweep_1st_order(qold, gm, gp, s_x, wave_x)
+    ! call y_sweep_2nd_order(qold, fm, fp, gm, gp, s_x, wave_x)
+
     limit = .false.
     do mw=1,mwaves
         if (mthlim(mw) .gt. 0) limit = .true.
     enddo
     
-    ! ============================================================================
-    ! Perform X-Sweeps
-    do j = 0,my+1
-        do i = 2-mbc, mx+mbc
-            ! solve Riemann problem between cell (i-1,j) and (i,j)
-            mu = 2
-            mv = 3
-            delta1 = qold(1,i,j) - qold(1,i-1,j)
-            delta2 = qold(mu,i,j) - qold(mu,i-1,j)
-            a1 = (-delta1 + zz*delta2) / (2.d0*zz)
-            a2 = (delta1 + zz*delta2) / (2.d0*zz)
-            !        # Compute the waves.
-            wave_x(1,1,i,j) = -a1*zz
-            wave_x(mu,1,i,j) = a1
-            wave_x(mv,1,i,j) = 0.d0
-            s_x(1,i,j) = -cc
+    ! ! ============================================================================
+    ! ! Perform X-Sweeps
+    ! do j = 0,my+1
+    !     do i = 2-mbc, mx+mbc
+    !         ! solve Riemann problem between cell (i-1,j) and (i,j)
+    !         mu = 2
+    !         mv = 3
+    !         delta1 = qold(1,i,j) - qold(1,i-1,j)
+    !         delta2 = qold(mu,i,j) - qold(mu,i-1,j)
+    !         a1 = (-delta1 + zz*delta2) / (2.d0*zz)
+    !         a2 = (delta1 + zz*delta2) / (2.d0*zz)
+    !         !        # Compute the waves.
+    !         wave_x(1,1,i,j) = -a1*zz
+    !         wave_x(mu,1,i,j) = a1
+    !         wave_x(mv,1,i,j) = 0.d0
+    !         s_x(1,i,j) = -cc
 
-            wave_x(1,2,i,j) = a2*zz
-            wave_x(mu,2,i,j) = a2
-            wave_x(mv,2,i,j) = 0.d0
-            s_x(2,i,j) = cc
-            do m = 1,meqn
-                amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
-                apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
-                if (i >= 1 .and. i<=(mx+1)) then
-                    fm(m,i,j) = fm(m,i,j) + amdq(m)
-                    fp(m,i,j) = fp(m,i,j) - apdq(m)
-                endif
-            enddo
-            ! if (mcapa > 0)  then
-            !     dtdxl = dtdx / aux(mcapa,i-1,j)
-            !     dtdxr = dtdx / aux(mcapa,i,j)
-            ! else
-            !     dtdxl = dtdx
-            !     dtdxr = dtdx
-            ! endif
-            do mw=1,mwaves
-                if (i >= 1 .and. i<=(mx+1)) then
-                    ! cflgrid = dmax1(cflgrid, dtdxr*s_x(mw,i,j),-dtdxl*s_x(mw,i,j))
-                    cflgrid = dmax1(cflgrid, dtdx*s_x(mw,i,j),-dtdx*s_x(mw,i,j))
-                endif
-            enddo
-        enddo
-    enddo
+    !         wave_x(1,2,i,j) = a2*zz
+    !         wave_x(mu,2,i,j) = a2
+    !         wave_x(mv,2,i,j) = 0.d0
+    !         s_x(2,i,j) = cc
+    !         do m = 1,meqn
+    !             amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
+    !             apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
+    !             if (i >= 1 .and. i<=(mx+1)) then
+    !                 fm(m,i,j) = fm(m,i,j) + amdq(m)
+    !                 fp(m,i,j) = fp(m,i,j) - apdq(m)
+    !             endif
+    !         enddo
+    !         ! if (mcapa > 0)  then
+    !         !     dtdxl = dtdx / aux(mcapa,i-1,j)
+    !         !     dtdxr = dtdx / aux(mcapa,i,j)
+    !         ! else
+    !         !     dtdxl = dtdx
+    !         !     dtdxr = dtdx
+    !         ! endif
+    !         do mw=1,mwaves
+    !             if (i >= 1 .and. i<=(mx+1)) then
+    !                 ! cflgrid = dmax1(cflgrid, dtdxr*s_x(mw,i,j),-dtdxl*s_x(mw,i,j))
+    !                 cflgrid = dmax1(cflgrid, dtdx*s_x(mw,i,j),-dtdx*s_x(mw,i,j))
+    !             endif
+    !         enddo
+    !     enddo
+    ! enddo
 !     -----------------------------------------------------------
 !     # modify F fluxes for second order q_{xx} correction terms
 !     # and solve for transverse waves
