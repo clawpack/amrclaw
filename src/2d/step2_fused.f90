@@ -90,7 +90,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,dx,dy,dt,cflgrid,fm,fp,gm,g
 
     call x_sweep_1st_order(qold, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx, cflgrid)
     ! call x_sweep_2nd_order(qold, fm, fp, gm, gp, s_x, wave_x)
-    ! call y_sweep_1st_order(qold, gm, gp, s_x, wave_x)
     ! call y_sweep_2nd_order(qold, fm, fp, gm, gp, s_x, wave_x)
 
     limit = .false.
@@ -146,6 +145,10 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,dx,dy,dt,cflgrid,fm,fp,gm,g
 !     # modify F fluxes for second order q_{xx} correction terms
 !     # and solve for transverse waves
 !     -----------------------------------------------------------
+
+    call x_sweep_2nd_order(qold, fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
+
+
     if (method(2).ne.1) then ! if second-order
         wave_x_tilde = wave_x
     endif
@@ -321,46 +324,47 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,dx,dy,dt,cflgrid,fm,fp,gm,g
 !     -----------------------------------------------------------
 
 
-    ! ============================================================================
-    !  y-sweeps    
-    do i = 0,mx+1
-        do j = 2-mbc, my+mbc
-            ! solve Riemann problem between cell (i,j-1) and (i,j)
-            mu = 3
-            mv = 2
-            delta1 = qold(1,i,j) - qold(1,i,j-1)
-            delta2 = qold(mu,i,j) - qold(mu,i,j-1)
-            a1 = (-delta1 + zz*delta2) / (2.d0*zz)
-            a2 = (delta1 + zz*delta2) / (2.d0*zz)
-            !        # Compute the waves.
-            wave_y(1,1,i,j) = -a1*zz
-            wave_y(mu,1,i,j) = a1
-            wave_y(mv,1,i,j) = 0.d0
-            s_y(1,i,j) = -cc
+    call y_sweep_1st_order(qold, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx, my, dtdy, cflgrid)
+    ! ! ============================================================================
+    ! !  y-sweeps    
+    ! do i = 0,mx+1
+    !     do j = 2-mbc, my+mbc
+    !         ! solve Riemann problem between cell (i,j-1) and (i,j)
+    !         mu = 3
+    !         mv = 2
+    !         delta1 = qold(1,i,j) - qold(1,i,j-1)
+    !         delta2 = qold(mu,i,j) - qold(mu,i,j-1)
+    !         a1 = (-delta1 + zz*delta2) / (2.d0*zz)
+    !         a2 = (delta1 + zz*delta2) / (2.d0*zz)
+    !         !        # Compute the waves.
+    !         wave_y(1,1,i,j) = -a1*zz
+    !         wave_y(mu,1,i,j) = a1
+    !         wave_y(mv,1,i,j) = 0.d0
+    !         s_y(1,i,j) = -cc
 
-            wave_y(1,2,i,j) = a2*zz
-            wave_y(mu,2,i,j) = a2
-            wave_y(mv,2,i,j) = 0.d0
-            s_y(2,i,j) = cc
-            do m = 1,meqn
-                bmdq(m) = s_y(1,i,j)*wave_y(m,1,i,j)
-                bpdq(m) = s_y(2,i,j)*wave_y(m,2,i,j)
-                gm(m,i,j) = gm(m,i,j) + bmdq(m)
-                gp(m,i,j) = gp(m,i,j) - bpdq(m)
-            enddo
-            ! if (mcapa > 0)  then
-            !     dtdyl = dtdy / aux(mcapa,i-1,j)
-            !     dtdyr = dtdy / aux(mcapa,i,j)
-            ! else
-            !     dtdyl = dtdy
-            !     dtdyr = dtdy
-            ! endif
-            do mw=1,mwaves
-                ! cflgrid = dmax1(cflgrid, dtdyr*s_y(mw,i,j),-dtdyl*s_y(mw,i,j))
-                cflgrid = dmax1(cflgrid, dtdy*s_y(mw,i,j),-dtdy*s_y(mw,i,j))
-            enddo
-        enddo
-    enddo
+    !         wave_y(1,2,i,j) = a2*zz
+    !         wave_y(mu,2,i,j) = a2
+    !         wave_y(mv,2,i,j) = 0.d0
+    !         s_y(2,i,j) = cc
+    !         do m = 1,meqn
+    !             bmdq(m) = s_y(1,i,j)*wave_y(m,1,i,j)
+    !             bpdq(m) = s_y(2,i,j)*wave_y(m,2,i,j)
+    !             gm(m,i,j) = gm(m,i,j) + bmdq(m)
+    !             gp(m,i,j) = gp(m,i,j) - bpdq(m)
+    !         enddo
+    !         ! if (mcapa > 0)  then
+    !         !     dtdyl = dtdy / aux(mcapa,i-1,j)
+    !         !     dtdyr = dtdy / aux(mcapa,i,j)
+    !         ! else
+    !         !     dtdyl = dtdy
+    !         !     dtdyr = dtdy
+    !         ! endif
+    !         do mw=1,mwaves
+    !             ! cflgrid = dmax1(cflgrid, dtdyr*s_y(mw,i,j),-dtdyl*s_y(mw,i,j))
+    !             cflgrid = dmax1(cflgrid, dtdy*s_y(mw,i,j),-dtdy*s_y(mw,i,j))
+    !         enddo
+    !     enddo
+    ! enddo
 !     -----------------------------------------------------------
 !     # modify G fluxes for second order q_{yy} correction terms:
 !     # and transverse waves
