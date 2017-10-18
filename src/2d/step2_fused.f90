@@ -46,31 +46,11 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,dx,dy,dt,cflgrid,fm,fp,gm,g
     integer :: i,j
     real(kind=8) :: dtdx,dtdy
 
-    ! Local variables for the Riemann solver
-    real(kind=8) :: delta1, delta2, a1, a2
-    integer :: m, mw, mu, mv
-    real(kind=8) :: rho, bulk, cc, zz
     real(kind=8) :: s_x(mwaves, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
     real(kind=8) :: s_y(mwaves, 2-mbc:mx+mbc-1, 1-mbc:my + mbc)
     real(kind=8) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
-    real(kind=8) :: amdq(meqn), apdq(meqn)
-    real(kind=8) :: bmdq(meqn), bpdq(meqn)
 
-    ! For 2nd order corrections
-    real(kind=8) :: wave_x_tilde(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    real(kind=8) :: wave_y_tilde(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
-
-    ! real(kind=8) :: dtdxave, dtdyave
-    real(kind=8) :: dot, wnorm2, wlimitr, abs_sign, c, r
-    real(kind=8) :: cqxx(meqn)
-    real(kind=8) :: cqyy(meqn)
-
-    ! For transverse waves
-    real(kind=8) :: bpamdq(meqn), bmamdq(meqn), bpapdq(meqn), bmapdq(meqn)
-    real(kind=8) :: apbmdq(meqn), ambmdq(meqn), apbpdq(meqn), ambpdq(meqn)
-
-    common /cparam/ rho,bulk,cc,zz
 
     
     ! Store mesh parameters in common block
