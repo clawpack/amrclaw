@@ -146,178 +146,178 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,qold,dx,dy,dt,cflgrid,fm,fp,gm,g
 !     # and solve for transverse waves
 !     -----------------------------------------------------------
 
-    call x_sweep_2nd_order(qold, fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
+    call x_sweep_2nd_order(fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
 
 
-    if (method(2).ne.1) then ! if second-order
-        wave_x_tilde = wave_x
-    endif
-    do j = 0,my+1 ! my loop
-        do i = 1, mx+1 ! mx loop
-            if (method(2).ne.1) then ! if second-order
-                ! # apply limiter to waves:
-                if (limit) then ! limiter if
-                    do mw=1,mwaves ! mwaves loop
-                        if (mthlim(mw) .eq. 0) cycle
-                        dot = 0.d0
-                        wnorm2 = 0.d0
-                        do m=1,meqn
-                            wnorm2 = wnorm2 + wave_x(m,mw,i,j)**2
-                        enddo
-                        if (wnorm2.eq.0.d0) cycle
+    ! if (method(2).ne.1) then ! if second-order
+    !     wave_x_tilde = wave_x
+    ! endif
+    ! do j = 0,my+1 ! my loop
+    !     do i = 1, mx+1 ! mx loop
+    !         if (method(2).ne.1) then ! if second-order
+    !             ! # apply limiter to waves:
+    !             if (limit) then ! limiter if
+    !                 do mw=1,mwaves ! mwaves loop
+    !                     if (mthlim(mw) .eq. 0) cycle
+    !                     dot = 0.d0
+    !                     wnorm2 = 0.d0
+    !                     do m=1,meqn
+    !                         wnorm2 = wnorm2 + wave_x(m,mw,i,j)**2
+    !                     enddo
+    !                     if (wnorm2.eq.0.d0) cycle
 
-                        if (s_x(mw,i,j) .gt. 0.d0) then
-                            do m=1,meqn
-                                dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i-1,j)
-                            enddo
-                        else
-                            do m=1,meqn
-                                dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i+1,j)
-                            enddo
-                        endif
+    !                     if (s_x(mw,i,j) .gt. 0.d0) then
+    !                         do m=1,meqn
+    !                             dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i-1,j)
+    !                         enddo
+    !                     else
+    !                         do m=1,meqn
+    !                             dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i+1,j)
+    !                         enddo
+    !                     endif
 
-                        r = dot / wnorm2
+    !                     r = dot / wnorm2
 
-                        ! choose limiter
-                        if (mthlim(mw) .eq. 1) then
-                            !               --------
-                            !               # minmod
-                            !               --------
-                            wlimitr = dmax1(0.d0, dmin1(1.d0, r))
+    !                     ! choose limiter
+    !                     if (mthlim(mw) .eq. 1) then
+    !                         !               --------
+    !                         !               # minmod
+    !                         !               --------
+    !                         wlimitr = dmax1(0.d0, dmin1(1.d0, r))
 
-                        else if (mthlim(mw) .eq. 2) then
-                            !               ----------
-                            !               # superbee
-                            !               ----------
-                            wlimitr = dmax1(0.d0, dmin1(1.d0, 2.d0*r), dmin1(2.d0, r))
+    !                     else if (mthlim(mw) .eq. 2) then
+    !                         !               ----------
+    !                         !               # superbee
+    !                         !               ----------
+    !                         wlimitr = dmax1(0.d0, dmin1(1.d0, 2.d0*r), dmin1(2.d0, r))
 
-                        else if (mthlim(mw) .eq. 3) then
-                            !               ----------
-                            !               # van Leer
-                            !               ----------
-                            wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
+    !                     else if (mthlim(mw) .eq. 3) then
+    !                         !               ----------
+    !                         !               # van Leer
+    !                         !               ----------
+    !                         wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
 
-                        else if (mthlim(mw) .eq. 4) then
-                            !               ------------------------------
-                            !               # monotinized centered
-                            !               ------------------------------
-                            c = (1.d0 + r)/2.d0
-                            wlimitr = dmax1(0.d0, dmin1(c, 2.d0, 2.d0*r))
-                        else if (mthlim(mw) .eq. 5) then
-                            !               ------------------------------
-                            !               # Beam-Warming
-                            !               ------------------------------
-                            wlimitr = r
-                        else
-                            print *, 'Unrecognized limiter.'
-                            stop
-                        endif
-                        !
-                        !  # apply limiter to waves:
-                        !
-                        do m=1,meqn
-                            wave_x_tilde(m,mw,i,j) = wlimitr * wave_x_tilde(m,mw,i,j)
-                        enddo
-                    enddo ! end mwave loop
-                endif ! end limiter if
+    !                     else if (mthlim(mw) .eq. 4) then
+    !                         !               ------------------------------
+    !                         !               # monotinized centered
+    !                         !               ------------------------------
+    !                         c = (1.d0 + r)/2.d0
+    !                         wlimitr = dmax1(0.d0, dmin1(c, 2.d0, 2.d0*r))
+    !                     else if (mthlim(mw) .eq. 5) then
+    !                         !               ------------------------------
+    !                         !               # Beam-Warming
+    !                         !               ------------------------------
+    !                         wlimitr = r
+    !                     else
+    !                         print *, 'Unrecognized limiter.'
+    !                         stop
+    !                     endif
+    !                     !
+    !                     !  # apply limiter to waves:
+    !                     !
+    !                     do m=1,meqn
+    !                         wave_x_tilde(m,mw,i,j) = wlimitr * wave_x_tilde(m,mw,i,j)
+    !                     enddo
+    !                 enddo ! end mwave loop
+    !             endif ! end limiter if
 
-                ! if (mcapa > 0)  then
-                !     dtdxl = dtdx / aux(mcapa,i-1,j)
-                !     dtdxr = dtdx / aux(mcapa,i,j)
-                ! else
-                !     dtdxl = dtdx
-                !     dtdxr = dtdx
-                ! endif
-                ! dtdxave = 0.5d0 * (dtdxl + dtdxr)
+    !             ! if (mcapa > 0)  then
+    !             !     dtdxl = dtdx / aux(mcapa,i-1,j)
+    !             !     dtdxr = dtdx / aux(mcapa,i,j)
+    !             ! else
+    !             !     dtdxl = dtdx
+    !             !     dtdxr = dtdx
+    !             ! endif
+    !             ! dtdxave = 0.5d0 * (dtdxl + dtdxr)
 
-                ! second order corrections:
-                do m=1,meqn
-                    cqxx(m) = 0.d0
-                    do mw=1,mwaves
-                        if (use_fwaves) then
-                            abs_sign = dsign(1.d0,s_x(mw,i,j))
-                        else
-                            abs_sign = dabs(s_x(mw,i,j))
-                        endif
+    !             ! second order corrections:
+    !             do m=1,meqn
+    !                 cqxx(m) = 0.d0
+    !                 do mw=1,mwaves
+    !                     if (use_fwaves) then
+    !                         abs_sign = dsign(1.d0,s_x(mw,i,j))
+    !                     else
+    !                         abs_sign = dabs(s_x(mw,i,j))
+    !                     endif
 
-                        cqxx(m) = cqxx(m) + abs_sign * &
-                            ! (1.d0 - dabs(s_x(mw,i,j))*dtdxave) * wave_x_tilde(m,mw,i,j)
-                            (1.d0 - dabs(s_x(mw,i,j))*dtdx) * wave_x_tilde(m,mw,i,j)
-                    enddo
-                    fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m)
-                    fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m)
-                enddo
-            endif ! end if second-order 
-    ! ##### solve for transverse waves and add to gp and gm
-            if (method(3).ne.0) then ! if transverse propagation
-                ! reconstruct amdq and apdq
-                do m=1,meqn
-                    amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
-                    apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
-                enddo
-                if (method(2).gt.1 .and. method(3).eq.2) then
-                    ! incorporate cqxx into amdq and apdq so that it is split also.
-                    do m=1,meqn
-                        amdq(m) = amdq(m) + cqxx(m)
-                        apdq(m) = apdq(m) - cqxx(m)
-                    enddo
-                endif
+    !                     cqxx(m) = cqxx(m) + abs_sign * &
+    !                         ! (1.d0 - dabs(s_x(mw,i,j))*dtdxave) * wave_x_tilde(m,mw,i,j)
+    !                         (1.d0 - dabs(s_x(mw,i,j))*dtdx) * wave_x_tilde(m,mw,i,j)
+    !                 enddo
+    !                 fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m)
+    !                 fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m)
+    !             enddo
+    !         endif ! end if second-order 
+    ! ! ##### solve for transverse waves and add to gp and gm
+    !         if (method(3).ne.0) then ! if transverse propagation
+    !             ! reconstruct amdq and apdq
+    !             do m=1,meqn
+    !                 amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
+    !                 apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
+    !             enddo
+    !             if (method(2).gt.1 .and. method(3).eq.2) then
+    !                 ! incorporate cqxx into amdq and apdq so that it is split also.
+    !                 do m=1,meqn
+    !                     amdq(m) = amdq(m) + cqxx(m)
+    !                     apdq(m) = apdq(m) - cqxx(m)
+    !                 enddo
+    !             endif
 
-                mu = 2
-                mv = 3
-                ! ##### solve for bpamdq and bmamdq
-                a1 = (-amdq(1) + zz*amdq(mv)) / (2.d0*zz)
-                a2 = (amdq(1) + zz*amdq(mv)) / (2.d0*zz)
-                !        # The down-going flux difference bmasdq is the product  -c * wave
-                bmamdq(1) = cc * a1*zz
-                bmamdq(mu) = 0.d0
-                bmamdq(mv) = -cc * a1
-                !        # The up-going flux difference bpasdq is the product  c * wave
-                bpamdq(1) = cc * a2*zz
-                bpamdq(mu) = 0.d0
-                bpamdq(mv) = cc * a2
+    !             mu = 2
+    !             mv = 3
+    !             ! ##### solve for bpamdq and bmamdq
+    !             a1 = (-amdq(1) + zz*amdq(mv)) / (2.d0*zz)
+    !             a2 = (amdq(1) + zz*amdq(mv)) / (2.d0*zz)
+    !             !        # The down-going flux difference bmasdq is the product  -c * wave
+    !             bmamdq(1) = cc * a1*zz
+    !             bmamdq(mu) = 0.d0
+    !             bmamdq(mv) = -cc * a1
+    !             !        # The up-going flux difference bpasdq is the product  c * wave
+    !             bpamdq(1) = cc * a2*zz
+    !             bpamdq(mu) = 0.d0
+    !             bpamdq(mv) = cc * a2
 
-                if (mcapa > 0)  then
-                    !todo
-                    print * , "To be implemented"
-                else
-                    do m =1,meqn
-                        gm(m,i-1,j) = gm(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
-                        gp(m,i-1,j) = gp(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
+    !             if (mcapa > 0)  then
+    !                 !todo
+    !                 print * , "To be implemented"
+    !             else
+    !                 do m =1,meqn
+    !                     gm(m,i-1,j) = gm(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
+    !                     gp(m,i-1,j) = gp(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
 
-                        gm(m,i-1,j+1) = gm(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
-                        gp(m,i-1,j+1) = gp(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
-                    enddo
-                endif
+    !                     gm(m,i-1,j+1) = gm(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
+    !                     gp(m,i-1,j+1) = gp(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
+    !                 enddo
+    !             endif
 
-                ! # solve for bpapdq and bmapdq
-                a1 = (-apdq(1) + zz*apdq(mv)) / (2.d0*zz)
-                a2 = (apdq(1) + zz*apdq(mv)) / (2.d0*zz)
-                !        # The down-going flux difference bmasdq is the product  -c * wave
-                bmapdq(1) = cc * a1*zz
-                bmapdq(mu) = 0.d0
-                bmapdq(mv) = -cc * a1
-                !        # The up-going flux difference bpasdq is the product  c * wave
-                bpapdq(1) = cc * a2*zz
-                bpapdq(mu) = 0.d0
-                bpapdq(mv) = cc * a2
+    !             ! # solve for bpapdq and bmapdq
+    !             a1 = (-apdq(1) + zz*apdq(mv)) / (2.d0*zz)
+    !             a2 = (apdq(1) + zz*apdq(mv)) / (2.d0*zz)
+    !             !        # The down-going flux difference bmasdq is the product  -c * wave
+    !             bmapdq(1) = cc * a1*zz
+    !             bmapdq(mu) = 0.d0
+    !             bmapdq(mv) = -cc * a1
+    !             !        # The up-going flux difference bpasdq is the product  c * wave
+    !             bpapdq(1) = cc * a2*zz
+    !             bpapdq(mu) = 0.d0
+    !             bpapdq(mv) = cc * a2
 
-                if (mcapa > 0)  then
-                    !todo
-                    print * , "To be implemented"
-                else
-                    do m =1,meqn
-                        gm(m,i,j) = gm(m,i,j) - 0.5d0*dtdx * bmapdq(m)
-                        gp(m,i,j) = gp(m,i,j) - 0.5d0*dtdx * bmapdq(m)
+    !             if (mcapa > 0)  then
+    !                 !todo
+    !                 print * , "To be implemented"
+    !             else
+    !                 do m =1,meqn
+    !                     gm(m,i,j) = gm(m,i,j) - 0.5d0*dtdx * bmapdq(m)
+    !                     gp(m,i,j) = gp(m,i,j) - 0.5d0*dtdx * bmapdq(m)
 
-                        gm(m,i,j+1) = gm(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
-                        gp(m,i,j+1) = gp(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
-                    enddo
-                endif
-            endif ! end if transverse propagation
-    ! ##### END solve for transverse waves and add to gp and gm
-        enddo ! end mx loop
-    enddo ! end my loop
+    !                     gm(m,i,j+1) = gm(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
+    !                     gp(m,i,j+1) = gp(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
+    !                 enddo
+    !             endif
+    !         endif ! end if transverse propagation
+    ! ! ##### END solve for transverse waves and add to gp and gm
+    !     enddo ! end mx loop
+    ! enddo ! end my loop
 !     -----------------------------------------------------------
 !     # END modify F fluxes for second order q_{xx} correction terms:
 !     # and solve for transverse waves
