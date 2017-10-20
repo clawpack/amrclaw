@@ -21,11 +21,11 @@ PLOTDIR = _plots                    # Directory for plots
 
 OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
 
-FC = pgi
-USE_CUDA = TRUE
-# FC = gfortran
-# USE_CUDA = FALSE
-DEBUG = FALSE
+# FC = pgi
+# USE_CUDA = TRUE
+FC = gfortran
+USE_CUDA = FALSE
+DEBUG = TRUE
 DIM = 2
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
@@ -56,10 +56,10 @@ EXCLUDE_SOURCES = \
 # ----------------------------------------
 
 MODULES = \
+  problem_para_module.f90
 
 SOURCES = \
   qinit.f \
-  setprob.f \
   $(CLAW)/riemann/src/rpt2_acoustics.f
 
 ifeq ($(USE_CUDA), TRUE) 

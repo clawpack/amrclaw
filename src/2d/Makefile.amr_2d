@@ -7,13 +7,13 @@ COMMON_MODULES += \
   $(AMRLIB)/amr_module.f90 \
   $(AMRLIB)/gauges_module.f90 \
   $(AMRLIB)/regions_module.f90 \
-  $(AMRLIB)/parallel_advanc_module.f90 \
-  $(AMRLIB)/sweep_module.f90 
+  $(AMRLIB)/parallel_advanc_module.f90
 
 ifeq ($(USE_CUDA), TRUE)
 COMMON_MODULES += \
   $(AMRLIB)/cuda_module.f90 \
-  $(AMRLIB)/memory_module.f90
+  $(AMRLIB)/memory_module.f90 \
+  $(AMRLIB)/sweep_module.f90 
 endif
 
 COMMON_SOURCES += \
@@ -97,7 +97,6 @@ COMMON_SOURCES += \
   $(AMRLIB)/icall.f \
   $(AMRLIB)/preicall.f \
   $(AMRLIB)/step2.f90 \
-  $(AMRLIB)/step2_fused.f90 \
   $(AMRLIB)/step2x.f90 \
   $(AMRLIB)/step2y.f90 \
   $(AMRLIB)/flux2.f90 \
@@ -125,5 +124,10 @@ COMMON_SOURCES += \
   $(AMRLIB)/baseCheck.f \
   $(AMRLIB)/init_alloc.f90 \
   $(AMRLIB)/restrt_alloc.f90 \
-  $(AMRLIB)/resize_alloc.f90 \
+  $(AMRLIB)/resize_alloc.f90
+
+ifeq ($(USE_CUDA), TRUE)
+COMMON_SOURCES += \
+  $(AMRLIB)/step2_fused.f90
+endif
 # $(AMRLIB)/resize_alloc_static.f90 \

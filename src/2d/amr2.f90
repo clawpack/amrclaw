@@ -94,6 +94,8 @@ program amr2
     use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
 
+    use problem_para_module, only: setprob
+
 
 #ifdef CUDA
    use cuda_module, only: initialize_cuda
