@@ -15,6 +15,7 @@ c
       dimension  rctcrse(nvar,mi2tot)
       dimension  rctflg(mibuff)
       dimension  est(nvar)
+      double precision levtol
 c
 c
 c ::::::::::::::::::::::::::::: ERRF1 ::::::::::::::::::::::::::::::::
@@ -35,6 +36,12 @@ c
       hx    = hxposs(levm)
       dt    = possk(levm)
       numsp = 0
+
+c     Calculating correct tol for this level
+      levtol = tol/numcells(1)
+      do 11 levcur = 1,levm-1
+          levtol = levtol/intratx(levcur)
+ 11     continue
  
       errmax = 0.0d0
       err2   = 0.0d0
@@ -90,7 +97,7 @@ c          write(outunit,104) term1,term2
  104      format('   ',4e15.7)
 c         rctcrse(2,i,j) = auxfine(1,ifine)
 c
-          if (auxfine(innerprod_index,ifine) .ge. tol) then
+          if (auxfine(innerprod_index,ifine) .ge. levtol) then
              rflag  = badpt
           endif 
       rctcrse(1,i) = rflag
