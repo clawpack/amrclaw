@@ -9,6 +9,8 @@ c
 c   ### changed to stack based storage 2/23/13 
 c   ### and broken into smaller routines to minimize 
 c   ### stack space
+
+      integer, intent(in) :: nvar,naux,lcheck,nx
      
       double precision valbgc(nvar,nx/2+2*nghost)
       double precision auxbgc(naux,nx/2+2*nghost)
