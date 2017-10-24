@@ -326,4 +326,99 @@ contains
     subroutine finalize_cuda() 
     end subroutine finalize_cuda
 
+    attributes(device) &
+	subroutine max_reduce_device_2d(a_s, mx, my, max_array, rmx, rmy)
+	use cudafor
+
+	implicit none
+
+	integer, value, intent(in) :: mx, my, rmx, rmy
+	double precision, intent(out) :: max_array(rmx, rmy)
+
+	! local
+	integer :: i, j, tidx, tidy, sy
+	double precision :: a_s(blockDim%x, blockDim%y)
+
+	tidx = threadIdx%x
+	tidy = threadIdx%y
+	i = (blockIdx%x-1) * blockDim%x + threadIdx%x
+	j = (blockIdx%y-1) * blockDim%y + threadIdx%y
+
+	if (i > mx .or. j > my) return
+
+	if (blockIdx%x * blockDim%x >= mx .or. &
+	    blockIdx%y * blockDim%y >= my ) then ! Part of this block is outside the grid
+	    sy = blockDim%y/2
+	    ! I found that unrolling this actually gives worse performance
+	    do while (sy > 0)
+		if (tidy <= sy .and. (j+sy) <= my) then
+		    a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx,tidy+sy))
+		endif
+		call syncthreads()
+		sy = sy/2
+	    enddo
+
+	    ! reduce max of first row
+	    if (tidy == 1) then
+		if (i+8 <= mx) then
+		    a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx+8,tidy))
+		    call syncthreads()
+		endif
+		if (i+4 <= mx) then
+		    a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx+4,tidy))
+		    call syncthreads()
+		endif
+		if (i+2 <= mx) then
+		    a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx+2,tidy))
+		    call syncthreads()
+		endif
+		if (i+1 <= mx) then
+		    a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx+1,tidy))
+		    call syncthreads()
+		endif
+	    endif
+	    if (tidx == 1 .and. tidy == 1) then 
+		max_array(blockIdx%x,blockIdx%y) = a_s(1,1)
+	    endif
+
+	else ! The entire 16x16 block is mapped to a 16x16 subgrid
+	    if (tidy <= 8) then
+		a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx,tidy+8))
+		call syncthreads()
+	    endif
+
+	    if (tidy <= 4) then
+		a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx,tidy+4))
+		call syncthreads()
+	    endif
+
+	    if (tidy <= 2) then
+		a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx,tidy+2))
+		call syncthreads()
+	    endif
+
+	    if (tidy <= 1) then
+		a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx,tidy+1))
+		call syncthreads()
+	    endif
+
+	    if (tidy == 1) then
+		a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx+8,tidy))
+		call syncthreads()
+		a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx+4,tidy))
+		call syncthreads()
+		a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx+2,tidy))
+		call syncthreads()
+		a_s(tidx,tidy) = max(a_s(tidx,tidy) , a_s(tidx+1,tidy))
+		call syncthreads()
+	    endif
+
+
+	    if (tidx == 1 .and. tidy == 1) then 
+		max_array(blockIdx%x,blockIdx%y) = a_s(1,1)
+	    endif
+	endif
+
+    end subroutine
+
 end module cuda_module
