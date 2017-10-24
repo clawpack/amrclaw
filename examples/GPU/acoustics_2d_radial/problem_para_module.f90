@@ -1,6 +1,6 @@
 module problem_para_module
 
-    double precision :: rho, bulk, cc, zz
+    double precision, save :: rho, bulk, cc, zz
 
     contains
     subroutine setprob

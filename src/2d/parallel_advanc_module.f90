@@ -146,7 +146,7 @@ contains
             nvar,xlow,ylow,time,mptr,maux,aux)
 
         use amr_module
-#ifdef CUDA
+#ifdef NCUDA
         use memory_module, only: gpu_allocate, gpu_deallocate
         use cuda_module, only: device_id, wait_for_all_gpu_tasks
         use cudafor
@@ -165,7 +165,7 @@ contains
         double precision :: dtdx, dtdy
         integer :: i,j,m
 
-#ifdef CUDA
+#ifdef NCUDA
         double precision, dimension(:,:,:), pointer, contiguous, device :: &
             q_d, fp_d, gp_d, fm_d, gm_d, aux_d
         integer :: data_size, aux_size
@@ -176,7 +176,7 @@ contains
         logical    debug,  dump
         data       debug/.false./,  dump/.false./
 
-#ifdef CUDA
+#ifdef NCUDA
         call gpu_allocate(q_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
         call gpu_allocate(fp_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
         call gpu_allocate(gp_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
@@ -233,7 +233,7 @@ contains
       !     q,aux,dx,dy,dt,cflgrid, &
       !     fm,fp,gm,gp,rpn2,rpt2)
 
-#ifdef CUDA
+#ifdef NCUDA
         cudaResult = cudaMemcpy(  q_d,  q,data_size, cudaMemcpyHostToDevice)
         cudaResult = cudaMemcpy( fm_d, fm,data_size, cudaMemcpyHostToDevice)
         cudaResult = cudaMemcpy( fp_d, fp,data_size, cudaMemcpyHostToDevice)
@@ -245,16 +245,22 @@ contains
 #endif
 
 ! assume no aux here
-#ifdef CUDA
+! debug: send host array to step2_fused for now
+#ifdef NCUDA
       call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
-          q_d,,dx,dy,dt,cflgrid, &
+          q_d,dx,dy,dt,cflgrid, &
           fm_d,fp_d,gm_d,gp_d,rpn2,rpt2)
 #else
       call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
           q,dx,dy,dt,cflgrid, &
           fm,fp,gm,gp,rpn2,rpt2)
+      ! call step2(mbig,nvar,maux, &
+      !               mbc,mx,my, &
+      !               q,aux,dx,dy,dt,cflgrid, &
+      !               fm,fp,gm,gp,rpn2,rpt2)
+
 #endif
 !
 !
@@ -274,7 +280,7 @@ contains
         dtdx = dt/dx
         dtdy = dt/dy
 
-#ifdef CUDA
+#ifdef NCUDA
         !$cuf kernel do(3) <<<*, *>>>
         do j=mbc+1,mjtot-mbc
             do i=mbc+1,mitot-mbc
@@ -313,7 +319,7 @@ contains
         enddo
 #endif
 
-#ifdef CUDA
+#ifdef NCUDA
         cudaResult = cudaMemcpy(q,q_d,  data_size, cudaMemcpyDeviceToHost)
         cudaResult = cudaMemcpy(fm,fm_d,data_size, cudaMemcpyDeviceToHost)
         cudaResult = cudaMemcpy(fp,fp_d,data_size, cudaMemcpyDeviceToHost)
@@ -324,7 +330,7 @@ contains
         endif
 #endif
 
-#ifdef CUDA
+#ifdef NCUDA
         call gpu_deallocate(q_d) 
         call gpu_deallocate(fp_d) 
         call gpu_deallocate(gp_d) 

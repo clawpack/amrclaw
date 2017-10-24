@@ -21,10 +21,10 @@ PLOTDIR = _plots                    # Directory for plots
 
 OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
 
-# FC = pgi
-# USE_CUDA = TRUE
-FC = gfortran
-USE_CUDA = FALSE
+FC = pgi
+USE_CUDA = TRUE
+# FC = gfortran
+# USE_CUDA = FALSE
 DEBUG = TRUE
 DIM = 2
 
@@ -56,7 +56,7 @@ EXCLUDE_SOURCES = \
 # ----------------------------------------
 
 MODULES = \
-  problem_para_module.f90
+  $(CLAW)/amrclaw/examples/GPU/acoustics_2d_radial/problem_para_module.f90
 
 SOURCES = \
   qinit.f \

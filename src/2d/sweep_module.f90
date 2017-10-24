@@ -2,6 +2,9 @@ module sweep_module
 
     use amr_module
     use parallel_advanc_module, only: dtcom, dxcom, dycom, icom, jcom
+    use problem_para_module, only: rho,bulk,cc,zz
+    use cuda_module, only: max_reduce_device_2d
+
 
     implicit none
 
@@ -24,10 +27,7 @@ subroutine x_sweep_1st_order(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, 
     integer :: i,j
     real(kind=8) :: delta1, delta2, a1, a2
     integer :: m, mw, mu, mv
-    real(kind=8) :: rho, bulk, cc, zz
     real(kind=8) :: amdq(meqn), apdq(meqn)
-
-    common /cparam/ rho,bulk,cc,zz
 
 
     ! ============================================================================
@@ -76,6 +76,99 @@ subroutine x_sweep_1st_order(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, 
     enddo
 end subroutine x_sweep_1st_order
 
+attributes(global) &
+subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx, cflxy, cflmx, cflmy, cc, zz) 
+
+    implicit none
+
+    integer, value, intent(in) :: meqn, mbc, mx, my, mwaves, cflmx, cflmy
+    real(kind=8), intent(in) :: q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: s_x(mwaves, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(inout) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(inout) :: cflxy(cflmx, cflmy)
+    real(kind=8), value, intent(in) :: dtdx
+    real(kind=8), value, intent(in) :: cc, zz
+
+    ! Local variables for the Riemann solver
+    integer :: i,j, tidx, tidy
+    real(kind=8) :: delta1, delta2, a1, a2
+    integer :: m, mw, mu, mv
+    real(kind=8) :: amdq(meqn), apdq(meqn)
+
+    attributes(device) :: q, fm, fp, s_x, wave_x
+    double precision, shared :: cfl_s(blockDim%x, blockDim%y)
+
+
+    tidx = threadIdx%x
+    tidy = threadIdx%y
+    i = (blockIdx%x-1) * blockDim%x + threadIdx%x
+    j = (blockIdx%y-1) * blockDim%y + threadIdx%y
+    ! we shift i and j such that they are mapped to the loop:
+    ! do j = 0,my+1
+    !     do i = 2-mbc, mx+mbc
+    i = i + (2-mbc) - 1 ! now i = 1 is mapped to i = 2-mbc
+    j = j + 0 - 1 ! now j = 1 is mapped to j = 0
+
+    if (i > (mx+mbc) .or. j > (my+1) ) then
+        return
+    endif
+
+    cfl_s(tidx, tidy) = 0.d0
+
+
+
+    ! ============================================================================
+    ! Perform X-Sweeps
+    ! do j = 0,my+1
+    !     do i = 2-mbc, mx+mbc
+    ! solve Riemann problem between cell (i-1,j) and (i,j)
+    mu = 2
+    mv = 3
+    delta1 = q(1,i,j) - q(1,i-1,j)
+    delta2 = q(mu,i,j) - q(mu,i-1,j)
+    a1 = (-delta1 + zz*delta2) / (2.d0*zz)
+    a2 = (delta1 + zz*delta2) / (2.d0*zz)
+    !        # Compute the waves.
+    wave_x(1,1,i,j) = -a1*zz
+    wave_x(mu,1,i,j) = a1
+    wave_x(mv,1,i,j) = 0.d0
+    s_x(1,i,j) = -cc
+
+    wave_x(1,2,i,j) = a2*zz
+    wave_x(mu,2,i,j) = a2
+    wave_x(mv,2,i,j) = 0.d0
+    s_x(2,i,j) = cc
+    do m = 1,meqn
+        amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
+        apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
+        if (i >= 1 .and. i<=(mx+1)) then
+            fm(m,i,j) = fm(m,i,j) + amdq(m)
+            fp(m,i,j) = fp(m,i,j) - apdq(m)
+        endif
+    enddo
+    ! if (mcapa > 0)  then
+    !     dtdxl = dtdx / aux(mcapa,i-1,j)
+    !     dtdxr = dtdx / aux(mcapa,i,j)
+    ! else
+    !     dtdxl = dtdx
+    !     dtdxr = dtdx
+    ! endif
+    do mw=1,mwaves
+        if (i >= 1 .and. i<=(mx+1)) then
+            ! cflgrid = dmax1(cflgrid, dtdxr*s_x(mw,i,j),-dtdxl*s_x(mw,i,j))
+            cfl_s(tidx, tidy) = dmax1(cfl_s(tidx,tidy), dtdx*s_x(mw,i,j),-dtdx*s_x(mw,i,j))
+        endif
+    enddo
+
+    call syncthreads()
+    call max_reduce_device_2d(cfl_s, mx+2*mbc-1, my+2, cflxy, cflmx, cflmy)
+
+    !     enddo
+    ! enddo
+end subroutine x_sweep_1st_order_gpu
+
 subroutine x_sweep_2nd_order(fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
 
     implicit none
@@ -94,14 +187,12 @@ subroutine x_sweep_2nd_order(fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx,
     real(kind=8) :: cqxx(meqn)
     real(kind=8) :: amdq(meqn), apdq(meqn)
     real(kind=8) :: bpamdq(meqn), bmamdq(meqn), bpapdq(meqn), bmapdq(meqn)
-    real(kind=8) :: rho, bulk, cc, zz
     real(kind=8) :: delta1, delta2, a1, a2
     real(kind=8) :: dot, wnorm2, wlimitr, abs_sign, c, r
     integer :: i,j
     integer :: m, mw, mu, mv
     logical limit
 
-    common /cparam/ rho,bulk,cc,zz
 
     limit = .false.
     do mw=1,mwaves
@@ -301,10 +392,8 @@ subroutine y_sweep_1st_order(q, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx, my, 
     integer :: i,j
     real(kind=8) :: delta1, delta2, a1, a2
     integer :: m, mw, mu, mv
-    real(kind=8) :: rho, bulk, cc, zz
     real(kind=8) :: bmdq(meqn), bpdq(meqn)
 
-    common /cparam/ rho,bulk,cc,zz
     ! ============================================================================
     !  y-sweeps    
     do i = 0,mx+1
@@ -365,14 +454,12 @@ subroutine y_sweep_2nd_order(fm, fp, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx,
     real(kind=8) :: cqyy(meqn)
     real(kind=8) :: bmdq(meqn), bpdq(meqn)
     real(kind=8) :: apbmdq(meqn), ambmdq(meqn), apbpdq(meqn), ambpdq(meqn)
-    real(kind=8) :: rho, bulk, cc, zz
     real(kind=8) :: delta1, delta2, a1, a2
     real(kind=8) :: dot, wnorm2, wlimitr, abs_sign, c, r
     integer :: i,j
     integer :: m, mw, mu, mv
     logical limit
 
-    common /cparam/ rho,bulk,cc,zz
 
     limit = .false.
     do mw=1,mwaves
