@@ -22,7 +22,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     use amr_module
     use parallel_advanc_module, only: dtcom, dxcom, dycom, icom, jcom
     use sweep_module, only: x_sweep_1st_order, x_sweep_2nd_order, y_sweep_1st_order, y_sweep_2nd_order 
-    use sweep_module, only: x_sweep_1st_order_gpu
+    use sweep_module, only: x_sweep_1st_order_gpu, x_sweep_2nd_order_gpu
     use problem_para_module, only: cc, zz, bulk, rho
 #ifdef CUDA
     use cuda_module, only: threads_and_blocks
@@ -41,7 +41,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     real(kind=8), intent(inout) :: cflgrid
     real(kind=8), intent(inout) :: q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     ! real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: fm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: fp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
@@ -90,6 +90,9 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
         call gpu_allocate(fp_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
         call gpu_allocate(sx_d, device_id, 1, mwaves, 1-mbc, mx + mbc, 2-mbc, my+mbc-1)
         call gpu_allocate(wave_x_d, device_id, 1, meqn, 1, mwaves, 1-mbc, mx+mbc, 2-mbc, my+mbc-1)
+        ! call gpu_allocate(wave_x_tilde_d, device_id, 1, meqn, 1, mwaves, 1-mbc, mx+mbc, 2-mbc, my+mbc-1)
+        call gpu_allocate(gm_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
+        call gpu_allocate(gp_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
 
         data_size = meqn * (mx + 2*mbc) * (my + 2*mbc)
 
@@ -98,6 +101,9 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
         istat = cudaMemcpy( fp_d, fp, data_size)
         istat = cudaMemcpy( sx_d, sx, mwaves*(mx+2*mbc)*(my+2*mbc-2))
         istat = cudaMemcpy( wave_x_d, wave_x, meqn*mwaves*(mx+2*mbc)*(my+2*mbc-2))
+        ! istat = cudaMemcpy( wave_x_tilde_d, wave_x_d, meqn*mwaves*(mx+2*mbc)*(my+2*mbc-2))
+        istat = cudaMemcpy( gm_d, gm, data_size)
+        istat = cudaMemcpy( gp_d, gp, data_size)
 #endif
 
 
@@ -125,30 +131,40 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
         enddo
     enddo
 
+    deallocate(cflxy)
+    deallocate(cflxy_d)
+
 #ifdef CUDA
-        istat = cudaMemcpy(  q,   q_d, data_size)
         istat = cudaMemcpy( fm,  fm_d, data_size)
         istat = cudaMemcpy( fp,  fp_d, data_size)
+        istat = cudaMemcpy( gm,  gm_d, data_size)
+        istat = cudaMemcpy( gp,  gp_d, data_size)
         istat = cudaMemcpy( sx,  sx_d, mwaves*(mx+2*mbc)*(my+2*mbc-2))
         istat = cudaMemcpy( wave_x, wave_x_d, meqn*mwaves*(mx+2*mbc)*(my+2*mbc-2))
 #endif
 
-#ifdef CUDA
-        call gpu_deallocate(q_d) 
-        call gpu_deallocate(fp_d) 
-        call gpu_deallocate(fm_d) 
-        call gpu_deallocate(sx_d) 
-        call gpu_deallocate(wave_x_d) 
-#endif
-    deallocate(cflxy)
-    deallocate(cflxy_d)
-    
+
     
 !     -----------------------------------------------------------
 !     # modify F fluxes for second order q_{xx} correction terms
 !     # and solve for transverse waves
 !     -----------------------------------------------------------
     call x_sweep_2nd_order(fm, fp, gm, gp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
+
+    ! call threads_and_blocks([1, 0] , [mx+1, my+1], numBlocks, numThreads)
+    ! call x_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
+    !     (fm_d, fp_d, gm_d, gp_d, sx_d, wave_x_d, meqn, mwaves, mbc, mx, my, dtdx, cc, zz)
+
+#ifdef CUDA
+        call gpu_deallocate(q_d) 
+        call gpu_deallocate(fp_d) 
+        call gpu_deallocate(fm_d) 
+        call gpu_deallocate(gp_d) 
+        call gpu_deallocate(gm_d) 
+        call gpu_deallocate(sx_d) 
+        call gpu_deallocate(wave_x_d) 
+#endif
+    
 
 
 !     -----------------------------------------------------------
