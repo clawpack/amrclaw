@@ -105,7 +105,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !   -----------------------------------------------------------
 !   # compute amdq and apdq
 !   -----------------------------------------------------------
-    call threads_and_blocks([1-mbc, 2-mbc] , [mx+mbc, my+mbc-1], numBlocks, numThreads)
+    call threads_and_blocks([2-mbc, 2-mbc] , [mx+mbc, my+mbc-1], numBlocks, numThreads)
     allocate(cflxy(numBlocks%x,numBlocks%y))
     allocate(cflxy_d(numBlocks%x,numBlocks%y))
 
