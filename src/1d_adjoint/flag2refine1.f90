@@ -36,51 +36,73 @@
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
-                            tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
+subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlow,dx,t,level, &
+                            flagtol,q,aux,amrflags,DONTFLAG,DOFLAG)
 
-    use innerprod_module, only: calculate_max_innerproduct
-    use adjoint_module, only: innerprod_index
+    use innerprod_module, only: calculate_innerproduct
+    use adjoint_module
     use regions_module
 
     implicit none
 
     ! Subroutine arguments
     integer, intent(in) :: mx,mbc,meqn,maux,level,mbuff
-    real(kind=8), intent(in) :: xlower,dx,t,tolsp
+    real(kind=8), intent(in) :: xlow,dx,t,flagtol
     
     real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc)
     real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc)
+    real(kind=8) :: aux_temp(maux,1-mbc:mx+mbc)
     
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff)
     real(kind=8), intent(in) :: DONTFLAG
     real(kind=8), intent(in) :: DOFLAG
-    
+
+    integer :: r
+
     logical :: allowflag
     external allowflag
 
     ! Locals
-    integer :: i,m
-    real(kind=8) :: x_c,x_low,x_hi
-    real(kind=8) :: dqi(meqn), dq(meqn)
+    integer :: i
 
     ! Initialize flags
     amrflags = DONTFLAG
+    aux(innerprod_index,:) = 0.0
 
-      x_loop: do i = 1,mx
-        x_low = xlower + (i - 1) * dx
-        x_c = xlower + (i - 0.5d0) * dx
-        x_hi = xlower + i * dx
+    !write(*,*) " "
+    !write(*,*) "In flag2refine1"
+    !write(*,*) "Forward grid boundaries: ", xlow, xlow+mx*dx, mx
 
-        aux(innerprod_index,i) =  &
-           calculate_max_innerproduct(t,x_c,q(:,i))
+    ! Loop over adjoint snapshots
+    aloop: do r=1,totnum_adjoints
 
-        if (aux(innerprod_index,i) > tolsp) then
+        ! Consider only snapshots that are within the desired time range
+        if ((t+adjoints(r)%time) >= trange_start .and. &
+            (t+adjoints(r)%time) <= trange_final) then
+
+            !write(*,*) " "
+            !write(*,*) "F2refine: Going to calculate inner product with adjoint ", r
+            ! Calculate inner product with current snapshot
+            aux_temp(innerprod_index,:) = &
+                    calculate_innerproduct(t,q,r,mx,xlow,dx)
+
+            ! Save max inner product
+            do i=1-mbc,mx+mbc
+                aux(innerprod_index,i) = &
+                   max(aux(innerprod_index,i), &
+                   aux_temp(innerprod_index,i))
+            enddo
+
+        endif
+    enddo aloop
+
+    ! Flag locations that need refining
+    x_loop: do i = 1,mx
+        if (aux(innerprod_index,i) > flagtol) then
             amrflags(i) = DOFLAG
             cycle x_loop
         endif
-
-      enddo x_loop
+    enddo x_loop
 
 end subroutine flag2refine1
