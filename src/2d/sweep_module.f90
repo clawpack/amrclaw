@@ -77,16 +77,16 @@ subroutine x_sweep_1st_order(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, 
 end subroutine x_sweep_1st_order
 
 attributes(global) &
-subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx, cflxy, cflmx, cflmy, cc, zz) 
+subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflxy, cflmx, cflmy, cc, zz) 
 
     implicit none
 
-    integer, value, intent(in) :: meqn, mbc, mx, my, mwaves, cflmx, cflmy
-    real(kind=8), intent(in) :: q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_x(mwaves, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(inout) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    integer, value, intent(in) :: mbc, mx, my, cflmx, cflmy
+    real(kind=8), intent(in) :: q(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: fm(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: fp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: s_x(NWAVES, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(inout) :: wave_x(NEQNS, NWAVES, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8), intent(inout) :: cflxy(cflmx, cflmy)
     real(kind=8), value, intent(in) :: dtdx
     real(kind=8), value, intent(in) :: cc, zz
@@ -94,8 +94,8 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, 
     ! Local variables for the Riemann solver
     integer :: i,j, tidx, tidy
     real(kind=8) :: delta1, delta2, a1, a2
-    integer :: m, mw, mu, mv
-    real(kind=8) :: amdq(meqn), apdq(meqn)
+    integer :: m, mw
+    real(kind=8) :: amdq(NEQNS), apdq(NEQNS)
 
     attributes(device) :: q, fm, fp, s_x, wave_x
     double precision, shared :: cfl_s(blockDim%x, blockDim%y)
@@ -120,29 +120,24 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, 
 
 
     ! ============================================================================
-    ! Perform X-Sweeps
-    ! do j = 0,my+1
-    !     do i = 2-mbc, mx+mbc
-    ! solve Riemann problem between cell (i-1,j) and (i,j)
-    mu = 2
-    mv = 3
     delta1 = q(1,i,j) - q(1,i-1,j)
-    delta2 = q(mu,i,j) - q(mu,i-1,j)
+    delta2 = q(2,i,j) - q(2,i-1,j)
     a1 = (-delta1 + zz*delta2) / (2.d0*zz)
     a2 = (delta1 + zz*delta2) / (2.d0*zz)
     !        # Compute the waves.
     wave_x(1,1,i,j) = -a1*zz
-    wave_x(mu,1,i,j) = a1
-    wave_x(mv,1,i,j) = 0.d0
+    wave_x(2,1,i,j) = a1
+    wave_x(3,1,i,j) = 0.d0
     s_x(1,i,j) = -cc
 
     wave_x(1,2,i,j) = a2*zz
-    wave_x(mu,2,i,j) = a2
-    wave_x(mv,2,i,j) = 0.d0
+    wave_x(2,2,i,j) = a2
+    wave_x(3,2,i,j) = 0.d0
     s_x(2,i,j) = cc
-    do m = 1,meqn
+    do m = 1,NEQNS
         amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
         apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
+        ! TODO: Maybe I should add 
         if (i >= 1 .and. i<=(mx+1)) then
             fm(m,i,j) = fm(m,i,j) + amdq(m)
             fp(m,i,j) = fp(m,i,j) - apdq(m)
@@ -155,7 +150,7 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, 
     !     dtdxl = dtdx
     !     dtdxr = dtdx
     ! endif
-    do mw=1,mwaves
+    do mw=1,NWAVES
         if (i >= 1 .and. i<=(mx+1)) then
             ! cflgrid = dmax1(cflgrid, dtdxr*s_x(mw,i,j),-dtdxl*s_x(mw,i,j))
             cfl_s(tidx, tidy) = dmax1(cfl_s(tidx,tidy), dtdx*s_x(mw,i,j),-dtdx*s_x(mw,i,j))
@@ -165,8 +160,6 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, 
     call syncthreads()
     call max_reduce_device_2d(cfl_s, mx+2*mbc-1, my+2, cflxy, cflmx, cflmy)
 
-    !     enddo
-    ! enddo
 end subroutine x_sweep_1st_order_gpu
 
 subroutine x_sweep_2nd_order(fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
@@ -587,6 +580,92 @@ subroutine y_sweep_1st_order(q, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx, my, 
         enddo
     enddo
 end subroutine y_sweep_1st_order
+
+
+attributes(global) &
+subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflxy, cflmx, cflmy, cc, zz) 
+
+    implicit none
+
+    integer, value, intent(in) :: mbc, mx, my, cflmx, cflmy
+    real(kind=8), intent(in) :: q(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: gm(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: gp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: s_y(NWAVES, 2-mbc:mx+mbc-1, 1-mbc:my + mbc)
+    real(kind=8), intent(inout) :: wave_y(NEQNS, NWAVES, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: cflxy(cflmx, cflmy)
+    real(kind=8), value, intent(in) :: dtdy
+    real(kind=8), value, intent(in) :: cc, zz
+
+    ! Local variables for the Riemann solver
+    integer :: i,j, tidx, tidy
+    real(kind=8) :: delta1, delta2, a1, a2
+    integer :: m, mw
+    real(kind=8) :: bmdq(NEQNS), bpdq(NEQNS)
+
+    attributes(device) :: q, gm, gp, s_y, wave_y
+    double precision, shared :: cfl_s(blockDim%x, blockDim%y)
+
+
+    tidx = threadIdx%x
+    tidy = threadIdx%y
+    i = (blockIdx%x-1) * blockDim%x + threadIdx%x
+    j = (blockIdx%y-1) * blockDim%y + threadIdx%y
+    ! we shift i and j such that they are mapped to the loop:
+    ! do i = 0,mx+1
+    !     do j = 2-mbc, my+mbc
+    i = i + 0 - 1 ! now i = 1 is mapped to i = 2-mbc
+    j = j + (2-mbc) - 1 ! now j = 1 is mapped to j = 0
+
+    if (i > (mx+1) .or. j > (my+mbc) ) then
+        return
+    endif
+
+    cfl_s(tidx, tidy) = 0.d0
+
+
+
+    ! ============================================================================
+    delta1 = q(1,i,j) - q(1,i,j-1)
+    delta2 = q(3,i,j) - q(3,i,j-1)
+    a1 = (-delta1 + zz*delta2) / (2.d0*zz)
+    a2 = (delta1 + zz*delta2) / (2.d0*zz)
+    !        # Compute the waves.
+    wave_y(1,1,i,j) = -a1*zz
+    wave_y(2,1,i,j) = 0.d0
+    wave_y(3,1,i,j) = a1
+    s_y(1,i,j) = -cc
+
+    wave_y(1,2,i,j) = a2*zz
+    wave_y(2,2,i,j) = 0.d0
+    wave_y(3,2,i,j) = a2
+    s_y(2,i,j) = cc
+    do m = 1,NEQNS
+        bmdq(m) = s_y(1,i,j)*wave_y(m,1,i,j)
+        bpdq(m) = s_y(2,i,j)*wave_y(m,2,i,j)
+        if (j >= 1 .and. j<=(my+1)) then
+            gm(m,i,j) = gm(m,i,j) + bmdq(m)
+            gp(m,i,j) = gp(m,i,j) - bpdq(m)
+        endif
+    enddo
+    ! if (mcapa > 0)  then
+    !     dtdxl = dtdx / aux(mcapa,i-1,j)
+    !     dtdxr = dtdx / aux(mcapa,i,j)
+    ! else
+    !     dtdxl = dtdx
+    !     dtdxr = dtdx
+    ! endif
+    do mw=1,NWAVES
+        if (j >= 1 .and. j<=(my+1)) then
+            cfl_s(tidx, tidy) = dmax1(cfl_s(tidx,tidy), dtdy*s_y(mw,i,j),-dtdy*s_y(mw,i,j))
+        endif
+    enddo
+
+    call syncthreads()
+    call max_reduce_device_2d(cfl_s, mx+2, my+2*mbc-1, cflxy, cflmx, cflmy)
+
+end subroutine y_sweep_1st_order_gpu
+
 
 subroutine y_sweep_2nd_order(fm, fp, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx, my, dtdy)
 

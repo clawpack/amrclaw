@@ -332,6 +332,8 @@ contains
 
 	implicit none
 
+        ! we assume index of the entire grid is (1:mx, 1:my)
+        ! TODO: add functionality to handle (lox:hix, loy:hiy)
 	integer, value, intent(in) :: mx, my, rmx, rmy
 	double precision, intent(out) :: max_array(rmx, rmy)
 
