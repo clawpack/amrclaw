@@ -5,7 +5,7 @@ c
      2                 mitot,rctflg,mibuff,auxfine,
      2                 naux)
       use amr_module
-      use innerprod_module, only : calculate_max_innerproduct
+      use innerprod_module, only : calculate_innerproduct
       use adjoint_module, only: innerprod_index
       implicit double precision (a-h,o-z)
 
@@ -80,9 +80,9 @@ c             retaining directionality of the wave
  50       continue
 
 c         set innerproduct for fine grid
-          auxfine(innerprod_index,ifine) =
-     .        calculate_max_innerproduct(time,xofi,
-     .        est)
+          auxfine(innerprod_index,ifine) = 0.d0
+c     .        calculate_innerproduct(time,xofi,
+c     .        est)
 
           auxfine(innerprod_index,ifine+1)  =
      .                          auxfine(innerprod_index,ifine)
