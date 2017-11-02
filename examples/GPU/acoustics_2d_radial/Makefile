@@ -25,8 +25,11 @@ FC = pgi
 USE_CUDA = TRUE
 # FC = gfortran
 # USE_CUDA = FALSE
-DEBUG = TRUE
+# DEBUG = TRUE
+DEBUG = FALSE
 DIM = 2
+NUM_EQUATIONS = 3
+NUM_WAVES = 2
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
