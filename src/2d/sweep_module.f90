@@ -4,7 +4,7 @@ module sweep_module
     use parallel_advanc_module, only: dtcom, dxcom, dycom, icom, jcom
     use problem_para_module, only: rho,bulk,cc,zz
     use cuda_module, only: max_reduce_device_2d
-    use sweep_misc_module, only: compute_cqxx
+    use sweep_misc_module, only: compute_cqxx, compute_cqyy
 
     implicit none
 
@@ -195,11 +195,10 @@ subroutine x_sweep_2nd_order(fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx,
     if (method(2).ne.1) then ! if second-order
         wave_x_tilde = wave_x
     endif
-
-!     -----------------------------------------------------------
-!     # modify F fluxes for second order q_{xx} correction terms
-!     # and solve for transverse waves
-!     -----------------------------------------------------------
+    !     -----------------------------------------------------------
+    !     # modify F fluxes for second order q_{xx} correction terms
+    !     # and solve for transverse waves
+    !     -----------------------------------------------------------
     do j = 0,my+1 ! my loop
         do i = 1, mx+1 ! mx loop
             if (method(2).ne.1) then ! if second-order
@@ -404,7 +403,6 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     integer :: i,j
     integer :: m, mw
 
-
     attributes(device) :: fm, fp, gm, gp, s_x, wave_x
 
     i = (blockIdx%x-1) * blockDim%x + threadIdx%x
@@ -418,13 +416,10 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     if (i > (mx+1) .or. j > (my+1) ) then
         return
     endif
-
-
-
-!     -----------------------------------------------------------
-!     # modify F fluxes for second order q_{xx} correction terms
-!     # and solve for transverse waves
-!     -----------------------------------------------------------
+    !     -----------------------------------------------------------
+    !     # modify F fluxes for second order q_{xx} correction terms
+    !     # and solve for transverse waves
+    !     -----------------------------------------------------------
     do mw=1,NWAVES ! mwaves loop
         dot = 0.d0
         wnorm2 = 0.d0
@@ -700,10 +695,10 @@ subroutine y_sweep_2nd_order(fm, fp, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx,
     if (method(2).ne.1) then ! if second-order
         wave_y_tilde = wave_y
     endif
-!     -----------------------------------------------------------
-!     # modify G fluxes for second order q_{yy} correction terms:
-!     # and transverse waves
-!     -----------------------------------------------------------
+    !     -----------------------------------------------------------
+    !     # modify G fluxes for second order q_{yy} correction terms:
+    !     # and transverse waves
+    !     -----------------------------------------------------------
     do i = 0, mx+1 ! mx loop
         do j = 1, my+1 ! my loop
             if (method(2).ne.1) then ! if second-order
@@ -871,5 +866,149 @@ subroutine y_sweep_2nd_order(fm, fp, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx,
 end subroutine y_sweep_2nd_order
 
 
+! For now, this kernel assumes 
+! 1) limit == true
+! 2) use 2nd order
+! 3) include 2nd-order terms in transverse waves
+! 4) van Leer limiter is used
+! 5) use_fwaves == false
+! 6) mcapa = 0
+! We should write separate kernels for cases where 
+! the options above are different
+attributes(global) &
+subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cc, zz)
+
+    implicit none
+
+    integer, value, intent(in) :: mbc, mx, my
+    real(kind=8), intent(inout) :: fm(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: fp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: gm(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: gp(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: s_y(NWAVES, 2-mbc:mx+mbc-1, 1-mbc:my + mbc)
+    real(kind=8), intent(inout) :: wave_y(NEQNS, NWAVES, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
+    real(kind=8), value, intent(in) :: dtdy
+    real(kind=8), value, intent(in) :: cc, zz
+
+    ! Local variables for the Riemann solver
+    real(kind=8) :: cqyy(NEQNS)
+    real(kind=8) :: bmdq(NEQNS), bpdq(NEQNS)
+    real(kind=8) :: wave_y_tilde(NEQNS, NWAVES)
+    real(kind=8) :: apbmdq(NEQNS), ambmdq(NEQNS), apbpdq(NEQNS), ambpdq(NEQNS)
+    real(kind=8) :: delta1, delta2, a1, a2
+    real(kind=8) :: dot, wnorm2, wlimitr, c, r
+    integer :: i,j
+    integer :: m, mw
+
+    attributes(device) :: fm, fp, gm, gp, s_y, wave_y
+
+    i = (blockIdx%x-1) * blockDim%x + threadIdx%x
+    j = (blockIdx%y-1) * blockDim%y + threadIdx%y
+    ! we shift i and j such that they are mapped to the loop:
+    ! do i = 0, mx+1 ! mx loop
+    !     do j = 1, my+1 ! my loop
+    i = i + 0 - 1
+    ! j is already corresponding to j = 1
+
+    if (i > (mx+1) .or. j > (my+1) ) then
+        return
+    endif
+
+    !     -----------------------------------------------------------
+    !     # modify G fluxes for second order q_{yy} correction terms
+    !     # and solve for transverse waves
+    !     -----------------------------------------------------------
+    do mw=1,NWAVES ! NWAVES loop
+        dot = 0.d0
+        wnorm2 = 0.d0
+        do m=1,NEQNS
+            wnorm2 = wnorm2 + wave_y(m,mw,i,j)**2
+        enddo
+        if (wnorm2.eq.0.d0) cycle
+
+        if (s_y(mw,i,j) .gt. 0.d0) then
+            do m=1,NEQNS
+                dot = dot + wave_y(m,mw,i,j)*wave_y(m,mw,i,j-1)
+            enddo
+        else
+            do m=1,NEQNS
+                dot = dot + wave_y(m,mw,i,j)*wave_y(m,mw,i,j+1)
+            enddo
+        endif
+
+        r = dot / wnorm2
+
+        !               ----------
+        !               # van Leer
+        !               ----------
+        wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
+
+        !
+        !  # apply limiter to waves:
+        !
+        do m=1,NEQNS
+            wave_y_tilde(m,mw) = wlimitr * wave_y(m,mw,i,j)
+        enddo
+    enddo ! end mwave loop
+
+    ! second order corrections:
+    ! I put some operations into this function and move it to another files to prevent the compiler from over-optimizing this part,
+    ! which gives totally wrong results.
+    call compute_cqyy(cqyy,wave_y_tilde, s_y(1,i,j), s_y(2,i,j) , dtdy)
+
+
+    do m=1,NEQNS
+        gp(m,i,j) = gp(m,i,j) + 0.5d0 * cqyy(m)
+        gm(m,i,j) = gm(m,i,j) + 0.5d0 * cqyy(m)
+    enddo
+    ! reconstruct bmdq and bpdq
+    do m=1,NEQNS
+        bmdq(m) = s_y(1,i,j)*wave_y(m,1,i,j)
+        bpdq(m) = s_y(2,i,j)*wave_y(m,2,i,j)
+    enddo
+    do m=1,NEQNS
+        bmdq(m) = bmdq(m) + cqyy(m)
+        bpdq(m) = bpdq(m) - cqyy(m)
+    enddo
+
+    ! ##### solve for apbmdq and ambmdq
+    a1 = (-bmdq(1) + zz*bmdq(2)) / (2.d0*zz)
+    a2 = (bmdq(1) + zz*bmdq(2)) / (2.d0*zz)
+    ambmdq(1) = cc * a1*zz
+    ambmdq(3) = 0.d0
+    ambmdq(2) = -cc * a1
+    apbmdq(1) = cc * a2*zz
+    apbmdq(3) = 0.d0
+    apbmdq(2) = cc * a2
+
+    do m =1,NEQNS
+        fm(m,i,j-1) = fm(m,i,j-1) - 0.5d0*dtdy * ambmdq(m)
+        fp(m,i,j-1) = fp(m,i,j-1) - 0.5d0*dtdy * ambmdq(m)
+
+        fm(m,i+1,j-1) = fm(m,i+1,j-1) - 0.5d0*dtdy * apbmdq(m)
+        fp(m,i+1,j-1) = fp(m,i+1,j-1) - 0.5d0*dtdy * apbmdq(m)
+    enddo
+
+    ! # solve for apbpdq and ambpdq
+    a1 = (-bpdq(1) + zz*bpdq(2)) / (2.d0*zz)
+    a2 = (bpdq(1) + zz*bpdq(2)) / (2.d0*zz)
+    !        # The down-going flux difference bmasdq is the product  -c * wave
+    ambpdq(1) = cc * a1*zz
+    ambpdq(3) = 0.d0
+    ambpdq(2) = -cc * a1
+    !        # The up-going flux difference bpasdq is the product  c * wave
+    apbpdq(1) = cc * a2*zz
+    apbpdq(3) = 0.d0
+    apbpdq(2) = cc * a2
+
+    do m =1,NEQNS
+        fm(m,i,j) = fm(m,i,j) - 0.5d0*dtdy * ambpdq(m)
+        fp(m,i,j) = fp(m,i,j) - 0.5d0*dtdy * ambpdq(m)
+
+        fm(m,i+1,j) = fm(m,i+1,j) - 0.5d0*dtdy * apbpdq(m)
+        fp(m,i+1,j) = fp(m,i+1,j) - 0.5d0*dtdy * apbpdq(m)
+    enddo
+    return
+end subroutine y_sweep_2nd_order_gpu
 
 end module sweep_module
