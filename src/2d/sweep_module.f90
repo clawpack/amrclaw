@@ -137,22 +137,13 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflx
     do m = 1,NEQNS
         amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
         apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
-        ! TODO: Maybe I should add 
         if (i >= 1 .and. i<=(mx+1)) then
             fm(m,i,j) = fm(m,i,j) + amdq(m)
             fp(m,i,j) = fp(m,i,j) - apdq(m)
         endif
     enddo
-    ! if (mcapa > 0)  then
-    !     dtdxl = dtdx / aux(mcapa,i-1,j)
-    !     dtdxr = dtdx / aux(mcapa,i,j)
-    ! else
-    !     dtdxl = dtdx
-    !     dtdxr = dtdx
-    ! endif
     do mw=1,NWAVES
         if (i >= 1 .and. i<=(mx+1)) then
-            ! cflgrid = dmax1(cflgrid, dtdxr*s_x(mw,i,j),-dtdxl*s_x(mw,i,j))
             cfl_s(tidx, tidy) = dmax1(cfl_s(tidx,tidy), dtdx*s_x(mw,i,j),-dtdx*s_x(mw,i,j))
         endif
     enddo
@@ -643,13 +634,6 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflx
             gp(m,i,j) = gp(m,i,j) - bpdq(m)
         endif
     enddo
-    ! if (mcapa > 0)  then
-    !     dtdxl = dtdx / aux(mcapa,i-1,j)
-    !     dtdxr = dtdx / aux(mcapa,i,j)
-    ! else
-    !     dtdxl = dtdx
-    !     dtdxr = dtdx
-    ! endif
     do mw=1,NWAVES
         if (j >= 1 .and. j<=(my+1)) then
             cfl_s(tidx, tidy) = dmax1(cfl_s(tidx,tidy), dtdy*s_y(mw,i,j),-dtdy*s_y(mw,i,j))
@@ -975,11 +959,11 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     a1 = (-bmdq(1) + zz*bmdq(2)) / (2.d0*zz)
     a2 = (bmdq(1) + zz*bmdq(2)) / (2.d0*zz)
     ambmdq(1) = cc * a1*zz
-    ambmdq(3) = 0.d0
     ambmdq(2) = -cc * a1
+    ambmdq(3) = 0.d0
     apbmdq(1) = cc * a2*zz
-    apbmdq(3) = 0.d0
     apbmdq(2) = cc * a2
+    apbmdq(3) = 0.d0
 
     do m =1,NEQNS
         fm(m,i,j-1) = fm(m,i,j-1) - 0.5d0*dtdy * ambmdq(m)
@@ -994,12 +978,12 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     a2 = (bpdq(1) + zz*bpdq(2)) / (2.d0*zz)
     !        # The down-going flux difference bmasdq is the product  -c * wave
     ambpdq(1) = cc * a1*zz
-    ambpdq(3) = 0.d0
     ambpdq(2) = -cc * a1
+    ambpdq(3) = 0.d0
     !        # The up-going flux difference bpasdq is the product  c * wave
     apbpdq(1) = cc * a2*zz
-    apbpdq(3) = 0.d0
     apbpdq(2) = cc * a2
+    apbpdq(3) = 0.d0
 
     do m =1,NEQNS
         fm(m,i,j) = fm(m,i,j) - 0.5d0*dtdy * ambpdq(m)
