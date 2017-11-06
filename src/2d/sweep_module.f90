@@ -18,8 +18,8 @@ subroutine x_sweep_1st_order(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, 
     real(kind=8), intent(in) :: q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_x(mwaves, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(inout) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(inout) :: s_x(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(inout) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8), intent(inout) :: cflgrid
     real(kind=8), intent(in) :: dtdx
 
@@ -85,8 +85,8 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflx
     real(kind=8), intent(in) :: q(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: fm(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: fp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_x(NWAVES, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(inout) :: wave_x(NEQNS, NWAVES, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(inout) :: s_x(NWAVES, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(inout) :: wave_x(NEQNS, NWAVES, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8), intent(inout) :: cflxy(cflmx, cflmy)
     real(kind=8), value, intent(in) :: dtdx
     real(kind=8), value, intent(in) :: cc, zz
@@ -162,7 +162,7 @@ subroutine x_sweep_2nd_order(fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx,
     real(kind=8), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_x(mwaves, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(inout) :: s_x(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
     real(kind=8), intent(inout) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8), intent(in) :: dtdx
 

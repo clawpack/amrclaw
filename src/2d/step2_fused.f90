@@ -27,7 +27,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     use problem_para_module, only: cc, zz, bulk, rho
 #ifdef CUDA
     use cuda_module, only: threads_and_blocks, numBlocks, numThreads, device_id
-    use cuda_module, only: check_cuda_error
+    use cuda_module, only: check_cuda_error, toString, temp_count
     use memory_module, only: gpu_allocate, gpu_deallocate
     use cudafor, only: cudaMemcpy, cudaDeviceSynchronize
     use cudafor, only: dim3
@@ -53,11 +53,11 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 ! #endif
     
     ! Looping scalar storage
-    integer :: i,j
+    integer :: i,j, m, mw
     real(kind=8) :: dtdx,dtdy
-    real(kind=8) :: sx(mwaves, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(kind=8) :: sx(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
     real(kind=8) :: sy(mwaves, 2-mbc:mx+mbc-1, 1-mbc:my + mbc)
-    real(kind=8) :: wave_x(meqn, mwaves, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
     real(kind=8), allocatable :: cflxy(:,:)
     integer :: cflmx, cflmy
@@ -87,23 +87,23 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     gp = 0.d0
 
 #ifdef CUDA
-        call gpu_allocate( q_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
-        call gpu_allocate(fm_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
-        call gpu_allocate(fp_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
-        call gpu_allocate(gm_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
-        call gpu_allocate(gp_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
-        call gpu_allocate(sx_d, device_id, 1, mwaves, 1-mbc, mx + mbc, 2-mbc, my+mbc-1)
-        call gpu_allocate(wave_x_d, device_id, 1, meqn, 1, mwaves, 1-mbc, mx+mbc, 2-mbc, my+mbc-1)
-        call gpu_allocate(sy_d, device_id, 1, mwaves, 2-mbc, mx+mbc-1, 1-mbc, my+mbc)
-        call gpu_allocate(wave_y_d, device_id, 1, meqn, 1, mwaves, 2-mbc, mx+mbc-1, 1-mbc, my+mbc)
+    call gpu_allocate( q_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
+    call gpu_allocate(fm_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
+    call gpu_allocate(fp_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
+    call gpu_allocate(gm_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
+    call gpu_allocate(gp_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
+    call gpu_allocate(sx_d, device_id, 1, mwaves, 2-mbc, mx + mbc, 2-mbc, my+mbc-1)
+    call gpu_allocate(wave_x_d, device_id, 1, meqn, 1, mwaves, 2-mbc, mx+mbc, 2-mbc, my+mbc-1)
+    call gpu_allocate(sy_d, device_id, 1, mwaves, 2-mbc, mx+mbc-1, 1-mbc, my+mbc)
+    call gpu_allocate(wave_y_d, device_id, 1, meqn, 1, mwaves, 2-mbc, mx+mbc-1, 1-mbc, my+mbc)
 
-        data_size = meqn * (mx + 2*mbc) * (my + 2*mbc)
+    data_size = meqn * (mx + 2*mbc) * (my + 2*mbc)
 
-        istat = cudaMemcpy(  q_d,  q, data_size)
-        istat = cudaMemcpy( fm_d, fm, data_size)
-        istat = cudaMemcpy( fp_d, fp, data_size)
-        istat = cudaMemcpy( gm_d, gm, data_size)
-        istat = cudaMemcpy( gp_d, gp, data_size)
+    istat = cudaMemcpy(  q_d,  q, data_size)
+    istat = cudaMemcpy( fm_d, fm, data_size)
+    istat = cudaMemcpy( fp_d, fp, data_size)
+    istat = cudaMemcpy( gm_d, gm, data_size)
+    istat = cudaMemcpy( gp_d, gp, data_size)
 #endif
 
 
@@ -111,6 +111,47 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !   -----------------------------------------------------------
 !   # compute amdq and apdq
 !   -----------------------------------------------------------
+#ifdef gpu
+    call x_sweep_1st_order(q, fm, fp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx, cflgrid)
+    ! output fm, fp ,sx, wave_x
+    do m = 1,meqn
+        open (1, file='q_after_x_1st_'//trim(toString(m,3))//'.txt', position="append")
+        write(1, *) "frame: ", temp_count
+        write(1, *) q(m,:,:)
+        close(1)
+    enddo
+    do m = 1,meqn
+        open (1, file='fm_after_x_1st_'//trim(toString(m,3))//'.txt', position="append")
+        write(1, *) "frame: ", temp_count
+        write(1, *) fm(m,:,:)
+        close(1)
+    enddo
+    do m = 1,meqn
+        open (1, file='fp_after_x_1st_'//trim(toString(m,3))//'.txt', position="append")
+        write(1, *) "frame: ", temp_count
+        write(1, *) fp(m,:,:)
+        close(1)
+    enddo
+    do mw = 1,mwaves
+        open (1, file='sx_after_x_1st_'//trim(toString(mw,3))//'.txt', position="append")
+        write(1, *) "frame: ", temp_count
+        write(1, *) sx(mw,:,:)
+        close(1)
+    enddo
+    do mw = 1,mwaves
+        do m = 1,meqn
+            open (1, file='wave_x_after_x_1st_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', position="append")
+            write(1, *) "frame: ", temp_count
+            write(1, *) wave_x(m,mw,:,:)
+            close(1)
+        enddo
+    enddo
+    temp_count = temp_count + 1
+    if (temp_count > 10) then
+        stop
+    endif
+#else
+
     ! compute numBlocks and numThreads
     call threads_and_blocks([2-mbc, 0] , [mx+mbc, my+1], numBlocks, numThreads)
 
@@ -118,9 +159,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     cflmy = numBlocks%y
     allocate(cflxy(cflmx,cflmy))
     allocate(cflxy_d(cflmx,cflmy))
-
-    ! call x_sweep_1st_order(q, fm, fp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx, cflgrid)
-
 
     call x_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y>>>&
         (q_d, fm_d, fp_d, sx_d, wave_x_d, &
@@ -143,6 +181,52 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     deallocate(cflxy)
     deallocate(cflxy_d)
 
+    istat = cudaMemcpy(fm, fm_d, data_size)
+    istat = cudaMemcpy(fp, fp_d, data_size)
+    istat = cudaMemcpy(gm, gm_d, data_size)
+    istat = cudaMemcpy(gp, gp_d, data_size)
+    istat = cudaMemcpy(sx, sx_d, mwaves*(mx + mbc-(2-mbc)+1)*( my+mbc-1-(2-mbc)+1))
+    istat = cudaMemcpy(wave_x, wave_x_d, meqn*mwaves*(mx+mbc-(2-mbc)+1)*(my+mbc-1-(2-mbc)+1))
+
+    ! output fm, fp ,sx, wave_x
+    do m = 1,meqn
+        open (1, file='q_after_x_1st_'//trim(toString(m,3))//'.txt', position="append")
+        write(1, *) "frame: ", temp_count
+        write(1, *) q(m,:,:)
+        close(1)
+    enddo
+    do m = 1,meqn
+        open (1, file='fm_after_x_1st_'//trim(toString(m,3))//'.txt', position="append")
+        write(1, *) "frame: ", temp_count
+        write(1, *) fm(m,:,:)
+        close(1)
+    enddo
+    do m = 1,meqn
+        open (1, file='fp_after_x_1st_'//trim(toString(m,3))//'.txt', position="append")
+        write(1, *) "frame: ", temp_count
+        write(1, *) fp(m,:,:)
+        close(1)
+    enddo
+    do mw = 1,mwaves
+        open (1, file='sx_after_x_1st_'//trim(toString(mw,3))//'.txt', position="append")
+        write(1, *) "frame: ", temp_count
+        write(1, *) sx(mw,:,:)
+        close(1)
+    enddo
+    do mw = 1,mwaves
+        do m = 1,meqn
+            open (1, file='wave_x_after_x_1st_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', position="append")
+            write(1, *) "frame: ", temp_count
+            write(1, *) wave_x(m,mw,:,:)
+            close(1)
+        enddo
+    enddo
+    temp_count = temp_count + 1
+    if (temp_count > 10) then
+        stop
+    endif
+#endif
+
 
     
 !     -----------------------------------------------------------
@@ -150,11 +234,11 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !     # and solve for transverse waves
 !     -----------------------------------------------------------
 
-    ! call x_sweep_2nd_order(fm, fp, gm, gp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
+    call x_sweep_2nd_order(fm, fp, gm, gp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
 
-    call threads_and_blocks([1, 0] , [mx+1, my+1], numBlocks, numThreads)
-    call x_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
-        (fm_d, fp_d, gm_d, gp_d, sx_d, wave_x_d, mbc, mx, my, dtdx, cc, zz)
+    ! call threads_and_blocks([1, 0] , [mx+1, my+1], numBlocks, numThreads)
+    ! call x_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
+    !     (fm_d, fp_d, gm_d, gp_d, sx_d, wave_x_d, mbc, mx, my, dtdx, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
@@ -167,33 +251,33 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !     -----------------------------------------------------------
 !     # compute bmdq and bpdq
 !     -----------------------------------------------------------
-    ! call y_sweep_1st_order(q, gm, gp, sy, wave_y, meqn, mwaves, mbc, mx, my, dtdy, cflgrid)
+    call y_sweep_1st_order(q, gm, gp, sy, wave_y, meqn, mwaves, mbc, mx, my, dtdy, cflgrid)
 
-    call threads_and_blocks([0, 2-mbc] , [mx+1, my+mbc], numBlocks, numThreads)
-    cflmx = numBlocks%x
-    cflmy = numBlocks%y
-    allocate(cflxy(cflmx,cflmy))
-    allocate(cflxy_d(cflmx,cflmy))
-    call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y>>>&
-    (q_d, gm_d, gp_d, sy_d, wave_y_d, &
-     mbc, mx, my, dtdy, cflxy_d, cflmx, cflmy, cc, zz)
+    ! call threads_and_blocks([0, 2-mbc] , [mx+1, my+mbc], numBlocks, numThreads)
+    ! cflmx = numBlocks%x
+    ! cflmy = numBlocks%y
+    ! allocate(cflxy(cflmx,cflmy))
+    ! allocate(cflxy_d(cflmx,cflmy))
+    ! call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y>>>&
+    ! (q_d, gm_d, gp_d, sy_d, wave_y_d, &
+    !  mbc, mx, my, dtdy, cflxy_d, cflmx, cflmy, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
     call check_cuda_error(istat)
 #endif
 
-    istat = cudaMemcpy(cflxy, cflxy_d, cflmx*cflmy)
+    ! istat = cudaMemcpy(cflxy, cflxy_d, cflmx*cflmy)
 
-    do i = 1,cflmx
-        do j = 1,cflmy
-            cflgrid = max(cflgrid, cflxy(i,j))
-        enddo
-    enddo
+    ! do i = 1,cflmx
+    !     do j = 1,cflmy
+    !         cflgrid = max(cflgrid, cflxy(i,j))
+    !     enddo
+    ! enddo
 
 
-    deallocate(cflxy)
-    deallocate(cflxy_d)
+    ! deallocate(cflxy)
+    ! deallocate(cflxy_d)
 
 
 
@@ -202,11 +286,11 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !     # modify G fluxes for second order q_{yy} correction terms:
 !     # and transverse waves
 !     -----------------------------------------------------------
-    ! call y_sweep_2nd_order(fm, fp, gm, gp, sy, wave_y, meqn, mwaves, mbc, mx, my, dtdy)
+    call y_sweep_2nd_order(fm, fp, gm, gp, sy, wave_y, meqn, mwaves, mbc, mx, my, dtdy)
 
-    call threads_and_blocks([0, 1] , [mx+1, my+1], numBlocks, numThreads)
-    call y_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
-        (fm_d, fp_d, gm_d, gp_d, sy_d, wave_y_d, mbc, mx, my, dtdx, cc, zz)
+    ! call threads_and_blocks([0, 1] , [mx+1, my+1], numBlocks, numThreads)
+    ! call y_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
+    !     (fm_d, fp_d, gm_d, gp_d, sy_d, wave_y_d, mbc, mx, my, dtdx, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
@@ -214,10 +298,10 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 #endif
 
 #ifdef CUDA
-    istat = cudaMemcpy(fm,  fm_d, data_size)
-    istat = cudaMemcpy(fp,  fp_d, data_size)
-    istat = cudaMemcpy(gm,  gm_d, data_size)
-    istat = cudaMemcpy(gp,  gp_d, data_size)
+    ! istat = cudaMemcpy(fm,  fm_d, data_size)
+    ! istat = cudaMemcpy(fp,  fp_d, data_size)
+    ! istat = cudaMemcpy(gm,  gm_d, data_size)
+    ! istat = cudaMemcpy(gp,  gp_d, data_size)
 #endif
 
 

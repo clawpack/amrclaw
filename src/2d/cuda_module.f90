@@ -29,6 +29,8 @@ module cuda_module
 
     character(len=*), parameter :: gpufile = 'gpu.data'
 
+    integer :: temp_count
+
     interface toString
         module procedure toString1
         module procedure toString2
@@ -84,6 +86,7 @@ contains
         print *, 'Use the GPU with id: ',device_id
 
         n_timer = 0
+        temp_count = 1
 
     end subroutine initialize_cuda
 
