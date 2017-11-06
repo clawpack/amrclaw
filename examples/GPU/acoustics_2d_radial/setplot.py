@@ -50,7 +50,7 @@ def setplot(plotdata=None):
     plotaxes.ylimits = 'auto'
     plotaxes.title = 'Pressure'
     plotaxes.scaled = True      # so aspect ratio is 1
-    plotaxes.afteraxes = addgauges
+    # plotaxes.afteraxes = addgauges
 
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
@@ -60,8 +60,62 @@ def setplot(plotdata=None):
     plotitem.show = True       # show on plot?
     plotitem.pcolor_cmin = -2.0
     plotitem.pcolor_cmax = 2.0
-    plotitem.amr_patchedges_show = [1,1,1]
-    plotitem.amr_celledges_show = [1,0,0]
+    # plotitem.amr_patchedges_show = [1,1,1]
+    # plotitem.amr_celledges_show = [1,0,0]
+    plotitem.amr_patchedges_show = [0,0,0]
+    plotitem.amr_celledges_show = [0,0,0]
+
+    # Figure for u-velocity
+    # -------------------
+
+    plotfigure = plotdata.new_plotfigure(name='u-velocity', figno=1)
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'u-velocity'
+    plotaxes.scaled = True      # so aspect ratio is 1
+    # plotaxes.afteraxes = addgauges
+
+    # Set up for item on these axes:
+    plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
+    plotitem.plot_var = 1
+    plotitem.pcolor_cmap = colormaps.blue_yellow_red
+    plotitem.add_colorbar = True
+    plotitem.show = True       # show on plot?
+    plotitem.pcolor_cmin = -0.5
+    plotitem.pcolor_cmax = 0.5
+    # plotitem.amr_patchedges_show = [1,1,1]
+    # plotitem.amr_celledges_show = [1,0,0]
+    plotitem.amr_patchedges_show = [0,0,0]
+    plotitem.amr_celledges_show = [0,0,0]
+
+    # Figure for v-velocity
+    # -------------------
+
+    plotfigure = plotdata.new_plotfigure(name='v-velocity', figno=2)
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'v-velocity'
+    plotaxes.scaled = True      # so aspect ratio is 1
+    # plotaxes.afteraxes = addgauges
+
+    # Set up for item on these axes:
+    plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
+    plotitem.plot_var = 2
+    plotitem.pcolor_cmap = colormaps.blue_yellow_red
+    plotitem.add_colorbar = True
+    plotitem.show = True       # show on plot?
+    plotitem.pcolor_cmin = -0.5
+    plotitem.pcolor_cmax = 0.5
+    # plotitem.amr_patchedges_show = [1,1,1]
+    # plotitem.amr_celledges_show = [1,0,0]
+    plotitem.amr_patchedges_show = [0,0,0]
+    plotitem.amr_celledges_show = [0,0,0]
     
     
 
@@ -110,7 +164,7 @@ def setplot(plotdata=None):
     #-----------------------------------------
     # Figures for gauges
     #-----------------------------------------
-    plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
+    plotfigure = plotdata.new_plotfigure(name='q1', figno=300, \
                     type='each_gauge')
     plotfigure.clf_each_gauge = True
 
@@ -120,6 +174,30 @@ def setplot(plotdata=None):
     plotaxes.title = 'Pressure'
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
+    plotitem.plotstyle = 'b-'
+
+    plotfigure = plotdata.new_plotfigure(name='q2', figno=400, \
+                    type='each_gauge')
+    plotfigure.clf_each_gauge = True
+
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'u-velocity'
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 1
+    plotitem.plotstyle = 'b-'
+
+    plotfigure = plotdata.new_plotfigure(name='q3', figno=500, \
+                    type='each_gauge')
+    plotfigure.clf_each_gauge = True
+
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'v-velocity'
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 2
     plotitem.plotstyle = 'b-'
 
 
@@ -133,7 +211,7 @@ def setplot(plotdata=None):
     plotdata.html = True                     # create html files of plots?
     plotdata.html_homelink = '../README.html'   # pointer for top of index
     plotdata.html_movie = 'JSAnimation'      # new style, or "4.x" for old style
-    plotdata.latex = True                    # create latex file of plots?
+    plotdata.latex = False                   # create latex file of plots?
     plotdata.latex_figsperline = 2           # layout of plots
     plotdata.latex_framesperline = 1         # layout of plots
     plotdata.latex_makepdf = False           # also run pdflatex?

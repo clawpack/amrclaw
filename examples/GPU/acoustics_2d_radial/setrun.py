@@ -53,8 +53,6 @@ def setrun(claw_pkg='amrclaw'):
     # See below for AMR parameters.
 
 
-    
-
     # ---------------
     # Spatial domain:
     # ---------------
@@ -115,7 +113,9 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 20
+        # clawdata.num_output_times = 4
+        # clawdata.tfinal = 0.2
+        clawdata.num_output_times = 20 
         clawdata.tfinal = 1.0
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
@@ -202,6 +202,7 @@ def setrun(claw_pkg='amrclaw'):
     #   3 or 'vanleer'  ==> van Leer
     #   4 or 'mc'       ==> MC limiter
     clawdata.limiter = ['vanleer','vanleer']
+    # clawdata.limiter = ['none','none']
     
     clawdata.use_fwaves = False    # True ==> use f-wave version of algorithms
     
@@ -267,6 +268,7 @@ def setrun(claw_pkg='amrclaw'):
         # and at the final time.
         clawdata.checkpt_interval = 5
 
+    
 
     # ---------------
     # AMR parameters:
