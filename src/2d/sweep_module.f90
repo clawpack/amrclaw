@@ -166,6 +166,9 @@ subroutine x_sweep_2nd_order(fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx,
     real(kind=8), intent(inout) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8), intent(in) :: dtdx
 
+    ! real(kind=8), intent(inout) :: cqxx(meqn, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    ! real(kind=8), intent(inout) :: wave_x_tilde(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+
     ! Local variables for the Riemann solver
     real(kind=8) :: wave_x_tilde(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8) :: cqxx(meqn)
@@ -379,8 +382,9 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     real(kind=8), intent(inout) :: fp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gm(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_x(NWAVES, 1-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(inout) :: wave_x(NEQNS, NWAVES, 1-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(inout) :: s_x(NWAVES, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(inout) :: wave_x(NEQNS, NWAVES, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+
     real(kind=8), value, intent(in) :: dtdx
     real(kind=8), value, intent(in) :: cc, zz
 
@@ -393,8 +397,10 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     real(kind=8) :: dot, wnorm2, wlimitr, c, r
     integer :: i,j
     integer :: m, mw
+    real(kind=8) :: atomic_result
 
-    attributes(device) :: fm, fp, gm, gp, s_x, wave_x
+    ! TODO: remove this. We don't need this in a global function
+    ! attributes(device) :: fm, fp, gm, gp, s_x, wave_x
 
     i = (blockIdx%x-1) * blockDim%x + threadIdx%x
     j = (blockIdx%y-1) * blockDim%y + threadIdx%y
@@ -443,9 +449,18 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
         enddo
     enddo ! end mwave loop
 
+    ! TODO: remove compute_cqxx in sweep_misc_module
     ! I put some operations into this function and move it to another files to prevent the compiler from over-optimizing this part,
     ! which gives totally wrong results.
-    call compute_cqxx(cqxx,wave_x_tilde, s_x(1,i,j), s_x(2,i,j) , dtdx)
+    ! call compute_cqxx(cqxx,wave_x_tilde, s_x(1,i,j), s_x(2,i,j) , dtdx)
+
+
+    do m = 1,NEQNS
+        do mw = 1, NWAVES
+            cqxx(m) = cqxx(m) + &
+                dabs(s_x(mw,i,j)) * (1.d0 - dabs(s_x(mw,i,j))*dtdx) * wave_x_tilde(m,mw)
+        enddo
+    enddo
 
     do m=1,NEQNS
         fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m)
@@ -477,11 +492,16 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     bpamdq(3) = cc * a2
 
     do m =1,NEQNS
-        gm(m,i-1,j) = gm(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
-        gp(m,i-1,j) = gp(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
+        ! gm(m,i-1,j) = gm(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
+        ! gp(m,i-1,j) = gp(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
 
-        gm(m,i-1,j+1) = gm(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
-        gp(m,i-1,j+1) = gp(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
+        ! gm(m,i-1,j+1) = gm(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
+        ! gp(m,i-1,j+1) = gp(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
+
+        atomic_result = atomicadd(gm(m,i-1,j), - 0.5d0*dtdx * bmamdq(m))
+        atomic_result = atomicadd(gp(m,i-1,j), - 0.5d0*dtdx * bmamdq(m))
+        atomic_result = atomicadd(gm(m,i-1,j+1), - 0.5d0*dtdx * bpamdq(m))
+        atomic_result = atomicadd(gp(m,i-1,j+1), - 0.5d0*dtdx * bpamdq(m))
     enddo
 
     ! # solve for bpapdq and bmapdq
@@ -497,11 +517,16 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     bpapdq(3) = cc * a2
 
     do m =1,NEQNS
-        gm(m,i,j) = gm(m,i,j) - 0.5d0*dtdx * bmapdq(m)
-        gp(m,i,j) = gp(m,i,j) - 0.5d0*dtdx * bmapdq(m)
+        ! gm(m,i,j) = gm(m,i,j) - 0.5d0*dtdx * bmapdq(m)
+        ! gp(m,i,j) = gp(m,i,j) - 0.5d0*dtdx * bmapdq(m)
 
-        gm(m,i,j+1) = gm(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
-        gp(m,i,j+1) = gp(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
+        ! gm(m,i,j+1) = gm(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
+        ! gp(m,i,j+1) = gp(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
+
+        atomic_result = atomicadd(gm(m,i,j), - 0.5d0*dtdx * bmapdq(m))
+        atomic_result = atomicadd(gp(m,i,j), - 0.5d0*dtdx * bmapdq(m))
+        atomic_result = atomicadd(gm(m,i,j+1), - 0.5d0*dtdx * bpapdq(m))
+        atomic_result = atomicadd(gp(m,i,j+1), - 0.5d0*dtdx * bpapdq(m))
     enddo
     return
 end subroutine x_sweep_2nd_order_gpu
