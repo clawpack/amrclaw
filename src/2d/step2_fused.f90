@@ -21,7 +21,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     
     use amr_module
     use parallel_advanc_module, only: dtcom, dxcom, dycom, icom, jcom
-    use sweep_module, only: x_sweep_1st_order, x_sweep_2nd_order, y_sweep_1st_order, y_sweep_2nd_order 
+    use sweep_module, only: x_sweep_1st_order, x_sweep_2nd_order, y_sweep_1st_order, y_sweep_2nd_order, x_sweep_2nd_order_simple
     use sweep_module, only: x_sweep_1st_order_gpu, x_sweep_2nd_order_gpu
     use sweep_module, only: y_sweep_1st_order_gpu, y_sweep_2nd_order_gpu
     use problem_para_module, only: cc, zz, bulk, rho
@@ -216,48 +216,49 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !     -----------------------------------------------------------
 
 #ifdef gpu
-    call x_sweep_2nd_order(fm, fp, gm, gp, sx, wave_x, cqxx, wave_x_tilde, meqn, mwaves, mbc, mx, my, dtdx)
+    ! call x_sweep_2nd_order(fm, fp, gm, gp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
+    call x_sweep_2nd_order_simple(fm, fp, gm, gp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
     ! output fm, fp , gm, gp sx, wave_x
-    do m = 1,meqn
-        call write_grid( cqxx(m,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'cqxx_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    enddo
+    ! do m = 1,meqn
+    !     call write_grid( cqxx(m,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'cqxx_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
+    ! enddo
 
-    do mw = 1,mwaves
-        do m = 1,meqn
-            call write_grid( wave_x_tilde(m,mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'wave_x_tilde_after_x_2nd_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', temp_count)
-        enddo
-    enddo
+    ! do mw = 1,mwaves
+    !     do m = 1,meqn
+    !         call write_grid( wave_x_tilde(m,mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'wave_x_tilde_after_x_2nd_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', temp_count)
+    !     enddo
+    ! enddo
 
-    do m = 1,meqn
-        call write_grid( fm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    enddo
+    ! do m = 1,meqn
+    !     call write_grid( fm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
+    ! enddo
 
-    do m = 1,meqn
-        call write_grid( fp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    enddo
+    ! do m = 1,meqn
+    !     call write_grid( fp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
+    ! enddo
 
-    do m = 1,meqn
-        call write_grid( gm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    enddo
+    ! do m = 1,meqn
+    !     call write_grid( gm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
+    ! enddo
 
-    do m = 1,meqn
-        call write_grid( gp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    enddo
+    ! do m = 1,meqn
+    !     call write_grid( gp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
+    ! enddo
 
-    do mw = 1,mwaves
-        call write_grid( sx(mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'sx_after_x_2nd_'//trim(toString(mw,3))//'.txt', temp_count)
-    enddo
+    ! do mw = 1,mwaves
+    !     call write_grid( sx(mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'sx_after_x_2nd_'//trim(toString(mw,3))//'.txt', temp_count)
+    ! enddo
 
-    do mw = 1,mwaves
-        do m = 1,meqn
-            call write_grid( wave_x(m,mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'wave_x_after_x_2nd_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', temp_count)
-        enddo
-    enddo
+    ! do mw = 1,mwaves
+    !     do m = 1,meqn
+    !         call write_grid( wave_x(m,mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'wave_x_after_x_2nd_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', temp_count)
+    !     enddo
+    ! enddo
 
-    temp_count = temp_count + 1
-    if (temp_count > 10) then
-        stop
-    endif
+    ! temp_count = temp_count + 1
+    ! if (temp_count > 2) then
+    !     stop
+    ! endif
 
 #else
     istat = cudaMemcpy(  q_d,  q, data_size)
@@ -297,37 +298,37 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     !     enddo
     ! enddo
 
-    do m = 1,meqn
-        call write_grid( fm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    enddo
+    ! do m = 1,meqn
+    !     call write_grid( fm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
+    ! enddo
 
-    do m = 1,meqn
-        call write_grid( fp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    enddo
+    ! do m = 1,meqn
+    !     call write_grid( fp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
+    ! enddo
 
-    do m = 1,meqn
-        call write_grid( gm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    enddo
+    ! do m = 1,meqn
+    !     call write_grid( gm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
+    ! enddo
 
-    do m = 1,meqn
-        call write_grid( gp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    enddo
+    ! do m = 1,meqn
+    !     call write_grid( gp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
+    ! enddo
 
-    do mw = 1,mwaves
-        call write_grid( sx(mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'sx_after_x_2nd_'//trim(toString(mw,3))//'.txt', temp_count)
-    enddo
+    ! do mw = 1,mwaves
+    !     call write_grid( sx(mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'sx_after_x_2nd_'//trim(toString(mw,3))//'.txt', temp_count)
+    ! enddo
 
-    do mw = 1,mwaves
-        do m = 1,meqn
-            call write_grid( wave_x(m,mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'wave_x_after_x_2nd_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', temp_count)
-        enddo
-    enddo
+    ! do mw = 1,mwaves
+    !     do m = 1,meqn
+    !         call write_grid( wave_x(m,mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'wave_x_after_x_2nd_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', temp_count)
+    !     enddo
+    ! enddo
 
 
-    temp_count = temp_count + 1
-    if (temp_count > 10) then
-        stop
-    endif
+    ! temp_count = temp_count + 1
+    ! if (temp_count > 2) then
+    !     stop
+    ! endif
 
 #endif
 

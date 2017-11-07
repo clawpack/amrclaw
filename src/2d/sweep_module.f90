@@ -162,12 +162,9 @@ subroutine x_sweep_2nd_order(fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx,
     real(kind=8), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_x(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(inout) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(in) :: s_x(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(in) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
     real(kind=8), intent(in) :: dtdx
-
-    ! real(kind=8), intent(inout) :: cqxx(meqn, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    ! real(kind=8), intent(inout) :: wave_x_tilde(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
 
     ! Local variables for the Riemann solver
     real(kind=8) :: wave_x_tilde(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
@@ -382,8 +379,8 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     real(kind=8), intent(inout) :: fp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gm(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_x(NWAVES, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(inout) :: wave_x(NEQNS, NWAVES, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(in) :: s_x(NWAVES, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(in) :: wave_x(NEQNS, NWAVES, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
 
     real(kind=8), value, intent(in) :: dtdx
     real(kind=8), value, intent(in) :: cc, zz
@@ -423,30 +420,32 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
         do m=1,NEQNS
             wnorm2 = wnorm2 + wave_x(m,mw,i,j)**2
         enddo
-        if (wnorm2.eq.0.d0) cycle
-
-        if (s_x(mw,i,j) .gt. 0.d0) then
-            do m=1,NEQNS
-                dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i-1,j)
-            enddo
+        if (wnorm2.eq.0.d0) then
+            wave_x_tilde(:,mw) =  wave_x(:,mw,i,j)
         else
+
+            if (s_x(mw,i,j) .gt. 0.d0) then
+                do m=1,NEQNS
+                    dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i-1,j)
+                enddo
+            else
+                do m=1,NEQNS
+                    dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i+1,j)
+                enddo
+            endif
+
+            r = dot / wnorm2
+            !               ----------
+            !               # van Leer
+            !               ----------
+            wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
+            !
+            !  # apply limiter to waves:
+            !
             do m=1,NEQNS
-                dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i+1,j)
+                wave_x_tilde(m,mw) = wlimitr * wave_x(m,mw,i,j)
             enddo
         endif
-
-        r = dot / wnorm2
-
-        !               ----------
-        !               # van Leer
-        !               ----------
-        wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
-        !
-        !  # apply limiter to waves:
-        !
-        do m=1,NEQNS
-            wave_x_tilde(m,mw) = wlimitr * wave_x(m,mw,i,j)
-        enddo
     enddo ! end mwave loop
 
     ! TODO: remove compute_cqxx in sweep_misc_module
@@ -456,6 +455,7 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
 
 
     do m = 1,NEQNS
+        cqxx(m) = 0.d0
         do mw = 1, NWAVES
             cqxx(m) = cqxx(m) + &
                 dabs(s_x(mw,i,j)) * (1.d0 - dabs(s_x(mw,i,j))*dtdx) * wave_x_tilde(m,mw)
@@ -530,6 +530,135 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     enddo
     return
 end subroutine x_sweep_2nd_order_gpu
+
+subroutine x_sweep_2nd_order_simple(fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
+
+    implicit none
+
+    integer, intent(in) :: meqn, mbc, mx, my, mwaves
+    real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(kind=8), intent(in) :: s_x(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(in) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(in) :: dtdx
+
+    ! Local variables for the Riemann solver
+    real(kind=8) :: wave_x_tilde(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8) :: cqxx(meqn)
+    real(kind=8) :: amdq(meqn), apdq(meqn)
+    real(kind=8) :: bpamdq(meqn), bmamdq(meqn), bpapdq(meqn), bmapdq(meqn)
+    real(kind=8) :: delta1, delta2, a1, a2
+    real(kind=8) :: dot, wnorm2, wlimitr, abs_sign, c, r
+    integer :: i,j
+    integer :: m, mw
+
+    !     -----------------------------------------------------------
+    !     # modify F fluxes for second order q_{xx} correction terms
+    !     # and solve for transverse waves
+    !     -----------------------------------------------------------
+    ! wave_x_tilde = wave_x
+    do j = 0,my+1 ! my loop
+        do i = 1, mx+1 ! mx loop
+            do mw=1,mwaves ! mwaves loop
+                dot = 0.d0
+                wnorm2 = 0.d0
+                do m=1,meqn
+                    wnorm2 = wnorm2 + wave_x(m,mw,i,j)**2
+                enddo
+                if (wnorm2.eq.0.d0) then
+                    wave_x_tilde(:,mw,i,j) =  wave_x(:,mw,i,j)
+                else
+
+                    if (s_x(mw,i,j) .gt. 0.d0) then
+                        do m=1,meqn
+                            dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i-1,j)
+                        enddo
+                    else
+                        do m=1,meqn
+                            dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i+1,j)
+                        enddo
+                    endif
+
+                    r = dot / wnorm2
+                    !               ----------
+                    !               # van Leer
+                    !               ----------
+                    wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
+                    do m=1,meqn
+                        wave_x_tilde(m,mw,i,j) = wlimitr * wave_x(m,mw,i,j)
+                    enddo
+                endif
+            enddo ! end mwave loop
+                
+            ! second order corrections:
+            do m=1,meqn
+                cqxx(m) = 0.d0
+                do mw=1,mwaves
+                    cqxx(m) = cqxx(m) + & 
+                        dabs(s_x(mw,i,j)) * (1.d0 - dabs(s_x(mw,i,j))*dtdx) * wave_x_tilde(m,mw,i,j)
+                enddo
+            enddo
+            do m=1,meqn
+                fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m)
+                fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m)
+            enddo
+
+    ! ##### solve for transverse waves and add to gp and gm
+            ! reconstruct amdq and apdq
+            do m=1,meqn
+                amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
+                apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
+            enddo
+            ! incorporate cqxx into amdq and apdq so that it is split also.
+            do m=1,meqn
+                amdq(m) = amdq(m) + cqxx(m)
+                apdq(m) = apdq(m) - cqxx(m)
+            enddo
+
+            ! ##### solve for bpamdq and bmamdq
+            a1 = (-amdq(1) + zz*amdq(3)) / (2.d0*zz)
+            a2 = (amdq(1) + zz*amdq(3)) / (2.d0*zz)
+            !        # The down-going flux difference bmasdq is the product  -c * wave
+            bmamdq(1) = cc * a1*zz
+            bmamdq(2) = 0.d0
+            bmamdq(3) = -cc * a1
+            !        # The up-going flux difference bpasdq is the product  c * wave
+            bpamdq(1) = cc * a2*zz
+            bpamdq(2) = 0.d0
+            bpamdq(3) = cc * a2
+
+            do m =1,meqn
+                gm(m,i-1,j) = gm(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
+                gp(m,i-1,j) = gp(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
+
+                gm(m,i-1,j+1) = gm(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
+                gp(m,i-1,j+1) = gp(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
+            enddo
+
+            ! # solve for bpapdq and bmapdq
+            a1 = (-apdq(1) + zz*apdq(3)) / (2.d0*zz)
+            a2 = (apdq(1) + zz*apdq(3)) / (2.d0*zz)
+            !        # The down-going flux difference bmasdq is the product  -c * wave
+            bmapdq(1) = cc * a1*zz
+            bmapdq(2) = 0.d0
+            bmapdq(3) = -cc * a1
+            !        # The up-going flux difference bpasdq is the product  c * wave
+            bpapdq(1) = cc * a2*zz
+            bpapdq(2) = 0.d0
+            bpapdq(3) = cc * a2
+
+            do m =1,meqn
+                gm(m,i,j) = gm(m,i,j) - 0.5d0*dtdx * bmapdq(m)
+                gp(m,i,j) = gp(m,i,j) - 0.5d0*dtdx * bmapdq(m)
+
+                gm(m,i,j+1) = gm(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
+                gp(m,i,j+1) = gp(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
+            enddo
+        enddo ! end mx loop
+    enddo ! end my loop
+end subroutine x_sweep_2nd_order_simple
 
 subroutine y_sweep_1st_order(q, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx, my, dtdy, cflgrid)
 
