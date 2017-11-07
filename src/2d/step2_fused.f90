@@ -389,11 +389,14 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !     # modify G fluxes for second order q_{yy} correction terms:
 !     # and transverse waves
 !     -----------------------------------------------------------
+#ifdef gpu
     call y_sweep_2nd_order(fm, fp, gm, gp, sy, wave_y, meqn, mwaves, mbc, mx, my, dtdy)
 
-    ! call threads_and_blocks([0, 1] , [mx+1, my+1], numBlocks, numThreads)
-    ! call y_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
-    !     (fm_d, fp_d, gm_d, gp_d, sy_d, wave_y_d, mbc, mx, my, dtdx, cc, zz)
+#else
+
+    call threads_and_blocks([0, 1] , [mx+1, my+1], numBlocks, numThreads)
+    call y_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
+        (fm_d, fp_d, gm_d, gp_d, sy_d, wave_y_d, mbc, mx, my, dtdx, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
@@ -401,10 +404,12 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 #endif
 
 #ifdef CUDA
-    ! istat = cudaMemcpy(fm,  fm_d, data_size)
-    ! istat = cudaMemcpy(fp,  fp_d, data_size)
-    ! istat = cudaMemcpy(gm,  gm_d, data_size)
-    ! istat = cudaMemcpy(gp,  gp_d, data_size)
+    istat = cudaMemcpy(fm,  fm_d, data_size)
+    istat = cudaMemcpy(fp,  fp_d, data_size)
+    istat = cudaMemcpy(gm,  gm_d, data_size)
+    istat = cudaMemcpy(gp,  gp_d, data_size)
+#endif
+
 #endif
 
 
@@ -422,6 +427,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
         ! call gpu_deallocate(cqxx_d)
 #endif
+
     
 
 

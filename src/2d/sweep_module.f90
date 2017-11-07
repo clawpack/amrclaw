@@ -502,6 +502,7 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
         ! gm(m,i-1,j+1) = gm(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
         ! gp(m,i-1,j+1) = gp(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
 
+        ! TODO: compare the performance if I replace atomic_result with gm(m,i-1,j)
         atomic_result = atomicadd(gm(m,i-1,j), - 0.5d0*dtdx * bmamdq(m))
         atomic_result = atomicadd(gp(m,i-1,j), - 0.5d0*dtdx * bmamdq(m))
         atomic_result = atomicadd(gm(m,i-1,j+1), - 0.5d0*dtdx * bpamdq(m))
@@ -1028,8 +1029,8 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     real(kind=8), intent(inout) :: fp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gm(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_y(NWAVES, 2-mbc:mx+mbc-1, 1-mbc:my + mbc)
-    real(kind=8), intent(inout) :: wave_y(NEQNS, NWAVES, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
+    real(kind=8), intent(in) :: s_y(NWAVES, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
+    real(kind=8), intent(in) :: wave_y(NEQNS, NWAVES, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
     real(kind=8), value, intent(in) :: dtdy
     real(kind=8), value, intent(in) :: cc, zz
 
@@ -1042,7 +1043,9 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     real(kind=8) :: dot, wnorm2, wlimitr, c, r
     integer :: i,j
     integer :: m, mw
+    real(kind=8) :: atomic_result
 
+    ! TODO: remove this. We don't need this in a global function
     attributes(device) :: fm, fp, gm, gp, s_y, wave_y
 
     i = (blockIdx%x-1) * blockDim%x + threadIdx%x
@@ -1067,37 +1070,43 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
         do m=1,NEQNS
             wnorm2 = wnorm2 + wave_y(m,mw,i,j)**2
         enddo
-        if (wnorm2.eq.0.d0) cycle
-
-        if (s_y(mw,i,j) .gt. 0.d0) then
-            do m=1,NEQNS
-                dot = dot + wave_y(m,mw,i,j)*wave_y(m,mw,i,j-1)
-            enddo
+        if (wnorm2.eq.0.d0) then
+            wave_y_tilde(:,mw) =  wave_y(:,mw,i,j)
         else
+
+            if (s_y(mw,i,j) .gt. 0.d0) then
+                do m=1,NEQNS
+                    dot = dot + wave_y(m,mw,i,j)*wave_y(m,mw,i,j-1)
+                enddo
+            else
+                do m=1,NEQNS
+                    dot = dot + wave_y(m,mw,i,j)*wave_y(m,mw,i,j+1)
+                enddo
+            endif
+
+            r = dot / wnorm2
+
+            !               ----------
+            !               # van Leer
+            !               ----------
+            wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
+
+            !
+            !  # apply limiter to waves:
+            !
             do m=1,NEQNS
-                dot = dot + wave_y(m,mw,i,j)*wave_y(m,mw,i,j+1)
+                wave_y_tilde(m,mw) = wlimitr * wave_y(m,mw,i,j)
             enddo
         endif
-
-        r = dot / wnorm2
-
-        !               ----------
-        !               # van Leer
-        !               ----------
-        wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
-
-        !
-        !  # apply limiter to waves:
-        !
-        do m=1,NEQNS
-            wave_y_tilde(m,mw) = wlimitr * wave_y(m,mw,i,j)
-        enddo
     enddo ! end mwave loop
 
-    ! second order corrections:
-    ! I put some operations into this function and move it to another files to prevent the compiler from over-optimizing this part,
-    ! which gives totally wrong results.
-    call compute_cqyy(cqyy,wave_y_tilde, s_y(1,i,j), s_y(2,i,j) , dtdy)
+    do m = 1,NEQNS
+        cqyy(m) = 0.d0
+        do mw = 1, NWAVES
+            cqyy(m) = cqyy(m) + &
+                dabs(s_y(mw,i,j)) * (1.d0 - dabs(s_y(mw,i,j))*dtdy) * wave_y_tilde(m,mw)
+        enddo
+    enddo
 
 
     do m=1,NEQNS
@@ -1125,11 +1134,16 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     apbmdq(3) = 0.d0
 
     do m =1,NEQNS
-        fm(m,i,j-1) = fm(m,i,j-1) - 0.5d0*dtdy * ambmdq(m)
-        fp(m,i,j-1) = fp(m,i,j-1) - 0.5d0*dtdy * ambmdq(m)
+        ! fm(m,i,j-1) = fm(m,i,j-1) - 0.5d0*dtdy * ambmdq(m)
+        ! fp(m,i,j-1) = fp(m,i,j-1) - 0.5d0*dtdy * ambmdq(m)
 
-        fm(m,i+1,j-1) = fm(m,i+1,j-1) - 0.5d0*dtdy * apbmdq(m)
-        fp(m,i+1,j-1) = fp(m,i+1,j-1) - 0.5d0*dtdy * apbmdq(m)
+        ! fm(m,i+1,j-1) = fm(m,i+1,j-1) - 0.5d0*dtdy * apbmdq(m)
+        ! fp(m,i+1,j-1) = fp(m,i+1,j-1) - 0.5d0*dtdy * apbmdq(m)
+
+        atomic_result = atomicadd(fm(m,i,j-1), - 0.5d0*dtdy * ambmdq(m))
+        atomic_result = atomicadd(fp(m,i,j-1), - 0.5d0*dtdy * ambmdq(m))
+        atomic_result = atomicadd(fm(m,i+1,j-1), - 0.5d0*dtdy * apbmdq(m))
+        atomic_result = atomicadd(fp(m,i+1,j-1), - 0.5d0*dtdy * apbmdq(m))
     enddo
 
     ! # solve for apbpdq and ambpdq
@@ -1145,11 +1159,16 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     apbpdq(3) = 0.d0
 
     do m =1,NEQNS
-        fm(m,i,j) = fm(m,i,j) - 0.5d0*dtdy * ambpdq(m)
-        fp(m,i,j) = fp(m,i,j) - 0.5d0*dtdy * ambpdq(m)
+        ! fm(m,i,j) = fm(m,i,j) - 0.5d0*dtdy * ambpdq(m)
+        ! fp(m,i,j) = fp(m,i,j) - 0.5d0*dtdy * ambpdq(m)
 
-        fm(m,i+1,j) = fm(m,i+1,j) - 0.5d0*dtdy * apbpdq(m)
-        fp(m,i+1,j) = fp(m,i+1,j) - 0.5d0*dtdy * apbpdq(m)
+        ! fm(m,i+1,j) = fm(m,i+1,j) - 0.5d0*dtdy * apbpdq(m)
+        ! fp(m,i+1,j) = fp(m,i+1,j) - 0.5d0*dtdy * apbpdq(m)
+
+        atomic_result = atomicadd(fm(m,i,j), - 0.5d0*dtdy * ambpdq(m))
+        atomic_result = atomicadd(fp(m,i,j), - 0.5d0*dtdy * ambpdq(m))
+        atomic_result = atomicadd(fm(m,i+1,j), - 0.5d0*dtdy * apbpdq(m))
+        atomic_result = atomicadd(fp(m,i+1,j), - 0.5d0*dtdy * apbpdq(m))
     enddo
     return
 end subroutine y_sweep_2nd_order_gpu
