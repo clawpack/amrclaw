@@ -59,10 +59,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     real(kind=8) :: sy(mwaves, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
     real(kind=8) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
 
-    ! real(kind=8) :: cqxx(meqn,2-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    ! real(kind=8) :: wave_x_tilde(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
-
-
     real(kind=8), allocatable :: cflxy(:,:)
     integer :: cflmx, cflmy
 #ifdef CUDA
@@ -89,8 +85,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     fp = 0.d0
     gm = 0.d0
     gp = 0.d0
-    ! cqxx = 0.d0
-    ! wave_x_tilde = 0.d0
 
 #ifdef CUDA
     call gpu_allocate( q_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
@@ -103,18 +97,8 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     call gpu_allocate(sy_d, device_id, 1, mwaves, 2-mbc, mx+mbc-1, 2-mbc, my+mbc)
     call gpu_allocate(wave_y_d, device_id, 1, meqn, 1, mwaves, 2-mbc, mx+mbc-1, 2-mbc, my+mbc)
 
-    ! call gpu_allocate(cqxx_d, device_id, 1, meqn, 2-mbc,mx+mbc, 2-mbc,my+mbc-1)
-    ! call gpu_allocate(wave_x_tilde_d, device_id, 1, meqn, 1, mwaves, 2-mbc, mx+mbc, 2-mbc, my+mbc-1)
-
     data_size = meqn * (mx + 2*mbc) * (my + 2*mbc)
 
-    fm_d = 0.d0
-    fp_d = 0.d0
-    gm_d = 0.d0
-    gp_d = 0.d0
-
-    ! cqxx_d = 0.d0
-    ! wave_x_tilde_d = 0.d0
 
     istat = cudaMemcpy(  q_d,  q, data_size)
     istat = cudaMemcpy( fm_d, fm, data_size)
@@ -128,7 +112,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !   -----------------------------------------------------------
 !   # compute amdq and apdq
 !   -----------------------------------------------------------
-#ifndef gpu
+#ifdef gpu
     call x_sweep_1st_order(q, fm, fp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx, cflgrid)
 
 #else
@@ -162,50 +146,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     deallocate(cflxy)
     deallocate(cflxy_d)
 
-    istat = cudaMemcpy(fm, fm_d, data_size)
-    istat = cudaMemcpy(fp, fp_d, data_size)
-    istat = cudaMemcpy(gm, gm_d, data_size)
-    istat = cudaMemcpy(gp, gp_d, data_size)
-    istat = cudaMemcpy(sx, sx_d, mwaves*(mx + mbc-(2-mbc)+1)*( my+mbc-1-(2-mbc)+1))
-    istat = cudaMemcpy(wave_x, wave_x_d, meqn*mwaves*(mx+mbc-(2-mbc)+1)*(my+mbc-1-(2-mbc)+1))
-
-    ! output fm, fp ,sx, wave_x
-    do m = 1,meqn
-        open (1, file='q_after_x_1st_'//trim(toString(m,3))//'.txt', position="append")
-        write(1, *) "frame: ", temp_count
-        write(1, *) q(m,:,:)
-        close(1)
-    enddo
-    do m = 1,meqn
-        open (1, file='fm_after_x_1st_'//trim(toString(m,3))//'.txt', position="append")
-        write(1, *) "frame: ", temp_count
-        write(1, *) fm(m,:,:)
-        close(1)
-    enddo
-    do m = 1,meqn
-        open (1, file='fp_after_x_1st_'//trim(toString(m,3))//'.txt', position="append")
-        write(1, *) "frame: ", temp_count
-        write(1, *) fp(m,:,:)
-        close(1)
-    enddo
-    do mw = 1,mwaves
-        open (1, file='sx_after_x_1st_'//trim(toString(mw,3))//'.txt', position="append")
-        write(1, *) "frame: ", temp_count
-        write(1, *) sx(mw,:,:)
-        close(1)
-    enddo
-    do mw = 1,mwaves
-        do m = 1,meqn
-            open (1, file='wave_x_after_x_1st_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', position="append")
-            write(1, *) "frame: ", temp_count
-            write(1, *) wave_x(m,mw,:,:)
-            close(1)
-        enddo
-    enddo
-    temp_count = temp_count + 1
-    if (temp_count > 10) then
-        stop
-    endif
 #endif
 
 
@@ -215,60 +155,11 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !     # and solve for transverse waves
 !     -----------------------------------------------------------
 
-#ifndef gpu
+#ifdef gpu
     ! call x_sweep_2nd_order(fm, fp, gm, gp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
     call x_sweep_2nd_order_simple(fm, fp, gm, gp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
-    ! output fm, fp , gm, gp sx, wave_x
-    ! do m = 1,meqn
-    !     call write_grid( cqxx(m,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'cqxx_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do mw = 1,mwaves
-    !     do m = 1,meqn
-    !         call write_grid( wave_x_tilde(m,mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'wave_x_tilde_after_x_2nd_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', temp_count)
-    !     enddo
-    ! enddo
-
-    ! do m = 1,meqn
-    !     call write_grid( fm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do m = 1,meqn
-    !     call write_grid( fp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do m = 1,meqn
-    !     call write_grid( gm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do m = 1,meqn
-    !     call write_grid( gp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do mw = 1,mwaves
-    !     call write_grid( sx(mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'sx_after_x_2nd_'//trim(toString(mw,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do mw = 1,mwaves
-    !     do m = 1,meqn
-    !         call write_grid( wave_x(m,mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'wave_x_after_x_2nd_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', temp_count)
-    !     enddo
-    ! enddo
-
-    ! temp_count = temp_count + 1
-    ! if (temp_count > 2) then
-    !     stop
-    ! endif
 
 #else
-    istat = cudaMemcpy(  q_d,  q, data_size)
-    istat = cudaMemcpy( fm_d, fm, data_size)
-    istat = cudaMemcpy( fp_d, fp, data_size)
-    istat = cudaMemcpy( gm_d, gm, data_size)
-    istat = cudaMemcpy( gp_d, gp, data_size)
-    istat = cudaMemcpy( sx_d, sx, mwaves*(mx + mbc-(2-mbc)+1)*( my+mbc-1-(2-mbc)+1))
-    istat = cudaMemcpy( wave_x_d, wave_x, meqn*mwaves*(mx+mbc-(2-mbc)+1)*(my+mbc-1-(2-mbc)+1))
-
     call threads_and_blocks([1, 0] , [mx+1, my+1], numBlocks, numThreads)
     call x_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
         (fm_d, fp_d, gm_d, gp_d, sx_d, wave_x_d, mbc, mx, my, dtdx, cc, zz)
@@ -277,59 +168,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     istat = cudaDeviceSynchronize()
     call check_cuda_error(istat)
 #endif
-    istat = cudaMemcpy(fm, fm_d, data_size)
-    istat = cudaMemcpy(fp, fp_d, data_size)
-    istat = cudaMemcpy(gm, gm_d, data_size)
-    istat = cudaMemcpy(gp, gp_d, data_size)
-    istat = cudaMemcpy(sx, sx_d, mwaves*(mx + mbc-(2-mbc)+1)*( my+mbc-1-(2-mbc)+1))
-    istat = cudaMemcpy(wave_x, wave_x_d, meqn*mwaves*(mx+mbc-(2-mbc)+1)*(my+mbc-1-(2-mbc)+1))
-
-    ! istat = cudaMemcpy(cqxx, cqxx_d, meqn*(mx + mbc-(2-mbc)+1)*( my+mbc-1-(2-mbc)+1))
-    ! istat = cudaMemcpy(wave_x_tilde, wave_x_tilde_d, meqn*mwaves*(mx+mbc-(2-mbc)+1)*(my+mbc-1-(2-mbc)+1))
-
-    ! output fm, fp , gm, gp sx, wave_x
-    ! do m = 1,meqn
-    !     call write_grid( cqxx(m,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'cqxx_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do mw = 1,mwaves
-    !     do m = 1,meqn
-    !         call write_grid( wave_x_tilde(m,mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'wave_x_tilde_after_x_2nd_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', temp_count)
-    !     enddo
-    ! enddo
-
-    ! do m = 1,meqn
-    !     call write_grid( fm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do m = 1,meqn
-    !     call write_grid( fp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'fp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do m = 1,meqn
-    !     call write_grid( gm(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gm_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do m = 1,meqn
-    !     call write_grid( gp(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'gp_after_x_2nd_'//trim(toString(m,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do mw = 1,mwaves
-    !     call write_grid( sx(mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'sx_after_x_2nd_'//trim(toString(mw,3))//'.txt', temp_count)
-    ! enddo
-
-    ! do mw = 1,mwaves
-    !     do m = 1,meqn
-    !         call write_grid( wave_x(m,mw,:,:), 2-mbc,mx+mbc, 2-mbc, my+mbc-1, 'wave_x_after_x_2nd_'//trim(toString(mw,3))//'_'//trim(toString(m,3))//'.txt', temp_count)
-    !     enddo
-    ! enddo
-
-
-    ! temp_count = temp_count + 1
-    ! if (temp_count > 2) then
-    !     stop
-    ! endif
-
 #endif
 
 
@@ -341,12 +179,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 #ifdef gpu
     call y_sweep_1st_order(q, gm, gp, sy, wave_y, meqn, mwaves, mbc, mx, my, dtdy, cflgrid)
 #else
-
-    istat = cudaMemcpy(  q_d,  q, data_size)
-    istat = cudaMemcpy( fm_d, fm, data_size)
-    istat = cudaMemcpy( fp_d, fp, data_size)
-    istat = cudaMemcpy( gm_d, gm, data_size)
-    istat = cudaMemcpy( gp_d, gp, data_size)
 
     call threads_and_blocks([0, 2-mbc] , [mx+1, my+mbc], numBlocks, numThreads)
     cflmx = numBlocks%x
@@ -374,12 +206,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     deallocate(cflxy)
     deallocate(cflxy_d)
 
-    istat = cudaMemcpy(fm, fm_d, data_size)
-    istat = cudaMemcpy(fp, fp_d, data_size)
-    istat = cudaMemcpy(gm, gm_d, data_size)
-    istat = cudaMemcpy(gp, gp_d, data_size)
-    istat = cudaMemcpy(sy, sy_d, mwaves*(mx + mbc-1-(2-mbc)+1)*( my+mbc-(2-mbc)+1))
-    istat = cudaMemcpy(wave_y, wave_y_d, meqn*mwaves*(mx+mbc-1-(2-mbc)+1)*(my+mbc-(2-mbc)+1))
 #endif
 
 
@@ -425,7 +251,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
         call gpu_deallocate(sy_d) 
         call gpu_deallocate(wave_y_d) 
 
-        ! call gpu_deallocate(cqxx_d)
 #endif
 
     

@@ -458,6 +458,16 @@ contains
         str = adjustl(str)
     end function toString2
 
+
+
+    !> ################################################ !
+    ! Write a 2d grid data, q, to file, fname
+    ! Example:
+    ! 
+    ! do m = 1,meqn
+    !     call write_grid( q(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'q_'//trim(toString(m,3))//'.txt', frame_no)
+    ! enddo
+    !! ################################################ !
     subroutine write_grid2(q, lox, hix, loy, hiy, fname, iframe)
         integer, intent(in) :: lox, hix, loy, hiy, iframe
         real(kind=8), intent(in) :: q(lox:hix, loy:hiy)
