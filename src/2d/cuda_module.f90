@@ -36,6 +36,10 @@ module cuda_module
         module procedure toString2
     end interface toString
 
+    interface write_grid
+        module procedure write_grid2
+    end interface write_grid
+
 contains
 
     subroutine initialize_cuda() 
@@ -453,5 +457,23 @@ contains
         write (str,fmt) k ! converting integer to string using a 'internal file'
         str = adjustl(str)
     end function toString2
+
+    subroutine write_grid2(q, lox, hix, loy, hiy, fname, iframe)
+        integer, intent(in) :: lox, hix, loy, hiy, iframe
+        real(kind=8), intent(in) :: q(lox:hix, loy:hiy)
+        character(len=100), intent(in) :: fname
+        integer :: i,j
+
+        open (1, file=fname, position="append")
+        write(1, *) "frame: ", iframe
+        write(1, *) "i: ", lox, hix
+        write(1, *) "j: ", loy, hiy
+        do i = lox, hix
+            do j = loy, hiy
+                write(1, *) i, j, q(i,j)
+            enddo
+        enddo
+        close(1)
+    end subroutine write_grid2
 
 end module cuda_module
