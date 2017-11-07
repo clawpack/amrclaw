@@ -10,6 +10,9 @@ module sweep_module
 
     contains
 
+!TODO: replace do m=1,meqn q(m,...) =  ... 
+! with q(:,...) = ...
+
 subroutine x_sweep_1st_order(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx, cflgrid) 
 
     implicit none
@@ -97,6 +100,7 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflx
     integer :: m, mw
     real(kind=8) :: amdq(NEQNS), apdq(NEQNS)
 
+    ! TODO: remove this
     attributes(device) :: q, fm, fp, s_x, wave_x
     double precision, shared :: cfl_s(blockDim%x, blockDim%y)
 
@@ -668,8 +672,8 @@ subroutine y_sweep_1st_order(q, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx, my, 
     real(kind=8), intent(in) :: q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8) :: s_y(mwaves, 2-mbc:mx+mbc-1, 1-mbc:my + mbc)
-    real(kind=8) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: s_y(mwaves, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
+    real(kind=8), intent(inout) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
     real(kind=8), intent(inout) :: cflgrid
     real(kind=8), intent(in) :: dtdy
 
@@ -731,8 +735,8 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflx
     real(kind=8), intent(in) :: q(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gm(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_y(NWAVES, 2-mbc:mx+mbc-1, 1-mbc:my + mbc)
-    real(kind=8), intent(inout) :: wave_y(NEQNS, NWAVES, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: s_y(NWAVES, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
+    real(kind=8), intent(inout) :: wave_y(NEQNS, NWAVES, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
     real(kind=8), intent(inout) :: cflxy(cflmx, cflmy)
     real(kind=8), value, intent(in) :: dtdy
     real(kind=8), value, intent(in) :: cc, zz
@@ -743,6 +747,7 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflx
     integer :: m, mw
     real(kind=8) :: bmdq(NEQNS), bpdq(NEQNS)
 
+    ! TODO: remove this
     attributes(device) :: q, gm, gp, s_y, wave_y
     double precision, shared :: cfl_s(blockDim%x, blockDim%y)
 
@@ -809,12 +814,12 @@ subroutine y_sweep_2nd_order(fm, fp, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx,
     real(kind=8), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8) :: s_y(mwaves, 2-mbc:mx+mbc-1, 1-mbc:my + mbc)
-    real(kind=8) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
+    real(kind=8), intent(in) :: s_y(mwaves, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
+    real(kind=8), intent(in) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
     real(kind=8), intent(in) :: dtdy
 
     ! Local variables for the Riemann solver
-    real(kind=8) :: wave_y_tilde(meqn, mwaves, 2-mbc:mx+mbc-1, 1-mbc:my+mbc)
+    real(kind=8) :: wave_y_tilde(meqn, mwaves, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
     real(kind=8) :: cqyy(meqn)
     real(kind=8) :: bmdq(meqn), bpdq(meqn)
     real(kind=8) :: apbmdq(meqn), ambmdq(meqn), apbpdq(meqn), ambpdq(meqn)
