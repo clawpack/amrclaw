@@ -13,8 +13,7 @@ ifeq ($(USE_CUDA), TRUE)
 COMMON_MODULES += \
   $(AMRLIB)/cuda_module.f90 \
   $(AMRLIB)/memory_module.f90 \
-  $(AMRLIB)/sweep_module.f90 \
-  $(AMRLIB)/sweep_misc_module.f90 
+  $(AMRLIB)/sweep_module.f90
 endif
 
 COMMON_SOURCES += \

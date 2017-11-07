@@ -4,7 +4,6 @@ module sweep_module
     use parallel_advanc_module, only: dtcom, dxcom, dycom, icom, jcom
     use problem_para_module, only: rho,bulk,cc,zz
     use cuda_module, only: max_reduce_device_2d
-    use sweep_misc_module, only: compute_cqxx, compute_cqyy
 
     implicit none
 
@@ -100,8 +99,6 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflx
     integer :: m, mw
     real(kind=8) :: amdq(NEQNS), apdq(NEQNS)
 
-    ! TODO: remove this
-    attributes(device) :: q, fm, fp, s_x, wave_x
     double precision, shared :: cfl_s(blockDim%x, blockDim%y)
 
 
@@ -400,8 +397,6 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     integer :: m, mw
     real(kind=8) :: atomic_result
 
-    ! TODO: remove this. We don't need this in a global function
-    ! attributes(device) :: fm, fp, gm, gp, s_x, wave_x
 
     i = (blockIdx%x-1) * blockDim%x + threadIdx%x
     j = (blockIdx%y-1) * blockDim%y + threadIdx%y
@@ -452,12 +447,6 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
         endif
     enddo ! end mwave loop
 
-    ! TODO: remove compute_cqxx in sweep_misc_module
-    ! I put some operations into this function and move it to another files to prevent the compiler from over-optimizing this part,
-    ! which gives totally wrong results.
-    ! call compute_cqxx(cqxx,wave_x_tilde, s_x(1,i,j), s_x(2,i,j) , dtdx)
-
-
     do m = 1,NEQNS
         cqxx(m) = 0.d0
         do mw = 1, NWAVES
@@ -496,12 +485,6 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     bpamdq(3) = cc * a2
 
     do m =1,NEQNS
-        ! gm(m,i-1,j) = gm(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
-        ! gp(m,i-1,j) = gp(m,i-1,j) - 0.5d0*dtdx * bmamdq(m)
-
-        ! gm(m,i-1,j+1) = gm(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
-        ! gp(m,i-1,j+1) = gp(m,i-1,j+1) - 0.5d0*dtdx * bpamdq(m)
-
         ! TODO: compare the performance if I replace atomic_result with gm(m,i-1,j)
         atomic_result = atomicadd(gm(m,i-1,j), - 0.5d0*dtdx * bmamdq(m))
         atomic_result = atomicadd(gp(m,i-1,j), - 0.5d0*dtdx * bmamdq(m))
@@ -522,12 +505,6 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     bpapdq(3) = cc * a2
 
     do m =1,NEQNS
-        ! gm(m,i,j) = gm(m,i,j) - 0.5d0*dtdx * bmapdq(m)
-        ! gp(m,i,j) = gp(m,i,j) - 0.5d0*dtdx * bmapdq(m)
-
-        ! gm(m,i,j+1) = gm(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
-        ! gp(m,i,j+1) = gp(m,i,j+1) - 0.5d0*dtdx * bpapdq(m)
-
         atomic_result = atomicadd(gm(m,i,j), - 0.5d0*dtdx * bmapdq(m))
         atomic_result = atomicadd(gp(m,i,j), - 0.5d0*dtdx * bmapdq(m))
         atomic_result = atomicadd(gm(m,i,j+1), - 0.5d0*dtdx * bpapdq(m))
@@ -748,8 +725,6 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflx
     integer :: m, mw
     real(kind=8) :: bmdq(NEQNS), bpdq(NEQNS)
 
-    ! TODO: remove this
-    attributes(device) :: q, gm, gp, s_y, wave_y
     double precision, shared :: cfl_s(blockDim%x, blockDim%y)
 
 
@@ -789,6 +764,7 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflx
     do m = 1,NEQNS
         bmdq(m) = s_y(1,i,j)*wave_y(m,1,i,j)
         bpdq(m) = s_y(2,i,j)*wave_y(m,2,i,j)
+        ! TODO: see if I can remove this
         if (j >= 1 .and. j<=(my+1)) then
             gm(m,i,j) = gm(m,i,j) + bmdq(m)
             gp(m,i,j) = gp(m,i,j) - bpdq(m)
@@ -1045,8 +1021,6 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     integer :: m, mw
     real(kind=8) :: atomic_result
 
-    ! TODO: remove this. We don't need this in a global function
-    attributes(device) :: fm, fp, gm, gp, s_y, wave_y
 
     i = (blockIdx%x-1) * blockDim%x + threadIdx%x
     j = (blockIdx%y-1) * blockDim%y + threadIdx%y
@@ -1134,12 +1108,6 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     apbmdq(3) = 0.d0
 
     do m =1,NEQNS
-        ! fm(m,i,j-1) = fm(m,i,j-1) - 0.5d0*dtdy * ambmdq(m)
-        ! fp(m,i,j-1) = fp(m,i,j-1) - 0.5d0*dtdy * ambmdq(m)
-
-        ! fm(m,i+1,j-1) = fm(m,i+1,j-1) - 0.5d0*dtdy * apbmdq(m)
-        ! fp(m,i+1,j-1) = fp(m,i+1,j-1) - 0.5d0*dtdy * apbmdq(m)
-
         atomic_result = atomicadd(fm(m,i,j-1), - 0.5d0*dtdy * ambmdq(m))
         atomic_result = atomicadd(fp(m,i,j-1), - 0.5d0*dtdy * ambmdq(m))
         atomic_result = atomicadd(fm(m,i+1,j-1), - 0.5d0*dtdy * apbmdq(m))
@@ -1159,12 +1127,6 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     apbpdq(3) = 0.d0
 
     do m =1,NEQNS
-        ! fm(m,i,j) = fm(m,i,j) - 0.5d0*dtdy * ambpdq(m)
-        ! fp(m,i,j) = fp(m,i,j) - 0.5d0*dtdy * ambpdq(m)
-
-        ! fm(m,i+1,j) = fm(m,i+1,j) - 0.5d0*dtdy * apbpdq(m)
-        ! fp(m,i+1,j) = fp(m,i+1,j) - 0.5d0*dtdy * apbpdq(m)
-
         atomic_result = atomicadd(fm(m,i,j), - 0.5d0*dtdy * ambpdq(m))
         atomic_result = atomicadd(fp(m,i,j), - 0.5d0*dtdy * ambpdq(m))
         atomic_result = atomicadd(fm(m,i+1,j), - 0.5d0*dtdy * apbpdq(m))

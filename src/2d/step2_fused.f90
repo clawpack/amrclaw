@@ -81,11 +81,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     dtdx = dt/dx
     dtdy = dt/dy
 
-    fm = 0.d0
-    fp = 0.d0
-    gm = 0.d0
-    gp = 0.d0
-
 #ifdef CUDA
     call gpu_allocate( q_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
     call gpu_allocate(fm_d, device_id, 1, meqn, 1-mbc,mx+mbc, 1-mbc,my+mbc)
@@ -99,12 +94,13 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
     data_size = meqn * (mx + 2*mbc) * (my + 2*mbc)
 
+    ! TODO: We should merge these four kernels into one to reduce kernel launching overhead
+    fm_d = 0.d0
+    fp_d = 0.d0
+    gm_d = 0.d0
+    gp_d = 0.d0
 
     istat = cudaMemcpy(  q_d,  q, data_size)
-    istat = cudaMemcpy( fm_d, fm, data_size)
-    istat = cudaMemcpy( fp_d, fp, data_size)
-    istat = cudaMemcpy( gm_d, gm, data_size)
-    istat = cudaMemcpy( gp_d, gp, data_size)
 #endif
 
 
