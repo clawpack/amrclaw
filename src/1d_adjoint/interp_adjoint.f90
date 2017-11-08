@@ -3,34 +3,32 @@
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 subroutine interp_adjoint(nvar, r, q_interp, xlower_a, dx_a, &
-            mx_a, xlower_f, dx_f, mx_f, mask_qadjoint, mptr_a)
+            mx_a, xlower_f, dx_f, mx_f, mask_adjoint, mptr_a, mask_forward)
 
         use adjoint_module, only: adjoints
 
         implicit none
 
         ! Function arguments
-        integer, intent(in) :: r, nvar
-        logical, intent(in) :: mask_qadjoint(mx_a)
+        integer, intent(in) :: r, nvar, mx_a
+        logical, intent(in) :: mask_adjoint(1-adjoints(r)%nghost:mx_a+adjoints(r)%nghost)
         real(kind=8), intent(in) :: xlower_a, xlower_f
-        integer, intent(in) :: mx_f, mx_a
+        integer, intent(in) :: mx_f, mptr_a
         real(kind=8), intent(in) :: dx_f, dx_a
 
-        integer :: ii_c, ii_a, z,level,mptr_a,mitot_a, &
+        integer :: ii_c, ii_a, z,level, ik(mx_f), &
                       ivar,i, iadd, iaddaux, loc
         real(kind=8) :: q_interp(nvar,mx_f), denom
-        real(kind=8) :: x_side, x_main, xm, x, xhigh_a
+        real(kind=8) :: x_side, x_main, xm, x, xhigh_a,x_f
+        real(kind=8) :: dxk(mx_f), a
+        logical :: mask_forward(mx_f)
 
         iadd(ivar,i)  = loc + ivar - 1 + adjoints(r)%meqn*(i-1)
 
         q_interp = 0.0
         xhigh_a  = xlower_a + mx_a*dx_a
         loc    = adjoints(r)%loc(mptr_a)
-        ! Total number of points in x
-        mitot_a  = mx_a + 2*adjoints(r)%nghost
-        xm = xlower_a !- (adjoints(r)%nghost+0.5d0)*dx_a
-
-        !write(*,*) "In interp_adjoint"
+        xm = xlower_a - (adjoints(r)%nghost+0.5d0)*dx_a
 
         do z = 1, mx_f
             x = xlower_f + (z - 0.5d0)*dx_f
@@ -41,8 +39,9 @@ subroutine interp_adjoint(nvar, r, q_interp, xlower_a, dx_a, &
             ii_c = int((x-xm)/dx_a)
             !write(*,*) "Overlaps with adjoint cell ", ii_c
 
+            if (ii_c >= 1-adjoints(r)%nghost .and. ii_c <= mx_a+adjoints(r)%nghost) then
             ! Interpolate only if this cell is overlapping with grid
-            if (mask_qadjoint(ii_c)) then
+            if (mask_adjoint(ii_c)) then
 
                 ! Finding correct adjoint cell to interpolate with
                 ii_a = int(((x-xm)/dx_a) + 0.5d0)
@@ -73,7 +72,7 @@ subroutine interp_adjoint(nvar, r, q_interp, xlower_a, dx_a, &
 
                 write(*,*) "Value of q_interp: ", q_interp(:,z)
             endif
-
+            endif
         enddo
 
       end subroutine interp_adjoint

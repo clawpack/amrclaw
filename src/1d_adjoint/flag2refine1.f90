@@ -31,7 +31,7 @@
 !             DONTFLAG (no refinement needed)  or
 !             DOFLAG   (refinement desired)    
 !
-! tolsp = tolerance specified by user in input file amr2ez.data, used in default
+! flagtol = tolerance specified by user in input file amr2ez.data, used in default
 !         version of this routine as a tolerance for spatial differences.
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -51,7 +51,7 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlow,dx,t,level, &
     
     real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc)
     real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc)
-    real(kind=8) :: aux_temp(maux,1-mbc:mx+mbc)
+    real(kind=8) :: aux_temp(maux,1:mx)
     
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff)
@@ -70,9 +70,9 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlow,dx,t,level, &
     amrflags = DONTFLAG
     aux(innerprod_index,:) = 0.0
 
-    !write(*,*) " "
-    !write(*,*) "In flag2refine1"
-    !write(*,*) "Forward grid boundaries: ", xlow, xlow+mx*dx, mx
+    write(*,*) " "
+    write(*,*) "In flag2refine1"
+    write(*,*) "Level: ", level
 
     ! Loop over adjoint snapshots
     aloop: do r=1,totnum_adjoints
@@ -81,14 +81,13 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlow,dx,t,level, &
         if ((t+adjoints(r)%time) >= trange_start .and. &
             (t+adjoints(r)%time) <= trange_final) then
 
-            !write(*,*) " "
-            !write(*,*) "F2refine: Going to calculate inner product with adjoint ", r
+            write(*,*) "About to call calc_ip with adjoint ", r
             ! Calculate inner product with current snapshot
             aux_temp(innerprod_index,:) = &
-                    calculate_innerproduct(t,q,r,mx,xlow,dx)
+                    calculate_innerproduct(t,q,r,mx,xlower,dx,meqn,mbc)
 
             ! Save max inner product
-            do i=1-mbc,mx+mbc
+            do i=1,mx
                 aux(innerprod_index,i) = &
                    max(aux(innerprod_index,i), &
                    aux_temp(innerprod_index,i))
@@ -97,9 +96,11 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlow,dx,t,level, &
         endif
     enddo aloop
 
+    write(*,*) "Back from calc_ip for all adjoints"
     ! Flag locations that need refining
     x_loop: do i = 1,mx
         if (aux(innerprod_index,i) > flagtol) then
+            write(*,*) "Flagging some cells"
             amrflags(i) = DOFLAG
             cycle x_loop
         endif
