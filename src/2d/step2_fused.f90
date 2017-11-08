@@ -123,7 +123,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
     call x_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y>>>&
         (q_d, fm_d, fp_d, sx_d, wave_x_d, &
-         mbc, mx, my, dtdx, cflxy_d, cflmx, cflmy, cc, zz)
+         mbc, mx, my, dtdx, cflxy_d, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
@@ -131,6 +131,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 #endif
 
 
+    ! TODO: replace this reduction with library version
     istat = cudaMemcpy(cflxy, cflxy_d, cflmx*cflmy)
 
     do i = 1,cflmx
@@ -183,7 +184,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     allocate(cflxy_d(cflmx,cflmy))
     call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y>>>&
     (q_d, gm_d, gp_d, sy_d, wave_y_d, &
-     mbc, mx, my, dtdy, cflxy_d, cflmx, cflmy, cc, zz)
+     mbc, mx, my, dtdy, cflxy_d, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()

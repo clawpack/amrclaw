@@ -77,18 +77,17 @@ subroutine x_sweep_1st_order(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, 
 end subroutine x_sweep_1st_order
 
 attributes(global) &
-subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflxy, cflmx, cflmy, cc, zz) 
+subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflxy, cc, zz) 
 
     implicit none
 
-    integer, value, intent(in) :: mbc, mx, my, cflmx, cflmy
+    integer, value, intent(in) :: mbc, mx, my
     real(kind=8), intent(in) :: q(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: fm(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: fp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: s_x(NWAVES, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
     real(kind=8), intent(inout) :: wave_x(NEQNS, NWAVES, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    ! TODO: see if I can replace cflmx with griddim%x
-    real(kind=8), intent(inout) :: cflxy(cflmx, cflmy)
+    real(kind=8), intent(inout) :: cflxy(griddim%x, griddim%y)
     real(kind=8), value, intent(in) :: dtdx
     real(kind=8), value, intent(in) :: cc, zz
 
@@ -148,7 +147,7 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflx
     enddo
 
     call syncthreads()
-    call max_reduce_device_2d(cfl_s, mx+2*mbc-1, my+2, cflxy, cflmx, cflmy)
+    call max_reduce_device_2d(cfl_s, mx+2*mbc-1, my+2, cflxy, griddim%x, griddim%y)
 
 end subroutine x_sweep_1st_order_gpu
 
@@ -693,17 +692,17 @@ end subroutine y_sweep_1st_order
 
 
 attributes(global) &
-subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflxy, cflmx, cflmy, cc, zz) 
+subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflxy, cc, zz) 
 
     implicit none
 
-    integer, value, intent(in) :: mbc, mx, my, cflmx, cflmy
+    integer, value, intent(in) :: mbc, mx, my
     real(kind=8), intent(in) :: q(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gm(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: gp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: s_y(NWAVES, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
     real(kind=8), intent(inout) :: wave_y(NEQNS, NWAVES, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
-    real(kind=8), intent(inout) :: cflxy(cflmx, cflmy)
+    real(kind=8), intent(inout) :: cflxy(griddim%x, griddim%y)
     real(kind=8), value, intent(in) :: dtdy
     real(kind=8), value, intent(in) :: cc, zz
 
@@ -762,7 +761,7 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflx
     enddo
 
     call syncthreads()
-    call max_reduce_device_2d(cfl_s, mx+2, my+2*mbc-1, cflxy, cflmx, cflmy)
+    call max_reduce_device_2d(cfl_s, mx+2, my+2*mbc-1, cflxy, griddim%x, griddim%y)
 
 end subroutine y_sweep_1st_order_gpu
 
