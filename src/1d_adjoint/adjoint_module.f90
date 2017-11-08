@@ -39,7 +39,6 @@ contains
         character(len=200) :: adjoint_output
         logical :: fileExists
         integer :: iunit, k
-        real(kind=8) :: finalT
         real(kind=8) :: t1,t2
 
         adjoint_flagging = .true.
