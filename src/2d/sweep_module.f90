@@ -89,6 +89,7 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflx
     real(kind=8), intent(inout) :: fp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(inout) :: s_x(NWAVES, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
     real(kind=8), intent(inout) :: wave_x(NEQNS, NWAVES, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    ! TODO: see if I can replace cflmx with griddim%x
     real(kind=8), intent(inout) :: cflxy(cflmx, cflmy)
     real(kind=8), value, intent(in) :: dtdx
     real(kind=8), value, intent(in) :: cc, zz
@@ -125,24 +126,23 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflx
     delta2 = q(2,i,j) - q(2,i-1,j)
     a1 = (-delta1 + zz*delta2) / (2.d0*zz)
     a2 = (delta1 + zz*delta2) / (2.d0*zz)
+
     !        # Compute the waves.
+    s_x(1,i,j) = -cc
+    s_x(2,i,j) = cc
+
     wave_x(1,1,i,j) = -a1*zz
     wave_x(2,1,i,j) = a1
     wave_x(3,1,i,j) = 0.d0
-    s_x(1,i,j) = -cc
-
     wave_x(1,2,i,j) = a2*zz
     wave_x(2,2,i,j) = a2
     wave_x(3,2,i,j) = 0.d0
-    s_x(2,i,j) = cc
-    do m = 1,NEQNS
-        amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
-        apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
-        if (i >= 1 .and. i<=(mx+1)) then
-            fm(m,i,j) = fm(m,i,j) + amdq(m)
-            fp(m,i,j) = fp(m,i,j) - apdq(m)
-        endif
-    enddo
+
+    amdq(:) = s_x(1,i,j)*wave_x(:,1,i,j)
+    apdq(:) = s_x(2,i,j)*wave_x(:,2,i,j)
+    fm(:,i,j) = fm(:,i,j) + amdq(:)
+    fp(:,i,j) = fp(:,i,j) - apdq(:)
+
     do mw=1,NWAVES
         if (i >= 1 .and. i<=(mx+1)) then
             cfl_s(tidx, tidy) = dmax1(cfl_s(tidx,tidy), dtdx*s_x(mw,i,j),-dtdx*s_x(mw,i,j))
@@ -441,36 +441,26 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
             !
             !  # apply limiter to waves:
             !
-            do m=1,NEQNS
-                wave_x_tilde(m,mw) = wlimitr * wave_x(m,mw,i,j)
-            enddo
+            wave_x_tilde(:,mw) = wlimitr * wave_x(:,mw,i,j)
         endif
     enddo ! end mwave loop
 
-    do m = 1,NEQNS
-        cqxx(m) = 0.d0
-        do mw = 1, NWAVES
-            cqxx(m) = cqxx(m) + &
-                dabs(s_x(mw,i,j)) * (1.d0 - dabs(s_x(mw,i,j))*dtdx) * wave_x_tilde(m,mw)
-        enddo
+    cqxx = 0.d0
+    do mw = 1, NWAVES
+        cqxx(:) = cqxx(:) + &
+            dabs(s_x(mw,i,j)) * (1.d0 - dabs(s_x(mw,i,j))*dtdx) * wave_x_tilde(:,mw)
     enddo
 
-    do m=1,NEQNS
-        fp(m,i,j) = fp(m,i,j) + 0.5d0 * cqxx(m)
-        fm(m,i,j) = fm(m,i,j) + 0.5d0 * cqxx(m)
-    enddo
+    fp(:,i,j) = fp(:,i,j) + 0.5d0 * cqxx(:)
+    fm(:,i,j) = fm(:,i,j) + 0.5d0 * cqxx(:)
 
     ! ##### solve for transverse waves and add to gp and gm
     ! reconstruct amdq and apdq
-    do m=1,NEQNS
-        amdq(m) = s_x(1,i,j)*wave_x(m,1,i,j)
-        apdq(m) = s_x(2,i,j)*wave_x(m,2,i,j)
-    enddo
+    amdq(:) = s_x(1,i,j)*wave_x(:,1,i,j)
+    apdq(:) = s_x(2,i,j)*wave_x(:,2,i,j)
     ! incorporate cqxx into amdq and apdq so that it is split also.
-    do m=1,NEQNS
-        amdq(m) = amdq(m) + cqxx(m)
-        apdq(m) = apdq(m) - cqxx(m)
-    enddo
+    amdq(:) = amdq(:) + cqxx(:)
+    apdq(:) = apdq(:) - cqxx(:)
 
     ! ##### solve for bpamdq and bmamdq
     a1 = (-amdq(1) + zz*amdq(3)) / (2.d0*zz)
@@ -485,7 +475,6 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     bpamdq(3) = cc * a2
 
     do m =1,NEQNS
-        ! TODO: compare the performance if I replace atomic_result with gm(m,i-1,j)
         atomic_result = atomicadd(gm(m,i-1,j), - 0.5d0*dtdx * bmamdq(m))
         atomic_result = atomicadd(gp(m,i-1,j), - 0.5d0*dtdx * bmamdq(m))
         atomic_result = atomicadd(gm(m,i-1,j+1), - 0.5d0*dtdx * bpamdq(m))
@@ -752,24 +741,21 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflx
     a1 = (-delta1 + zz*delta2) / (2.d0*zz)
     a2 = (delta1 + zz*delta2) / (2.d0*zz)
     !        # Compute the waves.
+    s_y(1,i,j) = -cc
+    s_y(2,i,j) = cc
+
     wave_y(1,1,i,j) = -a1*zz
     wave_y(2,1,i,j) = 0.d0
     wave_y(3,1,i,j) = a1
-    s_y(1,i,j) = -cc
 
     wave_y(1,2,i,j) = a2*zz
     wave_y(2,2,i,j) = 0.d0
     wave_y(3,2,i,j) = a2
-    s_y(2,i,j) = cc
-    do m = 1,NEQNS
-        bmdq(m) = s_y(1,i,j)*wave_y(m,1,i,j)
-        bpdq(m) = s_y(2,i,j)*wave_y(m,2,i,j)
-        ! TODO: see if I can remove this
-        if (j >= 1 .and. j<=(my+1)) then
-            gm(m,i,j) = gm(m,i,j) + bmdq(m)
-            gp(m,i,j) = gp(m,i,j) - bpdq(m)
-        endif
-    enddo
+
+    bmdq(:) = s_y(1,i,j)*wave_y(:,1,i,j)
+    bpdq(:) = s_y(2,i,j)*wave_y(:,2,i,j)
+    gm(:,i,j) = gm(:,i,j) + bmdq(:)
+    gp(:,i,j) = gp(:,i,j) - bpdq(:)
     do mw=1,NWAVES
         if (j >= 1 .and. j<=(my+1)) then
             cfl_s(tidx, tidy) = dmax1(cfl_s(tidx,tidy), dtdy*s_y(mw,i,j),-dtdy*s_y(mw,i,j))
@@ -1069,33 +1055,26 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
             !  # apply limiter to waves:
             !
             do m=1,NEQNS
-                wave_y_tilde(m,mw) = wlimitr * wave_y(m,mw,i,j)
+                wave_y_tilde(:,mw) = wlimitr * wave_y(:,mw,i,j)
             enddo
         endif
     enddo ! end mwave loop
 
-    do m = 1,NEQNS
-        cqyy(m) = 0.d0
-        do mw = 1, NWAVES
-            cqyy(m) = cqyy(m) + &
-                dabs(s_y(mw,i,j)) * (1.d0 - dabs(s_y(mw,i,j))*dtdy) * wave_y_tilde(m,mw)
-        enddo
+    cqyy = 0.d0
+    do mw = 1, NWAVES
+        cqyy(:) = cqyy(:) + &
+            dabs(s_y(mw,i,j)) * (1.d0 - dabs(s_y(mw,i,j))*dtdy) * wave_y_tilde(:,mw)
     enddo
 
 
-    do m=1,NEQNS
-        gp(m,i,j) = gp(m,i,j) + 0.5d0 * cqyy(m)
-        gm(m,i,j) = gm(m,i,j) + 0.5d0 * cqyy(m)
-    enddo
+    gp(:,i,j) = gp(:,i,j) + 0.5d0 * cqyy(:)
+    gm(:,i,j) = gm(:,i,j) + 0.5d0 * cqyy(:)
     ! reconstruct bmdq and bpdq
-    do m=1,NEQNS
-        bmdq(m) = s_y(1,i,j)*wave_y(m,1,i,j)
-        bpdq(m) = s_y(2,i,j)*wave_y(m,2,i,j)
-    enddo
-    do m=1,NEQNS
-        bmdq(m) = bmdq(m) + cqyy(m)
-        bpdq(m) = bpdq(m) - cqyy(m)
-    enddo
+    bmdq(:) = s_y(1,i,j)*wave_y(:,1,i,j)
+    bpdq(:) = s_y(2,i,j)*wave_y(:,2,i,j)
+
+    bmdq(:) = bmdq(:) + cqyy(:)
+    bpdq(:) = bpdq(:) - cqyy(:)
 
     ! ##### solve for apbmdq and ambmdq
     a1 = (-bmdq(1) + zz*bmdq(2)) / (2.d0*zz)
