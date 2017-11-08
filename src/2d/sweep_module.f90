@@ -82,11 +82,11 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflx
     implicit none
 
     integer, value, intent(in) :: mbc, mx, my
-    real(kind=8), intent(in) :: q(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fm(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_x(NWAVES, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(inout) :: wave_x(NEQNS, NWAVES, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(in) ::     q(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) ::    s_x(2-mbc:mx + mbc, 2-mbc:my+mbc-1, NWAVES)
+    real(kind=8), intent(inout) :: wave_x(2-mbc:mx+mbc, 2-mbc:my+mbc-1, NEQNS, NWAVES)
     real(kind=8), intent(inout) :: cflxy(griddim%x, griddim%y)
     real(kind=8), value, intent(in) :: dtdx
     real(kind=8), value, intent(in) :: cc, zz
@@ -119,30 +119,30 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflx
 
 
     ! ============================================================================
-    delta1 = q(1,i,j) - q(1,i-1,j)
-    delta2 = q(2,i,j) - q(2,i-1,j)
+    delta1 = q(i,j,1) - q(i-1,j, 1)
+    delta2 = q(i,j,2) - q(i-1,j, 2)
     a1 = (-delta1 + zz*delta2) / (2.d0*zz)
     a2 = (delta1 + zz*delta2) / (2.d0*zz)
 
     !        # Compute the waves.
-    s_x(1,i,j) = -cc
-    s_x(2,i,j) = cc
+    s_x(i,j,1) = -cc
+    s_x(i,j,2) = cc
 
-    wave_x(1,1,i,j) = -a1*zz
-    wave_x(2,1,i,j) = a1
-    wave_x(3,1,i,j) = 0.d0
-    wave_x(1,2,i,j) = a2*zz
-    wave_x(2,2,i,j) = a2
-    wave_x(3,2,i,j) = 0.d0
+    wave_x(i,j,1,1) = -a1*zz
+    wave_x(i,j,2,1) = a1
+    wave_x(i,j,3,1) = 0.d0
+    wave_x(i,j,1,2) = a2*zz
+    wave_x(i,j,2,2) = a2
+    wave_x(i,j,3,2) = 0.d0
 
-    amdq(:) = s_x(1,i,j)*wave_x(:,1,i,j)
-    apdq(:) = s_x(2,i,j)*wave_x(:,2,i,j)
-    fm(:,i,j) = fm(:,i,j) + amdq(:)
-    fp(:,i,j) = fp(:,i,j) - apdq(:)
+    amdq(:) = s_x(i,j,1)*wave_x(i,j,:,1)
+    apdq(:) = s_x(i,j,2)*wave_x(i,j,:,2)
+    fm(i,j,:) = fm(i,j,:) + amdq(:)
+    fp(i,j,:) = fp(i,j,:) - apdq(:)
 
     do mw=1,NWAVES
         if (i >= 1 .and. i<=(mx+1)) then
-            cfl_s(tidx, tidy) = dmax1(cfl_s(tidx,tidy), dtdx*s_x(mw,i,j),-dtdx*s_x(mw,i,j))
+            cfl_s(tidx, tidy) = dmax1(cfl_s(tidx,tidy), dtdx*s_x(i,j,mw),-dtdx*s_x(i,j,mw))
         endif
     enddo
 
@@ -373,12 +373,12 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     implicit none
 
     integer, value, intent(in) :: mbc, mx, my
-    real(kind=8), intent(inout) :: fm(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gm(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gp(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(in) :: s_x(NWAVES, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(in) :: wave_x(NEQNS, NWAVES, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
+    real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
+    real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
+    real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
+    real(kind=8), intent(in) ::    s_x(2-mbc:mx+mbc, 2-mbc:my+mbc-1, NWAVES)
+    real(kind=8), intent(in) :: wave_x(2-mbc:mx+mbc, 2-mbc:my+mbc-1, NEQNS, NWAVES)
 
     real(kind=8), value, intent(in) :: dtdx
     real(kind=8), value, intent(in) :: cc, zz
@@ -414,19 +414,19 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
         dot = 0.d0
         wnorm2 = 0.d0
         do m=1,NEQNS
-            wnorm2 = wnorm2 + wave_x(m,mw,i,j)**2
+            wnorm2 = wnorm2 + wave_x(i,j,m,mw)**2
         enddo
         if (wnorm2.eq.0.d0) then
-            wave_x_tilde(:,mw) =  wave_x(:,mw,i,j)
+            wave_x_tilde(:,mw) =  wave_x(i,j,:,mw)
         else
 
-            if (s_x(mw,i,j) .gt. 0.d0) then
+            if (s_x(i,j,mw) .gt. 0.d0) then
                 do m=1,NEQNS
-                    dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i-1,j)
+                    dot = dot + wave_x(i,j,m,mw)*wave_x(i-1,j,m,mw)
                 enddo
             else
                 do m=1,NEQNS
-                    dot = dot + wave_x(m,mw,i,j)*wave_x(m,mw,i+1,j)
+                    dot = dot + wave_x(i,j,m,mw)*wave_x(i+1,j,m,mw)
                 enddo
             endif
 
@@ -438,23 +438,23 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
             !
             !  # apply limiter to waves:
             !
-            wave_x_tilde(:,mw) = wlimitr * wave_x(:,mw,i,j)
+            wave_x_tilde(:,mw) = wlimitr * wave_x(i,j,:,mw)
         endif
     enddo ! end mwave loop
 
     cqxx = 0.d0
     do mw = 1, NWAVES
         cqxx(:) = cqxx(:) + &
-            dabs(s_x(mw,i,j)) * (1.d0 - dabs(s_x(mw,i,j))*dtdx) * wave_x_tilde(:,mw)
+            dabs(s_x(i,j,mw)) * (1.d0 - dabs(s_x(i,j,mw))*dtdx) * wave_x_tilde(:,mw)
     enddo
 
-    fp(:,i,j) = fp(:,i,j) + 0.5d0 * cqxx(:)
-    fm(:,i,j) = fm(:,i,j) + 0.5d0 * cqxx(:)
+    fp(i,j,:) = fp(i,j,:) + 0.5d0 * cqxx(:)
+    fm(i,j,:) = fm(i,j,:) + 0.5d0 * cqxx(:)
 
     ! ##### solve for transverse waves and add to gp and gm
     ! reconstruct amdq and apdq
-    amdq(:) = s_x(1,i,j)*wave_x(:,1,i,j)
-    apdq(:) = s_x(2,i,j)*wave_x(:,2,i,j)
+    amdq(:) = s_x(i,j,1)*wave_x(i,j,:,1)
+    apdq(:) = s_x(i,j,2)*wave_x(i,j,:,2)
     ! incorporate cqxx into amdq and apdq so that it is split also.
     amdq(:) = amdq(:) + cqxx(:)
     apdq(:) = apdq(:) - cqxx(:)
@@ -473,10 +473,10 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     bpamdq(3) = cc * a2
 
     do m =1,NEQNS
-        atomic_result = atomicadd(gm(m,i-1,j), - 0.5d0*dtdx * bmamdq(m))
-        atomic_result = atomicadd(gp(m,i-1,j), - 0.5d0*dtdx * bmamdq(m))
-        atomic_result = atomicadd(gm(m,i-1,j+1), - 0.5d0*dtdx * bpamdq(m))
-        atomic_result = atomicadd(gp(m,i-1,j+1), - 0.5d0*dtdx * bpamdq(m))
+        atomic_result = atomicadd(gm(i-1,j  ,m), - 0.5d0*dtdx * bmamdq(m))
+        atomic_result = atomicadd(gp(i-1,j  ,m), - 0.5d0*dtdx * bmamdq(m))
+        atomic_result = atomicadd(gm(i-1,j+1,m), - 0.5d0*dtdx * bpamdq(m))
+        atomic_result = atomicadd(gp(i-1,j+1,m), - 0.5d0*dtdx * bpamdq(m))
     enddo
 
     ! # solve for bpapdq and bmapdq
@@ -492,10 +492,10 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     bpapdq(3) = cc * a2
 
     do m =1,NEQNS
-        atomic_result = atomicadd(gm(m,i,j), - 0.5d0*dtdx * bmapdq(m))
-        atomic_result = atomicadd(gp(m,i,j), - 0.5d0*dtdx * bmapdq(m))
-        atomic_result = atomicadd(gm(m,i,j+1), - 0.5d0*dtdx * bpapdq(m))
-        atomic_result = atomicadd(gp(m,i,j+1), - 0.5d0*dtdx * bpapdq(m))
+        atomic_result = atomicadd(gm(i,j  ,m), - 0.5d0*dtdx * bmapdq(m))
+        atomic_result = atomicadd(gp(i,j  ,m), - 0.5d0*dtdx * bmapdq(m))
+        atomic_result = atomicadd(gm(i,j+1,m), - 0.5d0*dtdx * bpapdq(m))
+        atomic_result = atomicadd(gp(i,j+1,m), - 0.5d0*dtdx * bpapdq(m))
     enddo
     return
 end subroutine x_sweep_2nd_order_gpu
@@ -697,11 +697,11 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflx
     implicit none
 
     integer, value, intent(in) :: mbc, mx, my
-    real(kind=8), intent(in) :: q(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gm(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_y(NWAVES, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
-    real(kind=8), intent(inout) :: wave_y(NEQNS, NWAVES, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
+    real(kind=8), intent(in) ::     q(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) ::    s_y(2-mbc:mx+mbc-1, 2-mbc:my + mbc, NWAVES)
+    real(kind=8), intent(inout) :: wave_y(2-mbc:mx+mbc-1, 2-mbc:my+mbc, NEQNS, NWAVES)
     real(kind=8), intent(inout) :: cflxy(griddim%x, griddim%y)
     real(kind=8), value, intent(in) :: dtdy
     real(kind=8), value, intent(in) :: cc, zz
@@ -734,29 +734,29 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflx
 
 
     ! ============================================================================
-    delta1 = q(1,i,j) - q(1,i,j-1)
-    delta2 = q(3,i,j) - q(3,i,j-1)
+    delta1 = q(i,j,1) - q(i,j-1,1)
+    delta2 = q(i,j,3) - q(i,j-1,3)
     a1 = (-delta1 + zz*delta2) / (2.d0*zz)
     a2 = (delta1 + zz*delta2) / (2.d0*zz)
     !        # Compute the waves.
-    s_y(1,i,j) = -cc
-    s_y(2,i,j) = cc
+    s_y(i,j,1) = -cc
+    s_y(i,j,2) = cc
 
-    wave_y(1,1,i,j) = -a1*zz
-    wave_y(2,1,i,j) = 0.d0
-    wave_y(3,1,i,j) = a1
+    wave_y(i,j,1,1) = -a1*zz
+    wave_y(i,j,2,1) = 0.d0
+    wave_y(i,j,3,1) = a1
 
-    wave_y(1,2,i,j) = a2*zz
-    wave_y(2,2,i,j) = 0.d0
-    wave_y(3,2,i,j) = a2
+    wave_y(i,j,1,2) = a2*zz
+    wave_y(i,j,2,2) = 0.d0
+    wave_y(i,j,3,2) = a2
 
-    bmdq(:) = s_y(1,i,j)*wave_y(:,1,i,j)
-    bpdq(:) = s_y(2,i,j)*wave_y(:,2,i,j)
-    gm(:,i,j) = gm(:,i,j) + bmdq(:)
-    gp(:,i,j) = gp(:,i,j) - bpdq(:)
+    bmdq(:) = s_y(i,j,1)*wave_y(i,j,:,1)
+    bpdq(:) = s_y(i,j,2)*wave_y(i,j,:,2)
+    gm(i,j,:) = gm(i,j,:) + bmdq(:)
+    gp(i,j,:) = gp(i,j,:) - bpdq(:)
     do mw=1,NWAVES
         if (j >= 1 .and. j<=(my+1)) then
-            cfl_s(tidx, tidy) = dmax1(cfl_s(tidx,tidy), dtdy*s_y(mw,i,j),-dtdy*s_y(mw,i,j))
+            cfl_s(tidx, tidy) = dmax1(cfl_s(tidx,tidy), dtdy*s_y(i,j,mw),-dtdy*s_y(i,j,mw))
         endif
     enddo
 
@@ -985,12 +985,12 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     implicit none
 
     integer, value, intent(in) :: mbc, mx, my
-    real(kind=8), intent(inout) :: fm(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fp(NEQNS, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gm(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gp(NEQNS,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(in) :: s_y(NWAVES, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
-    real(kind=8), intent(in) :: wave_y(NEQNS, NWAVES, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
+    real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(in) ::    s_y(2-mbc:mx+mbc-1, 2-mbc:my + mbc, NWAVES)
+    real(kind=8), intent(in) :: wave_y(2-mbc:mx+mbc-1, 2-mbc:my+mbc, NEQNS, NWAVES)
     real(kind=8), value, intent(in) :: dtdy
     real(kind=8), value, intent(in) :: cc, zz
 
@@ -1026,19 +1026,19 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
         dot = 0.d0
         wnorm2 = 0.d0
         do m=1,NEQNS
-            wnorm2 = wnorm2 + wave_y(m,mw,i,j)**2
+            wnorm2 = wnorm2 + wave_y(i,j,m,mw)**2
         enddo
         if (wnorm2.eq.0.d0) then
-            wave_y_tilde(:,mw) =  wave_y(:,mw,i,j)
+            wave_y_tilde(:,mw) =  wave_y(i,j,:,mw)
         else
 
-            if (s_y(mw,i,j) .gt. 0.d0) then
+            if (s_y(i,j,mw) .gt. 0.d0) then
                 do m=1,NEQNS
-                    dot = dot + wave_y(m,mw,i,j)*wave_y(m,mw,i,j-1)
+                    dot = dot + wave_y(i,j,m,mw)*wave_y(i,j-1,m,mw)
                 enddo
             else
                 do m=1,NEQNS
-                    dot = dot + wave_y(m,mw,i,j)*wave_y(m,mw,i,j+1)
+                    dot = dot + wave_y(i,j,m,mw)*wave_y(i,j+1,m,mw)
                 enddo
             endif
 
@@ -1053,7 +1053,7 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
             !  # apply limiter to waves:
             !
             do m=1,NEQNS
-                wave_y_tilde(:,mw) = wlimitr * wave_y(:,mw,i,j)
+                wave_y_tilde(:,mw) = wlimitr * wave_y(i,j,:,mw)
             enddo
         endif
     enddo ! end mwave loop
@@ -1061,15 +1061,15 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     cqyy = 0.d0
     do mw = 1, NWAVES
         cqyy(:) = cqyy(:) + &
-            dabs(s_y(mw,i,j)) * (1.d0 - dabs(s_y(mw,i,j))*dtdy) * wave_y_tilde(:,mw)
+            dabs(s_y(i,j,mw)) * (1.d0 - dabs(s_y(i,j,mw))*dtdy) * wave_y_tilde(:,mw)
     enddo
 
 
-    gp(:,i,j) = gp(:,i,j) + 0.5d0 * cqyy(:)
-    gm(:,i,j) = gm(:,i,j) + 0.5d0 * cqyy(:)
+    gp(i,j,:) = gp(i,j,:) + 0.5d0 * cqyy(:)
+    gm(i,j,:) = gm(i,j,:) + 0.5d0 * cqyy(:)
     ! reconstruct bmdq and bpdq
-    bmdq(:) = s_y(1,i,j)*wave_y(:,1,i,j)
-    bpdq(:) = s_y(2,i,j)*wave_y(:,2,i,j)
+    bmdq(:) = s_y(i,j,1)*wave_y(i,j,:,1)
+    bpdq(:) = s_y(i,j,2)*wave_y(i,j,:,2)
 
     bmdq(:) = bmdq(:) + cqyy(:)
     bpdq(:) = bpdq(:) - cqyy(:)
@@ -1085,10 +1085,10 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     apbmdq(3) = 0.d0
 
     do m =1,NEQNS
-        atomic_result = atomicadd(fm(m,i,j-1), - 0.5d0*dtdy * ambmdq(m))
-        atomic_result = atomicadd(fp(m,i,j-1), - 0.5d0*dtdy * ambmdq(m))
-        atomic_result = atomicadd(fm(m,i+1,j-1), - 0.5d0*dtdy * apbmdq(m))
-        atomic_result = atomicadd(fp(m,i+1,j-1), - 0.5d0*dtdy * apbmdq(m))
+        atomic_result = atomicadd(fm(i,j-1  ,m), - 0.5d0*dtdy * ambmdq(m))
+        atomic_result = atomicadd(fp(i,j-1  ,m), - 0.5d0*dtdy * ambmdq(m))
+        atomic_result = atomicadd(fm(i+1,j-1,m), - 0.5d0*dtdy * apbmdq(m))
+        atomic_result = atomicadd(fp(i+1,j-1,m), - 0.5d0*dtdy * apbmdq(m))
     enddo
 
     ! # solve for apbpdq and ambpdq
@@ -1104,10 +1104,10 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     apbpdq(3) = 0.d0
 
     do m =1,NEQNS
-        atomic_result = atomicadd(fm(m,i,j), - 0.5d0*dtdy * ambpdq(m))
-        atomic_result = atomicadd(fp(m,i,j), - 0.5d0*dtdy * ambpdq(m))
-        atomic_result = atomicadd(fm(m,i+1,j), - 0.5d0*dtdy * apbpdq(m))
-        atomic_result = atomicadd(fp(m,i+1,j), - 0.5d0*dtdy * apbpdq(m))
+        atomic_result = atomicadd(fm(i,j  ,m), - 0.5d0*dtdy * ambpdq(m))
+        atomic_result = atomicadd(fp(i,j  ,m), - 0.5d0*dtdy * ambpdq(m))
+        atomic_result = atomicadd(fm(i+1,j,m), - 0.5d0*dtdy * apbpdq(m))
+        atomic_result = atomicadd(fp(i+1,j,m), - 0.5d0*dtdy * apbpdq(m))
     enddo
     return
 end subroutine y_sweep_2nd_order_gpu
