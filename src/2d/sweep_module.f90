@@ -9,8 +9,6 @@ module sweep_module
 
     contains
 
-!TODO: replace do m=1,meqn q(m,...) =  ... 
-! with q(:,...) = ...
 
 subroutine x_sweep_1st_order(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, dtdx, cflgrid) 
 
@@ -391,8 +389,8 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     real(kind=8) :: amdq(NEQNS), apdq(NEQNS)
     real(kind=8) :: wave_x_tilde(NEQNS, NWAVES)
     real(kind=8) :: bpamdq(NEQNS), bmamdq(NEQNS), bpapdq(NEQNS), bmapdq(NEQNS)
-    real(kind=8) :: delta1, delta2, a1, a2
-    real(kind=8) :: dot, wnorm2, wlimitr, c, r
+    real(kind=8) :: a1, a2
+    real(kind=8) :: dot, wnorm2, wlimitr, r
     integer :: i,j
     integer :: m, mw
     real(kind=8) :: atomic_result
@@ -464,12 +462,13 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
 
     ! ##### solve for bpamdq and bmamdq
     a1 = (-amdq(1) + zz*amdq(3)) / (2.d0*zz)
-    a2 = (amdq(1) + zz*amdq(3)) / (2.d0*zz)
     !        # The down-going flux difference bmasdq is the product  -c * wave
     bmamdq(1) = cc * a1*zz
     bmamdq(2) = 0.d0
     bmamdq(3) = -cc * a1
+
     !        # The up-going flux difference bpasdq is the product  c * wave
+    a2 = (amdq(1) + zz*amdq(3)) / (2.d0*zz)
     bpamdq(1) = cc * a2*zz
     bpamdq(2) = 0.d0
     bpamdq(3) = cc * a2
@@ -483,12 +482,12 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
 
     ! # solve for bpapdq and bmapdq
     a1 = (-apdq(1) + zz*apdq(3)) / (2.d0*zz)
-    a2 = (apdq(1) + zz*apdq(3)) / (2.d0*zz)
     !        # The down-going flux difference bmasdq is the product  -c * wave
     bmapdq(1) = cc * a1*zz
     bmapdq(2) = 0.d0
     bmapdq(3) = -cc * a1
     !        # The up-going flux difference bpasdq is the product  c * wave
+    a2 = (apdq(1) + zz*apdq(3)) / (2.d0*zz)
     bpapdq(1) = cc * a2*zz
     bpapdq(2) = 0.d0
     bpapdq(3) = cc * a2
@@ -1001,8 +1000,8 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     real(kind=8) :: bmdq(NEQNS), bpdq(NEQNS)
     real(kind=8) :: wave_y_tilde(NEQNS, NWAVES)
     real(kind=8) :: apbmdq(NEQNS), ambmdq(NEQNS), apbpdq(NEQNS), ambpdq(NEQNS)
-    real(kind=8) :: delta1, delta2, a1, a2
-    real(kind=8) :: dot, wnorm2, wlimitr, c, r
+    real(kind=8) :: a1, a2
+    real(kind=8) :: dot, wnorm2, wlimitr, r
     integer :: i,j
     integer :: m, mw
     real(kind=8) :: atomic_result
