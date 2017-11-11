@@ -4,20 +4,19 @@
 !! \param fp[out] fluxes on the right side of each vertical edge
 !! \param gm[out] fluxes on the lower side of each horizontal edge
 !! \param gp[out] fluxes on the upper side of each horizontal edge
-subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q1,dx,dy,dt,cflgrid,fm1,fp1,gm1,gp1,rpn2,rpt2)
+subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,rpn2,rpt2)
 !
 !     clawpack routine ...  modified for AMRCLAW
 !
 !     Take one time step, updating q.
 !     On entry, q gives
 !        initial data for this step
-!        and is unchanged in this version.
+!        and is unchanged
 !    
 !     fm, fp are fluxes to left and right of single cell edge
-!     See the flux2 documentation for more information.
-!
-!     Converted to f90 2012-1-04 (KTM)
-!
+!     gm, gp are fluxes to lower and upper of single cell edge
+
+!     q, fm, fp, gm, gp are all in Structure of Array (SoA) format
     
     use amr_module
     use parallel_advanc_module, only: dtcom, dxcom, dycom, icom, jcom
@@ -42,41 +41,34 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q1,dx,dy,dt,cflgrid,fm1,fp1,gm1,
     real(kind=8), intent(in) :: dx,dy,dt
     real(kind=8), intent(inout) :: cflgrid
 
-    ! old AoS data
-    real(kind=8), intent(in) ::  q1(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fm1(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fp1(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gm1(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gp1(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    ! new SoA data
-    real(kind=8) ::  q(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-    real(kind=8) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-    real(kind=8) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-    real(kind=8) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-    real(kind=8) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+    real(kind=8), intent(in)    ::  q(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+    real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+    real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+    real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+    real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
 
-! #ifdef CUDA
-!     attributes(device) :: q, fm, fp, gm, gp
-! #endif
+#ifdef CUDA
+    attributes(device) :: q, fm, fp, gm, gp
+#endif
     
     ! Looping scalar storage
     integer :: i,j, m, mw
     real(kind=8) :: dtdx,dtdy
 
-    real(kind=8) ::     sx(2-mbc:mx+mbc, 2-mbc:my+mbc-1, mwaves)
-    real(kind=8) :: wave_x(2-mbc:mx+mbc, 2-mbc:my+mbc-1, meqn, mwaves)
-    real(kind=8) ::     sy(2-mbc:mx+mbc-1, 2-mbc:my+mbc, mwaves)
-    real(kind=8) :: wave_y(2-mbc:mx+mbc-1, 2-mbc:my+mbc, meqn, mwaves)
-    real(kind=8), allocatable :: cflxy(:,:)
-    integer :: cflmx, cflmy
 #ifdef CUDA
+    real(kind=8), allocatable :: cflxy(:,:)
     real(kind=8), allocatable, device :: cflxy_d(:,:)
-    integer :: istat
+    ! double precision, dimension(:,:), pointer, contiguous :: &
+    !     cflxy
+    ! double precision, dimension(:,:), pointer, contiguous, device :: &
+    !     cflxy_d
     double precision, dimension(:,:,:), pointer, contiguous, device :: &
-        q_d, fp_d, gp_d, fm_d, gm_d, sx_d, sy_d
+        sx_d, sy_d
     double precision, dimension(:,:,:,:), pointer, contiguous, device :: &
         wave_x_d, wave_y_d
     integer :: data_size
+    integer :: istat
+    integer :: cflmx, cflmy
 #endif
 
     
@@ -90,11 +82,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q1,dx,dy,dt,cflgrid,fm1,fp1,gm1,
     dtdy = dt/dy
 
 #ifdef CUDA
-    call gpu_allocate( q_d, device_id, 1-mbc,mx+mbc, 1-mbc,my+mbc, 1, meqn) 
-    call gpu_allocate(fm_d, device_id, 1-mbc,mx+mbc, 1-mbc,my+mbc, 1, meqn) 
-    call gpu_allocate(fp_d, device_id, 1-mbc,mx+mbc, 1-mbc,my+mbc, 1, meqn) 
-    call gpu_allocate(gm_d, device_id, 1-mbc,mx+mbc, 1-mbc,my+mbc, 1, meqn) 
-    call gpu_allocate(gp_d, device_id, 1-mbc,mx+mbc, 1-mbc,my+mbc, 1, meqn) 
     call gpu_allocate(    sx_d, device_id, 2-mbc, mx+mbc, 2-mbc, my+mbc-1, 1, mwaves)
     call gpu_allocate(wave_x_d, device_id, 2-mbc, mx+mbc, 2-mbc, my+mbc-1, 1, meqn, 1, mwaves)
     call gpu_allocate(    sy_d, device_id, 2-mbc, mx+mbc-1, 2-mbc, my+mbc, 1, mwaves)
@@ -104,21 +91,11 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q1,dx,dy,dt,cflgrid,fm1,fp1,gm1,
     data_size = meqn * (mx + 2*mbc) * (my + 2*mbc)
 
     ! TODO: We should merge these four kernels into one to reduce kernel launching overhead
-    fm_d = 0.d0
-    fp_d = 0.d0
-    gm_d = 0.d0
-    gp_d = 0.d0
+    fm = 0.d0
+    fp = 0.d0
+    gm = 0.d0
+    gp = 0.d0
 
-    ! convert q1 to SoA
-    do i = 1-mbc,mx+mbc
-        do j = 1-mbc,my+mbc
-            do m = 1,meqn
-                q(i,j,m) = q1(m,i,j)
-            enddo
-        enddo
-    enddo
-
-    istat = cudaMemcpy(  q_d,  q, data_size)
 #endif
 
 
@@ -140,7 +117,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q1,dx,dy,dt,cflgrid,fm1,fp1,gm1,
     allocate(cflxy_d(cflmx,cflmy))
 
     call x_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y>>>&
-        (q_d, fm_d, fp_d, sx_d, wave_x_d, &
+        (q, fm, fp, sx_d, wave_x_d, &
          mbc, mx, my, dtdx, cflxy_d, cc, zz)
 
 #ifdef DEBUG
@@ -177,7 +154,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q1,dx,dy,dt,cflgrid,fm1,fp1,gm1,
 #else
     call threads_and_blocks([1, 0] , [mx+1, my+1], numBlocks, numThreads)
     call x_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
-        (fm_d, fp_d, gm_d, gp_d, sx_d, wave_x_d, mbc, mx, my, dtdx, cc, zz)
+        (fm, fp, gm, gp, sx_d, wave_x_d, mbc, mx, my, dtdx, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
@@ -201,7 +178,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q1,dx,dy,dt,cflgrid,fm1,fp1,gm1,
     allocate(cflxy(cflmx,cflmy))
     allocate(cflxy_d(cflmx,cflmy))
     call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y>>>&
-    (q_d, gm_d, gp_d, sy_d, wave_y_d, &
+    (q, gm, gp, sy_d, wave_y_d, &
      mbc, mx, my, dtdy, cflxy_d, cc, zz)
 
 #ifdef DEBUG
@@ -237,46 +214,22 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q1,dx,dy,dt,cflgrid,fm1,fp1,gm1,
 
     call threads_and_blocks([0, 1] , [mx+1, my+1], numBlocks, numThreads)
     call y_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
-        (fm_d, fp_d, gm_d, gp_d, sy_d, wave_y_d, mbc, mx, my, dtdx, cc, zz)
+        (fm, fp, gm, gp, sy_d, wave_y_d, mbc, mx, my, dtdx, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
     call check_cuda_error(istat)
 #endif
 
-#ifdef CUDA
-    istat = cudaMemcpy(fm,  fm_d, data_size)
-    istat = cudaMemcpy(fp,  fp_d, data_size)
-    istat = cudaMemcpy(gm,  gm_d, data_size)
-    istat = cudaMemcpy(gp,  gp_d, data_size)
-#endif
-
-    ! convert fm, fp, gm, gp to AoS
-    do i = 1-mbc,mx+mbc
-        do j = 1-mbc,my+mbc
-            do m = 1,meqn
-                fm1(m,i,j) = fm(i,j,m)
-                fp1(m,i,j) = fp(i,j,m)
-                gm1(m,i,j) = gm(i,j,m)
-                gp1(m,i,j) = gp(i,j,m)
-            enddo
-        enddo
-    enddo
 #endif
 
 
 
 #ifdef CUDA
-        call gpu_deallocate(q_d) 
-        call gpu_deallocate(fp_d) 
-        call gpu_deallocate(fm_d) 
-        call gpu_deallocate(gp_d) 
-        call gpu_deallocate(gm_d) 
         call gpu_deallocate(sx_d) 
         call gpu_deallocate(wave_x_d) 
         call gpu_deallocate(sy_d) 
         call gpu_deallocate(wave_y_d) 
-
 #endif
 
     

@@ -146,7 +146,7 @@ contains
             nvar,xlow,ylow,time,mptr,maux,aux)
 
         use amr_module
-#ifdef NCUDA
+#ifdef CUDA
         use memory_module, only: gpu_allocate, gpu_deallocate
         use cuda_module, only: device_id, wait_for_all_gpu_tasks
         use cudafor
@@ -165,28 +165,30 @@ contains
         double precision :: dtdx, dtdy
         integer :: i,j,m
 
-#ifdef NCUDA
+#ifdef CUDA
+        ! These are all in SoA format
+        double precision ::  q1(mitot,mjtot,nvar)
+        double precision :: fp1(mitot,mjtot,nvar), gp1(mitot,mjtot,nvar)
+        double precision :: fm1(mitot,mjtot,nvar), gm1(mitot,mjtot,nvar)
         double precision, dimension(:,:,:), pointer, contiguous, device :: &
-            q_d, fp_d, gp_d, fm_d, gm_d, aux_d
+            q_d, fp_d, gp_d, fm_d, gm_d
         integer :: data_size, aux_size
         integer :: cudaResult
 #endif
-        ! 	  dimension work(mwork)
-
         logical    debug,  dump
         data       debug/.false./,  dump/.false./
 
-#ifdef NCUDA
-        call gpu_allocate(q_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
-        call gpu_allocate(fp_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
-        call gpu_allocate(gp_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
-        call gpu_allocate(fm_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
-        call gpu_allocate(gm_d, device_id, 1, nvar, 1, mitot, 1, mjtot) 
-        if (maux > 0) then
-            call gpu_allocate(aux_d, device_id, 1, maux, 1, mitot, 1, mjtot) 
-        endif
+#ifdef CUDA
+        call gpu_allocate( q_d, device_id, 1, mitot, 1, mjtot, 1, nvar) 
+        call gpu_allocate(fp_d, device_id, 1, mitot, 1, mjtot, 1, nvar) 
+        call gpu_allocate(gp_d, device_id, 1, mitot, 1, mjtot, 1, nvar) 
+        call gpu_allocate(fm_d, device_id, 1, mitot, 1, mjtot, 1, nvar) 
+        call gpu_allocate(gm_d, device_id, 1, mitot, 1, mjtot, 1, nvar) 
+        ! if (maux > 0) then
+        !     call gpu_allocate(aux_d, device_id, 1, maux, 1, mitot, 1, mjtot) 
+        ! endif
         data_size = nvar*mitot*mjtot 
-        aux_size = maux*mitot*mjtot 
+        ! aux_size = maux*mitot*mjtot 
 #endif
 
 !
@@ -224,29 +226,24 @@ contains
 !
       call b4step2(mbc,mx,my,nvar,q, &
           xlowmbc,ylowmbc,dx,dy,time,dt,maux,aux)
-!
-!
-!     # take one step on the conservation law:
-!
-      ! call step2(mbig,nvar,maux, &
-      !     mbc,mx,my, &
-      !     q,aux,dx,dy,dt,cflgrid, &
-      !     fm,fp,gm,gp,rpn2,rpt2)
 
-#ifdef NCUDA
-        cudaResult = cudaMemcpy(  q_d,  q,data_size, cudaMemcpyHostToDevice)
-        cudaResult = cudaMemcpy( fm_d, fm,data_size, cudaMemcpyHostToDevice)
-        cudaResult = cudaMemcpy( fp_d, fp,data_size, cudaMemcpyHostToDevice)
-        cudaResult = cudaMemcpy( gm_d, gm,data_size, cudaMemcpyHostToDevice)
-        cudaResult = cudaMemcpy( gp_d, gp,data_size, cudaMemcpyHostToDevice)
-        if (maux > 0) then
-            cudaResult = cudaMemcpy(aux_d,aux, aux_size, cudaMemcpyHostToDevice)
-        endif
+#ifdef CUDA
+        ! convert q to SoA
+        do i = 1, mitot
+            do j = 1,mjtot
+                do m = 1,nvar
+                    q1(i,j,m) = q(m,i,j)
+                enddo
+            enddo
+        enddo
+        cudaResult = cudaMemcpy(q_d,  q1, data_size, cudaMemcpyHostToDevice)
+        ! if (maux > 0) then
+        !     cudaResult = cudaMemcpy(aux_d,aux, aux_size, cudaMemcpyHostToDevice)
+        ! endif
 #endif
 
 ! assume no aux here
-! debug: send host array to step2_fused for now
-#ifdef NCUDA
+#ifdef CUDA
       call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
           q_d,dx,dy,dt,cflgrid, &
@@ -256,18 +253,7 @@ contains
           mbc,mx,my, &
           q,dx,dy,dt,cflgrid, &
           fm,fp,gm,gp,rpn2,rpt2)
-      ! call step2(mbig,nvar,maux, &
-      !               mbc,mx,my, &
-      !               q,aux,dx,dy,dt,cflgrid, &
-      !               fm,fp,gm,gp,rpn2,rpt2)
-
 #endif
-!
-!
-!       write(outunit,1001) mptr, node(nestlevel,mptr),cflgrid
-!1001   format(' Courant # of grid', i4,
-!    &        ' on level', i3, ' is  ', e10.3)
-!
 
 !$OMP  CRITICAL (cflm)
 
@@ -280,21 +266,21 @@ contains
         dtdx = dt/dx
         dtdy = dt/dy
 
-#ifdef NCUDA
+#ifdef CUDA
         !$cuf kernel do(3) <<<*, *>>>
-        do j=mbc+1,mjtot-mbc
-            do i=mbc+1,mitot-mbc
-                do m=1,nvar
+        do m=1,nvar
+            do j=mbc+1,mjtot-mbc
+                do i=mbc+1,mitot-mbc
                     if (mcapa.eq.0) then
                         !            # no capa array.  Standard flux differencing:
-                        q_d(m,i,j) = q_d(m,i,j) &
-                            - dtdx * (fm_d(m,i+1,j) - fp_d(m,i,j)) &
-                            - dtdy * (gm_d(m,i,j+1) - gp_d(m,i,j)) 
+                        q_d(i,j,m) = q_d(i,j,m) &
+                            - dtdx * (fm_d(i+1,j,m) - fp_d(i,j,m)) &
+                            - dtdy * (gm_d(i,j+1,m) - gp_d(i,j,m)) 
                     else
                         !            # with capa array.
-                        q_d(m,i,j) = q_d(m,i,j) &
-                            - (dtdx * (fm_d(m,i+1,j) - fp_d(m,i,j)) &
-                            +  dtdy * (gm_d(m,i,j+1) - gp_d(m,i,j))) / aux_d(mcapa,i,j)
+                        ! q_d(m,i,j) = q_d(m,i,j) &
+                        !     - (dtdx * (fm_d(m,i+1,j) - fp_d(m,i,j)) &
+                        !     +  dtdy * (gm_d(m,i,j+1) - gp_d(m,i,j))) / aux_d(mcapa,i,j)
                     endif
                 enddo
             enddo
@@ -319,26 +305,46 @@ contains
         enddo
 #endif
 
-#ifdef NCUDA
-        cudaResult = cudaMemcpy(q,q_d,  data_size, cudaMemcpyDeviceToHost)
-        cudaResult = cudaMemcpy(fm,fm_d,data_size, cudaMemcpyDeviceToHost)
-        cudaResult = cudaMemcpy(fp,fp_d,data_size, cudaMemcpyDeviceToHost)
-        cudaResult = cudaMemcpy(gm,gm_d,data_size, cudaMemcpyDeviceToHost)
-        cudaResult = cudaMemcpy(gp,gp_d,data_size, cudaMemcpyDeviceToHost)
-        if (maux > 0) then
-            cudaResult = cudaMemcpy(aux,aux_d,aux_size, cudaMemcpyDeviceToHost)
-        endif
+#ifdef CUDA
+        cudaResult = cudaMemcpy( q1, q_d,data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(fm1,fm_d,data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(fp1,fp_d,data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(gm1,gm_d,data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpy(gp1,gp_d,data_size, cudaMemcpyDeviceToHost)
+        ! if (maux > 0) then
+        !     cudaResult = cudaMemcpy(aux,aux_d,aux_size, cudaMemcpyDeviceToHost)
+        ! endif
 #endif
 
-#ifdef NCUDA
+#ifdef CUDA
+        ! convert q1 back to AoS
+        do i = 1, mitot
+            do j = 1,mjtot
+                do m = 1,nvar
+                    q(m,i,j) = q1(i,j,m)
+                enddo
+            enddo
+        enddo
+        ! convert fm, fp, gm, gp to AoS
+        do i = 1, mitot
+            do j = 1,mjtot
+                do m = 1,nvar
+                    fm(m,i,j) = fm1(i,j,m)
+                    fp(m,i,j) = fp1(i,j,m)
+                    gm(m,i,j) = gm1(i,j,m)
+                    gp(m,i,j) = gp1(i,j,m)
+                enddo
+            enddo
+        enddo
+
         call gpu_deallocate(q_d) 
         call gpu_deallocate(fp_d) 
         call gpu_deallocate(gp_d) 
         call gpu_deallocate(fm_d) 
         call gpu_deallocate(gm_d) 
-        if (maux > 0) then
-            call gpu_deallocate(aux_d) 
-        endif
+        ! if (maux > 0) then
+        !     call gpu_deallocate(aux_d) 
+        ! endif
 #endif
 
 !
