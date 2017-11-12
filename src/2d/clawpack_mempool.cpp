@@ -40,7 +40,7 @@ static int init_snan = 1;
 static int init_snan = 0;
 #endif
 
-static bool local_verbose = true;
+static bool local_verbose = false;
 
 extern "C" {
 

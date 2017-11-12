@@ -28,6 +28,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     use cuda_module, only: threads_and_blocks, numBlocks, numThreads, device_id
     use cuda_module, only: check_cuda_error, toString, temp_count, write_grid
     use memory_module, only: gpu_allocate, gpu_deallocate
+    use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned
     use cudafor, only: cudaMemcpy, cudaDeviceSynchronize
     use cudafor, only: dim3
 #endif
@@ -56,12 +57,10 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     real(kind=8) :: dtdx,dtdy
 
 #ifdef CUDA
-    real(kind=8), allocatable :: cflxy(:,:)
-    real(kind=8), allocatable, device :: cflxy_d(:,:)
-    ! double precision, dimension(:,:), pointer, contiguous :: &
-    !     cflxy
-    ! double precision, dimension(:,:), pointer, contiguous, device :: &
-    !     cflxy_d
+    double precision, dimension(:,:), pointer, contiguous :: &
+        cflxy
+    double precision, dimension(:,:), pointer, contiguous, device :: &
+        cflxy_d
     double precision, dimension(:,:,:), pointer, contiguous, device :: &
         sx_d, sy_d
     double precision, dimension(:,:,:,:), pointer, contiguous, device :: &
@@ -113,8 +112,8 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
     cflmx = numBlocks%x
     cflmy = numBlocks%y
-    allocate(cflxy(cflmx,cflmy))
-    allocate(cflxy_d(cflmx,cflmy))
+    call cpu_allocate_pinned(cflxy, 1, cflmx,1, cflmy)
+    call gpu_allocate(cflxy_d, device_id, 1, cflmx,1, cflmy)
 
     call x_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y>>>&
         (q, fm, fp, sx_d, wave_x_d, &
@@ -135,8 +134,8 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
         enddo
     enddo
 
-    deallocate(cflxy)
-    deallocate(cflxy_d)
+    call cpu_deallocated_pinned(cflxy)
+    call gpu_deallocate(cflxy_d, device_id)
 
 #endif
 
@@ -175,8 +174,8 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     call threads_and_blocks([0, 2-mbc] , [mx+1, my+mbc], numBlocks, numThreads)
     cflmx = numBlocks%x
     cflmy = numBlocks%y
-    allocate(cflxy(cflmx,cflmy))
-    allocate(cflxy_d(cflmx,cflmy))
+    call cpu_allocate_pinned(cflxy, 1, cflmx,1, cflmy)
+    call gpu_allocate(cflxy_d, device_id, 1, cflmx,1, cflmy)
     call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y>>>&
     (q, gm, gp, sy_d, wave_y_d, &
      mbc, mx, my, dtdy, cflxy_d, cc, zz)
@@ -194,9 +193,8 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
         enddo
     enddo
 
-
-    deallocate(cflxy)
-    deallocate(cflxy_d)
+    call cpu_deallocated_pinned(cflxy)
+    call gpu_deallocate(cflxy_d, device_id)
 
 #endif
 
