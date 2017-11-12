@@ -226,10 +226,10 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
 
 #ifdef CUDA
-        call gpu_deallocate(sx_d) 
-        call gpu_deallocate(wave_x_d) 
-        call gpu_deallocate(sy_d) 
-        call gpu_deallocate(wave_y_d) 
+        call gpu_deallocate(    sx_d, device_id) 
+        call gpu_deallocate(wave_x_d, device_id) 
+        call gpu_deallocate(    sy_d, device_id) 
+        call gpu_deallocate(wave_y_d, device_id) 
 #endif
 
     

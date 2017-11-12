@@ -2,6 +2,7 @@ module cuda_module
 
     use cudafor, only: cuda_stream_kind, cudaEvent, dim3
     use amr_module, only: inunit
+    use memory_module, only: clawpack_mempool_init
 
     implicit none
     save
@@ -88,6 +89,9 @@ contains
         cudaResult = cudaSetDevice(device_id)
         call check_cuda_error(cudaResult)
         print *, 'Use the GPU with id: ',device_id
+
+        ! Initialize memory pool
+        call clawpack_mempool_init()
 
         n_timer = 0
         temp_count = 1

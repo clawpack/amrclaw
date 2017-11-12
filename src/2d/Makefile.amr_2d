@@ -130,4 +130,25 @@ ifeq ($(USE_CUDA), TRUE)
 COMMON_SOURCES += \
   $(AMRLIB)/step2_fused.f90
 endif
-# $(AMRLIB)/resize_alloc_static.f90 \
+
+ifeq ($(USE_CPP), TRUE)
+
+CPP_SOURCES += \
+  $(AMRLIB)/clawpack_mempool.cpp \
+  $(AMRLIB)/clawpack_MemoryManager.cpp \
+  $(AMRLIB)/clawpack_CPUPinnedMemoryManager.cpp
+
+CPP_HEADERS += \
+  $(AMRLIB)/clawpack_MemoryManager.H \
+  $(AMRLIB)/clawpack_CPUPinnedMemoryManager.H \
+  $(AMRLIB)/clawpack_mempool.H \
+  $(AMRLIB)/clawpack_CUDA_helper.H  
+
+ifeq ($(USE_CUDA), TRUE)
+CPP_SOURCES += \
+  $(AMRLIB)/clawpack_GPUMemoryManager.cpp
+CPP_HEADERS += \
+  $(AMRLIB)/clawpack_GPUMemoryManager.H
+endif
+
+endif

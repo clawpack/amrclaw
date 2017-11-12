@@ -337,11 +337,11 @@ contains
             enddo
         enddo
 
-        call gpu_deallocate(q_d) 
-        call gpu_deallocate(fp_d) 
-        call gpu_deallocate(gp_d) 
-        call gpu_deallocate(fm_d) 
-        call gpu_deallocate(gm_d) 
+        call gpu_deallocate( q_d, device_id) 
+        call gpu_deallocate(fp_d, device_id) 
+        call gpu_deallocate(gp_d, device_id) 
+        call gpu_deallocate(fm_d, device_id) 
+        call gpu_deallocate(gm_d, device_id) 
         ! if (maux > 0) then
         !     call gpu_deallocate(aux_d) 
         ! endif
