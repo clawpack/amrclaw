@@ -23,10 +23,16 @@ OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
 
 FC = pgi
 USE_CUDA = TRUE
+
 # FC = gfortran
 # USE_CUDA = FALSE
+#
 # DEBUG = TRUE
 DEBUG = FALSE
+
+CC = pgi
+USE_CPP = TRUE
+
 DIM = 2
 NUM_EQUATIONS = 3
 NUM_WAVES = 2
