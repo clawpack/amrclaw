@@ -217,7 +217,7 @@ contains
         cp = clawpack_mempool_alloc_pinned(szr*sz)
         call clawpack_real_array_init(cp, sz)
         call c_f_pointer(cp, fp, shape=(/n1/))
-        call shift_bound_d2(fp, lo1, a)
+        call shift_bound_d1(fp, lo1, a)
     contains
         subroutine shift_bound_d1(fp, lo1, a)
             integer, intent(in) :: lo1
