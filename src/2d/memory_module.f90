@@ -18,12 +18,14 @@ module memory_module
     end interface
 
     interface cpu_allocate_pinned
+        module procedure cpu_allocate_pinned_r1
         module procedure cpu_allocate_pinned_r2
         module procedure cpu_allocate_pinned_r3
         module procedure cpu_allocate_pinned_r4
     end interface cpu_allocate_pinned
 
     interface cpu_deallocated_pinned
+        module procedure cpu_deallocate_pinned_r1
         module procedure cpu_deallocate_pinned_r2
         module procedure cpu_deallocate_pinned_r3
         module procedure cpu_deallocate_pinned_r4
@@ -203,6 +205,28 @@ contains
         a => Null()
     end subroutine gpu_deallocate_r4
 
+    subroutine cpu_allocate_pinned_r1(a, lo1, hi1)
+        real(kind=8), pointer, intent(inout) :: a(:)
+        integer, intent(in) :: lo1, hi1
+        integer :: n1
+        integer (kind=c_size_t) :: sz
+        type(c_ptr) :: cp
+        real(kind=8), pointer :: fp(:)
+        n1 = max(hi1-lo1+1, 1)
+        sz = int(n1,c_size_t)
+        cp = clawpack_mempool_alloc_pinned(szr*sz)
+        call clawpack_real_array_init(cp, sz)
+        call c_f_pointer(cp, fp, shape=(/n1/))
+        call shift_bound_d2(fp, lo1, a)
+    contains
+        subroutine shift_bound_d1(fp, lo1, a)
+            integer, intent(in) :: lo1
+            real(kind=8), target, intent(in) :: fp(lo1:)
+            real(kind=8), pointer, intent(inout) :: a(:)
+            a => fp
+        end subroutine shift_bound_d1
+    end subroutine cpu_allocate_pinned_r1
+
     subroutine cpu_allocate_pinned_r2(a, lo1, hi1, lo2, hi2)
         real(kind=8), pointer, intent(inout) :: a(:,:)
         integer, intent(in) :: lo1, hi1, lo2, hi2
@@ -274,6 +298,16 @@ contains
             a => fp
         end subroutine shift_bound_d4
     end subroutine cpu_allocate_pinned_r4
+
+    subroutine cpu_deallocate_pinned_r1(a)
+        real(kind=8), pointer, intent(inout) :: a(:)
+        integer :: lo(1)
+        type(c_ptr) :: cp
+        lo = lbound(a)
+        cp = c_loc(a(lo(1)))
+        call clawpack_mempool_free_pinned(cp)
+        a => Null()
+    end subroutine cpu_deallocate_pinned_r1
 
     subroutine cpu_deallocate_pinned_r2(a)
         real(kind=8), pointer, intent(inout) :: a(:,:)
