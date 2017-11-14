@@ -12,7 +12,7 @@
 #include <cuda_runtime_api.h>
 #include <cuda.h>
 
-static bool local_verbose = true;
+static bool local_verbose = false;
 
 CPUPinnedMemoryManager::CPUPinnedMemoryManager (size_t hunk_size)
 {

@@ -125,20 +125,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
         mitot  = nx + 2*nghost
         mjtot  = ny + 2*nghost
-        call cpu_allocate_pinned(fms(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
-        call cpu_allocate_pinned(fps(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
-        call cpu_allocate_pinned(gms(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
-        call cpu_allocate_pinned(gps(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
-    enddo
-
-    do j = 1, numgrids(level)
-        levSt = listStart(level)
-        mptr = listOfGrids(levSt+j-1)
-        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-        mitot  = nx + 2*nghost
-        mjtot  = ny + 2*nghost
-        ! everything before stepgrid
 
         !  copy old soln. values into  next time step's soln. values
         !  since integrator will overwrite it. only for grids not at
@@ -154,7 +140,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                 alloc(locold + i - 1) = alloc(locnew + i - 1)
             enddo
         endif
-!
         xlow = rnode(cornxlo,mptr) - nghost*hx
         ylow = rnode(cornylo,mptr) - nghost*hy
 
@@ -163,7 +148,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
         locaux = node(storeaux,mptr)
-!
+
         if (node(ffluxptr,mptr) .ne. 0) then
             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
@@ -188,6 +173,15 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                                alloc(locaux:locaux+nvar*mitot*mjtot), &
                                xlow,ylow,nvar,mitot,mjtot,naux,mptr)
         endif
+
+        ! allocate fluxes array and q array in SoA
+        call cpu_allocate_pinned(fms(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
+        call cpu_allocate_pinned(fps(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
+        call cpu_allocate_pinned(gms(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
+        call cpu_allocate_pinned(gps(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
+
+        ! Initialize fluxes array to zero
+        ! copy q to GPU
 
         if (dimensional_split .eq. 0) then
 !           # Unsplit method
