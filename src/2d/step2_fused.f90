@@ -25,7 +25,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     use sweep_module, only: y_sweep_1st_order_gpu, y_sweep_2nd_order_gpu
     use problem_para_module, only: cc, zz, bulk, rho
 #ifdef CUDA
-    use cuda_module, only: threads_and_blocks, numBlocks, numThreads, device_id
+    use cuda_module, only: threads_and_blocks, numBlocks, numThreads, device_id, cuda_streams
     use cuda_module, only: check_cuda_error, toString, temp_count, write_grid
     use memory_module, only: gpu_allocate, gpu_deallocate
     use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned
@@ -115,7 +115,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     call cpu_allocate_pinned(cflxy, 1, cflmx,1, cflmy)
     call gpu_allocate(cflxy_d, device_id, 1, cflmx,1, cflmy)
 
-    call x_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y>>>&
+    call x_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y, cuda_streams(1, device_id)>>>&
         (q, fm, fp, sx_d, wave_x_d, &
          mbc, mx, my, dtdx, cflxy_d, cc, zz)
 
@@ -152,7 +152,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
 #else
     call threads_and_blocks([1, 0] , [mx+1, my+1], numBlocks, numThreads)
-    call x_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
+    call x_sweep_2nd_order_gpu<<<numBlocks, numThreads,0,cuda_streams(1,device_id)>>>&
         (fm, fp, gm, gp, sx_d, wave_x_d, mbc, mx, my, dtdx, cc, zz)
 
 #ifdef DEBUG
@@ -176,7 +176,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     cflmy = numBlocks%y
     call cpu_allocate_pinned(cflxy, 1, cflmx,1, cflmy)
     call gpu_allocate(cflxy_d, device_id, 1, cflmx,1, cflmy)
-    call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y>>>&
+    call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y,cuda_streams(1,device_id)>>>&
     (q, gm, gp, sy_d, wave_y_d, &
      mbc, mx, my, dtdy, cflxy_d, cc, zz)
 
@@ -211,7 +211,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 #else
 
     call threads_and_blocks([0, 1] , [mx+1, my+1], numBlocks, numThreads)
-    call y_sweep_2nd_order_gpu<<<numBlocks, numThreads>>>&
+    call y_sweep_2nd_order_gpu<<<numBlocks, numThreads,0,cuda_streams(1,device_id)>>>&
         (fm, fp, gm, gp, sy_d, wave_y_d, mbc, mx, my, dtdx, cc, zz)
 
 #ifdef DEBUG

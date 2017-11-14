@@ -23,11 +23,25 @@ subroutine resize_storage(new_size,status)
     integer, intent(in) :: new_size
     
     real(kind=8), allocatable, target, dimension(:) :: new_storage
+#ifdef CUDA
+    attributes(pinned) :: new_storage
+    logical :: plog
+    integer :: istat
+#endif
     
 
     if (memsize < new_size) then
         print *, "Expanding storage from ", memsize," to ", new_size
+
+#ifdef CUDA
+        allocate(new_storage(new_size),STAT=istat, pinned=plog)
+        if (.not. plog) then
+            print *, "Warning: allocating pinned memory in init_alloc() failed"
+        endif
+#else
         allocate(new_storage(new_size),STAT=status)
+#endif
+
         if (status > 0) then
             return
         endif

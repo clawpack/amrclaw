@@ -216,6 +216,9 @@ module amr_module
     !real(kind=8), allocatable, target, dimension(:) :: storage
     !real(kind=8), pointer, dimension(:) :: alloc   ! old way, changed mjb Sept. 2014
     real(kind=8), allocatable, dimension(:) :: alloc    ! new way, use allocatable, not pointer
+#ifdef CUDA
+    attributes(pinned) :: alloc
+#endif
     integer memsize
        
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\

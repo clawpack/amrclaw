@@ -147,8 +147,8 @@ contains
 
         use amr_module
 #ifdef CUDA
-        use memory_module, only: gpu_allocate, gpu_deallocate
-        use cuda_module, only: device_id, wait_for_all_gpu_tasks
+        use memory_module, only: gpu_allocate, gpu_deallocate, cpu_allocate_pinned, cpu_deallocated_pinned
+        use cuda_module, only: device_id, wait_for_all_gpu_tasks, cuda_streams
         use cudafor
 #endif
         implicit double precision (a-h,o-z)
@@ -167,9 +167,8 @@ contains
 
 #ifdef CUDA
         ! These are all in SoA format
-        double precision ::  q1(mitot,mjtot,nvar)
-        double precision :: fp1(mitot,mjtot,nvar), gp1(mitot,mjtot,nvar)
-        double precision :: fm1(mitot,mjtot,nvar), gm1(mitot,mjtot,nvar)
+        double precision, dimension(:,:,:), pointer, contiguous :: &
+            q1, fp1, gp1, fm1, gm1
         double precision, dimension(:,:,:), pointer, contiguous, device :: &
             q_d, fp_d, gp_d, fm_d, gm_d
         integer :: data_size, aux_size
@@ -179,6 +178,12 @@ contains
         data       debug/.false./,  dump/.false./
 
 #ifdef CUDA
+        call cpu_allocate_pinned( q1, 1, mitot, 1, mjtot, 1, nvar) 
+        call cpu_allocate_pinned(fp1, 1, mitot, 1, mjtot, 1, nvar) 
+        call cpu_allocate_pinned(gp1, 1, mitot, 1, mjtot, 1, nvar) 
+        call cpu_allocate_pinned(fm1, 1, mitot, 1, mjtot, 1, nvar) 
+        call cpu_allocate_pinned(gm1, 1, mitot, 1, mjtot, 1, nvar) 
+
         call gpu_allocate( q_d, device_id, 1, mitot, 1, mjtot, 1, nvar) 
         call gpu_allocate(fp_d, device_id, 1, mitot, 1, mjtot, 1, nvar) 
         call gpu_allocate(gp_d, device_id, 1, mitot, 1, mjtot, 1, nvar) 
@@ -236,7 +241,7 @@ contains
                 enddo
             enddo
         enddo
-        cudaResult = cudaMemcpy(q_d,  q1, data_size, cudaMemcpyHostToDevice)
+        cudaResult = cudaMemcpyAsync(q_d,  q1, data_size, cudaMemcpyHostToDevice, cuda_streams(1,device_id))
         ! if (maux > 0) then
         !     cudaResult = cudaMemcpy(aux_d,aux, aux_size, cudaMemcpyHostToDevice)
         ! endif
@@ -277,6 +282,7 @@ contains
                             - dtdx * (fm_d(i+1,j,m) - fp_d(i,j,m)) &
                             - dtdy * (gm_d(i,j+1,m) - gp_d(i,j,m)) 
                     else
+                        print *, "With-capa-array case is not implemented"
                         !            # with capa array.
                         ! q_d(m,i,j) = q_d(m,i,j) &
                         !     - (dtdx * (fm_d(m,i+1,j) - fp_d(m,i,j)) &
@@ -306,14 +312,16 @@ contains
 #endif
 
 #ifdef CUDA
-        cudaResult = cudaMemcpy( q1, q_d,data_size, cudaMemcpyDeviceToHost)
-        cudaResult = cudaMemcpy(fm1,fm_d,data_size, cudaMemcpyDeviceToHost)
-        cudaResult = cudaMemcpy(fp1,fp_d,data_size, cudaMemcpyDeviceToHost)
-        cudaResult = cudaMemcpy(gm1,gm_d,data_size, cudaMemcpyDeviceToHost)
-        cudaResult = cudaMemcpy(gp1,gp_d,data_size, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpyAsync( q1, q_d,data_size, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
+        cudaResult = cudaMemcpyAsync(fm1,fm_d,data_size, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
+        cudaResult = cudaMemcpyAsync(fp1,fp_d,data_size, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
+        cudaResult = cudaMemcpyAsync(gm1,gm_d,data_size, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
+        cudaResult = cudaMemcpyAsync(gp1,gp_d,data_size, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
         ! if (maux > 0) then
         !     cudaResult = cudaMemcpy(aux,aux_d,aux_size, cudaMemcpyDeviceToHost)
         ! endif
+
+        call wait_for_all_gpu_tasks(device_id)
 #endif
 
 #ifdef CUDA
@@ -336,6 +344,12 @@ contains
                 enddo
             enddo
         enddo
+
+        call cpu_deallocated_pinned( q1) 
+        call cpu_deallocated_pinned(fp1) 
+        call cpu_deallocated_pinned(gp1) 
+        call cpu_deallocated_pinned(fm1) 
+        call cpu_deallocated_pinned(gm1) 
 
         call gpu_deallocate( q_d, device_id) 
         call gpu_deallocate(fp_d, device_id) 
