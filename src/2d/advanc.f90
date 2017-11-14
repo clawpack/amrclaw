@@ -12,6 +12,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef CUDA
     use gauges_module, only: update_gauges, num_gauges
     use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned
+    use cuda_module, only: grid2d
 #endif
     implicit double precision (a-h,o-z)
 
@@ -30,8 +31,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     integer :: locold, locnew, locaux
     integer :: i
     double precision :: xlow, ylow
-    double precision, dimension(:,:,:), pointer, contiguous :: &
-        fp, fm, gp, gm
+    type(grid2d) :: fps(numgrids(level)), fms(numgrids(level)), &
+        gps(numgrids(level)), gms(numgrids(level)) 
+
+    ! double precision, dimension(:,:,:), pointer, contiguous :: &
+    !     fp, fm, gp, gm
 #endif
 
     !     maxgr is maximum number of grids  many things are
@@ -114,6 +118,19 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
 #ifdef CUDA
+    levSt = listStart(level)
+    do j = 1, numgrids(level)
+        mptr = listOfGrids(levSt+j-1)
+        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+        mitot  = nx + 2*nghost
+        mjtot  = ny + 2*nghost
+        call cpu_allocate_pinned(fms(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
+        call cpu_allocate_pinned(fps(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
+        call cpu_allocate_pinned(gms(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
+        call cpu_allocate_pinned(gps(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
+    enddo
+
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
@@ -172,20 +189,15 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                                xlow,ylow,nvar,mitot,mjtot,naux,mptr)
         endif
 
-        call cpu_allocate_pinned(fp, 1, nvar, 1, mitot, 1, mjtot) 
-        call cpu_allocate_pinned(gp, 1, nvar, 1, mitot, 1, mjtot) 
-        call cpu_allocate_pinned(fm, 1, nvar, 1, mitot, 1, mjtot) 
-        call cpu_allocate_pinned(gm, 1, nvar, 1, mitot, 1, mjtot) 
-
         if (dimensional_split .eq. 0) then
 !           # Unsplit method
-        call stepgrid(alloc(locnew),fm,fp,gm,gp, &
+        call stepgrid(alloc(locnew),fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
                         mitot,mjtot,nghost, &
                         delt,dtnew,hx,hy,nvar, &
                         xlow,ylow,time,mptr,naux,alloc(locaux))
         else if (dimensional_split .eq. 1) then
 !           # Godunov splitting
-        call stepgrid_dimSplit(alloc(locnew),fm,fp,gm,gp, &
+        call stepgrid_dimSplit(alloc(locnew),fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
                      mitot,mjtot,nghost, &
                      delt,dtnew,hx,hy,nvar, &
                      xlow,ylow,time,mptr,naux,alloc(locaux))
@@ -196,14 +208,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         endif
 
         if (node(cfluxptr,mptr) .ne. 0) then
-            call fluxsv(mptr,fm,fp,gm,gp, &
+            call fluxsv(mptr,fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
                      alloc(node(cfluxptr,mptr)),mitot,mjtot, &
                      nvar,listsp(level),delt,hx,hy)
         endif
         if (node(ffluxptr,mptr) .ne. 0) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
-            call fluxad(fm,fp,gm,gp, &
+            call fluxad(fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
                      alloc(locsvf),mptr,mitot,mjtot,nvar, &
                         lenbc,intratx(level-1),intraty(level-1), &
                      nghost,delt,hx,hy)
@@ -215,10 +227,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
         dtlevnew = dmin1(dtlevnew,dtnew)
 
-        call cpu_deallocated_pinned(fp) 
-        call cpu_deallocated_pinned(gp) 
-        call cpu_deallocated_pinned(fm) 
-        call cpu_deallocated_pinned(gm) 
+    enddo
+
+    do j = 1, numgrids(level)
+        call cpu_deallocated_pinned(fms(j)%dataptr) 
+        call cpu_deallocated_pinned(fps(j)%dataptr) 
+        call cpu_deallocated_pinned(gms(j)%dataptr) 
+        call cpu_deallocated_pinned(gps(j)%dataptr) 
     enddo
 
 #else

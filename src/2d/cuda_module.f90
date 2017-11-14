@@ -42,6 +42,13 @@ module cuda_module
         module procedure write_grid2
     end interface write_grid
 
+#ifdef CUDA
+    type grid2d
+        sequence ! force the derived type to be stored contiguously
+        double precision, dimension(:,:,:), pointer, contiguous :: dataptr=>null()
+    end type grid2d
+#endif
+
 contains
 
     subroutine initialize_cuda() 

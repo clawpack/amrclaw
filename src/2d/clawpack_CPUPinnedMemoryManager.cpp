@@ -12,6 +12,7 @@
 #include <cuda_runtime_api.h>
 #include <cuda.h>
 
+static bool local_verbose = true;
 
 CPUPinnedMemoryManager::CPUPinnedMemoryManager (size_t hunk_size)
 {
@@ -108,6 +109,10 @@ CPUPinnedMemoryManager::alloc_pinned (size_t nbytes)
 
     m_busylist.insert(Node(vp, nbytes));
 
+    if (local_verbose) {
+        std::cout << "Claim " << nbytes << " Bytes of memory at: " << (uintptr_t)vp << " from CPUPinnedMemoryManager. " << std::endl;
+    }
+
     assert(!(vp == 0));
 
     return vp;
@@ -132,6 +137,10 @@ CPUPinnedMemoryManager::free_pinned (void* vp)
     // Put free'd block on free list and save iterator to insert()ed position.
     //
     std::pair<NL::iterator,bool> pair_it = m_freelist.insert(*busy_it);
+
+    if (local_verbose) {
+        std::cout << "Put pinned CPU memory block: " << (uintptr_t)vp << " of " << busy_it->size() << " back to CPUPinnedMemoryManager. " << std::endl;
+    }
 
     assert(pair_it.second == true);
 
