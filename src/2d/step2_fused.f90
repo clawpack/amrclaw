@@ -89,7 +89,9 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
     data_size = meqn * (mx + 2*mbc) * (my + 2*mbc)
 
-    ! TODO: We should merge these four kernels into one to reduce kernel launching overhead
+    ! Initialize fluxes array to zero
+    call init_fluxes(fm, fp, gm, gp, meqn, 1-mbc, mx+mbc, 1-mbc, my+mbc, 0)
+#else
     fm = 0.d0
     fp = 0.d0
     gm = 0.d0
@@ -229,11 +231,51 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
         call gpu_deallocate(    sy_d, device_id) 
         call gpu_deallocate(wave_y_d, device_id) 
 #endif
-
-    
-
-
 end subroutine step2_fused
+
+! Set fluxes array to zero
+! assume input fluxes are in SoA format
+subroutine init_fluxes(fm, fp, gm, gp, nvar, xlo, xhi, ylo, yhi &
+#ifdef CUDA
+        , id &
+#endif
+        )
+
+#ifdef CUDA
+    use cuda_module, only: cuda_streams, device_id
+#endif
+    implicit none
+    integer, intent(in) :: nvar, xlo, xhi, ylo, yhi
+#ifdef CUDA
+    ! id of this grid on current level
+    integer, intent(in) :: id
+#endif
+    double precision, intent(inout) :: fm(xlo:xhi, ylo:yhi, 1:nvar)
+    double precision, intent(inout) :: fp(xlo:xhi, ylo:yhi, 1:nvar)
+    double precision, intent(inout) :: gm(xlo:xhi, ylo:yhi, 1:nvar)
+    double precision, intent(inout) :: gp(xlo:xhi, ylo:yhi, 1:nvar)
+    integer :: i,j,m
+#ifdef CUDA
+    attributes(device) :: fm, fp, gm, gp
+#endif
+
+! TODO: right now always use cuda_streams(1,device_id). Need to change this in the future
+! !$cuf kernel do(3) <<<*, *,0,cuda_streams(stream_from_index(id))>>>
+
+    !$cuf kernel do(3) <<<*,*,0, cuda_streams(1,device_id)>>> 
+    do m = 1,nvar
+        do j = ylo,yhi
+            do i = xlo,xhi
+                fm(i,j,m) = 0.d0
+                fp(i,j,m) = 0.d0
+                gm(i,j,m) = 0.d0
+                gp(i,j,m) = 0.d0
+            enddo
+        enddo
+    enddo
+
+
+end subroutine init_fluxes
 
 ! Algorithm1 (don't use shared memory):
 !

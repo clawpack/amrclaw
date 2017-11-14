@@ -198,10 +198,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ! convert q array to SoA format
         call aos_to_soa_r2(qs(j)%dataptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
 
-        ! TODO: put this in step2_fused or memory allocator
-        ! Initialize fluxes array to zero
-        call init_fluxes(fms_d(j)%dataptr, fps_d(j)%dataptr, gms_d(j)%dataptr, gps_d(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar, 0)
-
         ! copy q to GPU
         cudaResult = cudaMemcpyAsync(qs_d(j)%dataptr,  qs(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, cuda_streams(1,device_id))
 
@@ -368,46 +364,3 @@ subroutine prepgrids(listgrids, num, level)
 end subroutine prepgrids
 
 
-! Set fluxes array to zero
-! assume input fluxes are in SoA format
-subroutine init_fluxes(fm, fp, gm, gp, nvar, xlo, xhi, ylo, yhi &
-#ifdef CUDA
-        , id &
-#endif
-        )
-
-#ifdef CUDA
-    use cuda_module, only: cuda_streams, device_id
-#endif
-    implicit none
-    integer, intent(in) :: nvar, xlo, xhi, ylo, yhi
-#ifdef CUDA
-    ! id of this grid on current level
-    integer, intent(in) :: id
-#endif
-    double precision, intent(inout) :: fm(xlo:xhi, ylo:yhi, 1:nvar)
-    double precision, intent(inout) :: fp(xlo:xhi, ylo:yhi, 1:nvar)
-    double precision, intent(inout) :: gm(xlo:xhi, ylo:yhi, 1:nvar)
-    double precision, intent(inout) :: gp(xlo:xhi, ylo:yhi, 1:nvar)
-    integer :: i,j,m
-#ifdef CUDA
-    attributes(device) :: fm, fp, gm, gp
-#endif
-
-! TODO: right now always use cuda_streams(1,device_id). Need to change this in the future
-! !$cuf kernel do(3) <<<*, *,0,cuda_streams(stream_from_index(id))>>>
-
-    !$cuf kernel do(3) <<<*,*,0, cuda_streams(1,device_id)>>> 
-    do m = 1,nvar
-        do j = ylo,yhi
-            do i = xlo,xhi
-                fm(i,j,m) = 0.d0
-                fp(i,j,m) = 0.d0
-                gm(i,j,m) = 0.d0
-                gp(i,j,m) = 0.d0
-            enddo
-        enddo
-    enddo
-
-
-end subroutine init_fluxes
