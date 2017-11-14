@@ -86,8 +86,7 @@ contains
         n1 = max(hi1-lo1+1, 1)
         n2 = max(hi2-lo2+1, 1)
         sz = int(n1,c_size_t) * int(n2,c_size_t)
-        ! In c, everything is 0-indexed so we substract one
-        dev_id_c = int(dev_id,c_size_t)-1
+        dev_id_c = int(dev_id,c_size_t)
         cp = clawpack_mempool_alloc_gpu(szr*sz, dev_id_c)
 
         call c_f_pointer(cp, fp, shape=(/n1,n2/))
@@ -117,7 +116,7 @@ contains
         n2 = max(hi2-lo2+1, 1)
         n3 = max(hi3-lo3+1, 1)
         sz = int(n1,c_size_t) * int(n2,c_size_t) * int(n3,c_size_t)
-        dev_id_c = int(dev_id,c_size_t)-1
+        dev_id_c = int(dev_id,c_size_t)
         cp = clawpack_mempool_alloc_gpu(szr*sz, dev_id_c)
 
         call c_f_pointer(cp, fp, shape=(/n1,n2,n3/))
@@ -148,7 +147,7 @@ contains
         n3 = max(hi3-lo3+1, 1)
         n4 = max(hi4-lo4+1, 1)
         sz = int(n1,c_size_t) * int(n2,c_size_t) * int(n3,c_size_t) * int(n4,c_size_t)
-        dev_id_c = int(dev_id,c_size_t)-1
+        dev_id_c = int(dev_id,c_size_t)
         cp = clawpack_mempool_alloc_gpu(szr*sz, dev_id_c)
 
         call c_f_pointer(cp, fp, shape=(/n1,n2,n3,n4/))
@@ -172,7 +171,7 @@ contains
         type(c_devptr) :: cp
         lo = lbound(a)
         cp = c_devloc(a(lo(1),lo(2)))
-        dev_id_c = int(dev_id,c_size_t)-1
+        dev_id_c = int(dev_id,c_size_t)
         call clawpack_mempool_free_gpu(cp, dev_id_c)
         a => Null()
     end subroutine gpu_deallocate_r2
@@ -186,7 +185,7 @@ contains
         type(c_devptr) :: cp
         lo = lbound(a)
         cp = c_devloc(a(lo(1),lo(2),lo(3)))
-        dev_id_c = int(dev_id,c_size_t)-1
+        dev_id_c = int(dev_id,c_size_t)
         call clawpack_mempool_free_gpu(cp, dev_id_c)
         a => Null()
     end subroutine gpu_deallocate_r3
@@ -200,7 +199,7 @@ contains
         type(c_devptr) :: cp
         lo = lbound(a)
         cp = c_devloc(a(lo(1),lo(2),lo(3),lo(4)))
-        dev_id_c = int(dev_id,c_size_t)-1
+        dev_id_c = int(dev_id,c_size_t)
         call clawpack_mempool_free_gpu(cp, dev_id_c)
         a => Null()
     end subroutine gpu_deallocate_r4

@@ -77,9 +77,7 @@ void clawpack_mempool_init()
 
 
 #ifdef CUDA
-        // TODO: get num_devices from Fortran module
-        // int num_devices = ParallelDescriptor::get_num_devices_used();
-        int num_devices = 1;
+        int num_devices = get_num_devices_used();
 	device_memory_pool.resize(num_devices);
 	for (int i=0; i<num_devices; ++i) {
 	    device_memory_pool[i].reset(new GPUMemoryManager(i,0));

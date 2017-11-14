@@ -9,6 +9,7 @@ module cuda_module
 
     integer, parameter :: max_cuda_streams = 20
     integer, parameter :: max_num_devices = 16
+    ! Note that CUDA enumerates devices starting from 0
     integer(kind=cuda_stream_kind) :: cuda_streams(max_cuda_streams, 0:max_num_devices-1)
 
     integer :: num_devices
@@ -58,7 +59,7 @@ contains
         cudaResult = cudaGetDeviceCount(num_devices) 
         print *, 'Found ', num_devices, ' GPUs.'
         if (num_devices > max_num_devices) then
-            print *, "Too many devices. Can't handle this so far. "
+            print *, "Found too many devices. Can't handle this so far. "
             stop
         endif
 
@@ -341,6 +342,13 @@ contains
 
     subroutine finalize_cuda() 
     end subroutine finalize_cuda
+
+    function get_num_devices_used() result(nDev) bind(C, name='get_num_devices_used')
+        use iso_c_binding, only: c_int
+        implicit none
+        integer(c_int) :: nDev
+        nDev = int(num_devices, c_int)
+    end function get_num_devices_used
 
     attributes(device) &
 	subroutine max_reduce_device_2d(a_s, mx, my, max_array, rmx, rmy)
