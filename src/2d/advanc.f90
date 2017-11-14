@@ -9,6 +9,10 @@
 subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use amr_module 
     use parallel_advanc_module
+#ifdef CUDA
+    use gauges_module, only: update_gauges, num_gauges
+    use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned
+#endif
     implicit double precision (a-h,o-z)
 
 
@@ -21,6 +25,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     real(kind=8) cpu_start, cpu_finish
     real(kind=8) cpu_startBound, cpu_finishBound
     real(kind=8) cpu_startStepgrid, cpu_finishStepgrid
+
+#ifdef CUDA
+    integer :: locold, locnew, locaux
+    integer :: i
+    double precision :: xlow, ylow
+    double precision, dimension(:,:,:), pointer, contiguous :: &
+        fp, fm, gp, gm
+#endif
 
     !     maxgr is maximum number of grids  many things are
     !     dimensioned at, so this is overall. only 1d array
@@ -101,19 +113,113 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_time(cpu_startStepgrid)
 
 
-#ifdef nothing
+#ifdef CUDA
     do j = 1, numgrids(level)
-        !mptr   = listgrids(j)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
         mitot  = nx + 2*nghost
         mjtot  = ny + 2*nghost
-        !
-        call par_advanc(mptr,mitot,mjtot,nvar,naux,dtnew)
+        ! everything before stepgrid
+
+        !  copy old soln. values into  next time step's soln. values
+        !  since integrator will overwrite it. only for grids not at
+        !  the finest level. finest level grids do not maintain copies
+        !  of old and new time solution values.
+
+        locold = node(store2, mptr)
+        locnew = node(store1, mptr)
+
+        if (level .lt. mxnest) then
+            ntot   = mitot * mjtot * nvar
+            do i = 1, ntot
+                alloc(locold + i - 1) = alloc(locnew + i - 1)
+            enddo
+        endif
+!
+        xlow = rnode(cornxlo,mptr) - nghost*hx
+        ylow = rnode(cornylo,mptr) - nghost*hy
+
+        rvol = rvol + nx * ny
+        rvoll(level) = rvoll(level) + nx * ny
+
+
+        locaux = node(storeaux,mptr)
+!
+        if (node(ffluxptr,mptr) .ne. 0) then
+            lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
+            locsvf = node(ffluxptr,mptr)
+            locsvq = locsvf + nvar*lenbc
+            locx1d = locsvq + nvar*lenbc
+            call qad(alloc(locnew),mitot,mjtot,nvar, &
+                     alloc(locsvf),alloc(locsvq),lenbc, &
+                     intratx(level-1),intraty(level-1),hx,hy, &
+                     naux,alloc(locaux),alloc(locx1d),delt,mptr)
+        endif
+
+        !        # See if the grid about to be advanced has gauge data to output.
+        !        # This corresponds to previous time step, but output done
+        !        # now to make linear interpolation easier, since grid
+        !        # now has boundary conditions filled in.
+
+        !     should change the way print_gauges does io - right now is critical section
+        !     no more,  each gauge has own array.
+
+        if (num_gauges > 0) then
+            call update_gauges(alloc(locnew:locnew+nvar*mitot*mjtot), &
+                               alloc(locaux:locaux+nvar*mitot*mjtot), &
+                               xlow,ylow,nvar,mitot,mjtot,naux,mptr)
+        endif
+
+        call cpu_allocate_pinned(fp, 1, nvar, 1, mitot, 1, mjtot) 
+        call cpu_allocate_pinned(gp, 1, nvar, 1, mitot, 1, mjtot) 
+        call cpu_allocate_pinned(fm, 1, nvar, 1, mitot, 1, mjtot) 
+        call cpu_allocate_pinned(gm, 1, nvar, 1, mitot, 1, mjtot) 
+
+        if (dimensional_split .eq. 0) then
+!           # Unsplit method
+        call stepgrid(alloc(locnew),fm,fp,gm,gp, &
+                        mitot,mjtot,nghost, &
+                        delt,dtnew,hx,hy,nvar, &
+                        xlow,ylow,time,mptr,naux,alloc(locaux))
+        else if (dimensional_split .eq. 1) then
+!           # Godunov splitting
+        call stepgrid_dimSplit(alloc(locnew),fm,fp,gm,gp, &
+                     mitot,mjtot,nghost, &
+                     delt,dtnew,hx,hy,nvar, &
+                     xlow,ylow,time,mptr,naux,alloc(locaux))
+        else 
+!           # should never get here due to check in amr2
+            write(6,*) '*** Strang splitting not supported'
+            stop
+        endif
+
+        if (node(cfluxptr,mptr) .ne. 0) then
+            call fluxsv(mptr,fm,fp,gm,gp, &
+                     alloc(node(cfluxptr,mptr)),mitot,mjtot, &
+                     nvar,listsp(level),delt,hx,hy)
+        endif
+        if (node(ffluxptr,mptr) .ne. 0) then
+            lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
+            locsvf = node(ffluxptr,mptr)
+            call fluxad(fm,fp,gm,gp, &
+                     alloc(locsvf),mptr,mitot,mjtot,nvar, &
+                        lenbc,intratx(level-1),intraty(level-1), &
+                     nghost,delt,hx,hy)
+        endif
+!
+!        write(outunit,969) mythread,delt, dtnew
+!969     format(" thread ",i4," updated by ",e15.7, " new dt ",e15.7)
+        rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
+
         dtlevnew = dmin1(dtlevnew,dtnew)
-    end do
+
+        call cpu_deallocated_pinned(fp) 
+        call cpu_deallocated_pinned(gp) 
+        call cpu_deallocated_pinned(fm) 
+        call cpu_deallocated_pinned(gm) 
+    enddo
 
 #else
     !$OMP PARALLEL DO PRIVATE(j,mptr,nx,ny,mitot,mjtot)  
