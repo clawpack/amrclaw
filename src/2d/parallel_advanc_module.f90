@@ -419,6 +419,179 @@ contains
          end do
       endif
       return
-      end subroutine stepgrid
+    end subroutine stepgrid
 
+    subroutine stepgrid_soa(q,fm,fp,gm,gp,mitot,mjtot,mbc,dt,dtnew,dx,dy, &
+            nvar,xlow,ylow,time,mptr,maux,aux)
+
+        use amr_module
+#ifdef CUDA
+        use memory_module, only: gpu_allocate, gpu_deallocate, cpu_allocate_pinned, cpu_deallocated_pinned
+        use cuda_module, only: device_id, wait_for_all_gpu_tasks, cuda_streams
+        use cudafor
+#endif
+        implicit double precision (a-h,o-z)
+        external rpn2,rpt2
+
+        parameter (msize=max1d+4)
+        parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
+
+        ! These are all in SoA format
+        double precision ::   q(mitot,mjtot,nvar)
+        double precision ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)
+        double precision ::  fm(mitot,mjtot,nvar),gm(mitot,mjtot,nvar)
+        double precision :: aux(mitot,mjtot,maux)
+#ifdef CUDA
+        attributes(device) :: q
+        attributes(device) :: fp, fm, gp, gm
+        ! attributes(device) :: aux
+#endif
+
+        double precision :: dtdx, dtdy
+        integer :: i,j,m
+
+        logical    debug,  dump
+        data       debug/.false./,  dump/.false./
+
+!     # set tcom = time.  This is in the common block comxyt that could
+!     # be included in the Riemann solver, for example, if t is explicitly
+!     # needed there.
+
+        tcom = time
+
+#ifndef CUDA
+        if (dump) then
+           write(outunit,*) "dumping grid ",mptr," at time ",time
+           do i = 1, mitot
+           do j = 1, mjtot
+              write(outunit,545) i,j,(q(ivar,i,j),ivar=1,nvar) 
+!    .                    ,(aux(ivar,i,j),ivar=1,maux)
+ 545          format(2i4,5e15.7)
+           end do
+           end do
+        endif
+#endif
+!
+        meqn   = nvar
+        mx = mitot - 2*mbc
+        my = mjtot - 2*mbc
+        maxm = max(mx,my)       !# size for 1d scratch array
+        mbig = maxm
+        xlowmbc = xlow + mbc*dx
+        ylowmbc = ylow + mbc*dy
+
+!       # method(2:7) and mthlim
+!       #    are set in the amr2ez file (read by amr)
+!
+        method(1) = 0
+
+!
+!
+#ifndef CUDA
+        ! For now this does nothing
+        call b4step2(mbc,mx,my,nvar,q, &
+          xlowmbc,ylowmbc,dx,dy,time,dt,maux,aux)
+#endif
+
+! assume no aux here
+      call step2_fused(mbig,nvar,maux, &
+          mbc,mx,my, &
+          q,dx,dy,dt,cflgrid, &
+          fm,fp,gm,gp,rpn2,rpt2)
+
+!$OMP  CRITICAL (cflm)
+
+        cfl_level = dmax1(cfl_level,cflgrid)
+
+!$OMP END CRITICAL (cflm)
+
+!
+!       # update q
+        dtdx = dt/dx
+        dtdy = dt/dy
+
+        ! TODO: change loop order
+        !$cuf kernel do(3) <<<*, *, 0, cuda_streams(1,device_id)>>>
+        do m=1,nvar
+            do j=mbc+1,mjtot-mbc
+                do i=mbc+1,mitot-mbc
+                    if (mcapa.eq.0) then
+                        !            # no capa array.  Standard flux differencing:
+                        q(i,j,m) = q(i,j,m) &
+                            - dtdx * (fm(i+1,j,m) - fp(i,j,m)) &
+                            - dtdy * (gm(i,j+1,m) - gp(i,j,m)) 
+                    else
+                        print *, "With-capa-array case is not implemented"
+                        stop
+                        !            # with capa array.
+                        ! q(m,i,j) = q(m,i,j) &
+                        !     - (dtdx * (fm(m,i+1,j) - fp(m,i,j)) &
+                        !     +  dtdy * (gm(m,i,j+1) - gp(m,i,j))) / aux(mcapa,i,j)
+                    endif
+                enddo
+            enddo
+        enddo
+!
+!
+#ifndef CUDA
+        if (method(5).eq.1) then
+!        # with source term:   use Godunov splitting
+         call src2(nvar,mbc,mx,my,xlowmbc,ylowmbc,dx,dy, &
+             q,maux,aux,time,dt)
+        endif
+!
+!
+!
+!     # output fluxes for debugging purposes:
+        if (debug) then
+            write(dbugunit,*)" fluxes for grid ",mptr
+!           do 830 j = mbc+1, mjtot-1
+               do 830 i = mbc+1, mitot-1
+            do 830 j = mbc+1, mjtot-1
+                  write(dbugunit,831) i,j,fm(1,i,j),fp(1,i,j), &
+                      gm(1,i,j),gp(1,i,j)
+                  do 830 m = 2, meqn
+                     write(dbugunit,832) fm(m,i,j),fp(m,i,j), &
+                         gm(m,i,j),gp(m,i,j)
+  831             format(2i4,4d16.6)
+  832             format(8x,4d16.6)
+  830       continue
+        endif
+#endif
+
+!
+!
+! For variable time stepping, use max speed seen on this grid to 
+! choose the allowable new time step dtnew.  This will later be 
+! compared to values seen on other grids.
+!
+        if (cflgrid .gt. 0.d0) then
+            dtnew = dt*cfl/cflgrid
+        else
+!       # velocities are all zero on this grid so there's no 
+!       # time step restriction coming from this grid.
+            dtnew = rinfinity
+        endif
+
+!     # give a warning if Courant number too large...
+!
+        if (cflgrid .gt. cflv1) then
+            write(*,810) cflgrid
+            write(outunit,810) cflgrid, cflv1
+      810   format('*** WARNING *** Courant number  =', d12.4, &
+          '  is larger than input cfl_max = ', d12.4)
+        endif
+!
+#ifndef CUDA
+        if (dump) then
+            write(outunit,*) "dumping grid ",mptr," after stepgrid"
+            do i = 1, mitot
+            do j = 1, mjtot
+               write(outunit,545) i,j,(q(ivar,i,j),ivar=1,nvar)
+            end do
+            end do
+        endif
+#endif
+        return
+    end subroutine stepgrid_soa
 end module parallel_advanc_module

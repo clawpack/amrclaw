@@ -11,8 +11,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use parallel_advanc_module
 #ifdef CUDA
     use gauges_module, only: update_gauges, num_gauges
-    use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned
-    use cuda_module, only: grid2d
+    use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned, &
+        gpu_allocate, gpu_deallocate
+    use cuda_module, only: grid2d, grid2d_device, cuda_streams, device_id
+    use cuda_module, only: wait_for_all_gpu_tasks
+    use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2
+    use cudafor
 #endif
     implicit double precision (a-h,o-z)
 
@@ -29,13 +33,17 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #ifdef CUDA
     integer :: locold, locnew, locaux
-    integer :: i
+    integer :: i,j
+    integer :: cudaResult
     double precision :: xlow, ylow
-    type(grid2d) :: fps(numgrids(level)), fms(numgrids(level)), &
+    type(grid2d) :: qs(numgrids(level)), fps(numgrids(level)), fms(numgrids(level)), &
         gps(numgrids(level)), gms(numgrids(level)) 
-
-    ! double precision, dimension(:,:,:), pointer, contiguous :: &
-    !     fp, fm, gp, gm
+    type(grid2d_device) :: qs_d(numgrids(level)), fps_d(numgrids(level)), fms_d(numgrids(level)), &
+        gps_d(numgrids(level)), gms_d(numgrids(level)) 
+    double precision, allocatable :: fm(:,:,:)
+    double precision, allocatable :: fp(:,:,:)
+    double precision, allocatable :: gm(:,:,:)
+    double precision, allocatable :: gp(:,:,:)
 #endif
 
     !     maxgr is maximum number of grids  many things are
@@ -45,7 +53,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
     !
-    !  ::::::::::::::; ADVANC :::::::::::::::::::::::::::::::::::::::::::
+    !  ::::::::::::::: ADVANC :::::::::::::::::::::::::::::::::::::::::::
     !  integrate all grids at the input  'level' by one step of its delta(t)
     !  this includes:  setting the ghost cells 
     !                  advancing the solution on the grid
@@ -175,59 +183,126 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         endif
 
         ! allocate fluxes array and q array in SoA
-        call cpu_allocate_pinned(fms(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
-        call cpu_allocate_pinned(fps(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
-        call cpu_allocate_pinned(gms(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
-        call cpu_allocate_pinned(gps(j)%dataptr, 1, nvar, 1, mitot, 1, mjtot) 
+        call cpu_allocate_pinned( qs(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar) 
+        call cpu_allocate_pinned(fms(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar) 
+        call cpu_allocate_pinned(fps(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar) 
+        call cpu_allocate_pinned(gms(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar) 
+        call cpu_allocate_pinned(gps(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar) 
 
+        call gpu_allocate( qs_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
+        call gpu_allocate(fms_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
+        call gpu_allocate(fps_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
+        call gpu_allocate(gms_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
+        call gpu_allocate(gps_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
+
+        ! convert q array to SoA format
+        call aos_to_soa_r2(qs(j)%dataptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
+
+        ! TODO: put this in step2_fused or memory allocator
         ! Initialize fluxes array to zero
+        call init_fluxes(fms_d(j)%dataptr, fps_d(j)%dataptr, gms_d(j)%dataptr, gps_d(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar, 0)
+
         ! copy q to GPU
+        cudaResult = cudaMemcpyAsync(qs_d(j)%dataptr,  qs(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, cuda_streams(1,device_id))
+
 
         if (dimensional_split .eq. 0) then
 !           # Unsplit method
-        call stepgrid(alloc(locnew),fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
-                        mitot,mjtot,nghost, &
-                        delt,dtnew,hx,hy,nvar, &
-                        xlow,ylow,time,mptr,naux,alloc(locaux))
+            call stepgrid_soa(qs_d(j)%dataptr,fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
+                            mitot,mjtot,nghost, &
+                            delt,dtnew,hx,hy,nvar, &
+                            xlow,ylow,time,mptr,naux,alloc(locaux))
         else if (dimensional_split .eq. 1) then
 !           # Godunov splitting
-        call stepgrid_dimSplit(alloc(locnew),fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
-                     mitot,mjtot,nghost, &
-                     delt,dtnew,hx,hy,nvar, &
-                     xlow,ylow,time,mptr,naux,alloc(locaux))
+            print *, "CUDA version not implemented."
+            stop
+            ! call stepgrid_dimSplit(alloc(locnew),fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
+            !              mitot,mjtot,nghost, &
+            !              delt,dtnew,hx,hy,nvar, &
+            !              xlow,ylow,time,mptr,naux,alloc(locaux))
         else 
 !           # should never get here due to check in amr2
             write(6,*) '*** Strang splitting not supported'
             stop
         endif
+        ! copy fluxes back to CPU
+        cudaResult = cudaMemcpyAsync(fms(j)%dataptr,  fms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
+        cudaResult = cudaMemcpyAsync(fps(j)%dataptr,  fps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
+        cudaResult = cudaMemcpyAsync(gms(j)%dataptr,  gms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
+        cudaResult = cudaMemcpyAsync(gps(j)%dataptr,  gps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
+        cudaResult = cudaMemcpyAsync( qs(j)%dataptr,   qs_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
+    enddo
 
+    call wait_for_all_gpu_tasks(device_id)
+
+    do j = 1, numgrids(level)
+        mptr = listOfGrids(levSt+j-1)
+        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+        mitot  = nx + 2*nghost
+        mjtot  = ny + 2*nghost
+        locnew = node(store1, mptr)
+        allocate(fm(nvar, mitot, mjtot))
+        allocate(fp(nvar, mitot, mjtot))
+        allocate(gm(nvar, mitot, mjtot))
+        allocate(gp(nvar, mitot, mjtot))
+        call soa_to_aos_r2(fm, fms(j)%dataptr, nvar, 1, mitot, 1, mjtot)
+        call soa_to_aos_r2(fp, fps(j)%dataptr, nvar, 1, mitot, 1, mjtot)
+        call soa_to_aos_r2(gm, gms(j)%dataptr, nvar, 1, mitot, 1, mjtot)
+        call soa_to_aos_r2(gp, gps(j)%dataptr, nvar, 1, mitot, 1, mjtot)
+        call soa_to_aos_r2(alloc(locnew), qs(j)%dataptr, nvar, 1, mitot, 1, mjtot)
+
+        ! TODO: use SoA in fluxsv and fluxad as well
         if (node(cfluxptr,mptr) .ne. 0) then
-            call fluxsv(mptr,fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
+            call fluxsv(mptr,fm,fp,gm,gp, &
                      alloc(node(cfluxptr,mptr)),mitot,mjtot, &
                      nvar,listsp(level),delt,hx,hy)
         endif
         if (node(ffluxptr,mptr) .ne. 0) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
-            call fluxad(fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
+            call fluxad(fm,fp,gm,gp, &
                      alloc(locsvf),mptr,mitot,mjtot,nvar, &
                         lenbc,intratx(level-1),intraty(level-1), &
                      nghost,delt,hx,hy)
         endif
+        ! if (node(cfluxptr,mptr) .ne. 0) then
+        !     call fluxsv(mptr,fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
+        !              alloc(node(cfluxptr,mptr)),mitot,mjtot, &
+        !              nvar,listsp(level),delt,hx,hy)
+        ! endif
+        ! if (node(ffluxptr,mptr) .ne. 0) then
+        !     lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
+        !     locsvf = node(ffluxptr,mptr)
+        !     call fluxad(fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
+        !              alloc(locsvf),mptr,mitot,mjtot,nvar, &
+        !                 lenbc,intratx(level-1),intraty(level-1), &
+        !              nghost,delt,hx,hy)
+        ! endif
 !
 !        write(outunit,969) mythread,delt, dtnew
 !969     format(" thread ",i4," updated by ",e15.7, " new dt ",e15.7)
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
 
         dtlevnew = dmin1(dtlevnew,dtnew)
-
+        deallocate(fm)
+        deallocate(fp)
+        deallocate(gm)
+        deallocate(gp)
     enddo
 
     do j = 1, numgrids(level)
+        call cpu_deallocated_pinned( qs(j)%dataptr) 
         call cpu_deallocated_pinned(fms(j)%dataptr) 
         call cpu_deallocated_pinned(fps(j)%dataptr) 
         call cpu_deallocated_pinned(gms(j)%dataptr) 
         call cpu_deallocated_pinned(gps(j)%dataptr) 
+
+        call gpu_deallocate( qs_d(j)%dataptr, device_id) 
+        call gpu_deallocate(fms_d(j)%dataptr, device_id) 
+        call gpu_deallocate(fps_d(j)%dataptr, device_id) 
+        call gpu_deallocate(gms_d(j)%dataptr, device_id) 
+        call gpu_deallocate(gps_d(j)%dataptr, device_id) 
     enddo
 
 #else
@@ -268,26 +343,71 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     !
     return
-    end
+end subroutine advanc
     !
     ! -------------------------------------------------------------
     !
-    subroutine prepgrids(listgrids, num, level)
+subroutine prepgrids(listgrids, num, level)
 
-        use amr_module
-        implicit double precision (a-h,o-z)
-        integer listgrids(num)
+    use amr_module
+    implicit double precision (a-h,o-z)
+    integer listgrids(num)
 
-        mptr = lstart(level)
-        do j = 1, num
-            listgrids(j) = mptr
-            mptr = node(levelptr, mptr)
-        end do
+    mptr = lstart(level)
+    do j = 1, num
+        listgrids(j) = mptr
+        mptr = node(levelptr, mptr)
+    end do
 
-        if (mptr .ne. 0) then
-            write(*,*)" Error in routine setting up grid array "
-            stop
-        endif
+    if (mptr .ne. 0) then
+        write(*,*)" Error in routine setting up grid array "
+        stop
+    endif
 
-        return
-    end
+    return
+end subroutine prepgrids
+
+
+! Set fluxes array to zero
+! assume input fluxes are in SoA format
+subroutine init_fluxes(fm, fp, gm, gp, nvar, xlo, xhi, ylo, yhi &
+#ifdef CUDA
+        , id &
+#endif
+        )
+
+#ifdef CUDA
+    use cuda_module, only: cuda_streams, device_id
+#endif
+    implicit none
+    integer, intent(in) :: nvar, xlo, xhi, ylo, yhi
+#ifdef CUDA
+    ! id of this grid on current level
+    integer, intent(in) :: id
+#endif
+    double precision, intent(inout) :: fm(xlo:xhi, ylo:yhi, 1:nvar)
+    double precision, intent(inout) :: fp(xlo:xhi, ylo:yhi, 1:nvar)
+    double precision, intent(inout) :: gm(xlo:xhi, ylo:yhi, 1:nvar)
+    double precision, intent(inout) :: gp(xlo:xhi, ylo:yhi, 1:nvar)
+    integer :: i,j,m
+#ifdef CUDA
+    attributes(device) :: fm, fp, gm, gp
+#endif
+
+! TODO: right now always use cuda_streams(1,device_id). Need to change this in the future
+! !$cuf kernel do(3) <<<*, *,0,cuda_streams(stream_from_index(id))>>>
+
+    !$cuf kernel do(3) <<<*,*,0, cuda_streams(1,device_id)>>> 
+    do m = 1,nvar
+        do j = ylo,yhi
+            do i = xlo,xhi
+                fm(i,j,m) = 0.d0
+                fp(i,j,m) = 0.d0
+                gm(i,j,m) = 0.d0
+                gp(i,j,m) = 0.d0
+            enddo
+        enddo
+    enddo
+
+
+end subroutine init_fluxes

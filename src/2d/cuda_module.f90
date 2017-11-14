@@ -47,6 +47,10 @@ module cuda_module
         sequence ! force the derived type to be stored contiguously
         double precision, dimension(:,:,:), pointer, contiguous :: dataptr=>null()
     end type grid2d
+    type grid2d_device
+        sequence ! force the derived type to be stored contiguously
+        double precision, dimension(:,:,:), pointer, contiguous, device :: dataptr=>null()
+    end type grid2d_device
 #endif
 
 contains
@@ -272,9 +276,16 @@ contains
         integer :: dev_id
 
         cudaResult = cudaSetDevice(dev_id)
+
+#ifdef DEBUG
         call check_cuda_error(cudaResult)
+#endif
+
         cudaResult = cudaDeviceSynchronize()
+
+#ifdef DEBUG
         call check_cuda_error(cudaResult)
+#endif
 
     end subroutine wait_for_all_gpu_tasks
 
@@ -504,5 +515,36 @@ contains
         enddo
         close(1)
     end subroutine write_grid2
+
+    subroutine aos_to_soa_r2(soa, aos, nvar, xlo, xhi, ylo, yhi)
+        implicit none
+        integer, intent(in) :: nvar, xlo, xhi, ylo, yhi
+        real(kind=8), intent(in) :: aos(1:nvar, xlo:xhi, ylo:yhi)
+        real(kind=8), intent(inout) :: soa(xlo:xhi, ylo:yhi, 1:nvar)
+        integer :: i,j,m
+
+        do i = xlo, xhi
+            do j = ylo, yhi
+                do m = 1,nvar
+                    soa(i,j,m) = aos(m,i,j)
+                enddo
+            enddo
+        enddo
+    end subroutine aos_to_soa_r2
+
+    subroutine soa_to_aos_r2(aos, soa, nvar, xlo, xhi, ylo, yhi)
+        implicit none
+        integer, intent(in) :: nvar, xlo, xhi, ylo, yhi
+        double precision, intent(inout) :: aos(1:nvar, xlo:xhi, ylo:yhi)
+        double precision, intent(in) :: soa(xlo:xhi, ylo:yhi, 1:nvar)
+        integer :: i,j,m
+        do m = 1,nvar
+            do j = ylo, yhi
+                do i = xlo, xhi
+                    aos(m,i,j) = soa(i,j,m) 
+                enddo
+            enddo
+        enddo
+    end subroutine soa_to_aos_r2
 
 end module cuda_module
