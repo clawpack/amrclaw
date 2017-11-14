@@ -58,13 +58,11 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlow,dx,t,level, &
     real(kind=8), intent(in) :: DONTFLAG
     real(kind=8), intent(in) :: DOFLAG
 
-    integer :: r
-
     logical :: allowflag
     external allowflag
 
     ! Locals
-    integer :: i
+    integer :: i, r
 
     ! Initialize flags
     amrflags = DONTFLAG
