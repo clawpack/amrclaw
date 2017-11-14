@@ -12,9 +12,9 @@ contains
         integer, intent(in) :: k, mx_f,meqn_f,mbc_f
         real(kind=8), intent(in) :: q(meqn_f,1-mbc_f:mx_f+mbc_f)
 
-        integer :: mx_a, mitot_a, mptr_a
+        integer :: mx_a, mptr_a
         integer :: i, i1, i2, level, loc, z, m, r
-        real(kind=8) :: dx_a, xlower_a, xupper_a, xupper_f, x1, x2, x_temp1, x_temp2
+        real(kind=8) :: dx_a, xlower_a, xupper_a, xupper_f, x1, x2
 
         real(kind=8) :: innerprod(1:mx_f), q_innerprod(mx_f)
         logical :: mask_forward(mx_f)
@@ -44,9 +44,6 @@ contains
             xupper_a = xlower_a + mx_a*dx_a
 
             loc = adjoints(r)%loc(mptr_a)
-
-            ! Total number of points in x
-            mitot_a = mx_a + 2*adjoints(r)%nghost
 
             ! Check if adjoint patch overlaps with forward patch
             x1 = max(xlower_f,xlower_a)
