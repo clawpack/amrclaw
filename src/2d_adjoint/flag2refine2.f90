@@ -36,21 +36,21 @@
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
-                            tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
-    use innerprod_module, only: calculate_max_innerproduct
-    use amr_module, only: intratx
-    use adjoint_module, only: innerprod_index
+subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlow,ylow,dx,dy,t,level, &
+                            tolflag,q,aux,amrflags,DONTFLAG,DOFLAG)
+    use innerprod_module, only: calculate_innerproduct
+    use adjoint_module
 
     implicit none
 
     ! Subroutine arguments
     integer, intent(in) :: mx,my,mbc,meqn,maux,level,mbuff
-    real(kind=8), intent(in) :: xlower,ylower,dx,dy,t,tolsp
+    real(kind=8), intent(in) :: xlow,ylow,dx,dy,t,tolflag
     
     real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
     real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
-    
+    real(kind=8) :: aux_temp(maux,1:mx,1:my)
+
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
     real(kind=8), intent(in) :: DONTFLAG
@@ -60,34 +60,43 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     external allowflag
 
     ! Locals
-    integer :: i,j
-    real(kind=8) :: max_innerprod
-    real(kind=8) :: x_c,y_c,x_low,y_low,x_hi,y_hi
-    real(kind=8) :: dqi(meqn), dqj(meqn), dq(meqn),eta
-    logical :: checkregions
+    integer :: i, j, r
 
     ! Initialize flags
     amrflags = DONTFLAG
-    checkregions = .TRUE.
+    aux(innerprod_index,:,:) = 0.0
 
+    ! Loop over adjoint snapshots
+    aloop: do r=1,totnum_adjoints
+
+        ! Consider only snapshots that are within the desired time range
+        if ((t+adjoints(r)%time) >= trange_start .and. &
+            (t+adjoints(r)%time) <= trange_final) then
+
+            ! Calculate inner product with current snapshot
+            aux_temp(innerprod_index,:,:) = &
+                calculate_innerproduct(t,q,r,mx,my,xlow,ylow,dx,dy,meqn,mbc)
+
+            ! Save max inner product
+            do i=1,mx
+                do j = 1,my
+                    aux(innerprod_index,i,j) = &
+                        max(aux(innerprod_index,i,j), &
+                        aux_temp(innerprod_index,i,j))
+                enddo
+            enddo
+
+        endif
+
+    enddo aloop
+
+    ! Flag locations that need refining
     y_loop: do j = 1,my
-      y_c = ylower + (j - 0.5d0) * dy
-      y_low = ylower + (j - 1) * dy
-      y_hi = ylower + j * dy
-
       x_loop: do i = 1,mx
-        x_c = xlower + (i - 0.5d0) * dx
-        x_low = xlower + (i - 1) * dx
-        x_hi = xlower + i * dx
-
-        aux(innerprod_index,i,j) =  &
-           calculate_max_innerproduct(t,x_c,y_c,q(:,i,j))
-
-        if (aux(innerprod_index,i,j) > tolsp) then
+        if (aux(innerprod_index,i,j) > tolflag) then
             amrflags(i,j) = DOFLAG
             cycle x_loop
         endif
-
       enddo x_loop
     enddo y_loop
 
