@@ -4,7 +4,7 @@
 !! \param fp[out] fluxes on the right side of each vertical edge
 !! \param gm[out] fluxes on the lower side of each horizontal edge
 !! \param gp[out] fluxes on the upper side of each horizontal edge
-subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,rpn2,rpt2,id)
+subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,rpn2,rpt2,ngrids,id)
 !
 !     clawpack routine ...  modified for AMRCLAW
 !
@@ -40,7 +40,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     
     ! Arguments
     integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
-    integer, intent(in) :: id
+    integer, intent(in) :: id, ngrids
     real(kind=8), intent(in) :: dx,dy,dt
     real(kind=8), intent(inout) :: cflgrid
 
@@ -50,15 +50,12 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
     real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
 
-#ifdef CUDA
-    attributes(device) :: q, fm, fp, gm, gp
-#endif
-    
     ! Looping scalar storage
     integer :: i,j, m, mw
     real(kind=8) :: dtdx,dtdy
 
 #ifdef CUDA
+    attributes(device) :: q, fm, fp, gm, gp
     double precision, dimension(:,:), pointer, contiguous :: &
         cflxy
     double precision, dimension(:,:), pointer, contiguous, device :: &
@@ -70,6 +67,8 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     integer :: data_size
     integer :: istat
     integer :: cflmx, cflmy
+    double precision :: cfls(2*ngrids)
+    double precision, device :: cfls_d(2*ngrids)
 #endif
 
     
@@ -92,6 +91,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
     ! Initialize fluxes array to zero
     call init_fluxes(fm, fp, gm, gp, meqn, 1-mbc, mx+mbc, 1-mbc, my+mbc, id)
+    cfls_d = 0.d0
 #else
     fm = 0.d0
     fp = 0.d0
@@ -105,7 +105,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !   -----------------------------------------------------------
 !   # compute amdq and apdq
 !   -----------------------------------------------------------
-#ifdef gpu
+#ifndef CUDA
     call x_sweep_1st_order(q, fm, fp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx, cflgrid)
 
 #else
@@ -113,34 +113,15 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     ! compute numBlocks and numThreads
     call threads_and_blocks([2-mbc, 0] , [mx+mbc, my+1], numBlocks, numThreads)
 
-    cflmx = numBlocks%x
-    cflmy = numBlocks%y
-    call cpu_allocate_pinned(cflxy, 1, cflmx,1, cflmy)
-    call gpu_allocate(cflxy_d, device_id, 1, cflmx,1, cflmy)
-
     call x_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y, get_cuda_stream(id, device_id)>>>&
         (q, fm, fp, sx_d, wave_x_d, &
-         mbc, mx, my, dtdx, cflxy_d, cc, zz)
+         mbc, mx, my, dtdx, & 
+         cfls_d, ngrids, 2*id-1, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
     call check_cuda_error(istat)
 #endif
-
-
-    ! TODO: replace this reduction with library version
-    ! TODO: move this to advanc
-    istat = cudaMemcpy(cflxy, cflxy_d, cflmx*cflmy)
-
-    do i = 1,cflmx
-        do j = 1,cflmy
-            cflgrid = max(cflgrid, cflxy(i,j))
-        enddo
-    enddo
-
-    call cpu_deallocated_pinned(cflxy)
-    call gpu_deallocate(cflxy_d, device_id)
-
 #endif
 
 
@@ -150,7 +131,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !     # and solve for transverse waves
 !     -----------------------------------------------------------
 
-#ifdef gpu
+#ifndef CUDA
     ! call x_sweep_2nd_order(fm, fp, gm, gp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
     call x_sweep_2nd_order_simple(fm, fp, gm, gp, sx, wave_x, meqn, mwaves, mbc, mx, my, dtdx)
 
@@ -171,35 +152,20 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !     -----------------------------------------------------------
 !     # compute bmdq and bpdq
 !     -----------------------------------------------------------
-#ifdef gpu
+#ifndef CUDA
     call y_sweep_1st_order(q, gm, gp, sy, wave_y, meqn, mwaves, mbc, mx, my, dtdy, cflgrid)
-#else
 
+#else
     call threads_and_blocks([0, 2-mbc] , [mx+1, my+mbc], numBlocks, numThreads)
-    cflmx = numBlocks%x
-    cflmy = numBlocks%y
-    call cpu_allocate_pinned(cflxy, 1, cflmx,1, cflmy)
-    call gpu_allocate(cflxy_d, device_id, 1, cflmx,1, cflmy)
     call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y,get_cuda_stream(id,device_id)>>>&
     (q, gm, gp, sy_d, wave_y_d, &
-     mbc, mx, my, dtdy, cflxy_d, cc, zz)
+     mbc, mx, my, dtdy, &
+     cfls_d, ngrids, 2*id, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
     call check_cuda_error(istat)
 #endif
-
-    istat = cudaMemcpy(cflxy, cflxy_d, cflmx*cflmy)
-
-    do i = 1,cflmx
-        do j = 1,cflmy
-            cflgrid = max(cflgrid, cflxy(i,j))
-        enddo
-    enddo
-
-    call cpu_deallocated_pinned(cflxy)
-    call gpu_deallocate(cflxy_d, device_id)
-
 #endif
 
 
@@ -209,7 +175,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 !     # modify G fluxes for second order q_{yy} correction terms:
 !     # and transverse waves
 !     -----------------------------------------------------------
-#ifdef gpu
+#ifndef CUDA
     call y_sweep_2nd_order(fm, fp, gm, gp, sy, wave_y, meqn, mwaves, mbc, mx, my, dtdy)
 
 #else
@@ -233,6 +199,12 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
         call gpu_deallocate(    sy_d, device_id) 
         call gpu_deallocate(wave_y_d, device_id) 
 #endif
+
+    ! process cflgrid
+    istat = cudaMemcpy(cfls, cfls_d, 2*ngrids)
+    cflgrid = max(cflgrid, cfls(2*id-1))
+    cflgrid = max(cflgrid, cfls(2*id))
+
 end subroutine step2_fused
 
 ! Set fluxes array to zero

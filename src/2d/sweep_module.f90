@@ -3,7 +3,7 @@ module sweep_module
     use amr_module
     use parallel_advanc_module, only: dtcom, dxcom, dycom, icom, jcom
     use problem_para_module, only: rho,bulk,cc,zz
-    use cuda_module, only: max_reduce_device_2d
+    use cuda_module, only: max_reduce_device_2d, max_reduce_device_local_2d
 
     implicit none
 
@@ -77,7 +77,7 @@ subroutine x_sweep_1st_order(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, 
 end subroutine x_sweep_1st_order
 
 attributes(global) &
-subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflxy, cc, zz) 
+subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cfls, ngrids, id, cc, zz) 
 
     implicit none
 
@@ -87,15 +87,19 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflx
     real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
     real(kind=8), intent(inout) ::    s_x(2-mbc:mx + mbc, 2-mbc:my+mbc-1, NWAVES)
     real(kind=8), intent(inout) :: wave_x(2-mbc:mx+mbc, 2-mbc:my+mbc-1, NEQNS, NWAVES)
-    real(kind=8), intent(inout) :: cflxy(griddim%x, griddim%y)
     real(kind=8), value, intent(in) :: dtdx
     real(kind=8), value, intent(in) :: cc, zz
+    integer, value, intent(in) :: ngrids, id
+    real(kind=8), intent(inout) :: cfls(ngrids)
 
     ! Local variables for the Riemann solver
     integer :: i,j, tidx, tidy
     real(kind=8) :: delta1, delta2, a1, a2
     integer :: m, mw
     real(kind=8) :: amdq(NEQNS), apdq(NEQNS)
+    real(kind=8) :: cfl_local
+    real(kind=8) :: atomic_result
+
 
     double precision, shared :: cfl_s(blockDim%x, blockDim%y)
 
@@ -147,7 +151,12 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cflx
     enddo
 
     call syncthreads()
-    call max_reduce_device_2d(cfl_s, mx+2*mbc-1, my+2, cflxy, griddim%x, griddim%y)
+    call max_reduce_device_local_2d(cfl_s, mx+2*mbc-1, my+2, cfl_local)
+
+    ! Write to a global cfl
+    if ( tidx == 1 .and. tidy==1) then
+        atomic_result = atomicmax(cfls(id), cfl_local)
+    endif
 
 end subroutine x_sweep_1st_order_gpu
 
@@ -692,7 +701,7 @@ end subroutine y_sweep_1st_order
 
 
 attributes(global) &
-subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflxy, cc, zz) 
+subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cfls, ngrids, id, cc, zz) 
 
     implicit none
 
@@ -702,15 +711,18 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflx
     real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
     real(kind=8), intent(inout) ::    s_y(2-mbc:mx+mbc-1, 2-mbc:my + mbc, NWAVES)
     real(kind=8), intent(inout) :: wave_y(2-mbc:mx+mbc-1, 2-mbc:my+mbc, NEQNS, NWAVES)
-    real(kind=8), intent(inout) :: cflxy(griddim%x, griddim%y)
     real(kind=8), value, intent(in) :: dtdy
     real(kind=8), value, intent(in) :: cc, zz
+    integer, value, intent(in) :: ngrids, id
+    real(kind=8), intent(inout) :: cfls(ngrids)
 
     ! Local variables for the Riemann solver
     integer :: i,j, tidx, tidy
     real(kind=8) :: delta1, delta2, a1, a2
     integer :: m, mw
     real(kind=8) :: bmdq(NEQNS), bpdq(NEQNS)
+    real(kind=8) :: cfl_local
+    real(kind=8) :: atomic_result
 
     double precision, shared :: cfl_s(blockDim%x, blockDim%y)
 
@@ -761,7 +773,12 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cflx
     enddo
 
     call syncthreads()
-    call max_reduce_device_2d(cfl_s, mx+2, my+2*mbc-1, cflxy, griddim%x, griddim%y)
+    call max_reduce_device_local_2d(cfl_s, mx+2, my+2*mbc-1, cfl_local)
+
+    ! Write to a global cfl
+    if ( tidx == 1 .and. tidy==1) then
+        atomic_result = atomicmax(cfls(id), cfl_local)
+    endif
 
 end subroutine y_sweep_1st_order_gpu
 

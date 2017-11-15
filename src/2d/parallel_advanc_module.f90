@@ -422,7 +422,7 @@ contains
     end subroutine stepgrid
 
     subroutine stepgrid_soa(q,fm,fp,gm,gp,mitot,mjtot,mbc,dt,dtnew,dx,dy, &
-            nvar,xlow,ylow,time,mptr,maux,aux,id)
+            nvar,xlow,ylow,time,mptr,maux,aux,ngrids,id)
 
         use amr_module
 #ifdef CUDA
@@ -437,7 +437,8 @@ contains
         parameter (msize=max1d+4)
         parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
 
-        integer, intent(in) :: id
+        integer, intent(in) :: id, ngrids
+        double precision, intent(out) :: dtnew
         ! These are all in SoA format
         double precision ::   q(mitot,mjtot,nvar)
         double precision ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)
@@ -499,7 +500,7 @@ contains
       call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
           q,dx,dy,dt,cflgrid, &
-          fm,fp,gm,gp,rpn2,rpt2,id)
+          fm,fp,gm,gp,rpn2,rpt2,ngrids,id)
 
 !$OMP  CRITICAL (cflm)
 

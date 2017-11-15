@@ -40,6 +40,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         gps(numgrids(level)), gms(numgrids(level)) 
     type(grid2d_device) :: qs_d(numgrids(level)), fps_d(numgrids(level)), fms_d(numgrids(level)), &
         gps_d(numgrids(level)), gms_d(numgrids(level)) 
+    double precision :: dtnews(numgrids(level))
     double precision, allocatable :: fm(:,:,:)
     double precision, allocatable :: fp(:,:,:)
     double precision, allocatable :: gm(:,:,:)
@@ -208,7 +209,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             call stepgrid_soa(qs_d(j)%dataptr,fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
                             mitot,mjtot,nghost, &
                             delt,dtnew,hx,hy,nvar, &
-                            xlow,ylow,time,mptr,naux,alloc(locaux),id)
+                            xlow,ylow,time,mptr,naux,alloc(locaux),numgrids(level),id)
         else if (dimensional_split .eq. 1) then
 !           # Godunov splitting
             print *, "CUDA version not implemented."
