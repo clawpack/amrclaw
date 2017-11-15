@@ -4,7 +4,7 @@
 !! \param fp[out] fluxes on the right side of each vertical edge
 !! \param gm[out] fluxes on the lower side of each horizontal edge
 !! \param gp[out] fluxes on the upper side of each horizontal edge
-subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,rpn2,rpt2)
+subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,rpn2,rpt2,id)
 !
 !     clawpack routine ...  modified for AMRCLAW
 !
@@ -25,11 +25,12 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     use sweep_module, only: y_sweep_1st_order_gpu, y_sweep_2nd_order_gpu
     use problem_para_module, only: cc, zz, bulk, rho
 #ifdef CUDA
-    use cuda_module, only: threads_and_blocks, numBlocks, numThreads, device_id, cuda_streams
-    use cuda_module, only: check_cuda_error, toString, temp_count, write_grid
+    use cuda_module, only: threads_and_blocks, numBlocks, numThreads, device_id
+    use cuda_module, only: check_cuda_error, write_grid
+    use cuda_module, only: get_cuda_stream
     use memory_module, only: gpu_allocate, gpu_deallocate
     use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned
-    use cudafor, only: cudaMemcpy, cudaDeviceSynchronize
+    use cudafor, only: cudaMemcpyAsync, cudaDeviceSynchronize, cudaMemcpy
     use cudafor, only: dim3
 #endif
 
@@ -39,6 +40,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     
     ! Arguments
     integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
+    integer, intent(in) :: id
     real(kind=8), intent(in) :: dx,dy,dt
     real(kind=8), intent(inout) :: cflgrid
 
@@ -86,11 +88,10 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     call gpu_allocate(    sy_d, device_id, 2-mbc, mx+mbc-1, 2-mbc, my+mbc, 1, mwaves)
     call gpu_allocate(wave_y_d, device_id, 2-mbc, mx+mbc-1, 2-mbc, my+mbc, 1, meqn, 1, mwaves)
 
-
     data_size = meqn * (mx + 2*mbc) * (my + 2*mbc)
 
     ! Initialize fluxes array to zero
-    call init_fluxes(fm, fp, gm, gp, meqn, 1-mbc, mx+mbc, 1-mbc, my+mbc, 0)
+    call init_fluxes(fm, fp, gm, gp, meqn, 1-mbc, mx+mbc, 1-mbc, my+mbc, id)
 #else
     fm = 0.d0
     fp = 0.d0
@@ -117,7 +118,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     call cpu_allocate_pinned(cflxy, 1, cflmx,1, cflmy)
     call gpu_allocate(cflxy_d, device_id, 1, cflmx,1, cflmy)
 
-    call x_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y, cuda_streams(1, device_id)>>>&
+    call x_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y, get_cuda_stream(id, device_id)>>>&
         (q, fm, fp, sx_d, wave_x_d, &
          mbc, mx, my, dtdx, cflxy_d, cc, zz)
 
@@ -128,6 +129,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
 
     ! TODO: replace this reduction with library version
+    ! TODO: move this to advanc
     istat = cudaMemcpy(cflxy, cflxy_d, cflmx*cflmy)
 
     do i = 1,cflmx
@@ -154,7 +156,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
 #else
     call threads_and_blocks([1, 0] , [mx+1, my+1], numBlocks, numThreads)
-    call x_sweep_2nd_order_gpu<<<numBlocks, numThreads,0,cuda_streams(1,device_id)>>>&
+    call x_sweep_2nd_order_gpu<<<numBlocks, numThreads,0,get_cuda_stream(id,device_id)>>>&
         (fm, fp, gm, gp, sx_d, wave_x_d, mbc, mx, my, dtdx, cc, zz)
 
 #ifdef DEBUG
@@ -178,7 +180,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     cflmy = numBlocks%y
     call cpu_allocate_pinned(cflxy, 1, cflmx,1, cflmy)
     call gpu_allocate(cflxy_d, device_id, 1, cflmx,1, cflmy)
-    call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y,cuda_streams(1,device_id)>>>&
+    call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y,get_cuda_stream(id,device_id)>>>&
     (q, gm, gp, sy_d, wave_y_d, &
      mbc, mx, my, dtdy, cflxy_d, cc, zz)
 
@@ -213,7 +215,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 #else
 
     call threads_and_blocks([0, 1] , [mx+1, my+1], numBlocks, numThreads)
-    call y_sweep_2nd_order_gpu<<<numBlocks, numThreads,0,cuda_streams(1,device_id)>>>&
+    call y_sweep_2nd_order_gpu<<<numBlocks, numThreads,0,get_cuda_stream(id,device_id)>>>&
         (fm, fp, gm, gp, sy_d, wave_y_d, mbc, mx, my, dtdx, cc, zz)
 
 #ifdef DEBUG
@@ -242,7 +244,8 @@ subroutine init_fluxes(fm, fp, gm, gp, nvar, xlo, xhi, ylo, yhi &
         )
 
 #ifdef CUDA
-    use cuda_module, only: cuda_streams, device_id
+    use cuda_module, only: device_id
+    use cuda_module, only: get_cuda_stream
 #endif
     implicit none
     integer, intent(in) :: nvar, xlo, xhi, ylo, yhi
@@ -259,10 +262,7 @@ subroutine init_fluxes(fm, fp, gm, gp, nvar, xlo, xhi, ylo, yhi &
     attributes(device) :: fm, fp, gm, gp
 #endif
 
-! TODO: right now always use cuda_streams(1,device_id). Need to change this in the future
-! !$cuf kernel do(3) <<<*, *,0,cuda_streams(stream_from_index(id))>>>
-
-    !$cuf kernel do(3) <<<*,*,0, cuda_streams(1,device_id)>>> 
+    !$cuf kernel do(3) <<<*,*,0, get_cuda_stream(id,device_id)>>> 
     do m = 1,nvar
         do j = ylo,yhi
             do i = xlo,xhi

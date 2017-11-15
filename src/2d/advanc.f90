@@ -13,9 +13,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use gauges_module, only: update_gauges, num_gauges
     use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned, &
         gpu_allocate, gpu_deallocate
-    use cuda_module, only: grid2d, grid2d_device, cuda_streams, device_id
+    use cuda_module, only: grid2d, grid2d_device, device_id
     use cuda_module, only: wait_for_all_gpu_tasks
-    use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2
+    use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
     use cudafor
 #endif
     implicit double precision (a-h,o-z)
@@ -33,7 +33,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #ifdef CUDA
     integer :: locold, locnew, locaux
-    integer :: i,j
+    integer :: i,j, id
     integer :: cudaResult
     double precision :: xlow, ylow
     type(grid2d) :: qs(numgrids(level)), fps(numgrids(level)), fms(numgrids(level)), &
@@ -133,6 +133,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
         mitot  = nx + 2*nghost
         mjtot  = ny + 2*nghost
+        id = j
 
         !  copy old soln. values into  next time step's soln. values
         !  since integrator will overwrite it. only for grids not at
@@ -199,7 +200,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call aos_to_soa_r2(qs(j)%dataptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
 
         ! copy q to GPU
-        cudaResult = cudaMemcpyAsync(qs_d(j)%dataptr,  qs(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, cuda_streams(1,device_id))
+        cudaResult = cudaMemcpyAsync(qs_d(j)%dataptr,  qs(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
 
 
         if (dimensional_split .eq. 0) then
@@ -207,7 +208,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             call stepgrid_soa(qs_d(j)%dataptr,fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
                             mitot,mjtot,nghost, &
                             delt,dtnew,hx,hy,nvar, &
-                            xlow,ylow,time,mptr,naux,alloc(locaux))
+                            xlow,ylow,time,mptr,naux,alloc(locaux),id)
         else if (dimensional_split .eq. 1) then
 !           # Godunov splitting
             print *, "CUDA version not implemented."
@@ -222,11 +223,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             stop
         endif
         ! copy fluxes back to CPU
-        cudaResult = cudaMemcpyAsync(fms(j)%dataptr,  fms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
-        cudaResult = cudaMemcpyAsync(fps(j)%dataptr,  fps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
-        cudaResult = cudaMemcpyAsync(gms(j)%dataptr,  gms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
-        cudaResult = cudaMemcpyAsync(gps(j)%dataptr,  gps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
-        cudaResult = cudaMemcpyAsync( qs(j)%dataptr,   qs_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, cuda_streams(1,device_id))
+        cudaResult = cudaMemcpyAsync(fms(j)%dataptr,  fms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync(fps(j)%dataptr,  fps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync(gms(j)%dataptr,  gms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync(gps(j)%dataptr,  gps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync( qs(j)%dataptr,   qs_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
     enddo
 
     call wait_for_all_gpu_tasks(device_id)

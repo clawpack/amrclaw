@@ -252,12 +252,12 @@ contains
       call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
           q_d,dx,dy,dt,cflgrid, &
-          fm_d,fp_d,gm_d,gp_d,rpn2,rpt2)
+          fm_d,fp_d,gm_d,gp_d,rpn2,rpt2,mptr)
 #else
       call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
           q,dx,dy,dt,cflgrid, &
-          fm,fp,gm,gp,rpn2,rpt2)
+          fm,fp,gm,gp,rpn2,rpt2,mptr)
 #endif
 
 !$OMP  CRITICAL (cflm)
@@ -422,12 +422,13 @@ contains
     end subroutine stepgrid
 
     subroutine stepgrid_soa(q,fm,fp,gm,gp,mitot,mjtot,mbc,dt,dtnew,dx,dy, &
-            nvar,xlow,ylow,time,mptr,maux,aux)
+            nvar,xlow,ylow,time,mptr,maux,aux,id)
 
         use amr_module
 #ifdef CUDA
         use memory_module, only: gpu_allocate, gpu_deallocate, cpu_allocate_pinned, cpu_deallocated_pinned
-        use cuda_module, only: device_id, wait_for_all_gpu_tasks, cuda_streams
+        use cuda_module, only: device_id, wait_for_all_gpu_tasks
+        use cuda_module, only: get_cuda_stream
         use cudafor
 #endif
         implicit double precision (a-h,o-z)
@@ -436,6 +437,7 @@ contains
         parameter (msize=max1d+4)
         parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
 
+        integer, intent(in) :: id
         ! These are all in SoA format
         double precision ::   q(mitot,mjtot,nvar)
         double precision ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)
@@ -497,7 +499,7 @@ contains
       call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
           q,dx,dy,dt,cflgrid, &
-          fm,fp,gm,gp,rpn2,rpt2)
+          fm,fp,gm,gp,rpn2,rpt2,id)
 
 !$OMP  CRITICAL (cflm)
 
@@ -510,8 +512,7 @@ contains
         dtdx = dt/dx
         dtdy = dt/dy
 
-        ! TODO: change loop order
-        !$cuf kernel do(3) <<<*, *, 0, cuda_streams(1,device_id)>>>
+        !$cuf kernel do(3) <<<*, *, 0, get_cuda_stream(id,device_id)>>>
         do m=1,nvar
             do j=mbc+1,mjtot-mbc
                 do i=mbc+1,mitot-mbc

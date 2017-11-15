@@ -31,8 +31,6 @@ module cuda_module
 
     character(len=*), parameter :: gpufile = 'gpu.data'
 
-    integer :: temp_count
-
     interface toString
         module procedure toString1
         module procedure toString2
@@ -106,7 +104,6 @@ contains
         call clawpack_mempool_init()
 
         n_timer = 0
-        temp_count = 1
 
     end subroutine initialize_cuda
 
@@ -133,6 +130,18 @@ contains
         endif
 
     end function stream_from_index
+
+    ! return a cuda stream based on an index and device id
+    function get_cuda_stream(idx, dev_id) result(s)
+
+        implicit none
+
+        integer :: idx, dev_id
+        integer(kind=cuda_stream_kind) :: s
+
+        s = cuda_streams(stream_from_index(idx), dev_id)
+
+    end function get_cuda_stream
 
     subroutine threads_and_blocks(lo, hi, numBlocks, numThreads)
 	use cudafor, only: dim3
