@@ -36,11 +36,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     integer :: i,j, id
     integer :: cudaResult
     double precision :: xlow, ylow
+    double precision :: cfl_local
     type(grid2d) :: qs(numgrids(level)), fps(numgrids(level)), fms(numgrids(level)), &
         gps(numgrids(level)), gms(numgrids(level)) 
     type(grid2d_device) :: qs_d(numgrids(level)), fps_d(numgrids(level)), fms_d(numgrids(level)), &
         gps_d(numgrids(level)), gms_d(numgrids(level)) 
-    double precision :: dtnews(numgrids(level))
+    double precision, dimension(:,:), pointer, contiguous :: cfls
+    double precision, dimension(:,:), pointer, contiguous, device :: cfls_d
     double precision, allocatable :: fm(:,:,:)
     double precision, allocatable :: fp(:,:,:)
     double precision, allocatable :: gm(:,:,:)
@@ -127,6 +129,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
 #ifdef CUDA
+    call cpu_allocate_pinned(cfls,1,numgrids(level),1,2)
+    call gpu_allocate(cfls_d,device_id,1,numgrids(level),1,2)
+    ! TODO: merge this with something else
+    cfls_d = 0.d0
     levSt = listStart(level)
     do j = 1, numgrids(level)
         mptr = listOfGrids(levSt+j-1)
@@ -208,8 +214,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !           # Unsplit method
             call stepgrid_soa(qs_d(j)%dataptr,fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
                             mitot,mjtot,nghost, &
-                            delt,dtnew,hx,hy,nvar, &
-                            xlow,ylow,time,mptr,naux,alloc(locaux),numgrids(level),id)
+                            delt,hx,hy,nvar, &
+                            xlow,ylow,time,mptr,naux,alloc(locaux),& 
+                            numgrids(level),id,cfls_d)
         else if (dimensional_split .eq. 1) then
 !           # Godunov splitting
             print *, "CUDA version not implemented."
@@ -282,7 +289,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !969     format(" thread ",i4," updated by ",e15.7, " new dt ",e15.7)
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
 
-        dtlevnew = dmin1(dtlevnew,dtnew)
         deallocate(fm)
         deallocate(fp)
         deallocate(gm)
@@ -313,7 +319,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !$OMP&            SCHEDULE (DYNAMIC,1)
     !$OMP&            DEFAULT(none)
     do j = 1, numgrids(level)
-        !mptr   = listgrids(j)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
@@ -337,7 +342,26 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     timeStepgrid = timeStepgrid +clock_finish-clock_startStepgrid
     timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid      
 
+#ifdef CUDA
+    ! reduction to get cflmax and dtlevnew
+    cudaResult = cudaMemcpy(cfls, cfls_d, numgrids(level)*2)
+    do j = 1,numgrids(level)
+        cfl_local = max(cfls(j,1),cfls(j,2))
+        if (cfl_local .gt. cflv1) then
+            write(*,810) cfl_local
+            write(outunit,810) cfl_local, cflv1
+      810   format('*** WARNING *** Courant number  =', d12.4, &
+          '  is larger than input cfl_max = ', d12.4)
+        endif
+        cfl_level = dmax1(cfl_level, cfl_local)
+    enddo
+    dtlevnew = delt*cfl/cfl_level
     cflmax = dmax1(cflmax, cfl_level)
+    call cpu_deallocated_pinned(cfls)
+    call gpu_deallocate(cfls_d,device_id)
+#else
+    cflmax = dmax1(cflmax, cfl_level)
+#endif
 
     !
     return

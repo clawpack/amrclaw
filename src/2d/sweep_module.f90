@@ -90,7 +90,7 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cfls
     real(kind=8), value, intent(in) :: dtdx
     real(kind=8), value, intent(in) :: cc, zz
     integer, value, intent(in) :: ngrids, id
-    real(kind=8), intent(inout) :: cfls(ngrids)
+    real(kind=8), intent(inout) :: cfls(ngrids,2)
 
     ! Local variables for the Riemann solver
     integer :: i,j, tidx, tidy
@@ -155,7 +155,7 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cfls
 
     ! Write to a global cfl
     if ( tidx == 1 .and. tidy==1) then
-        atomic_result = atomicmax(cfls(id), cfl_local)
+        atomic_result = atomicmax(cfls(id,1), cfl_local)
     endif
 
 end subroutine x_sweep_1st_order_gpu
@@ -714,7 +714,7 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cfls
     real(kind=8), value, intent(in) :: dtdy
     real(kind=8), value, intent(in) :: cc, zz
     integer, value, intent(in) :: ngrids, id
-    real(kind=8), intent(inout) :: cfls(ngrids)
+    real(kind=8), intent(inout) :: cfls(ngrids,2)
 
     ! Local variables for the Riemann solver
     integer :: i,j, tidx, tidy
@@ -777,7 +777,7 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cfls
 
     ! Write to a global cfl
     if ( tidx == 1 .and. tidy==1) then
-        atomic_result = atomicmax(cfls(id), cfl_local)
+        atomic_result = atomicmax(cfls(id,2), cfl_local)
     endif
 
 end subroutine y_sweep_1st_order_gpu

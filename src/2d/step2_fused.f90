@@ -4,7 +4,7 @@
 !! \param fp[out] fluxes on the right side of each vertical edge
 !! \param gm[out] fluxes on the lower side of each horizontal edge
 !! \param gp[out] fluxes on the upper side of each horizontal edge
-subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,rpn2,rpt2,ngrids,id)
+subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2,rpt2,ngrids,id)
 !
 !     clawpack routine ...  modified for AMRCLAW
 !
@@ -42,7 +42,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
     integer, intent(in) :: id, ngrids
     real(kind=8), intent(in) :: dx,dy,dt
-    real(kind=8), intent(inout) :: cflgrid
+    real(kind=8), intent(inout) :: cfls(ngrids,2)
 
     real(kind=8), intent(in)    ::  q(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
     real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
@@ -56,6 +56,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
 #ifdef CUDA
     attributes(device) :: q, fm, fp, gm, gp
+    attributes(device) :: cfls
     double precision, dimension(:,:), pointer, contiguous :: &
         cflxy
     double precision, dimension(:,:), pointer, contiguous, device :: &
@@ -67,8 +68,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     integer :: data_size
     integer :: istat
     integer :: cflmx, cflmy
-    double precision :: cfls(2*ngrids)
-    double precision, device :: cfls_d(2*ngrids)
 #endif
 
     
@@ -77,7 +76,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     dycom = dy
     dtcom = dt
     
-    cflgrid = 0.d0
     dtdx = dt/dx
     dtdy = dt/dy
 
@@ -91,7 +89,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
 
     ! Initialize fluxes array to zero
     call init_fluxes(fm, fp, gm, gp, meqn, 1-mbc, mx+mbc, 1-mbc, my+mbc, id)
-    cfls_d = 0.d0
 #else
     fm = 0.d0
     fp = 0.d0
@@ -116,7 +113,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     call x_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y, get_cuda_stream(id, device_id)>>>&
         (q, fm, fp, sx_d, wave_x_d, &
          mbc, mx, my, dtdx, & 
-         cfls_d, ngrids, 2*id-1, cc, zz)
+         cfls, ngrids, id, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
@@ -160,7 +157,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
     call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y,get_cuda_stream(id,device_id)>>>&
     (q, gm, gp, sy_d, wave_y_d, &
      mbc, mx, my, dtdy, &
-     cfls_d, ngrids, 2*id, cc, zz)
+     cfls, ngrids, id, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
@@ -199,11 +196,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cflgrid,fm,fp,gm,gp,r
         call gpu_deallocate(    sy_d, device_id) 
         call gpu_deallocate(wave_y_d, device_id) 
 #endif
-
-    ! process cflgrid
-    istat = cudaMemcpy(cfls, cfls_d, 2*ngrids)
-    cflgrid = max(cflgrid, cfls(2*id-1))
-    cflgrid = max(cflgrid, cfls(2*id))
 
 end subroutine step2_fused
 

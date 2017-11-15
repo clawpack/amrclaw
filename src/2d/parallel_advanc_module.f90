@@ -421,8 +421,9 @@ contains
       return
     end subroutine stepgrid
 
-    subroutine stepgrid_soa(q,fm,fp,gm,gp,mitot,mjtot,mbc,dt,dtnew,dx,dy, &
-            nvar,xlow,ylow,time,mptr,maux,aux,ngrids,id)
+    ! This subroutine should be used only if CUDA is defined
+    subroutine stepgrid_soa(q,fm,fp,gm,gp,mitot,mjtot,mbc,dt,dx,dy, &
+            nvar,xlow,ylow,time,mptr,maux,aux,ngrids,id,cfls)
 
         use amr_module
 #ifdef CUDA
@@ -438,7 +439,7 @@ contains
         parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
 
         integer, intent(in) :: id, ngrids
-        double precision, intent(out) :: dtnew
+        double precision, intent(out) :: cfls(ngrids,2)
         ! These are all in SoA format
         double precision ::   q(mitot,mjtot,nvar)
         double precision ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)
@@ -447,6 +448,7 @@ contains
 #ifdef CUDA
         attributes(device) :: q
         attributes(device) :: fp, fm, gp, gm
+        attributes(device) :: cfls
         ! attributes(device) :: aux
 #endif
 
@@ -499,16 +501,9 @@ contains
 ! assume no aux here
       call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
-          q,dx,dy,dt,cflgrid, &
+          q,dx,dy,dt,cfls, &
           fm,fp,gm,gp,rpn2,rpt2,ngrids,id)
 
-!$OMP  CRITICAL (cflm)
-
-        cfl_level = dmax1(cfl_level,cflgrid)
-
-!$OMP END CRITICAL (cflm)
-
-!
 !       # update q
         dtdx = dt/dx
         dtdy = dt/dy
@@ -561,39 +556,6 @@ contains
         endif
 #endif
 
-!
-!
-! For variable time stepping, use max speed seen on this grid to 
-! choose the allowable new time step dtnew.  This will later be 
-! compared to values seen on other grids.
-!
-        if (cflgrid .gt. 0.d0) then
-            dtnew = dt*cfl/cflgrid
-        else
-!       # velocities are all zero on this grid so there's no 
-!       # time step restriction coming from this grid.
-            dtnew = rinfinity
-        endif
-
-!     # give a warning if Courant number too large...
-!
-        if (cflgrid .gt. cflv1) then
-            write(*,810) cflgrid
-            write(outunit,810) cflgrid, cflv1
-      810   format('*** WARNING *** Courant number  =', d12.4, &
-          '  is larger than input cfl_max = ', d12.4)
-        endif
-!
-#ifndef CUDA
-        if (dump) then
-            write(outunit,*) "dumping grid ",mptr," after stepgrid"
-            do i = 1, mitot
-            do j = 1, mjtot
-               write(outunit,545) i,j,(q(ivar,i,j),ivar=1,nvar)
-            end do
-            end do
-        endif
-#endif
         return
     end subroutine stepgrid_soa
 end module parallel_advanc_module
