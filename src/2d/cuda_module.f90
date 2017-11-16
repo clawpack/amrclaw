@@ -633,8 +633,8 @@ contains
         real(kind=8), intent(inout) :: soa(xlo:xhi, ylo:yhi, 1:nvar)
         integer :: i,j,m
 
-        do i = xlo, xhi
-            do j = ylo, yhi
+        do j = ylo, yhi
+            do i = xlo, xhi
                 do m = 1,nvar
                     soa(i,j,m) = aos(m,i,j)
                 enddo

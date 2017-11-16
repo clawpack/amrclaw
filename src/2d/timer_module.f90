@@ -21,7 +21,7 @@ module timer_module
     integer(kind=8) :: clock_rate
 
     type timer_type
-        character(len=20) :: timer_name
+        character(len=100) :: timer_name
         logical :: used = .false.
         logical :: running = .false.
         integer(kind=8) :: start_time = 0
