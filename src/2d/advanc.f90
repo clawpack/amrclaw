@@ -16,6 +16,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: grid2d, grid2d_device, device_id
     use cuda_module, only: wait_for_all_gpu_tasks
     use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
+    use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
     use cudafor
 #endif
     implicit double precision (a-h,o-z)
@@ -47,6 +48,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     double precision, allocatable :: fp(:,:,:)
     double precision, allocatable :: gm(:,:,:)
     double precision, allocatable :: gp(:,:,:)
+    integer, parameter :: timer_stepgrid = 1
 #endif
 
     !     maxgr is maximum number of grids  many things are
@@ -126,6 +128,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! 
     call system_clock(clock_startStepgrid,clock_rate)
     call cpu_time(cpu_startStepgrid)
+
+    call take_cpu_timer('stepgrid', timer_stepgrid)
+    call cpu_timer_start(timer_stepgrid)
 
 
 #ifdef CUDA
@@ -335,6 +340,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #endif
     !
+    call cpu_timer_stop(timer_stepgrid)
     call system_clock(clock_finish,clock_rate)
     call cpu_time(cpu_finish)
     tvoll(level) = tvoll(level) + clock_finish - clock_start

@@ -98,7 +98,8 @@ program amr2
 
 
 #ifdef CUDA
-   use cuda_module, only: initialize_cuda
+   use cuda_module, only: initialize_cuda, finalize_cuda
+   use timer_module, only: print_all_cpu_timers
 #endif
 
     implicit none
@@ -721,6 +722,8 @@ program amr2
     write(*,*)
     write(outunit,*)
 
+    call print_all_cpu_timers()
+
     ! Done with computation, cleanup:
     lentotsave = lentot
     call cleanup(nvar,naux)
@@ -777,5 +780,8 @@ program amr2
     ! Close output and debug files.
     close(outunit)
     close(dbugunit)
+
+    call finalize_cuda()
+
 
 end program amr2
