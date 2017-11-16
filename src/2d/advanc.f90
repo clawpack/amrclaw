@@ -49,6 +49,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     double precision, allocatable :: gm(:,:,:)
     double precision, allocatable :: gp(:,:,:)
     integer, parameter :: timer_stepgrid = 1
+    integer, parameter :: timer_gpu_loop = 2
+    integer, parameter :: timer_qad = 3
+    integer, parameter :: timer_post = 4
+    integer, parameter :: timer_cfl = 5
+    integer, parameter :: timer_aos_to_soa = 6
 #endif
 
     !     maxgr is maximum number of grids  many things are
@@ -139,13 +144,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! TODO: merge this with something else
     cfls_d = 0.d0
     levSt = listStart(level)
+
     do j = 1, numgrids(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
         mitot  = nx + 2*nghost
         mjtot  = ny + 2*nghost
-        id = j
 
         !  copy old soln. values into  next time step's soln. values
         !  since integrator will overwrite it. only for grids not at
@@ -154,7 +159,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
         locold = node(store2, mptr)
         locnew = node(store1, mptr)
-
+    
         if (level .lt. mxnest) then
             ntot   = mitot * mjtot * nvar
             do i = 1, ntot
@@ -209,7 +214,29 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call gpu_allocate(gps_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
 
         ! convert q array to SoA format
+        call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
+        call cpu_timer_start(timer_aos_to_soa)
         call aos_to_soa_r2(qs(j)%dataptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
+        call cpu_timer_stop(timer_aos_to_soa)
+    enddo
+
+    call take_cpu_timer('gpu_loop', timer_gpu_loop)
+    call cpu_timer_start(timer_gpu_loop)
+
+    do j = 1, numgrids(level)
+        mptr = listOfGrids(levSt+j-1)
+        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+        mitot  = nx + 2*nghost
+        mjtot  = ny + 2*nghost
+        id = j
+
+        locold = node(store2, mptr)
+        locnew = node(store1, mptr)
+
+        xlow = rnode(cornxlo,mptr) - nghost*hx
+        ylow = rnode(cornylo,mptr) - nghost*hy
+        locaux = node(storeaux,mptr)
 
         ! copy q to GPU
         cudaResult = cudaMemcpyAsync(qs_d(j)%dataptr,  qs(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
@@ -245,6 +272,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     call wait_for_all_gpu_tasks(device_id)
 
+    call cpu_timer_stop(timer_gpu_loop)
+
+    call take_cpu_timer('fluxsv and fluxad', timer_post)
+    call cpu_timer_start(timer_post)
     do j = 1, numgrids(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
@@ -299,6 +330,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         deallocate(gm)
         deallocate(gp)
     enddo
+    call cpu_timer_stop(timer_post)
 
     do j = 1, numgrids(level)
         call cpu_deallocated_pinned( qs(j)%dataptr) 
@@ -349,6 +381,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid      
 
 #ifdef CUDA
+    call take_cpu_timer('CFL reduction', timer_cfl)
+    call cpu_timer_start(timer_cfl)
+
     ! reduction to get cflmax and dtlevnew
     cudaResult = cudaMemcpy(cfls, cfls_d, numgrids(level)*2)
     do j = 1,numgrids(level)
@@ -365,6 +400,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     cflmax = dmax1(cflmax, cfl_level)
     call cpu_deallocated_pinned(cfls)
     call gpu_deallocate(cfls_d,device_id)
+
+    call cpu_timer_stop(timer_cfl)
 #else
     cflmax = dmax1(cflmax, cfl_level)
 #endif
