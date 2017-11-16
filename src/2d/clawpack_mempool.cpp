@@ -82,7 +82,20 @@ void clawpack_mempool_init()
 	for (int i=0; i<num_devices; ++i) {
 	    device_memory_pool[i].reset(new GPUMemoryManager(i,0));
 	}
+
+        // TODO: If one of the devices does not have enough memory
+        // because other processes are running, this will cause 
+        // cudaMalloc to fail.
+	// for (int i=0; i<num_devices; ++i) {
+        //     size_t sz = 1024*1024*512;
+        //     void* vp_d = clawpack_mempool_alloc_gpu(sz,i);
+        //     clawpack_mempool_free_gpu(vp_d,i);
+        // }
+
         pinned_memory_pool.reset(new CPUPinnedMemoryManager(0));
+        // allocate 1 GB of pinned memory at the beginning
+        void* vp = clawpack_mempool_alloc_pinned(1024*1024*1024);
+        clawpack_mempool_free_pinned(vp);
 #endif
     }
 }
