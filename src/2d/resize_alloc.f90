@@ -26,7 +26,6 @@ subroutine resize_storage(new_size,status)
 #ifdef CUDA
     attributes(pinned) :: new_storage
     logical :: plog
-    integer :: istat
 #endif
     
 
@@ -34,7 +33,7 @@ subroutine resize_storage(new_size,status)
         print *, "Expanding storage from ", memsize," to ", new_size
 
 #ifdef CUDA
-        allocate(new_storage(new_size),STAT=istat, pinned=plog)
+        allocate(new_storage(new_size),STAT=status, pinned=plog)
         if (.not. plog) then
             print *, "Warning: allocating pinned memory in init_alloc() failed"
         endif
