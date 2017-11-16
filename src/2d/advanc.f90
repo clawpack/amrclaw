@@ -48,12 +48,16 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     double precision, allocatable :: fp(:,:,:)
     double precision, allocatable :: gm(:,:,:)
     double precision, allocatable :: gp(:,:,:)
+#ifdef PROFILE
     integer, parameter :: timer_stepgrid = 1
     integer, parameter :: timer_gpu_loop = 2
-    integer, parameter :: timer_qad = 3
+    integer, parameter :: timer_before_gpu_loop = 3
     integer, parameter :: timer_post = 4
     integer, parameter :: timer_cfl = 5
     integer, parameter :: timer_aos_to_soa = 6
+    integer, parameter :: timer_soa_to_aos = 7
+    integer, parameter :: timer_init_cfls = 8
+#endif
 #endif
 
     !     maxgr is maximum number of grids  many things are
@@ -134,17 +138,36 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call system_clock(clock_startStepgrid,clock_rate)
     call cpu_time(cpu_startStepgrid)
 
+#ifdef PROFILE
     call take_cpu_timer('stepgrid', timer_stepgrid)
     call cpu_timer_start(timer_stepgrid)
+#endif
+
 
 
 #ifdef CUDA
+
+#ifdef PROFILE
+    call take_cpu_timer('Initialize cfls', timer_init_cfls)
+    call cpu_timer_start(timer_init_cfls)
+#endif
+
     call cpu_allocate_pinned(cfls,1,numgrids(level),1,2)
     call gpu_allocate(cfls_d,device_id,1,numgrids(level),1,2)
+
     ! TODO: merge this with something else
     cfls_d = 0.d0
-    levSt = listStart(level)
 
+#ifdef PROFILE
+    call cpu_timer_stop(timer_init_cfls)
+#endif
+
+
+#ifdef PROFILE
+    call take_cpu_timer('preprocess before gpu loop', timer_before_gpu_loop)
+    call cpu_timer_start(timer_before_gpu_loop)
+#endif
+    levSt = listStart(level)
     do j = 1, numgrids(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
@@ -213,15 +236,26 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call gpu_allocate(gms_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
         call gpu_allocate(gps_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
 
-        ! convert q array to SoA format
+#ifdef PROFILE
         call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
         call cpu_timer_start(timer_aos_to_soa)
+#endif
+
+        ! convert q array to SoA format
         call aos_to_soa_r2(qs(j)%dataptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
+
+#ifdef PROFILE
         call cpu_timer_stop(timer_aos_to_soa)
+#endif
+
     enddo
+
+#ifdef PROFILE
+    call cpu_timer_stop(timer_before_gpu_loop)
 
     call take_cpu_timer('gpu_loop', timer_gpu_loop)
     call cpu_timer_start(timer_gpu_loop)
+#endif
 
     do j = 1, numgrids(level)
         mptr = listOfGrids(levSt+j-1)
@@ -272,10 +306,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     call wait_for_all_gpu_tasks(device_id)
 
+#ifdef PROFILE
     call cpu_timer_stop(timer_gpu_loop)
 
-    call take_cpu_timer('fluxsv and fluxad', timer_post)
+    call take_cpu_timer('post-process after gpu loop', timer_post)
     call cpu_timer_start(timer_post)
+#endif
     do j = 1, numgrids(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
@@ -287,11 +323,21 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         allocate(fp(nvar, mitot, mjtot))
         allocate(gm(nvar, mitot, mjtot))
         allocate(gp(nvar, mitot, mjtot))
+
+#ifdef PROFILE
+        call take_cpu_timer('soa_to_aos', timer_soa_to_aos)
+        call cpu_timer_start(timer_soa_to_aos)
+#endif
+
         call soa_to_aos_r2(fm, fms(j)%dataptr, nvar, 1, mitot, 1, mjtot)
         call soa_to_aos_r2(fp, fps(j)%dataptr, nvar, 1, mitot, 1, mjtot)
         call soa_to_aos_r2(gm, gms(j)%dataptr, nvar, 1, mitot, 1, mjtot)
         call soa_to_aos_r2(gp, gps(j)%dataptr, nvar, 1, mitot, 1, mjtot)
         call soa_to_aos_r2(alloc(locnew), qs(j)%dataptr, nvar, 1, mitot, 1, mjtot)
+
+#ifdef PROFILE
+        call cpu_timer_stop(timer_soa_to_aos)
+#endif
 
         ! TODO: use SoA in fluxsv and fluxad as well
         if (node(cfluxptr,mptr) .ne. 0) then
@@ -330,7 +376,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         deallocate(gm)
         deallocate(gp)
     enddo
-    call cpu_timer_stop(timer_post)
 
     do j = 1, numgrids(level)
         call cpu_deallocated_pinned( qs(j)%dataptr) 
@@ -345,6 +390,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call gpu_deallocate(gms_d(j)%dataptr, device_id) 
         call gpu_deallocate(gps_d(j)%dataptr, device_id) 
     enddo
+
+#ifdef PROFILE
+    call cpu_timer_stop(timer_post)
+#endif
 
 #else
     !$OMP PARALLEL DO PRIVATE(j,mptr,nx,ny,mitot,mjtot)  
@@ -372,7 +421,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #endif
     !
+#ifdef PROFILE
     call cpu_timer_stop(timer_stepgrid)
+#endif
     call system_clock(clock_finish,clock_rate)
     call cpu_time(cpu_finish)
     tvoll(level) = tvoll(level) + clock_finish - clock_start
@@ -381,8 +432,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid      
 
 #ifdef CUDA
+
+#ifdef PROFILE
     call take_cpu_timer('CFL reduction', timer_cfl)
     call cpu_timer_start(timer_cfl)
+#endif
 
     ! reduction to get cflmax and dtlevnew
     cudaResult = cudaMemcpy(cfls, cfls_d, numgrids(level)*2)
@@ -401,7 +455,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_deallocated_pinned(cfls)
     call gpu_deallocate(cfls_d,device_id)
 
+#ifdef PROFILE
     call cpu_timer_stop(timer_cfl)
+#endif
+
 #else
     cflmax = dmax1(cflmax, cfl_level)
 #endif
