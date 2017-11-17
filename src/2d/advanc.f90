@@ -16,8 +16,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: grid2d, grid2d_device, device_id
     use cuda_module, only: wait_for_all_gpu_tasks
     use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
+    use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
+    use cuda_module, only: write_grid
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
     use cudafor
+    use sweep_module, only: fluxad_gpu
 #endif
     implicit double precision (a-h,o-z)
 
@@ -48,6 +51,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     double precision, allocatable :: fp(:,:,:)
     double precision, allocatable :: gm(:,:,:)
     double precision, allocatable :: gp(:,:,:)
+    double precision, dimension(:,:), pointer, contiguous :: svdflx
+    double precision, dimension(:,:), pointer, contiguous, device :: svdflx_d
 #ifdef PROFILE
     integer, parameter :: timer_stepgrid = 1
     integer, parameter :: timer_gpu_loop = 2
@@ -339,7 +344,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call cpu_timer_stop(timer_soa_to_aos)
 #endif
 
-        ! TODO: use SoA in fluxsv and fluxad as well
         if (node(cfluxptr,mptr) .ne. 0) then
             call fluxsv(mptr,fm,fp,gm,gp, &
                      alloc(node(cfluxptr,mptr)),mitot,mjtot, &
@@ -348,28 +352,33 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         if (node(ffluxptr,mptr) .ne. 0) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
-            call fluxad(fm,fp,gm,gp, &
-                     alloc(locsvf),mptr,mitot,mjtot,nvar, &
-                        lenbc,intratx(level-1),intraty(level-1), &
-                     nghost,delt,hx,hy)
+
+            ! call fluxad(fm,fp,gm,gp, &
+            !          alloc(locsvf),mptr,mitot,mjtot,nvar, &
+            !             lenbc,intratx(level-1),intraty(level-1), &
+            !          nghost,delt,hx,hy)
+
+            call cpu_allocate_pinned(svdflx, 1, nvar, 1, lenbc) 
+            call gpu_allocate(svdflx_d, device_id, 1, nvar, 1, lenbc) 
+
+
+            svdflx_d = 0.d0
+
+            call compute_kernel_size(numBlocks, numThreads,1,lenbc)
+
+            call fluxad_gpu<<<numBlocks,numThreads>>>(fms_d(j)%dataptr, fps_d(j)%dataptr, gms_d(j)%dataptr, gps_d(j)%dataptr, &
+                nghost, nx, ny, lenbc, &
+                intratx(level-1), intraty(level-1), &
+                svdflx_d, delt, hx, hy)
+            cudaResult = cudaMemcpy(svdflx, svdflx_d, lenbc*nvar, cudaMemcpyDeviceToHost)
+
+            call add_to_svdflx(alloc(locsvf), svdflx, lenbc, nvar)
+
+            call cpu_deallocated_pinned(svdflx) 
+            call gpu_deallocate(svdflx_d, device_id) 
         endif
-        ! if (node(cfluxptr,mptr) .ne. 0) then
-        !     call fluxsv(mptr,fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
-        !              alloc(node(cfluxptr,mptr)),mitot,mjtot, &
-        !              nvar,listsp(level),delt,hx,hy)
-        ! endif
-        ! if (node(ffluxptr,mptr) .ne. 0) then
-        !     lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-        !     locsvf = node(ffluxptr,mptr)
-        !     call fluxad(fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
-        !              alloc(locsvf),mptr,mitot,mjtot,nvar, &
-        !                 lenbc,intratx(level-1),intraty(level-1), &
-        !              nghost,delt,hx,hy)
-        ! endif
-!
-!        write(outunit,969) mythread,delt, dtnew
-!969     format(" thread ",i4," updated by ",e15.7, " new dt ",e15.7)
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
+
 
         deallocate(fm)
         deallocate(fp)
@@ -488,5 +497,16 @@ subroutine prepgrids(listgrids, num, level)
 
     return
 end subroutine prepgrids
+
+subroutine add_to_svdflx(svdflx_dst, svdflx_src, lenbc, nvar)
+    double precision, intent(in)    :: svdflx_src(nvar,lenbc)
+    double precision, intent(inout) :: svdflx_dst(nvar,lenbc)
+    integer :: i,j
+    do j = 1,lenbc
+        do i = 1,nvar
+            svdflx_dst(i,j) = svdflx_dst(i,j) + svdflx_src(i,j)
+        enddo
+    enddo
+end subroutine add_to_svdflx
 
 

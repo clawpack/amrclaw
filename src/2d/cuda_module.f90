@@ -40,6 +40,10 @@ module cuda_module
         module procedure write_grid2
     end interface write_grid
 
+    interface compute_kernel_size
+        module procedure compute_kernel_size_r1
+    end interface compute_kernel_size
+
 #ifdef CUDA
     type grid2d
         sequence ! force the derived type to be stored contiguously
@@ -186,6 +190,27 @@ contains
 
 	endif
     end subroutine threads_and_blocks
+
+    subroutine compute_kernel_size_r1(numBlocks, numThreads, xlo, xhi)
+
+	use cudafor, only: dim3
+	implicit none
+	integer, intent(in)       :: xlo, xhi
+	type(dim3), intent(inout) :: numBlocks, numThreads
+
+	integer :: tile_size
+
+	tile_size = xhi - xlo + 1
+
+	    numThreads % x = 256
+	    numThreads % y = 1
+	    numThreads % z = 1
+
+	    numBlocks % x = (tile_size + numThreads % x - 1) / numThreads % x
+	    numBlocks % y = 1
+	    numBlocks % z = 1
+
+    end subroutine compute_kernel_size_r1
 
     subroutine copy_cpu_to_gpu_async(p_d, p_h, sz, idx, dev_id)
 
@@ -611,7 +636,7 @@ contains
     subroutine write_grid2(q, lox, hix, loy, hiy, fname, iframe)
         integer, intent(in) :: lox, hix, loy, hiy, iframe
         real(kind=8), intent(in) :: q(lox:hix, loy:hiy)
-        character(len=100), intent(in) :: fname
+        character(len=*), intent(in) :: fname
         integer :: i,j
 
         open (1, file=fname, position="append")

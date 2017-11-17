@@ -997,7 +997,8 @@ end subroutine y_sweep_2nd_order
 ! We should write separate kernels for cases where 
 ! the options above are different
 attributes(global) &
-subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cc, zz)
+subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, &
+    mbc, mx, my, dtdy, cc, zz)
 
     implicit none
 
@@ -1128,5 +1129,87 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, mbc, mx, my, dtdy,
     enddo
     return
 end subroutine y_sweep_2nd_order_gpu
+
+! :::::::::::::::::::: FLUXAD ::::::::::::::::::::::::::::::::::
+!  save fine grid fluxes  at the border of the grid, for fixing
+!  up the adjacent coarse cells. at each edge of the grid, only
+!  save the plus or minus fluxes, as necessary. For ex., on
+!  left edge of fine grid, it is the minus xfluxes that modify the
+!  coarse cell.
+!  We assume this kernel is launched with 2*(mx+my) threads in total,
+! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+attributes(global) &
+subroutine fluxad_gpu(fm, fp, gm, gp, &
+    mbc, mx, my, lenbc, lratiox, lratioy, &
+    svdflx, dtf, dx, dy)
+
+    real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    integer, value, intent(in)  :: mbc, mx, my, lenbc, lratiox, lratioy
+
+    real(kind=8), value, intent(in) :: dtf, dx, dy
+    real(kind=8), intent(inout) :: svdflx(NEQNS,lenbc)
+    integer :: tid, m
+    integer :: i, ifine, j, jfine
+    integer :: l
+    integer :: mxc, myc
+
+#ifdef DEBUG
+    if (blockDim%y /= 1 .or. gridDim%y /= 1) then
+        print *, "fluxsv_gpu kernel should be called with blockDim%y == 1 and gridDim%y == 1"
+        stop
+    endif
+#endif
+
+    tid = (blockIdx%x-1) * blockDim%x + threadIdx%x
+
+    mxc = mx/2
+    myc = my/2
+
+    if (tid <= myc) then
+    ! ::::: left side saved first
+        j = tid
+        jfine = (j-1)*lratioy
+        do m = 1,NEQNS
+            do l=1,lratioy
+                svdflx(m,tid) = svdflx(m,tid) + &
+                    fm(1,jfine+l,m)*dtf*dy
+            enddo
+        enddo
+
+    else if (tid <= myc+mxc) then
+    ! ::::: top side
+        i = tid - myc
+        ifine = (i-1)*lratiox
+        do m = 1,NEQNS
+            do l=1,lratiox
+                svdflx(m,tid) = svdflx(m,tid) + &
+                    gp(ifine+l,my+1,m)*dtf*dx
+            enddo
+        enddo
+    else if (tid <= 2*myc+mxc) then
+    ! ::::: right side
+        j = tid - (myc+mxc)
+        jfine = (j-1)*lratioy
+        do m = 1,NEQNS
+            do l=1,lratioy
+                svdflx(m,tid) = svdflx(m,tid) + &
+                    fp(mx+1,jfine+l,m)*dtf*dy
+            enddo
+        enddo
+    else if (tid <= 2*(myc+mxc)) then
+    ! ::::: bottom side
+        i = tid - (2*myc+mxc)
+        ifine = (i-1)*lratiox
+        do m = 1,NEQNS
+            do l=1,lratiox
+                svdflx(m,tid) = svdflx(m,tid) + &
+                    gm(ifine+l,1,m)*dtf*dx
+            enddo
+        enddo
+    endif
+end subroutine fluxad_gpu
 
 end module sweep_module
