@@ -55,7 +55,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/prepregstep.f \
   $(AMRLIB)/prepbigstep.f \
   $(AMRLIB)/fluxad.f90 \
-  $(AMRLIB)/fluxsv.f \
+  $(AMRLIB)/fluxsv.f90 \
   $(AMRLIB)/ginit.f \
   $(AMRLIB)/grdfit2.f \
   $(AMRLIB)/intfil.f \
