@@ -3,18 +3,19 @@ c --------------------------------------------------------------
 c
       subroutine errf1(rctfine,nvar,rctcrse,mptr,mi2tot,
      2                 mitot,rctflg,mibuff,auxfine,
-     2                 naux)
+     2                 naux,nx,mbc)
       use amr_module
       use innerprod_module, only : calculate_innerproduct
-      use adjoint_module, only: innerprod_index
+      use adjoint_module
       implicit double precision (a-h,o-z)
 
  
       dimension  rctfine(nvar,mitot)
       dimension  auxfine(naux,mitot)
+      dimension  aux_temp(naux,mitot)
       dimension  rctcrse(nvar,mi2tot)
       dimension  rctflg(mibuff)
-      dimension  est(nvar)
+      dimension  est(nvar,mitot)
       double precision levtol
 c
 c
@@ -72,37 +73,57 @@ c         calculate error in each term of coarse grid
               term2 = rctfine(k,ifine+1)
 c             # divide by (aval*order) for relative error
               aval  = (term1+term2)/2.d0
-              est(k)   =  dabs((aval-rctcrse(k,i))/ order)
+              est(k,ifine)   =  dabs((aval-rctcrse(k,i))/ order)
 
 c             retaining directionality of the wave
-              est(k) = sign(est(k),rctcrse(k,i))
+              est(k,ifine) = sign(est(k,ifine),rctcrse(k,i))
+
+              est(k,ifine+1) = est(k,ifine)
 
  50       continue
-
-c         set innerproduct for fine grid
-          auxfine(innerprod_index,ifine) = 0.d0
-c     .        calculate_innerproduct(time,xofi,
-c     .        est)
-
-          auxfine(innerprod_index,ifine+1)  =
-     .                          auxfine(innerprod_index,ifine)
-
-          if (auxfine(innerprod_index,ifine) .gt. errmax)
-     .        errmax = auxfine(innerprod_index,ifine)
-          err2 = err2 + auxfine(innerprod_index,ifine)*
-     .                   auxfine(innerprod_index,ifine)
-c         write(outunit,102) i,,auxfine(1,ifine),rctcrse(1,i)
- 102      format(' i,est ',i5,2e15.7)
-c          write(outunit,104) term1,term2
- 104      format('   ',4e15.7)
-c         rctcrse(2,i,j) = auxfine(1,ifine)
-c
-          if (auxfine(innerprod_index,ifine) .ge. levtol) then
-             rflag  = badpt
-          endif 
-      rctcrse(1,i) = rflag
       ifine = ifine + 2
  30   continue
+
+
+      ! Loop over adjoint snapshots
+      do 12 k=1,totnum_adjoints
+
+          ! Consider only snapshots that are within the desired time range
+          if ((time+adjoints(k)%time) >= trange_start .and.
+     .         (time+adjoints(k)%time) <= trange_final) then
+
+c         set innerproduct for fine grid
+          aux_temp(innerprod_index,:) =
+     .         calculate_innerproduct(time,est,k,nx,
+     .         xleft,hx,nvar,mbc)
+
+          ! Save max inner product
+          do i=1,nx
+              auxfine(innerprod_index,i) =
+     .              max(auxfine(innerprod_index,i),
+     .              aux_temp(innerprod_index,i))
+          enddo
+
+          endif
+ 12   continue
+
+
+
+
+c     flag locations that need refining
+      do 22 i=1,nx
+
+c          if (auxfine(innerprod_index,i) .gt. errmax)
+c     .        errmax = auxfine(innerprod_index,i)
+c          err2 = err2 + auxfine(innerprod_index,i)*
+c     .                   auxfine(innerprod_index,i)
+
+          if (auxfine(innerprod_index,i) .ge. levtol) then
+               rflag  = badpt
+          endif
+          rctflg(i) = rflag
+ 22   continue
+
 c
 c  print out intermediate flagged rctcrse (for debugging)
 c
@@ -119,17 +140,6 @@ c
 106           format(1h ,80i1)
          endif
       endif
-c
-      ifine   = nghost+1
-      do 60 i = nghost+1, mi2tot-nghost
-         if (rctcrse(1,i) .eq. goodpt) go to 55
-c           ## never set rctflg to good, since flag2refine may
-c           ## have previously set it to bad
-c           ## can only add bad pts in this routine
-            rctflg(ifine)    = badpt
-            rctflg(ifine+1)  = badpt
- 55       ifine   = ifine + 2
- 60     continue
 c
 
       if (eprint) then

@@ -55,7 +55,7 @@ c     ## by flag2refine so make sure not to overwrite
       mibuff = nx + 2*mbuff
       call errf1(alloc(locbig),nvar,valbgc,mptr,mi2tot,
      1           mitot,alloc(locamrflags),mibuff,
-     1           alloc(locaux),naux)
+     1           alloc(locaux),naux,nx,nghost)
 
 c
       return
