@@ -7,11 +7,13 @@ module memory_module
     integer, parameter, private :: szr = 8
 
     interface gpu_allocate
+        module procedure gpu_allocate_r1
         module procedure gpu_allocate_r2
         module procedure gpu_allocate_r3
         module procedure gpu_allocate_r4
     end interface
     interface gpu_deallocate
+        module procedure gpu_deallocate_r1
         module procedure gpu_deallocate_r2
         module procedure gpu_deallocate_r3
         module procedure gpu_deallocate_r4
@@ -71,6 +73,34 @@ module memory_module
     end interface
 
 contains
+    subroutine gpu_allocate_r1(a, dev_id, lo1, hi1)
+        use cudafor
+        real(kind=8), pointer, device, intent(inout) :: a(:)
+        integer, intent(in) :: lo1, hi1
+        integer, intent(in) :: dev_id
+        integer (kind=c_size_t) :: dev_id_c
+        integer :: n1
+        integer (kind=c_size_t) :: sz
+        type(c_devptr) :: cp
+        real(kind=8), pointer, device :: fp(:)
+        integer :: istat
+
+        n1 = max(hi1-lo1+1, 1)
+        sz = int(n1,c_size_t)
+        dev_id_c = int(dev_id,c_size_t)
+        cp = clawpack_mempool_alloc_gpu(szr*sz, dev_id_c)
+
+        call c_f_pointer(cp, fp, shape=(/n1/))
+        call shift_bound_d1(fp, lo1, a)
+    contains
+        subroutine shift_bound_d1(fp, lo1, a)
+            integer, intent(in) :: lo1
+            real(kind=8), target,  device, intent(in) :: fp(lo1:)
+            real(kind=8), pointer, device, intent(inout) :: a(:)
+            a => fp
+        end subroutine shift_bound_d1
+    end subroutine gpu_allocate_r1
+
     subroutine gpu_allocate_r2(a, dev_id, lo1, hi1, lo2, hi2)
         use cudafor
         real(kind=8), pointer, device, intent(inout) :: a(:,:)
@@ -161,6 +191,20 @@ contains
         end subroutine shift_bound_d4
     end subroutine gpu_allocate_r4
 
+
+    subroutine gpu_deallocate_r1(a, dev_id)
+        use cudafor
+        real(kind=8), pointer, device, intent(inout) :: a(:)
+        integer, intent(in) :: dev_id
+        integer (kind=c_size_t) :: dev_id_c
+        integer :: lo(1)
+        type(c_devptr) :: cp
+        lo = lbound(a)
+        cp = c_devloc(a(lo(1)))
+        dev_id_c = int(dev_id,c_size_t)
+        call clawpack_mempool_free_gpu(cp, dev_id_c)
+        a => Null()
+    end subroutine gpu_deallocate_r1
 
     subroutine gpu_deallocate_r2(a, dev_id)
         use cudafor
