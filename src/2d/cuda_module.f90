@@ -37,7 +37,8 @@ module cuda_module
     end interface toString
 
     interface write_grid
-        module procedure write_grid2
+        module procedure write_grid_r2
+        module procedure write_grid_i2
     end interface write_grid
 
     interface compute_kernel_size
@@ -633,7 +634,7 @@ contains
     !     call write_grid( q(m,:,:), 1-mbc,mx+mbc, 1-mbc, my+mbc, 'q_'//trim(toString(m,3))//'.txt', frame_no)
     ! enddo
     !! ################################################ !
-    subroutine write_grid2(q, lox, hix, loy, hiy, fname, iframe)
+    subroutine write_grid_r2(q, lox, hix, loy, hiy, fname, iframe)
         integer, intent(in) :: lox, hix, loy, hiy, iframe
         real(kind=8), intent(in) :: q(lox:hix, loy:hiy)
         character(len=*), intent(in) :: fname
@@ -649,7 +650,25 @@ contains
             enddo
         enddo
         close(1)
-    end subroutine write_grid2
+    end subroutine write_grid_r2
+
+    subroutine write_grid_i2(q, lox, hix, loy, hiy, fname, iframe)
+        integer, intent(in) :: lox, hix, loy, hiy, iframe
+        integer, intent(in) :: q(lox:hix, loy:hiy)
+        character(len=*), intent(in) :: fname
+        integer :: i,j
+
+        open (1, file=fname, position="append")
+        write(1, *) "frame: ", iframe
+        write(1, *) "i: ", lox, hix
+        write(1, *) "j: ", loy, hiy
+        do i = lox, hix
+            do j = loy, hiy
+                write(1, *) i, j, q(i,j)
+            enddo
+        enddo
+        close(1)
+    end subroutine write_grid_i2
 
     subroutine aos_to_soa_r2(soa, aos, nvar, xlo, xhi, ylo, yhi)
         implicit none
