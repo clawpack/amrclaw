@@ -3,9 +3,15 @@
 !> Reclaim list space in nodes cfluxptr and ffluxptr for all grids at level
 !! **level**
 !
+
+#include "amr_macros.H"
 subroutine putsp(lbase,level,nvar,naux)
     !
     use amr_module
+#ifdef CUDA
+    use memory_module, only: gpu_deallocate
+    use cuda_module, only: device_id
+#endif
     implicit double precision (a-h,o-z)
 
     !
@@ -37,6 +43,11 @@ subroutine putsp(lbase,level,nvar,naux)
             !         twice perimeter since saving plus or minus fluxes 
             !         plus coarse solution storage
             call reclam(node(ffluxptr,mptr), 2*nvar*lenbc+naux*lenbc)
+#ifdef CUDA
+            print *, "Deallocate ffluxptr_d of grid: ", mptr
+            print *, "at: ", loc(node_data(mptr,FFLUXPTR_D)%dataptr)
+            call gpu_deallocate(node_data(mptr,FFLUXPTR_D)%dataptr, device_id)
+#endif
             mptr  = node(levelptr,mptr)
         enddo
     endif

@@ -6,6 +6,8 @@
 !! - adjusting fluxes for flux conservation step later
 ! --------------------------------------------------------------
 !
+#include "amr_macros.H"
+
 subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use amr_module 
     use parallel_advanc_module
@@ -38,6 +40,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef CUDA
     integer :: locold, locnew, locaux
     integer :: i,j, id
+    integer :: ii,jj,loc
     integer :: cudaResult
     double precision :: xlow, ylow
     double precision :: cfl_local
@@ -51,8 +54,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     double precision, allocatable :: fp(:,:,:)
     double precision, allocatable :: gm(:,:,:)
     double precision, allocatable :: gp(:,:,:)
-    double precision, dimension(:,:), pointer, contiguous :: svdflx
-    double precision, dimension(:,:), pointer, contiguous, device :: svdflx_d
+
+    double precision, dimension(:,:), pointer, contiguous, device :: listbc_d
+    integer, managed :: node_stat_tmp(maxgr,NODE_STAT_SIZE)
 #ifdef PROFILE
     integer, parameter :: timer_stepgrid = 1
     integer, parameter :: timer_gpu_loop = 2
@@ -152,6 +156,22 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #ifdef CUDA
 
+    ! Prepare for node_stat and node_data
+    do mptr = 1,maxgr
+        node_stat(mptr, NESTLEVEL_D) = node(nestlevel,mptr)
+        node_stat(mptr, NDILO_D) = node(ndilo,mptr)
+        node_stat(mptr, NDIHI_D) = node(ndihi,mptr)
+        node_stat(mptr, NDJLO_D) = node(ndjlo,mptr)
+        node_stat(mptr, NDJHI_D) = node(ndjhi,mptr)
+
+        node_stat_tmp(mptr, NESTLEVEL_D) = node(nestlevel,mptr)
+        node_stat_tmp(mptr, NDILO_D)     = node(ndilo,mptr)
+        node_stat_tmp(mptr, NDIHI_D)     = node(ndihi,mptr)
+        node_stat_tmp(mptr, NDJLO_D)     = node(ndjlo,mptr)
+        node_stat_tmp(mptr, NDJHI_D)     = node(ndjhi,mptr)
+    enddo
+
+
 #ifdef PROFILE
     call take_cpu_timer('Initialize cfls', timer_init_cfls)
     call cpu_timer_start(timer_init_cfls)
@@ -208,10 +228,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             locsvf = node(ffluxptr,mptr)
             locsvq = locsvf + nvar*lenbc
             locx1d = locsvq + nvar*lenbc
+            ! istat = cudaMemcpy(alloc(locsvf), node_data(mptr, FFLUXPTR_D)%dataptr, &
+            !     nvar*lenbc*2+naux*lenbc)
             call qad(alloc(locnew),mitot,mjtot,nvar, &
                      alloc(locsvf),alloc(locsvq),lenbc, &
                      intratx(level-1),intraty(level-1),hx,hy, &
                      naux,alloc(locaux),alloc(locx1d),delt,mptr)
+            ! istat = cudaMemcpy(node_data(mptr, FFLUXPTR_D)%dataptr, alloc(locsvf), &
+            !     nvar*lenbc*2+naux*lenbc)
         endif
 
         !        # See if the grid about to be advanced has gauge data to output.
@@ -348,6 +372,37 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             call fluxsv(mptr,fm,fp,gm,gp, &
                      alloc(node(cfluxptr,mptr)),mitot,mjtot, &
                      nvar,listsp(level),delt,hx,hy)
+
+            ! call gpu_allocate(node_data(mptr, CFLUXPTR_D)%dataptr, device_id, 1, listsp(level)*5)
+            ! call gpu_allocate(listbc_d, device_id, 1, 5, 1, listsp(level))
+            ! istat = cudaMemcpy(listbc_d, alloc(node(cfluxptr,mptr)), 5*listsp(level))
+
+            ! open (333, file="listbc.txt", position="append")
+            ! write(333, *) "listbc for grid: ", mptr
+            ! write(333, *) "length: ", listsp(level)
+            ! do jj = 1,listsp(level)
+            !     loc = 5*(jj-1)-1
+            !     write(333, *) "ispot: ", jj
+            !     do ii = 1,5
+            !         write(333, '(i5)') int(alloc(node(cfluxptr,mptr)+loc+ii))
+            !     enddo
+            ! enddo
+
+
+            ! call write_grid(node_stat, 1, maxgr, 1, NODE_STAT_SIZE, "node_stat.txt", 1)
+
+            ! call compute_kernel_size(numBlocks, numThreads,1,5*listsp(level))
+            ! call fluxsv_gpu<<<numBlocks,numThreads>>>(mptr, &
+            !          fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
+            !          ! node_data(mptr,CFLUXPTR_D)%dataptr, &
+            !          listbc_d, &
+            !          node_stat_tmp, node_data, &
+            !          mitot,mjtot,nvar,listsp(level),delt,hx,hy)
+
+            ! call wait_for_all_gpu_tasks(device_id)
+
+            ! ! call gpu_deallocate(node_data(mptr,CFLUXPTR_D)%dataptr,device_id)
+            ! call gpu_deallocate(listbc_d,device_id)
         endif
         if (node(ffluxptr,mptr) .ne. 0) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
@@ -358,24 +413,15 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             !             lenbc,intratx(level-1),intraty(level-1), &
             !          nghost,delt,hx,hy)
 
-            call cpu_allocate_pinned(svdflx, 1, nvar, 1, lenbc) 
-            call gpu_allocate(svdflx_d, device_id, 1, nvar, 1, lenbc) 
 
-
-            svdflx_d = 0.d0
-
+            istat = cudaMemcpy(node_data(mptr,FFLUXPTR_D)%dataptr, alloc(locsvf), lenbc*nvar)
             call compute_kernel_size(numBlocks, numThreads,1,lenbc)
-
             call fluxad_gpu<<<numBlocks,numThreads>>>(fms_d(j)%dataptr, fps_d(j)%dataptr, gms_d(j)%dataptr, gps_d(j)%dataptr, &
                 nghost, nx, ny, lenbc, &
                 intratx(level-1), intraty(level-1), &
-                svdflx_d, delt, hx, hy)
-            cudaResult = cudaMemcpy(svdflx, svdflx_d, lenbc*nvar, cudaMemcpyDeviceToHost)
+                node_data(mptr,FFLUXPTR_D)%dataptr, delt, hx, hy)
+            cudaResult = cudaMemcpy(alloc(locsvf), node_data(mptr,FFLUXPTR_D)%dataptr, lenbc*nvar, cudaMemcpyDeviceToHost)
 
-            call add_to_svdflx(alloc(locsvf), svdflx, lenbc, nvar)
-
-            call cpu_deallocated_pinned(svdflx) 
-            call gpu_deallocate(svdflx_d, device_id) 
         endif
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
 

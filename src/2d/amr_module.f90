@@ -18,6 +18,9 @@
 !! See explanation to each data members in this module 
 !! for details of all properties of a node.
 !!
+
+#include "amr_macros.H"
+
 module amr_module
 
     implicit none
@@ -203,6 +206,22 @@ module amr_module
             iregend(maxlv),jregend(maxlv), &
             numgrids(maxlv),numcells(maxlv), &
             iorder,mxnest,kcheck
+#ifdef CUDA
+    type node_data_type
+        ! sequence ! force the derived type to be stored contiguously
+        ! TODO: I can't nulltify the pointer here. Because null is a parameter defined
+        ! in this module, which I should replace with another name.
+        ! double precision, dimension(:), pointer, contiguous, device :: dataptr=>null()
+        double precision, dimension(:), pointer, contiguous, device :: dataptr
+    end type node_data_type
+
+
+    type(node_data_type), managed :: node_data(maxgr, NODE_DATA_SIZE)
+
+
+
+    integer, managed :: node_stat(maxgr, NODE_STAT_SIZE)
+#endif
 
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ! ::::  for alloc array/memory

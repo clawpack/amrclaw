@@ -15,9 +15,14 @@
 !! \param[in] naux number of auxiliary variables for the system
 ! ----------------------------------------------------------
 !
+#include "amr_macros.H"
 subroutine prepf(level,nvar,naux)
     !
     use amr_module
+#ifdef CUDA
+    use memory_module, only: gpu_allocate
+    use cuda_module, only: device_id
+#endif
     implicit double precision (a-h,o-z)
 
     !
@@ -43,6 +48,13 @@ subroutine prepf(level,nvar,naux)
         !
         node(ffluxptr,mkid) = igetsp(2*nvar*lenbc+naux*lenbc)
         ist = node(ffluxptr,mkid)
+#ifdef CUDA
+        ! TODO: I should check whether zeroize the array is necessary here
+        call gpu_allocate(node_data(mkid,FFLUXPTR_D)%dataptr, &
+        device_id, 1, 2*nvar*lenbc+naux*lenbc)
+        print *, "Allocate ffluxptr_d of grid: ", mkid
+        print *, "at: ", loc(node_data(mkid,FFLUXPTR_D)%dataptr)
+#endif
 
         do i = 1, 2*nvar*lenbc + naux*lenbc
             alloc(ist+i-1) = 0.d0

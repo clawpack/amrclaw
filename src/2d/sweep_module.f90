@@ -1138,6 +1138,7 @@ end subroutine y_sweep_2nd_order_gpu
 !  coarse cell.
 !  We assume this kernel is launched with 2*(mx+my) threads in total,
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+! TODO: move this to fluxad.f90
 attributes(global) &
 subroutine fluxad_gpu(fm, fp, gm, gp, &
     mbc, mx, my, lenbc, lratiox, lratioy, &
@@ -1211,5 +1212,22 @@ subroutine fluxad_gpu(fm, fp, gm, gp, &
         enddo
     endif
 end subroutine fluxad_gpu
+
+! When we assign space node(ffluxptr, mptr) to grid mptr, we allocate its
+! GPU space at node(ffluxptr_d, mptr) as well.
+! node(ffluxptr_d, mptr) is an integral index in global GPU memory chunk alloc_gpu. 
+! We also keep a copy of node(:,:) on GPU.
+
+! Then in fluxsv, we can find the place where we want to store coarse flux through node(ffluxptr_d, mptr),
+
+! When we advance next level, we can directly use the array at alloc_gpu(node(ffluxptr_d, mptr)) in place of svdflx in fluxad_gpu
+
+! attributes(global)&
+! subroutine fluxsv_gpu(listbc, maxsp, node, 
+!     integer, intent(in) :: listbc(5,maxsp)
+!     integer, value, intent(in) :: maxsp
+!     integer, intent(in) :: node(nsize, maxgr)
+! end subroutine fluxsv_gpu
+
 
 end module sweep_module
