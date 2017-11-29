@@ -369,9 +369,17 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
         if (node(cfluxptr,mptr) .ne. 0) then
-            call fluxsv(mptr,fm,fp,gm,gp, &
-                     alloc(node(cfluxptr,mptr)),mitot,mjtot, &
-                     nvar,listsp(level),delt,hx,hy)
+            ! call fluxsv(mptr, fm,fp,gm,gp, &
+            !          alloc(node(cfluxptr,mptr)), &
+            !          mitot,mjtot, &
+            !          nvar,listsp(level),delt,hx,hy)
+
+            call fluxsv_cpu(mptr, &
+                fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
+                ! fm, fp, gm, gp, &
+                alloc(node(cfluxptr,mptr)),mitot,mjtot, &
+                nvar,listsp(level),delt,hx,hy)
+
 
             ! call gpu_allocate(node_data(mptr, CFLUXPTR_D)%dataptr, device_id, 1, listsp(level)*5)
             ! call gpu_allocate(listbc_d, device_id, 1, 5, 1, listsp(level))
