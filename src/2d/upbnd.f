@@ -115,7 +115,7 @@ c            # Note capa is stored in aux(icrse,jcrse,mcapa)
      1      sgnm*alloc(kidlst+nvar*(lkid-1)+ivar-1)/area
 #else
             val(ivar,icrse,jcrse) = val(ivar,icrse,jcrse) +
-     1      sgnm*node_data(mkid, FFLUX)%ptr(nvar*(lkid-1)+ivar)/area
+     1      sgnm*fflux(mkid)%ptr(nvar*(lkid-1)+ivar)/area
 #endif
  20      continue
          iused(icrse,jcrse) = iused(icrse,jcrse) + norm

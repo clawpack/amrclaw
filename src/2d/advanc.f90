@@ -156,7 +156,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #ifdef CUDA
 
-    ! Prepare for node_stat and node_data
+    ! Prepare for node_stat and fflux
     do mptr = 1,maxgr
         node_stat(mptr, NESTLEVEL_D) = node(nestlevel,mptr)
         node_stat(mptr, NDILO_D) = node(ndilo,mptr)
@@ -224,7 +224,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         locaux = node(storeaux,mptr)
 
         ! if (node(ffluxptr,mptr) .ne. 0) then
-        if (associated(node_data(mptr,FFLUX)%ptr)) then
+        if (associated(fflux(mptr)%ptr)) then
             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
             locsvq = locsvf + nvar*lenbc
@@ -233,7 +233,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             !     nvar*lenbc*2+naux*lenbc)
             call qad(alloc(locnew),mitot,mjtot,nvar, &
                      ! alloc(locsvf),alloc(locsvq),lenbc, &
-                     node_data(mptr,FFLUX)%ptr,alloc(locsvq),lenbc, &
+                     fflux(mptr)%ptr,alloc(locsvq),lenbc, &
                      intratx(level-1),intraty(level-1),hx,hy, &
                      naux,alloc(locaux),alloc(locx1d),delt,mptr)
             ! istat = cudaMemcpy(node_data(mptr, FFLUXPTR_D)%dataptr, alloc(locsvf), &
@@ -381,7 +381,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                 ! fm, fp, gm, gp, &
                 alloc(node(cfluxptr,mptr)), &
                 node_stat, &
-                node_data, &
+                fflux, &
                 mitot,mjtot, &
                 nvar,listsp(level),delt,hx,hy)
 
@@ -418,13 +418,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             ! call gpu_deallocate(listbc_d,device_id)
         endif
         ! if (node(ffluxptr,mptr) .ne. 0) then
-        if (associated(node_data(mptr,FFLUX)%ptr)) then
+        if (associated(fflux(mptr)%ptr)) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
 
             call fluxad(fm,fp,gm,gp, &
                      ! alloc(locsvf),mptr,mitot,mjtot,nvar, &
-                     node_data(mptr,FFLUX)%ptr,mptr,mitot,mjtot,nvar, &
+                     fflux(mptr)%ptr,mptr,mitot,mjtot,nvar, &
                         lenbc,intratx(level-1),intraty(level-1), &
                      nghost,delt,hx,hy)
 

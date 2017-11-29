@@ -51,14 +51,14 @@ subroutine prepf(level,nvar,naux)
         ist = node(ffluxptr,mkid)
 #ifdef CUDA
         ! TODO: I should check whether zeroize the array is necessary here
-        ! call gpu_allocate(node_data(mkid,FFLUXPTR_D)%dataptr, &
+        ! call gpu_allocate(fflux(mkid)%ptr, &
         ! device_id, 1, 2*nvar*lenbc+naux*lenbc)
-        call cpu_allocate_pinned(node_data(mkid,FFLUX)%ptr, &
+        call cpu_allocate_pinned(fflux(mkid)%ptr, &
             1, 2*nvar*lenbc+naux*lenbc)
         ! print *, "Allocate ffluxptr_d of grid: ", mkid
-        ! print *, "at: ", loc(node_data(mkid,FFLUXPTR_D)%dataptr)
+        ! print *, "at: ", loc(fflux(mkid)%ptr)
         do i = 1, 2*nvar*lenbc + naux*lenbc
-            node_data(mkid,FFLUX)%ptr(i) = 0.d0
+            fflux(mkid)%ptr(i) = 0.d0
         enddo
 #endif
 

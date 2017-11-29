@@ -222,8 +222,8 @@ module amr_module
     ! end type cpu_array_of_int_ptr_type
 
 
-    type(cpu_array_of_real_ptr_type), managed ::   node_data(maxgr, NODE_DATA_SIZE)
-    type(gpu_array_of_real_ptr_type), managed :: node_data_d(maxgr, NODE_DATA_SIZE)
+    type(cpu_array_of_real_ptr_type), managed ::   fflux(maxgr)
+    type(gpu_array_of_real_ptr_type), managed :: fflux_d(maxgr)
 
 
 

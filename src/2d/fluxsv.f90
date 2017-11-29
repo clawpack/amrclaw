@@ -114,7 +114,7 @@ attributes(global) &
 subroutine fluxsv_gpu(mptr,&
                 xfluxm,xfluxp,yfluxm,yfluxp,&
                 listbc,&
-                node_stat,node_data,&
+                node_stat,fflux,&
         ndimx,ndimy,nvar,maxsp,dtc,hx,hy)
 
     use amr_module
@@ -128,7 +128,7 @@ subroutine fluxsv_gpu(mptr,&
     double precision, intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
     integer, intent(in) :: listbc(5,maxsp)
     integer, intent(in) :: node_stat(15000, NODE_STAT_SIZE)
-    type(gpu_array_of_real_ptr_type), intent(in) :: node_data(15000, NODE_DATA_SIZE)
+    type(gpu_array_of_real_ptr_type), intent(in) :: fflux(15000)
     ! local
     integer :: ispot, mkid, intopl, loc
     integer :: nx, ny
@@ -180,12 +180,12 @@ subroutine fluxsv_gpu(mptr,&
     ! which flux to save directly (i.e. put i+1,j to save that flux
     ! rather than putting in cell center coords).
 
-    ! data in node_data(mkid)%flux_fix is in AoS format. Namely,
+    ! data in fflux(mkid)%data is in AoS format. Namely,
     ! f(ivar, i, j)
     if (listbc(3,ispot) .eq. 1) then
         !           ::::: Cell i,j is on right side of a fine grid
         do ivar = 1, nvar
-            node_data(mkid,FFLUX)%ptr(loc + ivar) = -xfluxp(i,j,ivar)*dtc*hy
+            fflux(mkid)%ptr(loc + ivar) = -xfluxp(i,j,ivar)*dtc*hy
             ! alloc(inlist + ivar) = -xfluxp(i,j,ivar)*dtc*hy
         enddo
     endif
@@ -193,7 +193,7 @@ subroutine fluxsv_gpu(mptr,&
     if (listbc(3,ispot) .eq. 2) then
         !           ::::: Cell i,j on bottom side of fine grid
         do ivar = 1, nvar
-            node_data(mkid,FFLUX)%ptr(loc + ivar) = -yfluxm(i,j+1,ivar)*dtc*hx
+            fflux(mkid)%ptr(loc + ivar) = -yfluxm(i,j+1,ivar)*dtc*hx
             ! alloc(inlist + ivar) = -yfluxm(i,j+1,ivar)*dtc*hx
         enddo
     endif
@@ -201,7 +201,7 @@ subroutine fluxsv_gpu(mptr,&
     if (listbc(3,ispot) .eq. 3) then
         !           ::::: Cell i,j on left side of fine grid
         do ivar = 1, nvar
-            node_data(mkid,FFLUX)%ptr(loc + ivar) = -xfluxm(i+1,j,ivar)*dtc*hy
+            fflux(mkid)%ptr(loc + ivar) = -xfluxm(i+1,j,ivar)*dtc*hy
             ! alloc(inlist + ivar) = -xfluxm(i+1,j,ivar)*dtc*hy
         enddo
     endif
@@ -209,7 +209,7 @@ subroutine fluxsv_gpu(mptr,&
     if (listbc(3,ispot) .eq. 4) then
         !           ::::: Cell i,j on top side of fine grid
         do ivar = 1, nvar
-            node_data(mkid,FFLUX)%ptr(loc + ivar) = -yfluxp(i,j,ivar)*dtc*hx 
+            fflux(mkid)%ptr(loc + ivar) = -yfluxp(i,j,ivar)*dtc*hx 
             ! alloc(inlist + ivar) = -yfluxp(i,j,ivar)*dtc*hx
         enddo
     endif
@@ -222,7 +222,7 @@ subroutine fluxsv_gpu(mptr,&
     if (listbc(3,ispot) .eq. 5) then
         !           ::::: Cell i,j on top side of fine grid with spherical mapped bc
         do ivar = 1, nvar
-            node_data(mkid,FFLUX)%ptr(loc + ivar) = yfluxm(i,j+1,ivar)*dtc*hx 
+            fflux(mkid)%ptr(loc + ivar) = yfluxm(i,j+1,ivar)*dtc*hx 
             ! alloc(inlist + ivar) = yfluxm(i,j+1,ivar)*dtc*hx
         enddo
     endif
@@ -230,7 +230,7 @@ subroutine fluxsv_gpu(mptr,&
     if (listbc(3,ispot) .eq. 6) then
         !           ::::: Cell i,j on bottom side of fine grid with spherical mapped bc
         do ivar = 1, nvar
-            node_data(mkid,FFLUX)%ptr(loc + ivar) = yfluxp(i,j,ivar)*dtc*hx
+            fflux(mkid)%ptr(loc + ivar) = yfluxp(i,j,ivar)*dtc*hx
             ! alloc(inlist + ivar) = yfluxp(i,j,ivar)*dtc*hx
         enddo
     endif
@@ -241,10 +241,10 @@ subroutine fluxsv_cpu(mptr,&
                 xfluxm,xfluxp,yfluxm,yfluxp,&
                 listbc,&
                 node_stat, &
-                node_data,&
+                fflux,&
         ndimx,ndimy,nvar,maxsp,dtc,hx,hy)
 
-    ! use amr_module, only: node_data_type
+    ! use amr_module, only: fflux_type
     use amr_module
     implicit none
 
@@ -256,7 +256,7 @@ subroutine fluxsv_cpu(mptr,&
     double precision, intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
     integer, intent(in) :: listbc(5,maxsp)
     integer, intent(in) :: node_stat(15000, NODE_STAT_SIZE)
-    type(cpu_array_of_real_ptr_type), intent(in) :: node_data(15000, NODE_DATA_SIZE)
+    type(cpu_array_of_real_ptr_type), intent(in) :: fflux(15000)
 
     ! local
     integer :: ispot, mkid, intopl, loc
@@ -300,12 +300,12 @@ subroutine fluxsv_cpu(mptr,&
         ! which flux to save directly (i.e. put i+1,j to save that flux
         ! rather than putting in cell center coords).
 
-        ! data in node_data(mkid)%flux_fix is in AoS format. Namely,
+        ! data in fflux(mkid)%flux_fix is in AoS format. Namely,
         ! f(ivar, i, j)
         if (listbc(3,ispot) .eq. 1) then
             !           ::::: Cell i,j is on right side of a fine grid
             do ivar = 1, nvar
-                node_data(mkid,FFLUX)%ptr(loc + ivar) = -xfluxp(i,j,ivar)*dtc*hy
+                fflux(mkid)%ptr(loc + ivar) = -xfluxp(i,j,ivar)*dtc*hy
                 ! alloc(inlist + ivar) = -xfluxp(i,j,ivar)*dtc*hy
             enddo
         endif
@@ -313,7 +313,7 @@ subroutine fluxsv_cpu(mptr,&
         if (listbc(3,ispot) .eq. 2) then
             !           ::::: Cell i,j on bottom side of fine grid
             do ivar = 1, nvar
-                node_data(mkid,FFLUX)%ptr(loc + ivar) = -yfluxm(i,j+1,ivar)*dtc*hx
+                fflux(mkid)%ptr(loc + ivar) = -yfluxm(i,j+1,ivar)*dtc*hx
                 ! alloc(inlist + ivar) = -yfluxm(i,j+1,ivar)*dtc*hx
             enddo
         endif
@@ -321,7 +321,7 @@ subroutine fluxsv_cpu(mptr,&
         if (listbc(3,ispot) .eq. 3) then
             !           ::::: Cell i,j on left side of fine grid
             do ivar = 1, nvar
-                node_data(mkid,FFLUX)%ptr(loc + ivar) = -xfluxm(i+1,j,ivar)*dtc*hy
+                fflux(mkid)%ptr(loc + ivar) = -xfluxm(i+1,j,ivar)*dtc*hy
                 ! alloc(inlist + ivar) = -xfluxm(i+1,j,ivar)*dtc*hy
             enddo
         endif
@@ -329,7 +329,7 @@ subroutine fluxsv_cpu(mptr,&
         if (listbc(3,ispot) .eq. 4) then
             !           ::::: Cell i,j on top side of fine grid
             do ivar = 1, nvar
-                node_data(mkid,FFLUX)%ptr(loc + ivar) = -yfluxp(i,j,ivar)*dtc*hx 
+                fflux(mkid)%ptr(loc + ivar) = -yfluxp(i,j,ivar)*dtc*hx 
                 ! alloc(inlist + ivar) = -yfluxp(i,j,ivar)*dtc*hx
             enddo
         endif
@@ -342,7 +342,7 @@ subroutine fluxsv_cpu(mptr,&
         if (listbc(3,ispot) .eq. 5) then
             !           ::::: Cell i,j on top side of fine grid with spherical mapped bc
             do ivar = 1, nvar
-                node_data(mkid,FFLUX)%ptr(loc + ivar) = yfluxm(i,j+1,ivar)*dtc*hx 
+                fflux(mkid)%ptr(loc + ivar) = yfluxm(i,j+1,ivar)*dtc*hx 
                 ! alloc(inlist + ivar) = yfluxm(i,j+1,ivar)*dtc*hx
             enddo
         endif
@@ -350,7 +350,7 @@ subroutine fluxsv_cpu(mptr,&
         if (listbc(3,ispot) .eq. 6) then
             !           ::::: Cell i,j on bottom side of fine grid with spherical mapped bc
             do ivar = 1, nvar
-                node_data(mkid,FFLUX)%ptr(loc + ivar) = yfluxp(i,j,ivar)*dtc*hx
+                fflux(mkid)%ptr(loc + ivar) = yfluxp(i,j,ivar)*dtc*hx
                 ! alloc(inlist + ivar) = yfluxp(i,j,ivar)*dtc*hx
             enddo
         endif

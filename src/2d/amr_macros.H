@@ -3,9 +3,6 @@
 
 #ifdef CUDA 
 
-#define FFLUX  1
-#define CFLUX  2
-#define NODE_DATA_SIZE  2
 
 #define NESTLEVEL_D  1
 #define NDILO_D  2

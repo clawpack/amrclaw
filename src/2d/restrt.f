@@ -150,8 +150,8 @@ c
      .                  (node(ffluxptr,mptr),2*nvar*lenbc+naux*lenbc)
                        node(ffluxptr,mptr) = 0
 #ifdef CUDA
-                    call cpu_deallocated_pinned(node_data(mptr, FFLUX)%ptr)
-                    node_data(mptr, FFLUX)%ptr=>null()
+                    call cpu_deallocated_pinned(fflux(mptr)%ptr)
+                    fflux(mptr)%ptr=>null()
 #endif
                    endif
                    mitot = nx + 2*nghost
