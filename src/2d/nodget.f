@@ -18,7 +18,7 @@ c nodget =  get first free node of the linked list kept in node
 c            array. adjust pointers accordingly.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
-      if (ndfree .ne. null) go to 10
+      if (ndfree .ne. clawpack_null) go to 10
           write(outunit,100) maxgr
           write(*,100)       maxgr
 100       format(' out of nodal space - allowed ',i8,' grids')
@@ -60,7 +60,7 @@ c ::::::::::::::::: NODGET_BND ::::::::::::::::::::::::::::::::::::;
 c nodget_bnd =  same as above but for bndry list
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
-      if (ndfree_bnd .ne. null) go to 10
+      if (ndfree_bnd .ne. clawpack_null) go to 10
           write(outunit,100) bndListSize
           write(*,100)       bndListSize
 100       format(' out of bndry space - allowed ',i5,' bndry grids')
@@ -157,7 +157,7 @@ c
          bndList(i,nextfree) = i+1
       end do
 
-      bndList(bndListSize,nextfree) = null
+      bndList(bndListSize,nextfree) = clawpack_null
       ndfree_bnd = 1
 
       end

@@ -155,7 +155,7 @@ module amr_module
 
     ! :::::::   for linking nodes
     integer, parameter :: nextfree = 2
-    integer, parameter :: null = 0
+    integer, parameter :: clawpack_null = 0
     integer, parameter :: nil  = 0
 
     integer, parameter :: gridNbor = 1 !use 1st col, 2nd col is nextfree - the link

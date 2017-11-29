@@ -27,7 +27,7 @@ c
 c
 c the last free node will have a null pointer
  
-      node(nextfree, maxgr) = null
+      node(nextfree, maxgr) = clawpack_null
 c
 
 c     Initialize dynamic memory
@@ -56,7 +56,7 @@ c  need to manage the boundary List too
 c     do i = 1, bndListSize
 c        bndList(i,nextfree) = i+1
 c     end do
-c     bndList(bndListSize,nextfree) = null
+c     bndList(bndListSize,nextfree) = clawpack_null
 c     ndfree_bnd = 1
       call initBndryList()
 c

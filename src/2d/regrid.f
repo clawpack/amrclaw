@@ -163,7 +163,7 @@ c grids can stay in place, just their levelptrs need to change
           node(levelptr, prevptr) = listgrids(index(numg-i))
           prevptr = listgrids(index(numg-i))
        end do
-       node(levelptr,prevptr) = null  !signal the last grid
+       node(levelptr,prevptr) = clawpack_null  !signal the last grid
 
        return
        end
