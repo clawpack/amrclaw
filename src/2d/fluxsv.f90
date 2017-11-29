@@ -240,7 +240,8 @@ end subroutine fluxsv_gpu
 subroutine fluxsv_cpu(mptr,&
                 xfluxm,xfluxp,yfluxm,yfluxp,&
                 listbc,&
-                ! node_stat,node_data,&
+                node_stat, &
+                ! node_data,&
         ndimx,ndimy,nvar,maxsp,dtc,hx,hy)
 
     ! use amr_module, only: node_data_type
@@ -254,7 +255,7 @@ subroutine fluxsv_cpu(mptr,&
     double precision, intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
     double precision, intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
     integer, intent(in) :: listbc(5,maxsp)
-    ! integer, intent(in) :: node_stat(15000, NODE_STAT_SIZE)
+    integer, intent(in) :: node_stat(15000, NODE_STAT_SIZE)
     ! type(node_data_type), intent(in) :: node_data(15000, NODE_DATA_SIZE)
 
     ! local
@@ -282,11 +283,11 @@ subroutine fluxsv_cpu(mptr,&
         
         mkid     = listbc(4,ispot)
         intopl   = listbc(5,ispot)
-        ! nx       = node_stat(mkid,NDIHI_D) - node_stat(mkid,NDILO_D) + 1
-        ! ny       = node_stat(mkid,NDJHI_D) - node_stat(mkid,NDJLO_D) + 1
+        nx       = node_stat(mkid,NDIHI_D) - node_stat(mkid,NDILO_D) + 1
+        ny       = node_stat(mkid,NDJHI_D) - node_stat(mkid,NDJLO_D) + 1
         ! kidlst   = node_gpu(ffluxptr_d,mkid)
-        nx       = node(ndihi,mkid) - node(ndilo,mkid) + 1
-        ny       = node(ndjhi,mkid) - node(ndjlo,mkid) + 1
+        ! nx       = node(ndihi,mkid) - node(ndilo,mkid) + 1
+        ! ny       = node(ndjhi,mkid) - node(ndjlo,mkid) + 1
         kidlst   = node(ffluxptr,mkid)
         i        = listbc(1,ispot)
         j        = listbc(2,ispot)

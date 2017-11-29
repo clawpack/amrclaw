@@ -377,7 +377,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             call fluxsv_cpu(mptr, &
                 fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
                 ! fm, fp, gm, gp, &
-                alloc(node(cfluxptr,mptr)),mitot,mjtot, &
+                alloc(node(cfluxptr,mptr)), &
+                node_stat, &
+                mitot,mjtot, &
                 nvar,listsp(level),delt,hx,hy)
 
 
