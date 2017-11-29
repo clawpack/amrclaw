@@ -9,7 +9,7 @@ subroutine putsp(lbase,level,nvar,naux)
     !
     use amr_module
 #ifdef CUDA
-    use memory_module, only: gpu_deallocate
+    use memory_module, only: gpu_deallocate, cpu_deallocated_pinned
     use cuda_module, only: device_id
 #endif
     implicit double precision (a-h,o-z)
@@ -44,9 +44,11 @@ subroutine putsp(lbase,level,nvar,naux)
             !         plus coarse solution storage
             call reclam(node(ffluxptr,mptr), 2*nvar*lenbc+naux*lenbc)
 #ifdef CUDA
-            print *, "Deallocate ffluxptr_d of grid: ", mptr
-            print *, "at: ", loc(node_data(mptr,FFLUXPTR_D)%dataptr)
-            call gpu_deallocate(node_data(mptr,FFLUXPTR_D)%dataptr, device_id)
+            ! print *, "Deallocate ffluxptr_d of grid: ", mptr
+            ! print *, "at: ", loc(node_data(mptr,FFLUXPTR_D)%dataptr)
+            ! call gpu_deallocate(node_data(mptr,FFLUXPTR_D)%dataptr, device_id)
+            call cpu_deallocated_pinned(node_data(mptr,FFLUX)%ptr)
+            node_data(mptr,FFLUX)%ptr=>null()
 #endif
             mptr  = node(levelptr,mptr)
         enddo

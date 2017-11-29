@@ -15,6 +15,7 @@ c
 !! \param[in] mptr the grid being processed
 c ------------------------------------------------------------
 c
+#include "amr_macros.H"
        subroutine upbnd(listbc,val,nvar,naux,mitot,mjtot,
      1                  maxsp,mptr)
 c     1                  maxsp,iused,mptr)
@@ -109,8 +110,13 @@ c            # Note capa is stored in aux(icrse,jcrse,mcapa)
          endif
 
          do 20 ivar = 1,nvar
+#ifndef CUDA
             val(ivar,icrse,jcrse) = val(ivar,icrse,jcrse) +
      1      sgnm*alloc(kidlst+nvar*(lkid-1)+ivar-1)/area
+#else
+            val(ivar,icrse,jcrse) = val(ivar,icrse,jcrse) +
+     1      sgnm*node_data(mkid, FFLUX)%ptr(nvar*(lkid-1)+ivar)/area
+#endif
  20      continue
          iused(icrse,jcrse) = iused(icrse,jcrse) + norm
 

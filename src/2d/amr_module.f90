@@ -207,16 +207,23 @@ module amr_module
             numgrids(maxlv),numcells(maxlv), &
             iorder,mxnest,kcheck
 #ifdef CUDA
-    type node_data_type
-        ! sequence ! force the derived type to be stored contiguously
-        ! TODO: I can't nulltify the pointer here. Because null is a parameter defined
-        ! in this module, which I should replace with another name.
-        ! double precision, dimension(:), pointer, contiguous, device :: dataptr=>null()
-        double precision, dimension(:), pointer, contiguous, device :: dataptr
-    end type node_data_type
+    type cpu_array_of_real_ptr_type
+        sequence
+        double precision, dimension(:), pointer, contiguous :: ptr=>null()
+    end type cpu_array_of_real_ptr_type
+
+    type gpu_array_of_real_ptr_type
+        sequence
+        double precision, dimension(:), pointer, contiguous, device :: ptr=>null()
+    end type gpu_array_of_real_ptr_type
+    
+    ! TODO: 
+    ! type cpu_array_of_int_ptr_type
+    ! end type cpu_array_of_int_ptr_type
 
 
-    type(node_data_type), managed :: node_data(maxgr, NODE_DATA_SIZE)
+    type(cpu_array_of_real_ptr_type), managed ::   node_data(maxgr, NODE_DATA_SIZE)
+    type(gpu_array_of_real_ptr_type), managed :: node_data_d(maxgr, NODE_DATA_SIZE)
 
 
 

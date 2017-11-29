@@ -223,7 +223,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
         locaux = node(storeaux,mptr)
 
-        if (node(ffluxptr,mptr) .ne. 0) then
+        ! if (node(ffluxptr,mptr) .ne. 0) then
+        if (associated(node_data(mptr,FFLUX)%ptr)) then
             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
             locsvq = locsvf + nvar*lenbc
@@ -231,7 +232,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             ! istat = cudaMemcpy(alloc(locsvf), node_data(mptr, FFLUXPTR_D)%dataptr, &
             !     nvar*lenbc*2+naux*lenbc)
             call qad(alloc(locnew),mitot,mjtot,nvar, &
-                     alloc(locsvf),alloc(locsvq),lenbc, &
+                     ! alloc(locsvf),alloc(locsvq),lenbc, &
+                     node_data(mptr,FFLUX)%ptr,alloc(locsvq),lenbc, &
                      intratx(level-1),intraty(level-1),hx,hy, &
                      naux,alloc(locaux),alloc(locx1d),delt,mptr)
             ! istat = cudaMemcpy(node_data(mptr, FFLUXPTR_D)%dataptr, alloc(locsvf), &
@@ -379,6 +381,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                 ! fm, fp, gm, gp, &
                 alloc(node(cfluxptr,mptr)), &
                 node_stat, &
+                node_data, &
                 mitot,mjtot, &
                 nvar,listsp(level),delt,hx,hy)
 
@@ -414,23 +417,25 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             ! ! call gpu_deallocate(node_data(mptr,CFLUXPTR_D)%dataptr,device_id)
             ! call gpu_deallocate(listbc_d,device_id)
         endif
-        if (node(ffluxptr,mptr) .ne. 0) then
+        ! if (node(ffluxptr,mptr) .ne. 0) then
+        if (associated(node_data(mptr,FFLUX)%ptr)) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
 
-            ! call fluxad(fm,fp,gm,gp, &
-            !          alloc(locsvf),mptr,mitot,mjtot,nvar, &
-            !             lenbc,intratx(level-1),intraty(level-1), &
-            !          nghost,delt,hx,hy)
+            call fluxad(fm,fp,gm,gp, &
+                     ! alloc(locsvf),mptr,mitot,mjtot,nvar, &
+                     node_data(mptr,FFLUX)%ptr,mptr,mitot,mjtot,nvar, &
+                        lenbc,intratx(level-1),intraty(level-1), &
+                     nghost,delt,hx,hy)
 
 
-            istat = cudaMemcpy(node_data(mptr,FFLUXPTR_D)%dataptr, alloc(locsvf), lenbc*nvar)
-            call compute_kernel_size(numBlocks, numThreads,1,lenbc)
-            call fluxad_gpu<<<numBlocks,numThreads>>>(fms_d(j)%dataptr, fps_d(j)%dataptr, gms_d(j)%dataptr, gps_d(j)%dataptr, &
-                nghost, nx, ny, lenbc, &
-                intratx(level-1), intraty(level-1), &
-                node_data(mptr,FFLUXPTR_D)%dataptr, delt, hx, hy)
-            cudaResult = cudaMemcpy(alloc(locsvf), node_data(mptr,FFLUXPTR_D)%dataptr, lenbc*nvar, cudaMemcpyDeviceToHost)
+            ! istat = cudaMemcpy(node_data(mptr,FFLUXPTR_D)%dataptr, alloc(locsvf), lenbc*nvar)
+            ! call compute_kernel_size(numBlocks, numThreads,1,lenbc)
+            ! call fluxad_gpu<<<numBlocks,numThreads>>>(fms_d(j)%dataptr, fps_d(j)%dataptr, gms_d(j)%dataptr, gps_d(j)%dataptr, &
+            !     nghost, nx, ny, lenbc, &
+            !     intratx(level-1), intraty(level-1), &
+            !     node_data(mptr,FFLUXPTR_D)%dataptr, delt, hx, hy)
+            ! cudaResult = cudaMemcpy(alloc(locsvf), node_data(mptr,FFLUXPTR_D)%dataptr, lenbc*nvar, cudaMemcpyDeviceToHost)
 
         endif
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt

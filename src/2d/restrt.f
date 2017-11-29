@@ -1,10 +1,11 @@
-
+#include "amr_macros.H"
 c
 c ---------------------------------------------------------
 c
       subroutine restrt(nsteps,time,nvar,naux)
 c
       use amr_module
+      use memory_module, only: cpu_deallocated_pinned
       implicit double precision (a-h,o-z)
       logical   ee
  
@@ -148,6 +149,10 @@ c
                        call reclam
      .                  (node(ffluxptr,mptr),2*nvar*lenbc+naux*lenbc)
                        node(ffluxptr,mptr) = 0
+#ifdef CUDA
+                    call cpu_deallocated_pinned(node_data(mptr, FFLUX)%ptr)
+                    node_data(mptr, FFLUX)%ptr=>null()
+#endif
                    endif
                    mitot = nx + 2*nghost
                    mjtot = ny + 2*nghost
