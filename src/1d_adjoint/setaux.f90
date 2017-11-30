@@ -8,7 +8,6 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     !
     ! This default version does nothing. 
 
-    use amr_module, only : NEEDS_TO_BE_SET
     use adjoint_module, only: innerprod_index
 
     integer, intent(in) :: mbc,mx,maux
@@ -19,8 +18,6 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     ! If a new grid has been created, but hadn't been flagged
     ! set innerproduct to zero.
     do ii=1-mbc,mx+mbc
-        if (aux(innerprod_index,ii) .eq. NEEDS_TO_BE_SET) then
-            aux(innerprod_index,ii) = 0.d0
-        endif
+        aux(innerprod_index,ii) = 0.d0
     enddo
 end subroutine setaux
