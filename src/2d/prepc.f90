@@ -1,4 +1,4 @@
-c
+!
 !> This routine is called because regridding just changed the fine grids.
 !! It modifies boundary list of each level **level** grid 
 !! such that each grid knows along its boundary, what fine cells 
@@ -6,26 +6,30 @@ c
 !! 
 !! \param[in] level boudnary lists of grids on this level get updated
 !! \param[in] nvar number of equations for the system
-c ----------------------------------------------------------
-c
-      subroutine prepc(level,nvar)
-c
+! ----------------------------------------------------------
+!
+subroutine prepc(level,nvar)
+!
       use amr_module
+#ifdef CUDA
+        use cuda_module, only: device_id
+        use memory_module, only: gpu_allocate, cpu_allocate_pinned
+#endif
       implicit double precision (a-h,o-z)
 
-c
-c :::::::::::::::::::: PREPC ::::::::::::::::::::::::::::::::::::::
-c
-c this routine called because regridding just changed the fine grids.
-c modify coarse grid boundary lists to store fluxes in appropriate
-c fine grids lists.
-c assume new fine grids have node(cfluxptr) initialized to null
-c
-c  first compute max. possible number of list cells. allocate
-c  initially so that one pass through is enough.
-c
-c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-c
+!
+! :::::::::::::::::::: PREPC ::::::::::::::::::::::::::::::::::::::
+!
+! this routine called because regridding just changed the fine grids.
+! modify coarse grid boundary lists to store fluxes in appropriate
+! fine grids lists.
+! assume new fine grids have node(cfluxptr) initialized to null
+!
+!  first compute max. possible number of list cells. allocate
+!  initially so that one pass through is enough.
+!
+! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!
       maxsp  = 0
       mkid   = lstart(level+1)
  10   if (mkid .eq. 0) go to 20
@@ -36,7 +40,7 @@ c
       go to 10
  20   listsp(level) = maxsp
       if (maxsp .eq. 0) go to 99
-c
+!
       hxpar   = hxposs(level)
       hypar   = hyposs(level)
       hxkid   = hxposs(level+1)
@@ -55,7 +59,7 @@ c
       mpar = lstart(level)
 
  30   if (mpar .eq. 0) go to 99
-c
+!
        ispot   = 0
        ilo     = node(ndilo,mpar)
        jlo     = node(ndjlo,mpar)
@@ -66,7 +70,19 @@ c
        do 35 i = 1,5*maxsp
  35      alloc(locbc+i-1) = 0.d0
        node(cfluxptr,mpar) = locbc
-c
+#ifdef NOTHING
+        call cpu_allocate_pinned(cflux(mpar)%ptr, 1, 5, 1, maxsp)
+        call gpu_allocate(cflux_d(mpar)%ptr, device_id, 1, 5, 1, maxsp)
+        do jj = 1,maxsp
+            do ii = 1, 5
+                cflux(mpar)%ptr(ii,jj) = 0
+                ! cflux_d(mpar)%ptr(ii,jj) = 0
+            enddo
+        enddo
+        ! cflux(mpar)%ptr = 0
+        ! cflux_d(mpar)%ptr = 0
+#endif
+!
        mkid = lstart(level+1)
  40    if (mkid .eq. 0) go to 60
 
@@ -90,8 +106,8 @@ c
           iphi = min(ihi,ichi)
           jphi = min(jhi,jchi)
 
-c   regular intersections (will check in setuse that no duplication)
-c   this first call is only interior interfaces. 
+!   regular intersections (will check in setuse that no duplication)
+!   this first call is only interior interfaces. 
 
           ! check if this level "level"+1 grid, mkid, is encompassed by the
           ! level "level" grid, mpar.
@@ -99,82 +115,97 @@ c   this first call is only interior interfaces.
           ! listbc
           if (iplo .le. iphi+1 .and. jplo .le. jphi+1) then
                kflag = 1 ! interior stuff, no mappings
-                call setuse(alloc(locbc),maxsp,ispot,mkid,
-     2          ilo,ihi,jlo,jhi,iclo,ichi,jclo,jchi,kflag)
+                call setuse(alloc(locbc),maxsp,ispot,mkid, &
+                ilo,ihi,jlo,jhi,iclo,ichi,jclo,jchi,kflag)
           endif
 
-c   for fine grids touching periodic boundary on right
+!   for fine grids touching periodic boundary on right
           if  (xperdom .and. ilo .eq. 0 .and. ichi .eq. imax) then
               kflag = 1 ! periodic in x
-              call setuse(alloc(locbc),maxsp,ispot,mkid,
-     2          ilo,ihi,jlo,jhi,iclo-iregsz(level),ichi-iregsz(level),
-     3          jclo,jchi,kflag)
+              call setuse(alloc(locbc),maxsp,ispot,mkid,&
+                ilo,ihi,jlo,jhi,iclo-iregsz(level),ichi-iregsz(level),&
+                jclo,jchi,kflag)
            endif
 
-c   for fine grids touching periodic boundary on left
+!   for fine grids touching periodic boundary on left
           if  (xperdom .and. iclo .eq. 0 .and. ihi .eq. imax) then
               kflag = 1
-              call setuse(alloc(locbc),maxsp,ispot,mkid,
-     2          ilo,ihi,jlo,jhi,iclo+iregsz(level),ichi+iregsz(level),
-     3          jclo,jchi,kflag)
+              call setuse(alloc(locbc),maxsp,ispot,mkid,&
+                ilo,ihi,jlo,jhi,iclo+iregsz(level),ichi+iregsz(level),&
+                jclo,jchi,kflag)
           endif
 
-c   for fine grids touching periodic boundary on top
+!   for fine grids touching periodic boundary on top
           if  (yperdom .and. jlo .eq. 0 .and. jchi .eq. jmax) then
                 kflag = 1
-                call setuse(alloc(locbc),maxsp,ispot,mkid,
-     2          ilo,ihi,jlo,jhi,iclo,ichi,
-     3          jclo-jregsz(level),jchi-jregsz(level),kflag)
+                call setuse(alloc(locbc),maxsp,ispot,mkid,&
+                ilo,ihi,jlo,jhi,iclo,ichi,&
+                jclo-jregsz(level),jchi-jregsz(level),kflag)
           endif
 
-c   for fine grids touching periodic boundary on bottom
+!   for fine grids touching periodic boundary on bottom
           if  (yperdom .and. jclo .eq. 0 .and. jhi .eq. jmax)  then
               kflag = 1
-              call setuse(alloc(locbc),maxsp,ispot,mkid,
-     2          ilo,ihi,jlo,jhi,iclo,ichi,
-     3          jclo+jregsz(level),jchi+jregsz(level),kflag)
+              call setuse(alloc(locbc),maxsp,ispot,mkid, &
+                ilo,ihi,jlo,jhi,iclo,ichi, &
+                jclo+jregsz(level),jchi+jregsz(level),kflag)
           endif
 
-c   for fine grids touching boundary on top in spherically mapped case
-c   and coarse grid touches top too. see if (mapped) x extent overlap.
+!   for fine grids touching boundary on top in spherically mapped case
+!   and coarse grid touches top too. see if (mapped) x extent overlap.
           if  (spheredom .and. jhi .eq. jmax .and. jchi .eq. jmax) then
                kflag = 2
-c              write(dbugunit,*)" for coarse grid ",mpar
+!              write(dbugunit,*)" for coarse grid ",mpar
                iwrap2 = iregsz(level) - iclo - 1  !higher mapped index
                iwrap1 = iregsz(level) - ichi - 1  !lower mapped index
                if (max(ilo,iwrap1) .le. min(ihi,iwrap2)) then
-                  call setuse(alloc(locbc),maxsp,ispot,mkid,
-     1                        ilo,ihi,jlo,jhi,iclo,ichi,
-     2                        jclo,jchi,kflag)
+                  call setuse(alloc(locbc),maxsp,ispot,mkid,&
+                              ilo,ihi,jlo,jhi,iclo,ichi,&
+                              jclo,jchi,kflag)
                endif
           endif
 
-c   fine grids touching boundary on bottom for spherically mapped case
-c   coarse grid touches bottom too. see if (mapped) x extents overlap
+!   fine grids touching boundary on bottom for spherically mapped case
+!   coarse grid touches bottom too. see if (mapped) x extents overlap
           if  (spheredom .and. jclo .eq. 0 .and. jlo .eq. 0) then
                kflag = 3
                iwrap2 = iregsz(level) - iclo - 1  !higher mapped index
                iwrap1 = iregsz(level) - ichi - 1  !lower mapped index
                if (max(ilo,iwrap1) .le. min(ihi,iwrap2)) then
-                  call setuse(alloc(locbc),maxsp,ispot,mkid,
-     1                        ilo,ihi,jlo,jhi,iclo,ichi,
-     2                        jclo,jchi,kflag)
+                  call setuse(alloc(locbc),maxsp,ispot,mkid,&
+                              ilo,ihi,jlo,jhi,iclo,ichi,&
+                              jclo,jchi,kflag)
                endif
           endif
 
  50     mkid = node(levelptr,mkid)
         go to 40
-c
-c  done with subgrid cycle. if no cells would need fixing, all done
-c  else cycle through again to set up list with info. for bc processing
-c
+!
+!  done with subgrid cycle. if no cells would need fixing, all done
+!  else cycle through again to set up list with info. for bc processing
+!
  60     continue
-c
-c  for now, leave unused space allocated to the grid. alternative is to
-c  return (maxsp-ispot) amt starting at loc node(cfluxptr,mpar)+ispot.
-c
+!
+!  for now, leave unused space allocated to the grid. alternative is to
+!  return (maxsp-ispot) amt starting at loc node(cfluxptr)+ispot.
+!
+#ifdef CUDA
+        ! call alloc_to_int(cflux(mpar)%ptr, alloc(locbc), maxsp)
+#endif
        mpar = node(levelptr,mpar)
        go to 30
-c
+!
  99    return
-       end
+end subroutine prepc
+
+subroutine alloc_to_int(dst_int, src_real, maxsp)
+      implicit double precision (a-h,o-z)
+      dimension src_real(5,maxsp)
+      integer, intent(inout) :: dst_int(5, maxsp)
+      integer :: i,j
+      do j = 1, maxsp
+          do i = 1,5
+              dst_int(i,j) = src_real(i,j)
+          enddo
+      enddo
+end subroutine alloc_to_int
