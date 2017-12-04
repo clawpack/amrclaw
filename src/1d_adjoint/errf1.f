@@ -17,6 +17,7 @@ c
       dimension  rctflg(mibuff)
       dimension  est(nvar,mitot)
       double precision levtol
+      logical :: mask_selecta(totnum_adjoints)
 c
 c
 c ::::::::::::::::::::::::::::: ERRF1 ::::::::::::::::::::::::::::::::
@@ -37,12 +38,13 @@ c
       hx    = hxposs(levm)
       dt    = possk(levm)
       numsp = 0
+      mask_selecta = .false.
 
 c     Calculating correct tol for this level
       levtol = tol/numcells(1)
-      do 11 levcur = 1,levm-1
+      do levcur = 1,levm-1
           levtol = levtol/intratx(levcur)
- 11     continue
+      enddo
  
       errmax = 0.0d0
       err2   = 0.0d0
@@ -64,11 +66,12 @@ c
  20   continue
       ifine = nghost+1
 c
-      do 30  i  = nghost+1, mi2tot-nghost
+      do  i  = nghost+1, mi2tot-nghost
           rflag = goodpt
           xofi  = xleft + (dble(ifine) - .5d0)*hx
+
 c         calculate error in each term of coarse grid
-          do 50 k = 1,nvar
+          do k = 1,nvar
               term1 = rctfine(k,ifine)
               term2 = rctfine(k,ifine+1)
 c             # divide by (aval*order) for relative error
@@ -79,39 +82,60 @@ c             retaining directionality of the wave
               est(k,ifine) = sign(est(k,ifine),rctcrse(k,i))
 
               est(k,ifine+1) = est(k,ifine)
+          enddo
 
- 50       continue
-      ifine = ifine + 2
- 30   continue
-
+          ifine = ifine + 2
+      enddo
 
       ! Loop over adjoint snapshots
-      do 12 k=1,totnum_adjoints
+      do k=1,totnum_adjoints
 
           ! Consider only snapshots that are within the desired time range
           if ((time+adjoints(k)%time) >= trange_start .and.
      .         (time+adjoints(k)%time) <= trange_final) then
+                mask_selecta(k) = .true.
+          endif
+      enddo
 
-c         set innerproduct for fine grid
-          aux_temp(innerprod_index,:) =
-     .         calculate_innerproduct(time,est,k,nx,
-     .         xleft,hx,nvar,mbc)
+      do k=1,totnum_adjoints-1
+          if((.not. mask_selecta(k)) .and.
+     .           (mask_selecta(k+1))) then
+              mask_selecta(k) = .true.
+              exit
+          endif
+      enddo
 
-          ! Save max inner product
-          do i=1,nx
-              auxfine(innerprod_index,i) =
+      do k=totnum_adjoints,2,-1
+          if((.not. mask_selecta(k)) .and.
+     .              (mask_selecta(k-1))) then
+              mask_selecta(k) = .true.
+              exit
+          endif
+      enddo
+
+      ! Loop over adjoint snapshots
+      do k=1,totnum_adjoints
+
+          ! Consider only snapshots that are within the desired time range
+          if (mask_selecta(k)) then
+
+c             set innerproduct for fine grid
+              aux_temp(innerprod_index,:) =
+     .           calculate_innerproduct(time,est,k,nx,
+     .           xleft,hx,nvar,mbc)
+
+              ! Save max inner product
+              do i=1,nx
+                  auxfine(innerprod_index,i) =
      .              max(auxfine(innerprod_index,i),
      .              aux_temp(innerprod_index,i))
-          enddo
+              enddo
 
           endif
- 12   continue
-
-
-
+      enddo
 
 c     flag locations that need refining
-      do 22 i=1,nx
+      do i=1,nx
 
 c          if (auxfine(innerprod_index,i) .gt. errmax)
 c     .        errmax = auxfine(innerprod_index,i)
@@ -122,7 +146,7 @@ c     .                   auxfine(innerprod_index,i)
                rflag  = badpt
           endif
           rctflg(i) = rflag
- 22   continue
+      enddo
 
 c
 c  print out intermediate flagged rctcrse (for debugging)
