@@ -2,14 +2,14 @@ module innerprod_module
 
 contains
 
-    function calculate_innerproduct(t,q,r,mx_f,xlower_f,dx_f,meqn_f,mbc_f,lcheck) result(innerprod)
+    function calculate_innerproduct(t,q,r,mx_f,xlower_f,dx_f,meqn_f,mbc_f) result(innerprod)
 
         use adjoint_module
 
         implicit none
 
         real(kind=8), intent(in) :: t, xlower_f, dx_f
-        integer, intent(in) :: r, mx_f, meqn_f, mbc_f, lcheck
+        integer, intent(in) :: r, mx_f, meqn_f, mbc_f
         real(kind=8), intent(in) :: q(meqn_f,1-mbc_f:mx_f+mbc_f)
 
         integer :: mx_a, mptr_a

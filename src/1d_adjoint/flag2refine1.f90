@@ -101,7 +101,7 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
         if (mask_selecta(r)) then
             ! Calculate inner product with current snapshot
             aux_temp(innerprod_index,:) = &
-              calculate_innerproduct(t,q,r,mx,xlower,dx,meqn,mbc,level)
+              calculate_innerproduct(t,q,r,mx,xlower,dx,meqn,mbc)
 
             ! Save max inner product
             do i=1-mbc,mx+mbc
