@@ -6,7 +6,8 @@ c
      2                 naux,nx,mbc)
       use amr_module
       use innerprod_module, only : calculate_innerproduct
-      use adjoint_module
+      use adjoint_module, only: innerprod_index,
+     .        totnum_adjoints, adjoints, trange_start, trange_final
       implicit double precision (a-h,o-z)
 
  
@@ -17,7 +18,7 @@ c
       dimension  rctflg(mibuff)
       dimension  est(nvar,mitot)
       double precision levtol
-      logical :: mask_selecta(totnum_adjoints)
+      logical mask_selecta(totnum_adjoints)
 c
 c
 c ::::::::::::::::::::::::::::: ERRF1 ::::::::::::::::::::::::::::::::
@@ -38,13 +39,14 @@ c
       hx    = hxposs(levm)
       dt    = possk(levm)
       numsp = 0
+      auxfine(innerprod_index,:) = 0.0d0
       mask_selecta = .false.
 
 c     Calculating correct tol for this level
       levtol = tol/numcells(1)
-      do levcur = 1,levm-1
+      do 11 levcur = 1,levm-1
           levtol = levtol/intratx(levcur)
-      enddo
+ 11     continue
  
       errmax = 0.0d0
       err2   = 0.0d0
@@ -66,12 +68,11 @@ c
  20   continue
       ifine = nghost+1
 c
-      do  i  = nghost+1, mi2tot-nghost
+      do 30  i  = nghost+1, mi2tot-nghost
           rflag = goodpt
           xofi  = xleft + (dble(ifine) - .5d0)*hx
-
 c         calculate error in each term of coarse grid
-          do k = 1,nvar
+          do 50 k = 1,nvar
               term1 = rctfine(k,ifine)
               term2 = rctfine(k,ifine+1)
 c             # divide by (aval*order) for relative error
@@ -80,26 +81,23 @@ c             # divide by (aval*order) for relative error
 
 c             retaining directionality of the wave
               est(k,ifine) = sign(est(k,ifine),rctcrse(k,i))
-
               est(k,ifine+1) = est(k,ifine)
-          enddo
 
-          ifine = ifine + 2
-      enddo
+ 50       continue
+      ifine = ifine + 2
+ 30   continue
 
-      ! Loop over adjoint snapshots
+c     Loop over adjoint snapshots
       do k=1,totnum_adjoints
-
-          ! Consider only snapshots that are within the desired time range
           if ((time+adjoints(k)%time) >= trange_start .and.
-     .         (time+adjoints(k)%time) <= trange_final) then
-                mask_selecta(k) = .true.
+     .        (time+adjoints(k)%time) <= trange_final) then
+              mask_selecta(k) = .true.
           endif
       enddo
 
       do k=1,totnum_adjoints-1
           if((.not. mask_selecta(k)) .and.
-     .           (mask_selecta(k+1))) then
+     .        (mask_selecta(k+1))) then
               mask_selecta(k) = .true.
               exit
           endif
@@ -107,46 +105,38 @@ c             retaining directionality of the wave
 
       do k=totnum_adjoints,2,-1
           if((.not. mask_selecta(k)) .and.
-     .              (mask_selecta(k-1))) then
+     .        (mask_selecta(k-1))) then
               mask_selecta(k) = .true.
               exit
           endif
       enddo
 
-      ! Loop over adjoint snapshots
-      do k=1,totnum_adjoints
-
-          ! Consider only snapshots that are within the desired time range
+      do 12 k = 1,totnum_adjoints
+c         ! Consider only snapshots that are within the desired time range
           if (mask_selecta(k)) then
 
 c             set innerproduct for fine grid
               aux_temp(innerprod_index,:) =
-     .           calculate_innerproduct(time,est,k,nx,
-     .           xleft,hx,nvar,mbc)
+     .              calculate_innerproduct(time,est,k,nx,
+     .              xleft,hx,nvar,mbc)
 
-              ! Save max inner product
-              do i=1,nx
-                  auxfine(innerprod_index,i) =
+              do 22  i  = nghost+1, mitot-nghost
+                 auxfine(innerprod_index,i) =
      .              max(auxfine(innerprod_index,i),
      .              aux_temp(innerprod_index,i))
-              enddo
 
+ 22           continue
           endif
-      enddo
-
-c     flag locations that need refining
-      do i=1,nx
-
-c          if (auxfine(innerprod_index,i) .gt. errmax)
-c     .        errmax = auxfine(innerprod_index,i)
-c          err2 = err2 + auxfine(innerprod_index,i)*
-c     .                   auxfine(innerprod_index,i)
-
-          if (auxfine(innerprod_index,i) .ge. levtol) then
-               rflag  = badpt
-          endif
-          rctflg(i) = rflag
-      enddo
+ 12   continue
+c
+      ifine = nghost+1
+      do 32  i  = nghost+1, mi2tot-nghost
+          if (auxfine(innerprod_index,ifine) .ge. levtol) then
+             rflag  = badpt
+          endif 
+          rctcrse(1,i) = rflag
+          ifine = ifine + 2
+ 32   continue
 
 c
 c  print out intermediate flagged rctcrse (for debugging)
@@ -164,6 +154,16 @@ c
 106           format(1h ,80i1)
          endif
       endif
+c
+      do 55 i = nghost+1, mitot-nghost
+         if (auxfine(innerprod_index,i) .ge. levtol) then
+c           ## never set rctflg to good, since flag2refine may
+c           ## have previously set it to bad
+c           ## can only add bad pts in this routine
+            rctflg(i)    = badpt
+          endif
+ 55     continue
+ 60     continue
 c
 
       if (eprint) then
