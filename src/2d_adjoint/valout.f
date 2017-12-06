@@ -135,6 +135,10 @@ c                 # output in 1d format if ny=1:
                    ! Adding innerproduct
                    innerprod = alloc(iaddaux(innerprod_index,i,j))
 
+                   if (abs(innerprod) < 1d-90) then
+                       innerprod = 0.d0
+                   endif
+
                    write(matunit1,109)
      &                (alloc(iadd(ivar,i,j)), ivar=1,nvar), innerprod
                 enddo
