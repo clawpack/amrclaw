@@ -69,8 +69,6 @@ c
       ifine = nghost+1
 c
       do 30  i  = nghost+1, mi2tot-nghost
-          rflag = goodpt
-          xofi  = xleft + (dble(ifine) - .5d0)*hx
 c         calculate error in each term of coarse grid
           do 50 k = 1,nvar
               term1 = rctfine(k,ifine)
@@ -120,57 +118,30 @@ c             set innerproduct for fine grid
      .              calculate_innerproduct(time,est,k,nx,
      .              xleft,hx,nvar,mbc)
 
-              do 22  i  = nghost+1, mitot-nghost
+              do 22  i  = 1, nx
                  auxfine(innerprod_index,i) =
      .              max(auxfine(innerprod_index,i),
      .              aux_temp(innerprod_index,i))
+
+                 if (auxfine(innerprod_index,i)
+     .                               .ge. levtol) then
+c                  ## never set rctflg to good, since flag2refine may
+c                  ## have previously set it to bad
+c                  ## can only add bad pts in this routine
+                   rctflg(i)    = badpt
+                 endif
 
  22           continue
           endif
  12   continue
 c
-      ifine = nghost+1
-      do 32  i  = nghost+1, mi2tot-nghost
-          if (auxfine(innerprod_index,ifine) .ge. levtol) then
-             rflag  = badpt
-          endif 
-          rctcrse(1,i) = rflag
-          ifine = ifine + 2
- 32   continue
-
-c
-c  print out intermediate flagged rctcrse (for debugging)
-c
-      if (eprint) then
-         err2 = dsqrt(err2/dble((mi2tot-2*nghost)))
-         write(outunit,103) mptr, levm, time,errmax, err2
- 103     format(' grid ',i4,' level ',i4,' time ',e12.5,
-     .          ' max. error = ',e15.7,' err2 = ',e15.7)
-         if (edebug) then
-           write(outunit,*) ' flagged points on coarsened grid ',
-     .                      '(no ghost cells) for grid ',mptr
-              write(outunit,106) (nint(rctcrse(1,i)),
-     .                            i=nghost+1,mi2tot-nghost)
-106           format(1h ,80i1)
-         endif
-      endif
-c
-      do 55 i = nghost+1, mitot-nghost
-         if (auxfine(innerprod_index,i) .ge. levtol) then
-c           ## never set rctflg to good, since flag2refine may
-c           ## have previously set it to bad
-c           ## can only add bad pts in this routine
-            rctflg(i)    = badpt
-          endif
- 55     continue
- 60     continue
 c
 
       if (eprint) then
          write(outunit,118)
  118     format(' on fine grid (no ghost cells) flagged points are')
          if (edebug) then
-           write(outunit,106)
+           write(outunit,*)
      &      (nint(rctflg(i)),i=nghost+1,mitot-nghost)
         endif
       endif

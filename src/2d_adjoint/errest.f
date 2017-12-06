@@ -57,7 +57,7 @@ c     ## by flag2refine so make sure not to overwrite
       mjbuff = ny + 2*mbuff 
       call errf1(alloc(locbig),nvar,valbgc,mptr,mi2tot,mj2tot,
      1           mitot,mjtot,alloc(locamrflags),mibuff,mjbuff,
-     1           alloc(locaux),naux)
+     1           alloc(locaux),naux,nx,ny,nghost)
 
 c
       return

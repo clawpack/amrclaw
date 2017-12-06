@@ -19,12 +19,11 @@ contains
         real(kind=8) :: dy_a, ylower_a, yupper_a, yupper_f
         real(kind=8) :: x1, x2, y1, y2
 
-        real(kind=8) :: innerprod(1:mx_f,1:my_f), q_innerprod(mx_f,my_f)
+        real(kind=8) :: innerprod(mx_f,my_f), q_innerprod(mx_f,my_f)
         logical :: mask_forward(mx_f,my_f)
-        real(kind=8) :: q_interp(adjoints(k)%meqn,mx_f,my_f)
+        real(kind=8) :: q_interp(meqn_f,mx_f,my_f)
 
         logical, allocatable :: mask_adjoint(:,:)
-
 
         xupper_f = xlower_f + mx_f*dx_f
         yupper_f = ylower_f + my_f*dy_f
