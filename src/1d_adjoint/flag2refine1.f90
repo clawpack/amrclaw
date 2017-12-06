@@ -31,13 +31,13 @@
 !             DONTFLAG (no refinement needed)  or
 !             DOFLAG   (refinement desired)    
 !
-! flagtol = tolerance specified by user in input file amr2ez.data, used in default
+! tolsp = tolerance specified by user in input file amr2ez.data, used in default
 !         version of this routine as a tolerance for spatial differences.
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
-                            tol,q,aux,amrflags,DONTFLAG,DOFLAG)
+                            tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
 
     use innerprod_module, only: calculate_innerproduct
     use adjoint_module, only: totnum_adjoints, innerprod_index
@@ -48,7 +48,7 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
 
     ! Subroutine arguments
     integer, intent(in) :: mx,mbc,meqn,maux,level,mbuff
-    real(kind=8), intent(in) :: xlower,dx,t,tol
+    real(kind=8), intent(in) :: xlower,dx,t,tolsp
     
     real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc)
     real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc)
@@ -63,7 +63,7 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
     external allowflag
 
     ! Locals
-    integer :: i, r, rm, rp
+    integer :: i, r
     logical :: mask_selecta(totnum_adjoints)
 
     ! Initialize flags
@@ -115,7 +115,7 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
 
     ! Flag locations that need refining
     x_loop: do i = 1-mbc,mx+mbc
-        if (aux(innerprod_index,i) > tol) then
+        if (aux(innerprod_index,i) > tolsp) then
             amrflags(i) = DOFLAG
             cycle x_loop
         endif
