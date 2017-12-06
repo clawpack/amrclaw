@@ -36,16 +36,18 @@
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlow,ylow,dx,dy,t,level, &
-                            tolflag,q,aux,amrflags,DONTFLAG,DOFLAG)
+subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
+                            tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
+
     use innerprod_module, only: calculate_innerproduct
-    use adjoint_module
+    use adjoint_module, only: totnum_adjoints, innerprod_index
+    use adjoint_module, only: adjoints, trange_start, trange_final
 
     implicit none
 
     ! Subroutine arguments
     integer, intent(in) :: mx,my,mbc,meqn,maux,level,mbuff
-    real(kind=8), intent(in) :: xlow,ylow,dx,dy,t,tolflag
+    real(kind=8), intent(in) :: xlower,ylower,dx,dy,t,tolsp
     
     real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
     real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
@@ -61,21 +63,45 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlow,ylow,dx,dy,t,level, &
 
     ! Locals
     integer :: i, j, r
+    logical :: mask_selecta(totnum_adjoints)
 
     ! Initialize flags
     amrflags = DONTFLAG
     aux(innerprod_index,:,:) = 0.0
+    mask_selecta = .false.
+
+    ! Loop over adjoint snapshots
+    do r=1,totnum_adjoints
+        if ((t+adjoints(r)%time) >= trange_start .and. &
+          (t+adjoints(r)%time) <= trange_final) then
+            mask_selecta(r) = .true.
+        endif
+    enddo
+
+    do r=1,totnum_adjoints-1
+        if((.not. mask_selecta(r)) .and. &
+          (mask_selecta(r+1))) then
+            mask_selecta(r) = .true.
+            exit
+        endif
+    enddo
+
+    do r=totnum_adjoints,2,-1
+        if((.not. mask_selecta(r)) .and. &
+          (mask_selecta(r-1))) then
+            mask_selecta(r) = .true.
+            exit
+        endif
+    enddo
 
     ! Loop over adjoint snapshots
     aloop: do r=1,totnum_adjoints
 
         ! Consider only snapshots that are within the desired time range
-        if ((t+adjoints(r)%time) >= trange_start .and. &
-            (t+adjoints(r)%time) <= trange_final) then
-
+        if (mask_selecta(r)) then
             ! Calculate inner product with current snapshot
             aux_temp(innerprod_index,:,:) = &
-                calculate_innerproduct(t,q,r,mx,my,xlow,ylow,dx,dy,meqn,mbc)
+                calculate_innerproduct(t,q,r,mx,my,xlower,ylower,dx,dy,meqn,mbc)
 
             ! Save max inner product
             do i=1,mx
@@ -93,7 +119,7 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlow,ylow,dx,dy,t,level, &
     ! Flag locations that need refining
     y_loop: do j = 1,my
       x_loop: do i = 1,mx
-        if (aux(innerprod_index,i,j) > tolflag) then
+        if (aux(innerprod_index,i,j) > tolsp) then
             amrflags(i,j) = DOFLAG
             cycle x_loop
         endif
