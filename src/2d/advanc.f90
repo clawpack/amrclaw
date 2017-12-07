@@ -148,16 +148,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #ifdef CUDA
 
-    ! Prepare for node_stat
-    do mptr = 1,maxgr
-        node_stat(mptr, NESTLEVEL_D) = node(nestlevel,mptr)
-        node_stat(mptr, NDILO_D) = node(ndilo,mptr)
-        node_stat(mptr, NDIHI_D) = node(ndihi,mptr)
-        node_stat(mptr, NDJLO_D) = node(ndjlo,mptr)
-        node_stat(mptr, NDJHI_D) = node(ndjhi,mptr)
-    enddo
-
-
 #ifdef PROFILE
     call take_cpu_timer('Initialize cfls', timer_init_cfls)
     call cpu_timer_start(timer_init_cfls)
@@ -346,8 +336,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             call fluxsv_gpu<<<numBlocks,numThreads>>>(mptr, &
                      fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
                      cflux_d(mptr)%ptr, &
-                     node_stat, &
-                     ! fflux_d, &
                      fflux, &
                      mitot,mjtot,nvar,listsp(level),delt,hx,hy)
 

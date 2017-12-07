@@ -238,7 +238,6 @@ module amr_module
     type(cpu_2d_array_of_int_ptr_type) ::   cflux(maxgr)
     type(gpu_2d_array_of_int_ptr_type) :: cflux_d(maxgr)
 
-    integer, allocatable, managed :: node_stat(:,:)
 #endif
 
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

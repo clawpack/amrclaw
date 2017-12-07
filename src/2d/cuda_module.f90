@@ -2,7 +2,7 @@
 module cuda_module
 
     use cudafor, only: cuda_stream_kind, cudaEvent, dim3
-    use amr_module, only: inunit, node_stat, maxgr, fflux
+    use amr_module, only: inunit, maxgr, fflux
     use memory_module, only: clawpack_mempool_init
 
     implicit none
@@ -109,7 +109,6 @@ contains
         ! Initialize memory pool
         call clawpack_mempool_init()
 
-        allocate(node_stat(maxgr, NODE_STAT_SIZE))
         allocate(fflux(maxgr))
         n_timer = 0
 
@@ -397,7 +396,6 @@ contains
 
 
     subroutine finalize_cuda() 
-        deallocate(node_stat)
         deallocate(fflux)
     end subroutine finalize_cuda
 

@@ -1219,7 +1219,6 @@ attributes(global) &
 subroutine fluxsv_gpu(mptr,&
                 xfluxm,xfluxp,yfluxm,yfluxp,&
                 listbc,&
-                node_stat,&
                 fflux,&
                 ndimx,ndimy,nvar,maxsp,dtc,hx,hy)
 
@@ -1233,7 +1232,6 @@ subroutine fluxsv_gpu(mptr,&
     double precision, intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
     double precision, intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
     integer, intent(in) :: listbc(5,maxsp)
-    integer, intent(in) :: node_stat(15000, NODE_STAT_SIZE) ! managed array
     type(managed_real_ptr_type), intent(in) :: fflux(15000) ! managed array
     ! local
     integer :: ispot, mkid, intopl, loc

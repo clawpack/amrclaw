@@ -116,7 +116,6 @@ end subroutine fluxsv
 subroutine fluxsv_cpu(mptr,&
                 xfluxm,xfluxp,yfluxm,yfluxp,&
                 listbc,&
-                node_stat,&
                 fflux,&
                 ndimx,ndimy,nvar,maxsp,dtc,hx,hy)
 
@@ -130,12 +129,10 @@ subroutine fluxsv_cpu(mptr,&
     double precision, intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
     double precision, intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
     integer, intent(in) :: listbc(5,maxsp)
-    integer, intent(in) :: node_stat(15000, NODE_STAT_SIZE)
     type(cpu_array_of_real_ptr_type), intent(in) :: fflux(15000)
 
     ! local
     integer :: ispot, mkid, intopl, loc
-    integer :: nx, ny
     integer :: i,j, ivar
     integer :: tid
     integer :: kidlst, inlist
@@ -158,8 +155,6 @@ subroutine fluxsv_cpu(mptr,&
         
         mkid     = listbc(4,ispot)
         intopl   = listbc(5,ispot)
-        nx       = node_stat(mkid,NDIHI_D) - node_stat(mkid,NDILO_D) + 1
-        ny       = node_stat(mkid,NDJHI_D) - node_stat(mkid,NDJLO_D) + 1
         i        = listbc(1,ispot)
         j        = listbc(2,ispot)
 
