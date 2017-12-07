@@ -1237,7 +1237,6 @@ subroutine fluxsv_gpu(mptr,&
     type(managed_real_ptr_type), intent(in) :: fflux(15000) ! managed array
     ! local
     integer :: ispot, mkid, intopl, loc
-    integer :: nx, ny
     integer :: i,j, ivar
     integer :: tid
 
@@ -1269,24 +1268,10 @@ subroutine fluxsv_gpu(mptr,&
 
     ispot = tid
 
-    mkid     = listbc(4,ispot)
-
-    ! if (tid .eq. 33) then
-    !     print *, "in thread 33"
-    !     print *, "mkid: ", mkid
-    !     ! print *, "node_stat(mkid,NESTLEVEL_D)", node_stat(mkid,NESTLEVEL_D)
-    !     print *, "node_stat(1,NESTLEVEL_D)", node_stat(1,1)
-    !     return
-    ! else
-    !     return
-    ! endif
-
-    intopl   = listbc(5,ispot)
-    ! TODO: remove nx and ny. They are not used
-    nx       = node_stat(mkid,NDIHI_D) - node_stat(mkid,NDILO_D) + 1
-    ny       = node_stat(mkid,NDJHI_D) - node_stat(mkid,NDJLO_D) + 1
     i        = listbc(1,ispot)
     j        = listbc(2,ispot)
+    mkid     = listbc(4,ispot)
+    intopl   = listbc(5,ispot)
 
     loc = nvar*(intopl-1)
 
@@ -1295,13 +1280,10 @@ subroutine fluxsv_gpu(mptr,&
     ! which flux to save directly (i.e. put i+1,j to save that flux
     ! rather than putting in cell center coords).
 
-    ! data in fflux(mkid)%ptr is in AoS format. Namely, f(ivar, i, j)
-
     if (listbc(3,ispot) .eq. 1) then
         !           ::::: Cell i,j is on right side of a fine grid
         do ivar = 1, nvar
             fflux(mkid)%ptr(loc + ivar) = -xfluxp(i,j,ivar)*dtc*hy
-            ! alloc(inlist + ivar) = -xfluxp(i,j,ivar)*dtc*hy
         enddo
     endif
 
@@ -1309,7 +1291,6 @@ subroutine fluxsv_gpu(mptr,&
         !           ::::: Cell i,j on bottom side of fine grid
         do ivar = 1, nvar
             fflux(mkid)%ptr(loc + ivar) = -yfluxm(i,j+1,ivar)*dtc*hx
-            ! alloc(inlist + ivar) = -yfluxm(i,j+1,ivar)*dtc*hx
         enddo
     endif
 
@@ -1317,7 +1298,6 @@ subroutine fluxsv_gpu(mptr,&
         !           ::::: Cell i,j on left side of fine grid
         do ivar = 1, nvar
             fflux(mkid)%ptr(loc + ivar) = -xfluxm(i+1,j,ivar)*dtc*hy
-            ! alloc(inlist + ivar) = -xfluxm(i+1,j,ivar)*dtc*hy
         enddo
     endif
 
@@ -1325,7 +1305,6 @@ subroutine fluxsv_gpu(mptr,&
         !           ::::: Cell i,j on top side of fine grid
         do ivar = 1, nvar
             fflux(mkid)%ptr(loc + ivar) = -yfluxp(i,j,ivar)*dtc*hx 
-            ! alloc(inlist + ivar) = -yfluxp(i,j,ivar)*dtc*hx
         enddo
     endif
     !
@@ -1338,7 +1317,6 @@ subroutine fluxsv_gpu(mptr,&
         !           ::::: Cell i,j on top side of fine grid with spherical mapped bc
         do ivar = 1, nvar
             fflux(mkid)%ptr(loc + ivar) = yfluxm(i,j+1,ivar)*dtc*hx 
-            ! alloc(inlist + ivar) = yfluxm(i,j+1,ivar)*dtc*hx
         enddo
     endif
     !
@@ -1346,45 +1324,11 @@ subroutine fluxsv_gpu(mptr,&
         !           ::::: Cell i,j on bottom side of fine grid with spherical mapped bc
         do ivar = 1, nvar
             fflux(mkid)%ptr(loc + ivar) = yfluxp(i,j,ivar)*dtc*hx
-            ! alloc(inlist + ivar) = yfluxp(i,j,ivar)*dtc*hx
         enddo
     endif
     return
 end subroutine fluxsv_gpu
 
-
-! TODO: remove this
-attributes(global) &
-subroutine test_node_stat(node_stat)
-    integer, managed, intent(in) :: node_stat(15000, NODE_STAT_SIZE) ! managed array
-    integer :: tid
-    tid = (blockIdx%x-1) * blockDim%x + threadIdx%x
-    if (tid .eq. 33) then
-        print *, "in test_node_sta, thread 33"
-        print *, "node_stat(1,NESTLEVEL_D)", node_stat(1,1)
-        print *, "node_stat(2,NESTLEVEL_D)", node_stat(2,1)
-        return
-    else
-        return
-    endif
-end subroutine test_node_stat
-
-
-! When we assign space node(ffluxptr, mptr) to grid mptr, we allocate its
-! GPU space at node(ffluxptr_d, mptr) as well.
-! node(ffluxptr_d, mptr) is an integral index in global GPU memory chunk alloc_gpu. 
-! We also keep a copy of node(:,:) on GPU.
-
-! Then in fluxsv, we can find the place where we want to store coarse flux through node(ffluxptr_d, mptr),
-
-! When we advance next level, we can directly use the array at alloc_gpu(node(ffluxptr_d, mptr)) in place of svdflx in fluxad_gpu
-
-! attributes(global)&
-! subroutine fluxsv_gpu(listbc, maxsp, node, 
-!     integer, intent(in) :: listbc(5,maxsp)
-!     integer, value, intent(in) :: maxsp
-!     integer, intent(in) :: node(nsize, maxgr)
-! end subroutine fluxsv_gpu
 
 
 end module sweep_module

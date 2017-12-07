@@ -192,6 +192,7 @@ end subroutine prepc
 
 ! The acutal argument to listbc is an array of real, we need 
 ! to convert it to an array of int
+! TODO: a nicer way of doing this conversion?
 subroutine cfluxptr_to_cflux(cflux, listbc, maxsp)
       implicit double precision (a-h,o-z)
       dimension listbc(5,maxsp)

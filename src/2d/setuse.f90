@@ -94,10 +94,6 @@
       implicit double precision (a-h,o-z)
       dimension listbc(5,maxsp)
 
- #ifdef CUDA
-        integer :: ii, jj
- #endif
-
 
       ibc = ispot
       ist  = iclo - 1

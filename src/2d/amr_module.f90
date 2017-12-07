@@ -234,10 +234,7 @@ module amr_module
     end type gpu_2d_array_of_int_ptr_type
 
 
-    ! type(cpu_array_of_real_ptr_type), allocatable, managed ::   fflux(:)
-    ! type(gpu_array_of_real_ptr_type), allocatable, managed :: fflux_d(:)
     type(managed_real_ptr_type), allocatable, managed ::   fflux(:)
-
     type(cpu_2d_array_of_int_ptr_type) ::   cflux(maxgr)
     type(gpu_2d_array_of_int_ptr_type) :: cflux_d(maxgr)
 

@@ -111,8 +111,6 @@ contains
 
         allocate(node_stat(maxgr, NODE_STAT_SIZE))
         allocate(fflux(maxgr))
-        ! allocate(fflux_d(maxgr))
-
         n_timer = 0
 
     end subroutine initialize_cuda
@@ -401,7 +399,6 @@ contains
     subroutine finalize_cuda() 
         deallocate(node_stat)
         deallocate(fflux)
-        ! deallocate(fflux_d)
     end subroutine finalize_cuda
 
     function get_num_devices_used() result(nDev) bind(C, name='get_num_devices_used')

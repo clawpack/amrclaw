@@ -50,20 +50,11 @@ subroutine prepf(level,nvar,naux)
         node(ffluxptr,mkid) = igetsp(2*nvar*lenbc+naux*lenbc)
         ist = node(ffluxptr,mkid)
 #ifdef CUDA
-        ! TODO: I should check whether zeroize the array is necessary here
-
-        ! call gpu_allocate(fflux_d(mkid)%ptr, &
-        ! device_id, 1, 2*nvar*lenbc+naux*lenbc)
-
-        ! call cpu_allocate_pinned(fflux(mkid)%ptr, &
-        !     1, 2*nvar*lenbc+naux*lenbc)
 
         allocate(fflux(mkid)%ptr(2*nvar*lenbc+naux*lenbc))
-
         do i = 1, 2*nvar*lenbc + naux*lenbc
             fflux(mkid)%ptr(i) = 0.d0
         enddo
-        ! fflux_d(mkid)%ptr = 0.d0
 #endif
 
         do i = 1, 2*nvar*lenbc + naux*lenbc

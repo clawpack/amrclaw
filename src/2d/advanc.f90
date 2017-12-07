@@ -19,11 +19,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: wait_for_all_gpu_tasks
     use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
-    use cuda_module, only: write_grid, check_cuda_error
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
     use cudafor
     use sweep_module, only: fluxad_gpu, fluxsv_gpu
-    use sweep_module, only: test_node_stat
 #endif
     implicit double precision (a-h,o-z)
 
@@ -45,18 +43,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     integer :: cudaResult
     double precision :: xlow, ylow
     double precision :: cfl_local
-    type(grid2d) :: qs(numgrids(level)), fps(numgrids(level)), fms(numgrids(level)), &
-        gps(numgrids(level)), gms(numgrids(level)) 
+    type(grid2d) :: qs(numgrids(level))
     type(grid2d_device) :: qs_d(numgrids(level)), fps_d(numgrids(level)), fms_d(numgrids(level)), &
         gps_d(numgrids(level)), gms_d(numgrids(level)) 
     double precision, dimension(:,:), pointer, contiguous :: cfls
     double precision, dimension(:,:), pointer, contiguous, device :: cfls_d
-    double precision, dimension(:,:,:), pointer, contiguous :: fm 
-    double precision, dimension(:,:,:), pointer, contiguous :: fp 
-    double precision, dimension(:,:,:), pointer, contiguous :: gm 
-    double precision, dimension(:,:,:), pointer, contiguous :: gp 
 
-    integer, managed :: node_stat_tmp(maxgr,NODE_STAT_SIZE)
 #ifdef PROFILE
     integer, parameter :: timer_stepgrid = 1
     integer, parameter :: timer_gpu_loop = 2
@@ -86,10 +78,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! get start time for more detailed timing by level
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
-
-    open (333, file="fflux.txt", position="append")
-    write(333,*), "level: ", level
-    close(333)
 
 
     hx   = hxposs(level)
@@ -167,13 +155,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         node_stat(mptr, NDIHI_D) = node(ndihi,mptr)
         node_stat(mptr, NDJLO_D) = node(ndjlo,mptr)
         node_stat(mptr, NDJHI_D) = node(ndjhi,mptr)
-
-        node_stat_tmp(mptr, NESTLEVEL_D) = node(nestlevel,mptr)
-        node_stat_tmp(mptr, NDILO_D)     = node(ndilo,mptr)
-        node_stat_tmp(mptr, NDIHI_D)     = node(ndihi,mptr)
-        node_stat_tmp(mptr, NDJLO_D)     = node(ndjlo,mptr)
-        node_stat_tmp(mptr, NDJHI_D)     = node(ndjhi,mptr)
-
     enddo
 
 
@@ -228,27 +209,16 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
         locaux = node(storeaux,mptr)
 
-        ! if (node(ffluxptr,mptr) .ne. 0) then
         if (associated(fflux(mptr)%ptr)) then
             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
             locsvq = locsvf + nvar*lenbc
             locx1d = locsvq + nvar*lenbc
-
-            ! istat = cudaMemcpy(fflux(mptr)%ptr, fflux_d(mptr)%ptr, nvar*lenbc)
-            ! open (333, file="fflux.txt", position="append")
-            ! write(333,*), "fflux for grid: ", mptr
-            ! do ii = 1,nvar*lenbc
-            !     write(333,*), fflux(mptr)%ptr(ii)
-            ! enddo
-            ! close(333)
             call qad(alloc(locnew),mitot,mjtot,nvar, &
                      ! alloc(locsvf),alloc(locsvq),lenbc, &
                      fflux(mptr)%ptr,alloc(locsvq),lenbc, &
                      intratx(level-1),intraty(level-1),hx,hy, &
                      naux,alloc(locaux),alloc(locx1d),delt,mptr)
-            ! istat = cudaMemcpy(node_data(mptr, FFLUXPTR_D)%dataptr, alloc(locsvf), &
-            !     nvar*lenbc*2+naux*lenbc)
         endif
 
         !        # See if the grid about to be advanced has gauge data to output.
@@ -267,11 +237,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
         ! allocate fluxes array and q array in SoA
         call cpu_allocate_pinned( qs(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar) 
-        call cpu_allocate_pinned(fms(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar) 
-        call cpu_allocate_pinned(fps(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar) 
-        call cpu_allocate_pinned(gms(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar) 
-        call cpu_allocate_pinned(gps(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar) 
-
         call gpu_allocate( qs_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
         call gpu_allocate(fms_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
         call gpu_allocate(fps_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
@@ -329,20 +294,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !           # Godunov splitting
             print *, "CUDA version not implemented."
             stop
-            ! call stepgrid_dimSplit(alloc(locnew),fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
-            !              mitot,mjtot,nghost, &
-            !              delt,dtnew,hx,hy,nvar, &
-            !              xlow,ylow,time,mptr,naux,alloc(locaux))
         else 
 !           # should never get here due to check in amr2
             write(6,*) '*** Strang splitting not supported'
             stop
         endif
-        ! copy fluxes back to CPU
-        ! cudaResult = cudaMemcpyAsync(fms(j)%dataptr,  fms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
-        ! cudaResult = cudaMemcpyAsync(fps(j)%dataptr,  fps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
-        ! cudaResult = cudaMemcpyAsync(gms(j)%dataptr,  gms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
-        ! cudaResult = cudaMemcpyAsync(gps(j)%dataptr,  gps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
         cudaResult = cudaMemcpyAsync( qs(j)%dataptr,   qs_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
     enddo
 
@@ -361,20 +317,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         mitot  = nx + 2*nghost
         mjtot  = ny + 2*nghost
         locnew = node(store1, mptr)
-        call cpu_allocate_pinned(fm, 1, nvar, 1, mitot, 1, mjtot)
-        call cpu_allocate_pinned(fp, 1, nvar, 1, mitot, 1, mjtot)
-        call cpu_allocate_pinned(gm, 1, nvar, 1, mitot, 1, mjtot)
-        call cpu_allocate_pinned(gp, 1, nvar, 1, mitot, 1, mjtot)
 
 #ifdef PROFILE
         call take_cpu_timer('soa_to_aos', timer_soa_to_aos)
         call cpu_timer_start(timer_soa_to_aos)
 #endif
 
-        ! call soa_to_aos_r2(fm, fms(j)%dataptr, nvar, 1, mitot, 1, mjtot)
-        ! call soa_to_aos_r2(fp, fps(j)%dataptr, nvar, 1, mitot, 1, mjtot)
-        ! call soa_to_aos_r2(gm, gms(j)%dataptr, nvar, 1, mitot, 1, mjtot)
-        ! call soa_to_aos_r2(gp, gps(j)%dataptr, nvar, 1, mitot, 1, mjtot)
         call soa_to_aos_r2(alloc(locnew), qs(j)%dataptr, nvar, 1, mitot, 1, mjtot)
 
 #ifdef PROFILE
@@ -382,27 +330,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
         if (node(cfluxptr,mptr) .ne. 0) then
+#ifndef CUDA
             ! call fluxsv(mptr, fm,fp,gm,gp, &
             !          alloc(node(cfluxptr,mptr)), &
             !          mitot,mjtot, &
             !          nvar,listsp(level),delt,hx,hy)
-
-            ! call fluxsv_cpu(mptr, &
-            !     fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
-            !     ! alloc(node(cfluxptr,mptr)), &
-            !     cflux(mptr)%ptr, &
-            !     node_stat, &
-            !     fflux, &
-            !     mitot,mjtot, &
-            !     nvar,listsp(level),delt,hx,hy)
-
-            ! open (111, file="cflux.txt", position="append")
-            ! do jj = 1,listsp(level)
-            !     do ii = 1,5
-            !         write(111,*), cflux(mptr)%ptr(ii,jj)
-            !     enddo
-            ! enddo
-            ! call write_cfluxptr(alloc(node(cfluxptr,mptr)), listsp(level))
+            print *, "CPU version of fluxsv not implemented."
+            stop
+#else
 
             istat = cudaMemcpy(cflux_d(mptr)%ptr, cflux(mptr)%ptr, 5*listsp(level))
 
@@ -417,50 +352,35 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                      mitot,mjtot,nvar,listsp(level),delt,hx,hy)
 
             ! TODO: remove this barrier
-            ! call wait_for_all_gpu_tasks(device_id)
-            istat = cudaDeviceSynchronize()
-            call check_cuda_error(istat)
+            call wait_for_all_gpu_tasks(device_id)
+#endif
         endif
-        ! if (node(ffluxptr,mptr) .ne. 0) then
         if (associated(fflux(mptr)%ptr)) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-            locsvf = node(ffluxptr,mptr)
-
-            ! No need for this since we have copy fflux to cpu in the qad loop
-            ! istat = cudaMemcpy(fflux(mptr)%ptr, fflux_d(mptr)%ptr, nvar*lenbc)
-
+#ifndef CUDA
+            ! locsvf = node(ffluxptr,mptr)
             ! call fluxad(fm,fp,gm,gp, &
             !          ! alloc(locsvf),mptr,mitot,mjtot,nvar, &
             !          fflux(mptr)%ptr,mptr,mitot,mjtot,nvar, &
             !             lenbc,intratx(level-1),intraty(level-1), &
             !          nghost,delt,hx,hy)
+            print *, "CPU version of fluxad not implemented."
+            stop
+#else
 
-
-            ! istat = cudaMemcpy(node_data(mptr,FFLUXPTR_D)%dataptr, alloc(locsvf), lenbc*nvar)
             call compute_kernel_size(numBlocks, numThreads,1,lenbc)
             call fluxad_gpu<<<numBlocks,numThreads>>>(fms_d(j)%dataptr, fps_d(j)%dataptr, gms_d(j)%dataptr, gps_d(j)%dataptr, &
                 nghost, nx, ny, lenbc, &
                 intratx(level-1), intraty(level-1), &
                 fflux(mptr)%ptr, delt, hx, hy)
-            ! cudaResult = cudaMemcpy(alloc(locsvf), node_data(mptr,FFLUXPTR_D)%dataptr, lenbc*nvar, cudaMemcpyDeviceToHost)
-
+#endif
         endif
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
 
 
-        call cpu_deallocated_pinned(fm)
-        call cpu_deallocated_pinned(fp)
-        call cpu_deallocated_pinned(gm)
-        call cpu_deallocated_pinned(gp)
     enddo
 
     do j = 1, numgrids(level)
-        call cpu_deallocated_pinned( qs(j)%dataptr) 
-        call cpu_deallocated_pinned(fms(j)%dataptr) 
-        call cpu_deallocated_pinned(fps(j)%dataptr) 
-        call cpu_deallocated_pinned(gms(j)%dataptr) 
-        call cpu_deallocated_pinned(gps(j)%dataptr) 
-
         call gpu_deallocate( qs_d(j)%dataptr, device_id) 
         call gpu_deallocate(fms_d(j)%dataptr, device_id) 
         call gpu_deallocate(fps_d(j)%dataptr, device_id) 
@@ -566,15 +486,3 @@ subroutine prepgrids(listgrids, num, level)
     return
 end subroutine prepgrids
 
-! TODO: remove this
-subroutine write_cfluxptr(listbc, maxsp)
-    implicit double precision (a-h,o-z)
-    dimension listbc(5,maxsp)
-    integer :: maxsp, jj, ii
-    open (222, file="cfluxptr.txt", position="append")
-    do jj = 1,maxsp
-        do ii = 1,5
-            write(222,*), listbc(ii,jj)
-        enddo
-    enddo
-end subroutine write_cfluxptr

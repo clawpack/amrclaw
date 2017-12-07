@@ -111,6 +111,8 @@ end subroutine fluxsv
 
 #ifdef CUDA
 
+! This is the CPU version of fluxsv_gpu
+! It's mainly for development of GPU version
 subroutine fluxsv_cpu(mptr,&
                 xfluxm,xfluxp,yfluxm,yfluxp,&
                 listbc,&

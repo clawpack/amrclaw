@@ -50,13 +50,6 @@ subroutine putsp(lbase,level,nvar,naux)
             !         plus coarse solution storage
             call reclam(node(ffluxptr,mptr), 2*nvar*lenbc+naux*lenbc)
 #ifdef CUDA
-            ! print *, "Deallocate ffluxptr_d of grid: ", mptr
-            ! print *, "at: ", loc(fflux(mptr)%ptr)
-
-            ! call gpu_deallocate(fflux_d(mptr)%ptr, device_id)
-            ! fflux_d(mptr)%ptr=>null()
-            ! call cpu_deallocated_pinned(fflux(mptr)%ptr)
-            ! fflux(mptr)%ptr=>null()
             deallocate(fflux(mptr)%ptr)
 #endif
             mptr  = node(levelptr,mptr)
