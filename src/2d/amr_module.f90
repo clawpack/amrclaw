@@ -212,22 +212,36 @@ module amr_module
         double precision, dimension(:), pointer, contiguous :: ptr=>null()
     end type cpu_array_of_real_ptr_type
 
+    ! TODO: rename this to gpu_real_ptr_type and similarly for others
     type gpu_array_of_real_ptr_type
         sequence
         double precision, dimension(:), pointer, contiguous, device :: ptr=>null()
     end type gpu_array_of_real_ptr_type
+
+    type managed_real_ptr_type
+        sequence
+        double precision, dimension(:), pointer, contiguous, managed :: ptr=>null()
+    end type managed_real_ptr_type
     
-    ! TODO: 
-    ! type cpu_array_of_int_ptr_type
-    ! end type cpu_array_of_int_ptr_type
+    type cpu_2d_array_of_int_ptr_type
+        sequence
+        integer, dimension(:,:), pointer, contiguous :: ptr=>null()
+    end type cpu_2d_array_of_int_ptr_type
+
+    type gpu_2d_array_of_int_ptr_type
+        sequence
+        integer, dimension(:,:), pointer, contiguous, device :: ptr=>null()
+    end type gpu_2d_array_of_int_ptr_type
 
 
-    type(cpu_array_of_real_ptr_type), managed ::   fflux(maxgr)
-    type(gpu_array_of_real_ptr_type), managed :: fflux_d(maxgr)
+    ! type(cpu_array_of_real_ptr_type), allocatable, managed ::   fflux(:)
+    ! type(gpu_array_of_real_ptr_type), allocatable, managed :: fflux_d(:)
+    type(managed_real_ptr_type), allocatable, managed ::   fflux(:)
 
+    type(cpu_2d_array_of_int_ptr_type) ::   cflux(maxgr)
+    type(gpu_2d_array_of_int_ptr_type) :: cflux_d(maxgr)
 
-
-    integer, managed :: node_stat(maxgr, NODE_STAT_SIZE)
+    integer, allocatable, managed :: node_stat(:,:)
 #endif
 
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

@@ -1,7 +1,8 @@
+#include "amr_macros.H"
 module cuda_module
 
     use cudafor, only: cuda_stream_kind, cudaEvent, dim3
-    use amr_module, only: inunit
+    use amr_module, only: inunit, node_stat, maxgr, fflux
     use memory_module, only: clawpack_mempool_init
 
     implicit none
@@ -107,6 +108,10 @@ contains
 
         ! Initialize memory pool
         call clawpack_mempool_init()
+
+        allocate(node_stat(maxgr, NODE_STAT_SIZE))
+        allocate(fflux(maxgr))
+        ! allocate(fflux_d(maxgr))
 
         n_timer = 0
 
@@ -394,6 +399,9 @@ contains
 
 
     subroutine finalize_cuda() 
+        deallocate(node_stat)
+        deallocate(fflux)
+        ! deallocate(fflux_d)
     end subroutine finalize_cuda
 
     function get_num_devices_used() result(nDev) bind(C, name='get_num_devices_used')

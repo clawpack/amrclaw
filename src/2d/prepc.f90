@@ -70,17 +70,9 @@ subroutine prepc(level,nvar)
        do 35 i = 1,5*maxsp
  35      alloc(locbc+i-1) = 0.d0
        node(cfluxptr,mpar) = locbc
-#ifdef NOTHING
+#ifdef CUDA
         call cpu_allocate_pinned(cflux(mpar)%ptr, 1, 5, 1, maxsp)
         call gpu_allocate(cflux_d(mpar)%ptr, device_id, 1, 5, 1, maxsp)
-        do jj = 1,maxsp
-            do ii = 1, 5
-                cflux(mpar)%ptr(ii,jj) = 0
-                ! cflux_d(mpar)%ptr(ii,jj) = 0
-            enddo
-        enddo
-        ! cflux(mpar)%ptr = 0
-        ! cflux_d(mpar)%ptr = 0
 #endif
 !
        mkid = lstart(level+1)
@@ -190,7 +182,7 @@ subroutine prepc(level,nvar)
 !  return (maxsp-ispot) amt starting at loc node(cfluxptr)+ispot.
 !
 #ifdef CUDA
-        ! call alloc_to_int(cflux(mpar)%ptr, alloc(locbc), maxsp)
+        call cfluxptr_to_cflux(cflux(mpar)%ptr, alloc(locbc), maxsp)
 #endif
        mpar = node(levelptr,mpar)
        go to 30
@@ -198,14 +190,17 @@ subroutine prepc(level,nvar)
  99    return
 end subroutine prepc
 
-subroutine alloc_to_int(dst_int, src_real, maxsp)
+! The acutal argument to listbc is an array of real, we need 
+! to convert it to an array of int
+subroutine cfluxptr_to_cflux(cflux, listbc, maxsp)
       implicit double precision (a-h,o-z)
-      dimension src_real(5,maxsp)
-      integer, intent(inout) :: dst_int(5, maxsp)
+      dimension listbc(5,maxsp)
+      integer, intent(inout) :: cflux(5, maxsp)
       integer :: i,j
-      do j = 1, maxsp
-          do i = 1,5
-              dst_int(i,j) = src_real(i,j)
-          enddo
-      enddo
-end subroutine alloc_to_int
+
+    do j = 1, maxsp
+        do i = 1,5
+            cflux(i,j) = listbc(i,j)
+        enddo
+    enddo
+end subroutine cfluxptr_to_cflux

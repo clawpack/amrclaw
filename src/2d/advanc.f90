@@ -19,10 +19,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: wait_for_all_gpu_tasks
     use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
-    use cuda_module, only: write_grid
+    use cuda_module, only: write_grid, check_cuda_error
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
     use cudafor
-    use sweep_module, only: fluxad_gpu
+    use sweep_module, only: fluxad_gpu, fluxsv_gpu
+    use sweep_module, only: test_node_stat
 #endif
     implicit double precision (a-h,o-z)
 
@@ -50,12 +51,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         gps_d(numgrids(level)), gms_d(numgrids(level)) 
     double precision, dimension(:,:), pointer, contiguous :: cfls
     double precision, dimension(:,:), pointer, contiguous, device :: cfls_d
-    double precision, allocatable :: fm(:,:,:)
-    double precision, allocatable :: fp(:,:,:)
-    double precision, allocatable :: gm(:,:,:)
-    double precision, allocatable :: gp(:,:,:)
+    double precision, dimension(:,:,:), pointer, contiguous :: fm 
+    double precision, dimension(:,:,:), pointer, contiguous :: fp 
+    double precision, dimension(:,:,:), pointer, contiguous :: gm 
+    double precision, dimension(:,:,:), pointer, contiguous :: gp 
 
-    double precision, dimension(:,:), pointer, contiguous, device :: listbc_d
     integer, managed :: node_stat_tmp(maxgr,NODE_STAT_SIZE)
 #ifdef PROFILE
     integer, parameter :: timer_stepgrid = 1
@@ -86,6 +86,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! get start time for more detailed timing by level
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
+
+    open (333, file="fflux.txt", position="append")
+    write(333,*), "level: ", level
+    close(333)
 
 
     hx   = hxposs(level)
@@ -156,7 +160,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #ifdef CUDA
 
-    ! Prepare for node_stat and fflux
+    ! Prepare for node_stat
     do mptr = 1,maxgr
         node_stat(mptr, NESTLEVEL_D) = node(nestlevel,mptr)
         node_stat(mptr, NDILO_D) = node(ndilo,mptr)
@@ -169,6 +173,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         node_stat_tmp(mptr, NDIHI_D)     = node(ndihi,mptr)
         node_stat_tmp(mptr, NDJLO_D)     = node(ndjlo,mptr)
         node_stat_tmp(mptr, NDJHI_D)     = node(ndjhi,mptr)
+
     enddo
 
 
@@ -229,8 +234,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             locsvf = node(ffluxptr,mptr)
             locsvq = locsvf + nvar*lenbc
             locx1d = locsvq + nvar*lenbc
-            ! istat = cudaMemcpy(alloc(locsvf), node_data(mptr, FFLUXPTR_D)%dataptr, &
-            !     nvar*lenbc*2+naux*lenbc)
+
+            ! istat = cudaMemcpy(fflux(mptr)%ptr, fflux_d(mptr)%ptr, nvar*lenbc)
+            ! open (333, file="fflux.txt", position="append")
+            ! write(333,*), "fflux for grid: ", mptr
+            ! do ii = 1,nvar*lenbc
+            !     write(333,*), fflux(mptr)%ptr(ii)
+            ! enddo
+            ! close(333)
             call qad(alloc(locnew),mitot,mjtot,nvar, &
                      ! alloc(locsvf),alloc(locsvq),lenbc, &
                      fflux(mptr)%ptr,alloc(locsvq),lenbc, &
@@ -328,10 +339,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             stop
         endif
         ! copy fluxes back to CPU
-        cudaResult = cudaMemcpyAsync(fms(j)%dataptr,  fms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
-        cudaResult = cudaMemcpyAsync(fps(j)%dataptr,  fps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
-        cudaResult = cudaMemcpyAsync(gms(j)%dataptr,  gms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
-        cudaResult = cudaMemcpyAsync(gps(j)%dataptr,  gps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        ! cudaResult = cudaMemcpyAsync(fms(j)%dataptr,  fms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        ! cudaResult = cudaMemcpyAsync(fps(j)%dataptr,  fps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        ! cudaResult = cudaMemcpyAsync(gms(j)%dataptr,  gms_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        ! cudaResult = cudaMemcpyAsync(gps(j)%dataptr,  gps_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
         cudaResult = cudaMemcpyAsync( qs(j)%dataptr,   qs_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
     enddo
 
@@ -350,20 +361,20 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         mitot  = nx + 2*nghost
         mjtot  = ny + 2*nghost
         locnew = node(store1, mptr)
-        allocate(fm(nvar, mitot, mjtot))
-        allocate(fp(nvar, mitot, mjtot))
-        allocate(gm(nvar, mitot, mjtot))
-        allocate(gp(nvar, mitot, mjtot))
+        call cpu_allocate_pinned(fm, 1, nvar, 1, mitot, 1, mjtot)
+        call cpu_allocate_pinned(fp, 1, nvar, 1, mitot, 1, mjtot)
+        call cpu_allocate_pinned(gm, 1, nvar, 1, mitot, 1, mjtot)
+        call cpu_allocate_pinned(gp, 1, nvar, 1, mitot, 1, mjtot)
 
 #ifdef PROFILE
         call take_cpu_timer('soa_to_aos', timer_soa_to_aos)
         call cpu_timer_start(timer_soa_to_aos)
 #endif
 
-        call soa_to_aos_r2(fm, fms(j)%dataptr, nvar, 1, mitot, 1, mjtot)
-        call soa_to_aos_r2(fp, fps(j)%dataptr, nvar, 1, mitot, 1, mjtot)
-        call soa_to_aos_r2(gm, gms(j)%dataptr, nvar, 1, mitot, 1, mjtot)
-        call soa_to_aos_r2(gp, gps(j)%dataptr, nvar, 1, mitot, 1, mjtot)
+        ! call soa_to_aos_r2(fm, fms(j)%dataptr, nvar, 1, mitot, 1, mjtot)
+        ! call soa_to_aos_r2(fp, fps(j)%dataptr, nvar, 1, mitot, 1, mjtot)
+        ! call soa_to_aos_r2(gm, gms(j)%dataptr, nvar, 1, mitot, 1, mjtot)
+        ! call soa_to_aos_r2(gp, gps(j)%dataptr, nvar, 1, mitot, 1, mjtot)
         call soa_to_aos_r2(alloc(locnew), qs(j)%dataptr, nvar, 1, mitot, 1, mjtot)
 
 #ifdef PROFILE
@@ -376,75 +387,71 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             !          mitot,mjtot, &
             !          nvar,listsp(level),delt,hx,hy)
 
-            call fluxsv_cpu(mptr, &
-                fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
-                ! fm, fp, gm, gp, &
-                alloc(node(cfluxptr,mptr)), &
-                node_stat, &
-                fflux, &
-                mitot,mjtot, &
-                nvar,listsp(level),delt,hx,hy)
+            ! call fluxsv_cpu(mptr, &
+            !     fms(j)%dataptr,fps(j)%dataptr,gms(j)%dataptr,gps(j)%dataptr, &
+            !     ! alloc(node(cfluxptr,mptr)), &
+            !     cflux(mptr)%ptr, &
+            !     node_stat, &
+            !     fflux, &
+            !     mitot,mjtot, &
+            !     nvar,listsp(level),delt,hx,hy)
 
-
-            ! call gpu_allocate(node_data(mptr, CFLUXPTR_D)%dataptr, device_id, 1, listsp(level)*5)
-            ! call gpu_allocate(listbc_d, device_id, 1, 5, 1, listsp(level))
-            ! istat = cudaMemcpy(listbc_d, alloc(node(cfluxptr,mptr)), 5*listsp(level))
-
-            ! open (333, file="listbc.txt", position="append")
-            ! write(333, *) "listbc for grid: ", mptr
-            ! write(333, *) "length: ", listsp(level)
+            ! open (111, file="cflux.txt", position="append")
             ! do jj = 1,listsp(level)
-            !     loc = 5*(jj-1)-1
-            !     write(333, *) "ispot: ", jj
             !     do ii = 1,5
-            !         write(333, '(i5)') int(alloc(node(cfluxptr,mptr)+loc+ii))
+            !         write(111,*), cflux(mptr)%ptr(ii,jj)
             !     enddo
             ! enddo
+            ! call write_cfluxptr(alloc(node(cfluxptr,mptr)), listsp(level))
 
+            istat = cudaMemcpy(cflux_d(mptr)%ptr, cflux(mptr)%ptr, 5*listsp(level))
 
-            ! call write_grid(node_stat, 1, maxgr, 1, NODE_STAT_SIZE, "node_stat.txt", 1)
+            call compute_kernel_size(numBlocks,numThreads,1,listsp(level))
 
-            ! call compute_kernel_size(numBlocks, numThreads,1,5*listsp(level))
-            ! call fluxsv_gpu<<<numBlocks,numThreads>>>(mptr, &
-            !          fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
-            !          ! node_data(mptr,CFLUXPTR_D)%dataptr, &
-            !          listbc_d, &
-            !          node_stat_tmp, node_data, &
-            !          mitot,mjtot,nvar,listsp(level),delt,hx,hy)
+            call fluxsv_gpu<<<numBlocks,numThreads>>>(mptr, &
+                     fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
+                     cflux_d(mptr)%ptr, &
+                     node_stat, &
+                     ! fflux_d, &
+                     fflux, &
+                     mitot,mjtot,nvar,listsp(level),delt,hx,hy)
 
+            ! TODO: remove this barrier
             ! call wait_for_all_gpu_tasks(device_id)
-
-            ! ! call gpu_deallocate(node_data(mptr,CFLUXPTR_D)%dataptr,device_id)
-            ! call gpu_deallocate(listbc_d,device_id)
+            istat = cudaDeviceSynchronize()
+            call check_cuda_error(istat)
         endif
         ! if (node(ffluxptr,mptr) .ne. 0) then
         if (associated(fflux(mptr)%ptr)) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
 
-            call fluxad(fm,fp,gm,gp, &
-                     ! alloc(locsvf),mptr,mitot,mjtot,nvar, &
-                     fflux(mptr)%ptr,mptr,mitot,mjtot,nvar, &
-                        lenbc,intratx(level-1),intraty(level-1), &
-                     nghost,delt,hx,hy)
+            ! No need for this since we have copy fflux to cpu in the qad loop
+            ! istat = cudaMemcpy(fflux(mptr)%ptr, fflux_d(mptr)%ptr, nvar*lenbc)
+
+            ! call fluxad(fm,fp,gm,gp, &
+            !          ! alloc(locsvf),mptr,mitot,mjtot,nvar, &
+            !          fflux(mptr)%ptr,mptr,mitot,mjtot,nvar, &
+            !             lenbc,intratx(level-1),intraty(level-1), &
+            !          nghost,delt,hx,hy)
 
 
             ! istat = cudaMemcpy(node_data(mptr,FFLUXPTR_D)%dataptr, alloc(locsvf), lenbc*nvar)
-            ! call compute_kernel_size(numBlocks, numThreads,1,lenbc)
-            ! call fluxad_gpu<<<numBlocks,numThreads>>>(fms_d(j)%dataptr, fps_d(j)%dataptr, gms_d(j)%dataptr, gps_d(j)%dataptr, &
-            !     nghost, nx, ny, lenbc, &
-            !     intratx(level-1), intraty(level-1), &
-            !     node_data(mptr,FFLUXPTR_D)%dataptr, delt, hx, hy)
+            call compute_kernel_size(numBlocks, numThreads,1,lenbc)
+            call fluxad_gpu<<<numBlocks,numThreads>>>(fms_d(j)%dataptr, fps_d(j)%dataptr, gms_d(j)%dataptr, gps_d(j)%dataptr, &
+                nghost, nx, ny, lenbc, &
+                intratx(level-1), intraty(level-1), &
+                fflux(mptr)%ptr, delt, hx, hy)
             ! cudaResult = cudaMemcpy(alloc(locsvf), node_data(mptr,FFLUXPTR_D)%dataptr, lenbc*nvar, cudaMemcpyDeviceToHost)
 
         endif
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
 
 
-        deallocate(fm)
-        deallocate(fp)
-        deallocate(gm)
-        deallocate(gp)
+        call cpu_deallocated_pinned(fm)
+        call cpu_deallocated_pinned(fp)
+        call cpu_deallocated_pinned(gm)
+        call cpu_deallocated_pinned(gp)
     enddo
 
     do j = 1, numgrids(level)
@@ -559,15 +566,15 @@ subroutine prepgrids(listgrids, num, level)
     return
 end subroutine prepgrids
 
-subroutine add_to_svdflx(svdflx_dst, svdflx_src, lenbc, nvar)
-    double precision, intent(in)    :: svdflx_src(nvar,lenbc)
-    double precision, intent(inout) :: svdflx_dst(nvar,lenbc)
-    integer :: i,j
-    do j = 1,lenbc
-        do i = 1,nvar
-            svdflx_dst(i,j) = svdflx_dst(i,j) + svdflx_src(i,j)
+! TODO: remove this
+subroutine write_cfluxptr(listbc, maxsp)
+    implicit double precision (a-h,o-z)
+    dimension listbc(5,maxsp)
+    integer :: maxsp, jj, ii
+    open (222, file="cfluxptr.txt", position="append")
+    do jj = 1,maxsp
+        do ii = 1,5
+            write(222,*), listbc(ii,jj)
         enddo
     enddo
-end subroutine add_to_svdflx
-
-
+end subroutine write_cfluxptr

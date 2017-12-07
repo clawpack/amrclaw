@@ -1,3 +1,5 @@
+#include "amr_macros.H"
+
 module sweep_module
 
     use amr_module
@@ -1159,7 +1161,7 @@ subroutine fluxad_gpu(fm, fp, gm, gp, &
 
 #ifdef DEBUG
     if (blockDim%y /= 1 .or. gridDim%y /= 1) then
-        print *, "fluxsv_gpu kernel should be called with blockDim%y == 1 and gridDim%y == 1"
+        print *, "fluxad_gpu kernel should be called with blockDim%y == 1 and gridDim%y == 1"
         stop
     endif
 #endif
@@ -1212,6 +1214,161 @@ subroutine fluxad_gpu(fm, fp, gm, gp, &
         enddo
     endif
 end subroutine fluxad_gpu
+
+attributes(global) &
+subroutine fluxsv_gpu(mptr,&
+                xfluxm,xfluxp,yfluxm,yfluxp,&
+                listbc,&
+                node_stat,&
+                fflux,&
+                ndimx,ndimy,nvar,maxsp,dtc,hx,hy)
+
+    use amr_module
+    implicit none
+
+
+    integer, value, intent(in) :: mptr
+    integer, value, intent(in) :: ndimx, ndimy, nvar, maxsp
+    double precision, value, intent(in) :: dtc, hx, hy
+    double precision, intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
+    double precision, intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
+    integer, intent(in) :: listbc(5,maxsp)
+    integer, intent(in) :: node_stat(15000, NODE_STAT_SIZE) ! managed array
+    type(managed_real_ptr_type), intent(in) :: fflux(15000) ! managed array
+    ! local
+    integer :: ispot, mkid, intopl, loc
+    integer :: nx, ny
+    integer :: i,j, ivar
+    integer :: tid
+
+    ! :::::::::::::::::::: FLUXSV :::::::::::::::::::::::::
+    !
+    !  coarse grids should save their fluxes in cells adjacent to
+    !  their nested fine grids, for later conservation fixing.
+    !  listbc holds info for where to save which fluxes.
+    !  xflux holds 'f' fluxes, yflux holds 'g' fluxes.
+    !
+    ! :::::::::::::::::::::::::::::;:::::::::::::::::::::::
+
+#ifdef DEBUG
+    if (blockDim%y /= 1 .or. gridDim%y /= 1) then
+        print *, "fluxsv_gpu kernel should be called with blockDim%y == 1 and gridDim%y == 1"
+        stop
+    endif
+#endif
+
+    tid = (blockIdx%x-1) * blockDim%x + threadIdx%x
+
+    if (tid > maxsp) then 
+        return
+    endif
+    if (listbc(1,tid) .eq. 0) then 
+        return
+    endif
+
+
+    ispot = tid
+
+    mkid     = listbc(4,ispot)
+
+    ! if (tid .eq. 33) then
+    !     print *, "in thread 33"
+    !     print *, "mkid: ", mkid
+    !     ! print *, "node_stat(mkid,NESTLEVEL_D)", node_stat(mkid,NESTLEVEL_D)
+    !     print *, "node_stat(1,NESTLEVEL_D)", node_stat(1,1)
+    !     return
+    ! else
+    !     return
+    ! endif
+
+    intopl   = listbc(5,ispot)
+    ! TODO: remove nx and ny. They are not used
+    nx       = node_stat(mkid,NDIHI_D) - node_stat(mkid,NDILO_D) + 1
+    ny       = node_stat(mkid,NDJHI_D) - node_stat(mkid,NDJLO_D) + 1
+    i        = listbc(1,ispot)
+    j        = listbc(2,ispot)
+
+    loc = nvar*(intopl-1)
+
+    ! side k (listbc 3) has which side of coarse cell has interface
+    ! so can save appropriate fluxes.  (dont know why we didnt have
+    ! which flux to save directly (i.e. put i+1,j to save that flux
+    ! rather than putting in cell center coords).
+
+    ! data in fflux(mkid)%ptr is in AoS format. Namely, f(ivar, i, j)
+
+    if (listbc(3,ispot) .eq. 1) then
+        !           ::::: Cell i,j is on right side of a fine grid
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = -xfluxp(i,j,ivar)*dtc*hy
+            ! alloc(inlist + ivar) = -xfluxp(i,j,ivar)*dtc*hy
+        enddo
+    endif
+
+    if (listbc(3,ispot) .eq. 2) then
+        !           ::::: Cell i,j on bottom side of fine grid
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = -yfluxm(i,j+1,ivar)*dtc*hx
+            ! alloc(inlist + ivar) = -yfluxm(i,j+1,ivar)*dtc*hx
+        enddo
+    endif
+
+    if (listbc(3,ispot) .eq. 3) then
+        !           ::::: Cell i,j on left side of fine grid
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = -xfluxm(i+1,j,ivar)*dtc*hy
+            ! alloc(inlist + ivar) = -xfluxm(i+1,j,ivar)*dtc*hy
+        enddo
+    endif
+
+    if (listbc(3,ispot) .eq. 4) then
+        !           ::::: Cell i,j on top side of fine grid
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = -yfluxp(i,j,ivar)*dtc*hx 
+            ! alloc(inlist + ivar) = -yfluxp(i,j,ivar)*dtc*hx
+        enddo
+    endif
+    !
+    !        ### new bcs 5 and 6 come from spherical mapping. note sign change:
+    !        ### previous fluxes stored negative flux, fine grids always add
+    !        ### their flux, then the delta is either added or subtracted as
+    !        ### appropriate for that side.  New bc adds or subtracts BOTH fluxes.
+    !
+    if (listbc(3,ispot) .eq. 5) then
+        !           ::::: Cell i,j on top side of fine grid with spherical mapped bc
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = yfluxm(i,j+1,ivar)*dtc*hx 
+            ! alloc(inlist + ivar) = yfluxm(i,j+1,ivar)*dtc*hx
+        enddo
+    endif
+    !
+    if (listbc(3,ispot) .eq. 6) then
+        !           ::::: Cell i,j on bottom side of fine grid with spherical mapped bc
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = yfluxp(i,j,ivar)*dtc*hx
+            ! alloc(inlist + ivar) = yfluxp(i,j,ivar)*dtc*hx
+        enddo
+    endif
+    return
+end subroutine fluxsv_gpu
+
+
+! TODO: remove this
+attributes(global) &
+subroutine test_node_stat(node_stat)
+    integer, managed, intent(in) :: node_stat(15000, NODE_STAT_SIZE) ! managed array
+    integer :: tid
+    tid = (blockIdx%x-1) * blockDim%x + threadIdx%x
+    if (tid .eq. 33) then
+        print *, "in test_node_sta, thread 33"
+        print *, "node_stat(1,NESTLEVEL_D)", node_stat(1,1)
+        print *, "node_stat(2,NESTLEVEL_D)", node_stat(2,1)
+        return
+    else
+        return
+    endif
+end subroutine test_node_stat
+
 
 ! When we assign space node(ffluxptr, mptr) to grid mptr, we allocate its
 ! GPU space at node(ffluxptr_d, mptr) as well.
