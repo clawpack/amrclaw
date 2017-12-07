@@ -137,8 +137,13 @@ c
                 if (lev .gt. mxnest) lstart(lev) = 0   
  85             if (mptr .eq. 0) go to 95
                    if (lev .lt. mxnold) then
+#ifdef CUDA
+                    deallocate(cflux(mptr)%ptr)
+                    deallocate(cflux_d(mptr)%ptr)
+#else
                     call reclam(node(cfluxptr,mptr), 5*listsp(lev))
                     node(cfluxptr,mptr) = 0
+#endif
                    endif
                    nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
                    ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1

@@ -43,9 +43,11 @@ c
      .             node(levelptr,mptr)
 102   format(1x,1h!,11h nestlevel=,i3,12h, time mult=,e25.15,
      1       13h, level ptr =,i6,5x,1h!)
+#ifndef CUDA
       write(outunit,103) node(store1,mptr),node(store2,mptr),
      1                   node(cfluxptr,mptr),node(ffluxptr,mptr)
  103  format(1x,'! storage locs =',2i11,'  bndry locs =',2i11,2x,1h!)
+#endif
       write(outunit,104)
       write(outunit,111) rnode(cornxlo,mptr),rnode(cornyhi,mptr),
      1             rnode(cornxhi,mptr),rnode(cornyhi,mptr)

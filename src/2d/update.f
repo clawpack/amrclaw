@@ -83,12 +83,19 @@ c 20   if (mptr .eq. 0) go to 85
          ihi     = node(ndihi,mptr)
          jhi     = node(ndjhi,mptr)
 c
+#ifdef CUDA
+         if (associated(cflux(mptr)%ptr) .eq. .false.) go to 25
+#else
          if (node(cfluxptr,mptr) .eq. 0) go to 25
-c         locuse = igetsp(mitot*mjtot)
+#endif
+
+#ifdef CUDA
+         call upbnd(cflux(mptr)%ptr,alloc(loc),nvar,
+     1              naux,mitot,mjtot,listsp(lget),mptr)
+#else
          call upbnd(alloc(node(cfluxptr,mptr)),alloc(loc),nvar,
      1              naux,mitot,mjtot,listsp(lget),mptr)
-c     1              mitot,mjtot,listsp(lget),alloc(locuse),mptr)
-c         call reclam(locuse,mitot*mjtot)
+#endif
 c
 c  loop through all intersecting fine grids as source updaters.
 c

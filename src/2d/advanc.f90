@@ -39,7 +39,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef CUDA
     integer :: locold, locnew, locaux
     integer :: i,j, id
-    integer :: ii,jj,loc
     integer :: cudaResult
     double precision :: xlow, ylow
     double precision :: cfl_local
@@ -321,8 +320,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         if (associated(cflux(mptr)%ptr)) then
 
             ! TODO: this line does some redundant work
-            istat = cudaMemcpy(cflux_d(mptr)%ptr, cflux(mptr)%ptr, 5*listsp(level))
-
+            cudaResult = cudaMemcpy(cflux_d(mptr)%ptr, cflux(mptr)%ptr, 5*listsp(level))
             call compute_kernel_size(numBlocks,numThreads,1,listsp(level))
 
             call fluxsv_gpu<<<numBlocks,numThreads>>>(mptr, &

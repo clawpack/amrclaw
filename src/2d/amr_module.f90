@@ -80,7 +80,9 @@ module amr_module
     !! take them from. Note that number of fluxes saved here is equal 
     !! to number of such segments (length = coarse cell size) needed to make
     !! up the perimeter.
+#ifndef CUDA
     integer, parameter :: cfluxptr  = 5
+#endif
 
     !> pointer to the address of memory storing fluxes in a layer around the grid, 
     !! to be used in conservation fixup near coarse-fine grid intersections.

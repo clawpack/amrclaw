@@ -65,14 +65,17 @@ subroutine prepc(level,nvar)
        jlo     = node(ndjlo,mpar)
        ihi     = node(ndihi,mpar)
        jhi     = node(ndjhi,mpar)
+#ifdef CUDA
+        call cpu_allocate_pinned(cflux(mpar)%ptr, 1, 5, 1, maxsp)
+        call gpu_allocate(cflux_d(mpar)%ptr, device_id, 1, 5, 1, maxsp)
+        ! initialize list to 0 (0 terminator indicates end of bc list)
+        cflux(mpar)%ptr = 0
+#else
        locbc   = igetsp(5*maxsp)
 !      initialize list to 0 (0 terminator indicates end of bc list)
        do 35 i = 1,5*maxsp
  35      alloc(locbc+i-1) = 0.d0
        node(cfluxptr,mpar) = locbc
-#ifdef CUDA
-        call cpu_allocate_pinned(cflux(mpar)%ptr, 1, 5, 1, maxsp)
-        call gpu_allocate(cflux_d(mpar)%ptr, device_id, 1, 5, 1, maxsp)
 #endif
 !
        mkid = lstart(level+1)
@@ -107,40 +110,69 @@ subroutine prepc(level,nvar)
           ! listbc
           if (iplo .le. iphi+1 .and. jplo .le. jphi+1) then
                kflag = 1 ! interior stuff, no mappings
+#ifdef CUDA
+                call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid, &
+                ilo,ihi,jlo,jhi,iclo,ichi,jclo,jchi,kflag)
+#else
                 call setuse(alloc(locbc),maxsp,ispot,mkid, &
                 ilo,ihi,jlo,jhi,iclo,ichi,jclo,jchi,kflag)
+#endif
           endif
 
 !   for fine grids touching periodic boundary on right
           if  (xperdom .and. ilo .eq. 0 .and. ichi .eq. imax) then
               kflag = 1 ! periodic in x
+#ifdef CUDA
+              call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid,&
+                ilo,ihi,jlo,jhi,iclo-iregsz(level),ichi-iregsz(level),&
+                jclo,jchi,kflag)
+#else
               call setuse(alloc(locbc),maxsp,ispot,mkid,&
                 ilo,ihi,jlo,jhi,iclo-iregsz(level),ichi-iregsz(level),&
                 jclo,jchi,kflag)
+#endif
            endif
 
 !   for fine grids touching periodic boundary on left
           if  (xperdom .and. iclo .eq. 0 .and. ihi .eq. imax) then
               kflag = 1
+#ifdef CUDA
+              call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid,&
+                ilo,ihi,jlo,jhi,iclo+iregsz(level),ichi+iregsz(level),&
+                jclo,jchi,kflag)
+#else
               call setuse(alloc(locbc),maxsp,ispot,mkid,&
                 ilo,ihi,jlo,jhi,iclo+iregsz(level),ichi+iregsz(level),&
                 jclo,jchi,kflag)
+#endif
           endif
 
 !   for fine grids touching periodic boundary on top
           if  (yperdom .and. jlo .eq. 0 .and. jchi .eq. jmax) then
                 kflag = 1
+#ifdef CUDA
+                call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid,&
+                ilo,ihi,jlo,jhi,iclo,ichi,&
+                jclo-jregsz(level),jchi-jregsz(level),kflag)
+#else
                 call setuse(alloc(locbc),maxsp,ispot,mkid,&
                 ilo,ihi,jlo,jhi,iclo,ichi,&
                 jclo-jregsz(level),jchi-jregsz(level),kflag)
+#endif
           endif
 
 !   for fine grids touching periodic boundary on bottom
           if  (yperdom .and. jclo .eq. 0 .and. jhi .eq. jmax)  then
               kflag = 1
+#ifdef CUDA
+              call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid, &
+                ilo,ihi,jlo,jhi,iclo,ichi, &
+                jclo+jregsz(level),jchi+jregsz(level),kflag)
+#else
               call setuse(alloc(locbc),maxsp,ispot,mkid, &
                 ilo,ihi,jlo,jhi,iclo,ichi, &
                 jclo+jregsz(level),jchi+jregsz(level),kflag)
+#endif
           endif
 
 !   for fine grids touching boundary on top in spherically mapped case
@@ -151,9 +183,15 @@ subroutine prepc(level,nvar)
                iwrap2 = iregsz(level) - iclo - 1  !higher mapped index
                iwrap1 = iregsz(level) - ichi - 1  !lower mapped index
                if (max(ilo,iwrap1) .le. min(ihi,iwrap2)) then
+#ifdef CUDA
+                  call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid,&
+                              ilo,ihi,jlo,jhi,iclo,ichi,&
+                              jclo,jchi,kflag)
+#else
                   call setuse(alloc(locbc),maxsp,ispot,mkid,&
                               ilo,ihi,jlo,jhi,iclo,ichi,&
                               jclo,jchi,kflag)
+#endif
                endif
           endif
 
@@ -164,9 +202,15 @@ subroutine prepc(level,nvar)
                iwrap2 = iregsz(level) - iclo - 1  !higher mapped index
                iwrap1 = iregsz(level) - ichi - 1  !lower mapped index
                if (max(ilo,iwrap1) .le. min(ihi,iwrap2)) then
+#ifdef CUDA
+                  call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid,&
+                              ilo,ihi,jlo,jhi,iclo,ichi,&
+                              jclo,jchi,kflag)
+#else
                   call setuse(alloc(locbc),maxsp,ispot,mkid,&
                               ilo,ihi,jlo,jhi,iclo,ichi,&
                               jclo,jchi,kflag)
+#endif
                endif
           endif
 
@@ -181,27 +225,8 @@ subroutine prepc(level,nvar)
 !  for now, leave unused space allocated to the grid. alternative is to
 !  return (maxsp-ispot) amt starting at loc node(cfluxptr)+ispot.
 !
-#ifdef CUDA
-        call cfluxptr_to_cflux(cflux(mpar)%ptr, alloc(locbc), maxsp)
-#endif
        mpar = node(levelptr,mpar)
        go to 30
 !
  99    return
 end subroutine prepc
-
-! The acutal argument to listbc is an array of real, we need 
-! to convert it to an array of int
-! TODO: a nicer way of doing this conversion?
-subroutine cfluxptr_to_cflux(cflux, listbc, maxsp)
-      implicit double precision (a-h,o-z)
-      dimension listbc(5,maxsp)
-      integer, intent(inout) :: cflux(5, maxsp)
-      integer :: i,j
-
-    do j = 1, maxsp
-        do i = 1,5
-            cflux(i,j) = listbc(i,j)
-        enddo
-    enddo
-end subroutine cfluxptr_to_cflux
