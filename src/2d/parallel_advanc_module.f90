@@ -11,6 +11,7 @@ contains
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !
 !> Integrate grid **mptr**. grids are done in parallel.
+#ifndef CUDA
     subroutine par_advanc (mptr,mitot,mjtot,nvar,naux,dtnew)
         use amr_module
         use gauges_module, only: update_gauges, num_gauges
@@ -123,6 +124,7 @@ contains
 !
         return
     end subroutine par_advanc
+#endif
 
 ! ::::::::::::::::::: STEPGRID ::::::::::::::::::::::::::::::::::::
 ! take a time step on a single grid. overwrite solution array q. 
@@ -421,7 +423,9 @@ contains
       return
     end subroutine stepgrid
 
-    ! This subroutine should be used only if CUDA is defined
+!
+! This subroutine should be used only if CUDA is defined
+!
     subroutine stepgrid_soa(q,fm,fp,gm,gp,mitot,mjtot,mbc,dt,dx,dy, &
             nvar,xlow,ylow,time,mptr,maux,aux,ngrids,id,cfls)
 

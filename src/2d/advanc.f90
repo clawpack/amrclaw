@@ -205,7 +205,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             locsvq = locsvf + nvar*lenbc
             locx1d = locsvq + nvar*lenbc
             call qad(alloc(locnew),mitot,mjtot,nvar, &
-                     ! alloc(locsvf),alloc(locsvq),lenbc, &
                      fflux(mptr)%ptr,alloc(locsvq),lenbc, &
                      intratx(level-1),intraty(level-1),hx,hy, &
                      naux,alloc(locaux),alloc(locx1d),delt,mptr)
@@ -319,16 +318,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call cpu_timer_stop(timer_soa_to_aos)
 #endif
 
-        if (node(cfluxptr,mptr) .ne. 0) then
-#ifndef CUDA
-            ! call fluxsv(mptr, fm,fp,gm,gp, &
-            !          alloc(node(cfluxptr,mptr)), &
-            !          mitot,mjtot, &
-            !          nvar,listsp(level),delt,hx,hy)
-            print *, "CPU version of fluxsv not implemented."
-            stop
-#else
+        if (associated(cflux(mptr)%ptr)) then
 
+            ! TODO: this line does some redundant work
             istat = cudaMemcpy(cflux_d(mptr)%ptr, cflux(mptr)%ptr, 5*listsp(level))
 
             call compute_kernel_size(numBlocks,numThreads,1,listsp(level))
@@ -341,27 +333,15 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
             ! TODO: remove this barrier
             call wait_for_all_gpu_tasks(device_id)
-#endif
         endif
+
         if (associated(fflux(mptr)%ptr)) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-#ifndef CUDA
-            ! locsvf = node(ffluxptr,mptr)
-            ! call fluxad(fm,fp,gm,gp, &
-            !          ! alloc(locsvf),mptr,mitot,mjtot,nvar, &
-            !          fflux(mptr)%ptr,mptr,mitot,mjtot,nvar, &
-            !             lenbc,intratx(level-1),intraty(level-1), &
-            !          nghost,delt,hx,hy)
-            print *, "CPU version of fluxad not implemented."
-            stop
-#else
-
             call compute_kernel_size(numBlocks, numThreads,1,lenbc)
             call fluxad_gpu<<<numBlocks,numThreads>>>(fms_d(j)%dataptr, fps_d(j)%dataptr, gms_d(j)%dataptr, gps_d(j)%dataptr, &
                 nghost, nx, ny, lenbc, &
                 intratx(level-1), intraty(level-1), &
                 fflux(mptr)%ptr, delt, hx, hy)
-#endif
         endif
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
 
