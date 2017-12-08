@@ -15,7 +15,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use gauges_module, only: update_gauges, num_gauges
     use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned, &
         gpu_allocate, gpu_deallocate
-    use cuda_module, only: grid2d, grid2d_device, device_id
+    use cuda_module, only: device_id
     use cuda_module, only: wait_for_all_gpu_tasks
     use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
@@ -42,8 +42,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     integer :: cudaResult
     double precision :: xlow, ylow
     double precision :: cfl_local
-    type(grid2d_device) :: fps_d(numgrids(level)), fms_d(numgrids(level)), &
-        gps_d(numgrids(level)), gms_d(numgrids(level)) 
     double precision, dimension(:,:), pointer, contiguous :: cfls
     double precision, dimension(:,:), pointer, contiguous, device :: cfls_d
 
@@ -234,11 +232,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call take_cpu_timer('allocate q and fluxes', timer_allocate)
         call cpu_timer_start(timer_allocate)
 #endif
-        ! allocate fluxes array and q array in SoA
-        call gpu_allocate(fms_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
-        call gpu_allocate(fps_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
-        call gpu_allocate(gms_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
-        call gpu_allocate(gps_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
 #ifdef PROFILE
         call cpu_timer_stop(timer_allocate)
 #endif
@@ -271,8 +264,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         mjtot  = ny + 2*nghost
         id = j
 
-        locold = node(store2, mptr)
-        locnew = node(store1, mptr)
 
         xlow = rnode(cornxlo,mptr) - nghost*hx
         ylow = rnode(cornylo,mptr) - nghost*hy
@@ -284,11 +275,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
         if (dimensional_split .eq. 0) then
 !           # Unsplit method
-            call stepgrid_soa(grid_data_d(mptr)%ptr,fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
-                            mitot,mjtot,nghost, &
-                            delt,hx,hy,nvar, &
-                            xlow,ylow,time,mptr,naux,alloc(locaux),& 
-                            numgrids(level),id,cfls_d)
+            call stepgrid_soa( &
+                    grid_data_d(mptr)%ptr,fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
+                    mitot,mjtot,nghost, &
+                    delt,hx,hy,nvar, &
+                    xlow,ylow,time,mptr,naux,alloc(locaux),& 
+                    numgrids(level),id,cfls_d)
         else if (dimensional_split .eq. 1) then
 !           # Godunov splitting
             print *, "CUDA version not implemented."
@@ -334,7 +326,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             call compute_kernel_size(numBlocks,numThreads,1,listsp(level))
 
             call fluxsv_gpu<<<numBlocks,numThreads>>>(mptr, &
-                     fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
+                     fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
                      cflux_d(mptr)%ptr, &
                      fflux, &
                      mitot,mjtot,nvar,listsp(level),delt,hx,hy)
@@ -343,7 +335,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         if (associated(fflux(mptr)%ptr)) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             call compute_kernel_size(numBlocks, numThreads,1,lenbc)
-            call fluxad_gpu<<<numBlocks,numThreads>>>(fms_d(j)%dataptr, fps_d(j)%dataptr, gms_d(j)%dataptr, gps_d(j)%dataptr, &
+            call fluxad_gpu<<<numBlocks,numThreads>>>(&
+                fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
                 nghost, nx, ny, lenbc, &
                 intratx(level-1), intraty(level-1), &
                 fflux(mptr)%ptr, delt, hx, hy)
@@ -357,12 +350,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! There are more time for these kernels to be finished
     call wait_for_all_gpu_tasks(device_id)
 
-    do j = 1, numgrids(level)
-        call gpu_deallocate(fms_d(j)%dataptr, device_id) 
-        call gpu_deallocate(fps_d(j)%dataptr, device_id) 
-        call gpu_deallocate(gms_d(j)%dataptr, device_id) 
-        call gpu_deallocate(gps_d(j)%dataptr, device_id) 
-    enddo
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_post)

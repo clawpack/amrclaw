@@ -171,6 +171,10 @@ c
                       call cpu_deallocated_pinned(grid_data(mptr)%ptr)
                       call gpu_deallocate(grid_data_d(mptr)%ptr, 
      &                      device_id)
+                      call gpu_deallocate(fms_d(mptr)%ptr, device_id)
+                      call gpu_deallocate(fps_d(mptr)%ptr, device_id)
+                      call gpu_deallocate(gms_d(mptr)%ptr, device_id)
+                      call gpu_deallocate(gps_d(mptr)%ptr, device_id)
 #endif
                       if (naux .gt. 0) then ! and aux arrays
                        call reclam(node(storeaux,mptr),mitot*mjtot*naux)

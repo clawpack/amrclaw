@@ -48,17 +48,6 @@ module cuda_module
         module procedure compute_kernel_size_r1
     end interface compute_kernel_size
 
-#ifdef CUDA
-    type grid2d
-        sequence ! force the derived type to be stored contiguously
-        double precision, dimension(:,:,:), pointer, contiguous :: dataptr=>null()
-    end type grid2d
-    type grid2d_device
-        sequence ! force the derived type to be stored contiguously
-        double precision, dimension(:,:,:), pointer, contiguous, device :: dataptr=>null()
-    end type grid2d_device
-#endif
-
 contains
 
     subroutine initialize_cuda() 

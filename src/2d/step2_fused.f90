@@ -30,7 +30,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2
     use cuda_module, only: get_cuda_stream
     use memory_module, only: gpu_allocate, gpu_deallocate
     use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned
-    use cudafor, only: cudaMemcpyAsync, cudaDeviceSynchronize, cudaMemcpy
+    use cudafor, only: cudaDeviceSynchronize
     use cudafor, only: dim3
 #endif
 

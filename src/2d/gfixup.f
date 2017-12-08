@@ -80,6 +80,14 @@
      &       1,mitot,1,mjtot,1,nvar)
             call gpu_allocate(grid_data_d(mptr)%ptr,
      &       device_id,1,mitot,1,mjtot,1,nvar)
+            call gpu_allocate(fms_d(mptr)%ptr,
+     &       device_id,1,mitot,1,mjtot,1,nvar)
+            call gpu_allocate(fps_d(mptr)%ptr,
+     &       device_id,1,mitot,1,mjtot,1,nvar)
+            call gpu_allocate(gms_d(mptr)%ptr,
+     &       device_id,1,mitot,1,mjtot,1,nvar)
+            call gpu_allocate(gps_d(mptr)%ptr,
+     &       device_id,1,mitot,1,mjtot,1,nvar)
 #endif
             if (naux .gt. 0) then
               locaux = igetsp(mitot * mjtot * naux)
@@ -165,6 +173,10 @@
 #ifdef CUDA
           call cpu_deallocated_pinned(grid_data(mptr)%ptr)
           call gpu_deallocate(grid_data_d(mptr)%ptr, device_id)
+          call gpu_deallocate(fms_d(mptr)%ptr, device_id)
+          call gpu_deallocate(fps_d(mptr)%ptr, device_id)
+          call gpu_deallocate(gms_d(mptr)%ptr, device_id)
+          call gpu_deallocate(gps_d(mptr)%ptr, device_id)
 #endif
           if (naux .gt. 0) then
             call reclam(node(storeaux,mptr),mitot*mjtot*naux)

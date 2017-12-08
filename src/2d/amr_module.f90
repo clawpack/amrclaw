@@ -241,9 +241,14 @@ module amr_module
     type(cpu_2d_int_ptr_type) ::   cflux(maxgr)
     type(gpu_2d_int_ptr_type) :: cflux_d(maxgr)
 
-    ! grid_data is in SoA format, namely q(i,j,ivar)
+    ! These are in SoA format, namely q(i,j,ivar)
     type(cpu_3d_real_ptr_type) :: grid_data(maxgr)
+
     type(gpu_3d_real_ptr_type) :: grid_data_d(maxgr)
+    type(gpu_3d_real_ptr_type) :: fms_d(maxgr)
+    type(gpu_3d_real_ptr_type) :: fps_d(maxgr)
+    type(gpu_3d_real_ptr_type) :: gms_d(maxgr)
+    type(gpu_3d_real_ptr_type) :: gps_d(maxgr)
 
 #endif
 
@@ -259,9 +264,6 @@ module amr_module
     !real(kind=8), allocatable, target, dimension(:) :: storage
     !real(kind=8), pointer, dimension(:) :: alloc   ! old way, changed mjb Sept. 2014
     real(kind=8), allocatable, dimension(:) :: alloc    ! new way, use allocatable, not pointer
-#ifdef CUDA
-    attributes(pinned) :: alloc
-#endif
     integer memsize
        
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\
