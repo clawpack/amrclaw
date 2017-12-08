@@ -39,7 +39,9 @@ c
           ikeep = nx/intratx(level-1)
           jkeep = ny/intraty(level-1)
           lenbc = 2*(ikeep+jkeep)
+#ifndef CUDA
           ist   = node(ffluxptr,mkid)
+#endif
           time = rnode(timemult,mkid)
 
 c         make coarsened enlarged patch for conservative fixup
@@ -98,9 +100,16 @@ c         make coarsened enlarged patch for conservative fixup
           call bc2amr(alloc(loctmp),alloc(loctx),nrow,ncol,nvar,naux,
      .                hxc,hyc,level,time,
      .                xl,xr,yb,yt)
+#ifdef CUDA
+          call cstore(alloc(loctmp),nrow,ncol,nvar,
+     .                fflux(mkid)%ptr(1+nvar*lenbc),
+     .                lenbc,naux,alloc(loctx),
+     .                fflux(mkid)%ptr(1+2*nvar*lenbc))
+#else
           call cstore(alloc(loctmp),nrow,ncol,nvar,
      .                alloc(ist+nvar*lenbc),lenbc,naux,alloc(loctx),
      .                alloc(ist+2*nvar*lenbc))
+#endif
           call reclam(loctmp,nrow*ncol*(nvar+naux))
 
           mkid = node(levelptr,mkid)

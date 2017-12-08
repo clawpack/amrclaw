@@ -151,11 +151,12 @@ c
                    jkeep = ny/intrty(lev-1)
                    lenbc = 2*(ikeep+jkeep)
                    if (lev .gt. mxnest) then
+#ifdef CUDA
+                    deallocate(fflux(mptr)%ptr)
+#else
                        call reclam
      .                  (node(ffluxptr,mptr),2*nvar*lenbc+naux*lenbc)
                        node(ffluxptr,mptr) = 0
-#ifdef CUDA
-                    deallocate(fflux(mptr)%ptr)
 #endif
                    endif
                    mitot = nx + 2*nghost

@@ -99,7 +99,9 @@ module amr_module
     !!
     !! From node(ffluxptr,mptr)+lenbc to node(ffluxptr,mptr)+2*lenbc-1,
     !! it stores solution q on the adjacent coarse cell
+#ifndef CUDA
     integer, parameter :: ffluxptr  = 6
+#endif
 
     !> pointer to the address of memory storing the first copy of solution data on this grid,
     !! usually for storing new solution
@@ -183,7 +185,7 @@ module amr_module
 
     ! The max1d parameter should be changed if using OpenMP grid based 
     ! looping, usually set to max1d = 60
-    integer, parameter :: max1d = 270 
+    integer, parameter :: max1d = 60
 
     integer, parameter :: maxvar = 10
     integer, parameter :: maxaux = 20

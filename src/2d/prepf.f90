@@ -47,19 +47,17 @@ subroutine prepf(level,nvar,naux)
         !         get twice the storage, one for plus or minus fluxes, the
         !         other for coarse solution for wave fixing. also for aux vars.
         !
+#ifdef CUDA
+        allocate(fflux(mkid)%ptr(2*nvar*lenbc+naux*lenbc))
+        fflux(mkid)%ptr = 0.d0
+#else
+
         node(ffluxptr,mkid) = igetsp(2*nvar*lenbc+naux*lenbc)
         ist = node(ffluxptr,mkid)
-#ifdef CUDA
-
-        allocate(fflux(mkid)%ptr(2*nvar*lenbc+naux*lenbc))
-        do i = 1, 2*nvar*lenbc + naux*lenbc
-            fflux(mkid)%ptr(i) = 0.d0
-        enddo
-#endif
-
         do i = 1, 2*nvar*lenbc + naux*lenbc
             alloc(ist+i-1) = 0.d0
         enddo
+#endif
         mkid = node(levelptr,mkid)
     enddo
 

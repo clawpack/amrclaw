@@ -200,13 +200,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
         if (associated(fflux(mptr)%ptr)) then
             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-            locsvf = node(ffluxptr,mptr)
-            locsvq = locsvf + nvar*lenbc
+            locsvq = 1 + nvar*lenbc
             locx1d = locsvq + nvar*lenbc
             call qad(alloc(locnew),mitot,mjtot,nvar, &
-                     fflux(mptr)%ptr,alloc(locsvq),lenbc, &
+                     fflux(mptr)%ptr,fflux(mptr)%ptr(locsvq),lenbc, &
                      intratx(level-1),intraty(level-1),hx,hy, &
-                     naux,alloc(locaux),alloc(locx1d),delt,mptr)
+                     naux,alloc(locaux),fflux(mptr)%ptr(locx1d),delt,mptr)
         endif
 
         !        # See if the grid about to be advanced has gauge data to output.
@@ -329,8 +328,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                      fflux, &
                      mitot,mjtot,nvar,listsp(level),delt,hx,hy)
 
-            ! TODO: remove this barrier
-            call wait_for_all_gpu_tasks(device_id)
         endif
 
         if (associated(fflux(mptr)%ptr)) then
@@ -345,6 +342,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
     enddo
+    ! TODO: remove this barrier
+    call wait_for_all_gpu_tasks(device_id)
 
     do j = 1, numgrids(level)
         call gpu_deallocate( qs_d(j)%dataptr, device_id) 

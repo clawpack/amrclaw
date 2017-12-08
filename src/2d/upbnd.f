@@ -83,7 +83,9 @@ c        to mapped bcs. should still only have one update per side of coarse cel
             go to 40
          endif
          mkid = listbc(4,ispot)
+#ifndef CUDA
          kidlst = node(ffluxptr,mkid)
+#endif
          lkid = listbc(5,ispot)
 c         if (mod(iside,4).gt.1) then
 c         modified to include other side options

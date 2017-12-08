@@ -49,9 +49,10 @@ subroutine putsp(lbase,level,nvar,naux)
             lenbc = 2*(ikeep+jkeep)
             !         twice perimeter since saving plus or minus fluxes 
             !         plus coarse solution storage
-            call reclam(node(ffluxptr,mptr), 2*nvar*lenbc+naux*lenbc)
 #ifdef CUDA
             deallocate(fflux(mptr)%ptr)
+#else
+            call reclam(node(ffluxptr,mptr), 2*nvar*lenbc+naux*lenbc)
 #endif
             mptr  = node(levelptr,mptr)
         enddo

@@ -9,6 +9,7 @@
 !
 #include "amr_macros.H"
 
+#ifndef CUDA
 subroutine fluxsv(mptr,xfluxm,xfluxp,yfluxm,yfluxp,listbc, &
         ndimx,ndimy,nvar,maxsp,dtc,hx,hy)
 
@@ -108,6 +109,7 @@ subroutine fluxsv(mptr,xfluxm,xfluxp,yfluxm,yfluxp,listbc, &
     enddo
     return
 end subroutine fluxsv
+#endif
 
 #ifdef CUDA
 
@@ -157,11 +159,6 @@ subroutine fluxsv_cpu(mptr,&
         intopl   = listbc(5,ispot)
         i        = listbc(1,ispot)
         j        = listbc(2,ispot)
-
-        ! nx       = node(ndihi,mkid) - node(ndilo,mkid) + 1
-        ! ny       = node(ndjhi,mkid) - node(ndjlo,mkid) + 1
-        ! kidlst   = node(ffluxptr,mkid)
-        ! inlist   = kidlst + nvar*(intopl-1) - 1
 
         loc = nvar*(intopl-1)
 
