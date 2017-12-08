@@ -12,12 +12,14 @@ module cuda_module
     integer, parameter :: max_num_devices = 16
     ! Note that CUDA enumerates devices starting from 0
     integer(kind=cuda_stream_kind) :: cuda_streams(max_cuda_streams, 0:max_num_devices-1)
+    integer, parameter :: id_copy_cflux = -1
 
     integer :: num_devices
     integer :: device_id ! which GPU is used
 
     ! For timing
     ! use 0-index array
+    ! The timer here is deprecated. Use the timer in timer_module instead.
     integer, parameter :: max_cuda_timer =  100
     real(kind=8) :: elapsed_time(max_cuda_timer)
     character(len=20) :: timer_name(max_cuda_timer)
@@ -127,7 +129,7 @@ contains
     	implicit none
         integer :: idx
 
-        ! note that available streams are indexed from 1 to 100
+        ! note that available streams are indexed from 1 to max_cuda_streams
         ! reserve the stream 1 to 10 for special purposes
         if (idx < 0 .and. idx >= -10) then
             stream_from_index = -idx

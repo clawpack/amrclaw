@@ -12,10 +12,14 @@ subroutine prepc(level,nvar)
 !
       use amr_module
 #ifdef CUDA
-        use cuda_module, only: device_id
+        use cuda_module, only: device_id, get_cuda_stream
         use memory_module, only: gpu_allocate, cpu_allocate_pinned
+        use cudafor, only: cudaMemcpyAsync
 #endif
       implicit double precision (a-h,o-z)
+#ifdef CUDA
+      integer :: cudaResult
+#endif
 
 !
 ! :::::::::::::::::::: PREPC ::::::::::::::::::::::::::::::::::::::
@@ -225,6 +229,12 @@ subroutine prepc(level,nvar)
 !  for now, leave unused space allocated to the grid. alternative is to
 !  return (maxsp-ispot) amt starting at loc node(cfluxptr)+ispot.
 !
+#ifdef CUDA
+          cudaResult = cudaMemcpyAsync( &
+              cflux_d(mpar)%ptr, cflux(mpar)%ptr, &
+              5*maxsp, &
+              get_cuda_stream(id_copy_cflux,device_id))
+#endif
        mpar = node(levelptr,mpar)
        go to 30
 !

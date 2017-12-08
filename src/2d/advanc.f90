@@ -331,8 +331,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
         if (associated(cflux(mptr)%ptr)) then
 
-            ! TODO: this line does some redundant work
-            cudaResult = cudaMemcpy(cflux_d(mptr)%ptr, cflux(mptr)%ptr, 5*listsp(level))
             call compute_kernel_size(numBlocks,numThreads,1,listsp(level))
 
             call fluxsv_gpu<<<numBlocks,numThreads>>>(mptr, &
@@ -355,6 +353,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     enddo
     ! TODO: remove this barrier
+    ! If I delay the deallocating below to in putsp.f, then 
+    ! There are more time for these kernels to be finished
     call wait_for_all_gpu_tasks(device_id)
 
     do j = 1, numgrids(level)
