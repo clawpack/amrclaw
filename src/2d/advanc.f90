@@ -15,8 +15,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use gauges_module, only: update_gauges, num_gauges
     use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned, &
         gpu_allocate, gpu_deallocate
-    use cuda_module, only: device_id
-    use cuda_module, only: wait_for_all_gpu_tasks
+    use cuda_module, only: device_id, id_copy_cflux
+    use cuda_module, only: wait_for_all_gpu_tasks, wait_for_stream
     use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
@@ -290,7 +290,41 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             write(6,*) '*** Strang splitting not supported'
             stop
         endif
+
         cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+
+    enddo
+
+    ! Ensure cudaMemcpyAsync(cflux_d, cflux, ...) is done,
+    ! which was started in prepc
+    call wait_for_stream(id_copy_cflux, device_id)
+    do j = 1, numgrids(level)
+        id = j
+        mptr = listOfGrids(levSt+j-1)
+        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+        mitot  = nx + 2*nghost
+        mjtot  = ny + 2*nghost
+        if (associated(cflux(mptr)%ptr)) then
+
+            call compute_kernel_size(numBlocks,numThreads,1,listsp(level))
+
+            call fluxsv_gpu<<<numBlocks,numThreads,0,get_cuda_stream(id,device_id)>>>(mptr, &
+                     fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
+                     cflux_d(mptr)%ptr, &
+                     fflux, &
+                     mitot,mjtot,nvar,listsp(level),delt,hx,hy)
+        endif
+    
+        if (associated(fflux(mptr)%ptr)) then
+            lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
+            call compute_kernel_size(numBlocks, numThreads,1,lenbc)
+            call fluxad_gpu<<<numBlocks,numThreads,0,get_cuda_stream(id,device_id)>>>(&
+                fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
+                nghost, nx, ny, lenbc, &
+                intratx(level-1), intraty(level-1), &
+                fflux(mptr)%ptr, delt, hx, hy)
+        endif
     enddo
 
     call wait_for_all_gpu_tasks(device_id)
@@ -315,40 +349,16 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call cpu_timer_start(timer_soa_to_aos)
 #endif
 
+        ! TODO: use callback function to let this get executed right after grid mptr
+        ! is done in its cuda stream
         call soa_to_aos_r2(alloc(locnew), grid_data(mptr)%ptr, nvar, 1, mitot, 1, mjtot)
 
 #ifdef PROFILE
         call cpu_timer_stop(timer_soa_to_aos)
 #endif
 
-        if (associated(cflux(mptr)%ptr)) then
-
-            call compute_kernel_size(numBlocks,numThreads,1,listsp(level))
-
-            call fluxsv_gpu<<<numBlocks,numThreads>>>(mptr, &
-                     fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
-                     cflux_d(mptr)%ptr, &
-                     fflux, &
-                     mitot,mjtot,nvar,listsp(level),delt,hx,hy)
-        endif
-    
-        if (associated(fflux(mptr)%ptr)) then
-            lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-            call compute_kernel_size(numBlocks, numThreads,1,lenbc)
-            call fluxad_gpu<<<numBlocks,numThreads>>>(&
-                fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
-                nghost, nx, ny, lenbc, &
-                intratx(level-1), intraty(level-1), &
-                fflux(mptr)%ptr, delt, hx, hy)
-        endif
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
-
-
     enddo
-    ! TODO: remove this barrier
-    ! If I delay the deallocating below to in putsp.f, then 
-    ! There are more time for these kernels to be finished
-    call wait_for_all_gpu_tasks(device_id)
 
 
 #ifdef PROFILE
