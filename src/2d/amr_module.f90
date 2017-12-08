@@ -226,10 +226,24 @@ module amr_module
         integer, dimension(:,:), pointer, contiguous, device :: ptr=>null()
     end type gpu_2d_int_ptr_type
 
+    type cpu_3d_real_ptr_type
+        sequence
+        double precision, dimension(:,:,:), pointer, contiguous :: ptr=>null()
+    end type cpu_3d_real_ptr_type
+
+    type gpu_3d_real_ptr_type
+        sequence
+        double precision, dimension(:,:,:), pointer, contiguous, device :: ptr=>null()
+    end type gpu_3d_real_ptr_type
+
 
     type(managed_real_ptr_type), allocatable, managed ::   fflux(:)
     type(cpu_2d_int_ptr_type) ::   cflux(maxgr)
     type(gpu_2d_int_ptr_type) :: cflux_d(maxgr)
+
+    ! grid_data is in SoA format, namely q(i,j,ivar)
+    type(cpu_3d_real_ptr_type) :: grid_data(maxgr)
+    type(gpu_3d_real_ptr_type) :: grid_data_d(maxgr)
 
 #endif
 

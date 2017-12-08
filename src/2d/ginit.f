@@ -17,6 +17,10 @@ c
       subroutine ginit(msave, first, nvar, naux, start_time)
 c
       use amr_module
+#ifdef CUDA
+      use memory_module, only: gpu_allocate, cpu_allocate_pinned
+      use cuda_module, only: device_id
+#endif
       implicit double precision (a-h,o-z)
       logical first
       
@@ -45,6 +49,12 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
           if(.not. (first)) go to 20
               loc                 = igetsp(mitot*mjtot*nvar)
               node(store1,mptr)   = loc
+#ifdef CUDA
+              call cpu_allocate_pinned(grid_data(mptr)%ptr,
+     &         1,mitot,1,mjtot,1,nvar)
+              call gpu_allocate(grid_data_d(mptr)%ptr,
+     &         device_id,1,mitot,1,mjtot,1,nvar)
+#endif
               if (naux .gt. 0) then
                 locaux              = igetsp(mitot*mjtot*naux)
                 do k = 1, mitot*mjtot*naux,naux  ! set first component of aux to signal that it

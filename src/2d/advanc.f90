@@ -42,8 +42,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     integer :: cudaResult
     double precision :: xlow, ylow
     double precision :: cfl_local
-    type(grid2d) :: qs(numgrids(level))
-    type(grid2d_device) :: qs_d(numgrids(level)), fps_d(numgrids(level)), fms_d(numgrids(level)), &
+    type(grid2d_device) :: fps_d(numgrids(level)), fms_d(numgrids(level)), &
         gps_d(numgrids(level)), gms_d(numgrids(level)) 
     double precision, dimension(:,:), pointer, contiguous :: cfls
     double precision, dimension(:,:), pointer, contiguous, device :: cfls_d
@@ -57,6 +56,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     integer, parameter :: timer_aos_to_soa = 6
     integer, parameter :: timer_soa_to_aos = 7
     integer, parameter :: timer_init_cfls = 8
+    integer, parameter :: timer_qad = 9
+    integer, parameter :: timer_allocate = 12
 #endif
 #endif
 
@@ -164,7 +165,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
 #ifdef PROFILE
-    call take_cpu_timer('preprocess before gpu loop', timer_before_gpu_loop)
+    call take_cpu_timer('pre-process before gpu loop', timer_before_gpu_loop)
     call cpu_timer_start(timer_before_gpu_loop)
 #endif
     levSt = listStart(level)
@@ -198,6 +199,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
         locaux = node(storeaux,mptr)
 
+#ifdef PROFILE
+        call take_cpu_timer('qad', timer_qad)
+        call cpu_timer_start(timer_qad)
+#endif
         if (associated(fflux(mptr)%ptr)) then
             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvq = 1 + nvar*lenbc
@@ -207,6 +212,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                      intratx(level-1),intraty(level-1),hx,hy, &
                      naux,alloc(locaux),fflux(mptr)%ptr(locx1d),delt,mptr)
         endif
+#ifdef PROFILE
+        call cpu_timer_stop(timer_qad)
+#endif
 
         !        # See if the grid about to be advanced has gauge data to output.
         !        # This corresponds to previous time step, but output done
@@ -222,13 +230,18 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                                xlow,ylow,nvar,mitot,mjtot,naux,mptr)
         endif
 
+#ifdef PROFILE
+        call take_cpu_timer('allocate q and fluxes', timer_allocate)
+        call cpu_timer_start(timer_allocate)
+#endif
         ! allocate fluxes array and q array in SoA
-        call cpu_allocate_pinned( qs(j)%dataptr, 1, mitot, 1, mjtot, 1, nvar) 
-        call gpu_allocate( qs_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
         call gpu_allocate(fms_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
         call gpu_allocate(fps_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
         call gpu_allocate(gms_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
         call gpu_allocate(gps_d(j)%dataptr, device_id, 1, mitot, 1, mjtot, 1, nvar) 
+#ifdef PROFILE
+        call cpu_timer_stop(timer_allocate)
+#endif
 
 #ifdef PROFILE
         call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
@@ -236,12 +249,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
         ! convert q array to SoA format
-        call aos_to_soa_r2(qs(j)%dataptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
+        call aos_to_soa_r2(grid_data(mptr)%ptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
 
 #ifdef PROFILE
         call cpu_timer_stop(timer_aos_to_soa)
 #endif
-
     enddo
 
 #ifdef PROFILE
@@ -267,12 +279,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         locaux = node(storeaux,mptr)
 
         ! copy q to GPU
-        cudaResult = cudaMemcpyAsync(qs_d(j)%dataptr,  qs(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
 
 
         if (dimensional_split .eq. 0) then
 !           # Unsplit method
-            call stepgrid_soa(qs_d(j)%dataptr,fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
+            call stepgrid_soa(grid_data_d(mptr)%ptr,fms_d(j)%dataptr,fps_d(j)%dataptr,gms_d(j)%dataptr,gps_d(j)%dataptr, &
                             mitot,mjtot,nghost, &
                             delt,hx,hy,nvar, &
                             xlow,ylow,time,mptr,naux,alloc(locaux),& 
@@ -286,7 +298,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             write(6,*) '*** Strang splitting not supported'
             stop
         endif
-        cudaResult = cudaMemcpyAsync( qs(j)%dataptr,   qs_d(j)%dataptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
     enddo
 
     call wait_for_all_gpu_tasks(device_id)
@@ -298,6 +310,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_start(timer_post)
 #endif
     do j = 1, numgrids(level)
+        id = j
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
@@ -310,7 +323,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call cpu_timer_start(timer_soa_to_aos)
 #endif
 
-        call soa_to_aos_r2(alloc(locnew), qs(j)%dataptr, nvar, 1, mitot, 1, mjtot)
+        call soa_to_aos_r2(alloc(locnew), grid_data(mptr)%ptr, nvar, 1, mitot, 1, mjtot)
 
 #ifdef PROFILE
         call cpu_timer_stop(timer_soa_to_aos)
@@ -327,9 +340,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                      cflux_d(mptr)%ptr, &
                      fflux, &
                      mitot,mjtot,nvar,listsp(level),delt,hx,hy)
-
         endif
-
+    
         if (associated(fflux(mptr)%ptr)) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             call compute_kernel_size(numBlocks, numThreads,1,lenbc)
@@ -346,7 +358,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call wait_for_all_gpu_tasks(device_id)
 
     do j = 1, numgrids(level)
-        call gpu_deallocate( qs_d(j)%dataptr, device_id) 
         call gpu_deallocate(fms_d(j)%dataptr, device_id) 
         call gpu_deallocate(fps_d(j)%dataptr, device_id) 
         call gpu_deallocate(gms_d(j)%dataptr, device_id) 

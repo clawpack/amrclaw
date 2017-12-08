@@ -5,7 +5,10 @@ c
       subroutine restrt(nsteps,time,nvar,naux)
 c
       use amr_module
-      use memory_module, only: cpu_deallocated_pinned
+#ifdef CUDA
+      use memory_module, only: cpu_deallocated_pinned, gpu_deallocate
+      use cuda_module, only: device_id
+#endif
       implicit double precision (a-h,o-z)
       logical   ee
  
@@ -164,6 +167,11 @@ c
                    if (lev .gt. mxnest) then ! if level going away take away first storage
                       call reclam(node(store1,mptr),mitot*mjtot*nvar)
                       node(store1,mptr) = 0
+#ifdef CUDA
+                      call cpu_deallocated_pinned(grid_data(mptr)%ptr)
+                      call gpu_deallocate(grid_data_d(mptr)%ptr, 
+     &                      device_id)
+#endif
                       if (naux .gt. 0) then ! and aux arrays
                        call reclam(node(storeaux,mptr),mitot*mjtot*naux)
                        node(storeaux,mptr) = 0
