@@ -19,7 +19,7 @@ endif
 
 COMMON_SOURCES += \
   $(AMRLIB)/qinit.f \
-  $(AMRLIB)/setprob.f \
+  $(AMRLIB)/setprob.f90 \
   $(AMRLIB)/setaux.f90 \
   $(AMRLIB)/amr2.f90 \
   $(AMRLIB)/bc2amr.f \
@@ -58,17 +58,17 @@ COMMON_SOURCES += \
   $(AMRLIB)/fluxsv.f90 \
   $(AMRLIB)/ginit.f \
   $(AMRLIB)/grdfit2.f \
-  $(AMRLIB)/intfil.f \
+  $(AMRLIB)/intfil.f90 \
   $(AMRLIB)/moment.f \
   $(AMRLIB)/nestck2.f \
-  $(AMRLIB)/prepf.f \
+  $(AMRLIB)/prepf.f90 \
   $(AMRLIB)/prepc.f90 \
   $(AMRLIB)/projec2.f \
   $(AMRLIB)/signs.f \
   $(AMRLIB)/findcut.f \
   $(AMRLIB)/smartbis.f \
   $(AMRLIB)/putnod.f \
-  $(AMRLIB)/putsp.f \
+  $(AMRLIB)/putsp.f90 \
   $(AMRLIB)/regrid.f \
   $(AMRLIB)/setgrd.f \
   $(AMRLIB)/setuse.f90 \
