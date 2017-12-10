@@ -74,7 +74,7 @@ MODULES = \
 
 SOURCES = \
   qinit.f \
-  $(CLAW)/riemann/src/rpt2_acoustics.f
+  $(CLAW)/riemann/src/rpt2_acoustics.f90
 
 ifeq ($(USE_CUDA), TRUE) 
     SOURCES += $(CLAW)/riemann/src/rpn2_acoustics_gpu.f90
