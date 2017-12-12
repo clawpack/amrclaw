@@ -201,6 +201,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call take_cpu_timer('qad', timer_qad)
         call cpu_timer_start(timer_qad)
 #endif
+        ! We need a synchronization here since kernels launched
+        ! earlier might still be using fflux
+        call wait_for_all_gpu_tasks(device_id)
         if (associated(fflux(mptr)%ptr)) then
             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvq = 1 + nvar*lenbc
@@ -294,10 +297,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
 
     enddo
+    call wait_for_all_gpu_tasks(device_id)
 
-    ! Ensure cudaMemcpyAsync(cflux_d, cflux, ...) is done,
-    ! which was started in prepc
-    call wait_for_stream(id_copy_cflux, device_id)
     do j = 1, numgrids(level)
         id = j
         mptr = listOfGrids(levSt+j-1)
@@ -316,6 +317,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                      mitot,mjtot,nvar,listsp(level),delt,hx,hy)
         endif
     
+        ! We need a synchronization here since kernels launched
+        ! earlier might still be using fflux
+        call wait_for_all_gpu_tasks(device_id)
         if (associated(fflux(mptr)%ptr)) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             call compute_kernel_size(numBlocks, numThreads,1,lenbc)
@@ -327,7 +331,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         endif
     enddo
 
-    call wait_for_all_gpu_tasks(device_id)
+        call wait_for_all_gpu_tasks(device_id)
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_gpu_loop)
