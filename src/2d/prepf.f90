@@ -48,10 +48,11 @@ subroutine prepf(level,nvar,naux)
         !         other for coarse solution for wave fixing. also for aux vars.
         !
 #ifdef CUDA
-        allocate(fflux(mkid)%ptr(2*nvar*lenbc+naux*lenbc))
-        fflux(mkid)%ptr = 0.d0
+        call cpu_allocate_pinned(fflux_hh(mkid)%ptr,1,2*nvar*lenbc+naux*lenbc)
+        call gpu_allocate(fflux_hd(mkid)%ptr,device_id,1,2*nvar*lenbc+naux*lenbc)
+        fflux_hh(mkid)%ptr = 0.d0
+        fflux_hd(mkid)%ptr = 0.d0
 #else
-
         node(ffluxptr,mkid) = igetsp(2*nvar*lenbc+naux*lenbc)
         ist = node(ffluxptr,mkid)
         do i = 1, 2*nvar*lenbc + naux*lenbc

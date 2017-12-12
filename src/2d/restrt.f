@@ -155,7 +155,8 @@ c
                    lenbc = 2*(ikeep+jkeep)
                    if (lev .gt. mxnest) then
 #ifdef CUDA
-                    deallocate(fflux(mptr)%ptr)
+                    call cpu_deallocated_pinned(fflux_hh(mptr)%ptr)
+                    call gpu_deallocate(fflux_hd(mptr)%ptr,device_id)
 #else
                        call reclam
      .                  (node(ffluxptr,mptr),2*nvar*lenbc+naux*lenbc)

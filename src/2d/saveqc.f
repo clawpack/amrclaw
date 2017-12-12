@@ -102,9 +102,9 @@ c         make coarsened enlarged patch for conservative fixup
      .                xl,xr,yb,yt)
 #ifdef CUDA
           call cstore(alloc(loctmp),nrow,ncol,nvar,
-     .                fflux(mkid)%ptr(1+nvar*lenbc),
+     .                fflux_hh(mkid)%ptr(1+nvar*lenbc),
      .                lenbc,naux,alloc(loctx),
-     .                fflux(mkid)%ptr(1+2*nvar*lenbc))
+     .                fflux_hh(mkid)%ptr(1+2*nvar*lenbc))
 #else
           call cstore(alloc(loctmp),nrow,ncol,nvar,
      .                alloc(ist+nvar*lenbc),lenbc,naux,alloc(loctx),
