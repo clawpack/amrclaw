@@ -1232,7 +1232,7 @@ subroutine fluxsv_gpu(mptr,&
     double precision, intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
     double precision, intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
     integer, intent(in) :: listbc(5,maxsp)
-    type(managed_real_ptr_type), intent(in) :: fflux(15000) ! managed array
+    type(gpu_1d_real_ptr_type), intent(in) :: fflux(15000)
     ! local
     integer :: ispot, mkid, intopl, loc
     integer :: i,j, ivar

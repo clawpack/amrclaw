@@ -14,6 +14,9 @@ c  ================================================================
 c  ================================================================
 c
       use amr_module
+#ifdef CUDA
+      use cudafor, only: cudaMemcpy
+#endif
       implicit double precision (a-h,o-z)
       
       logical sticksout, found
@@ -112,6 +115,8 @@ c         make coarsened enlarged patch for conservative fixup
 #endif
           call reclam(loctmp,nrow*ncol*(nvar+naux))
 
+          istat = cudaMemcpy(fflux_hd(mkid)%ptr, 
+     .      fflux_hh(mkid)%ptr, nvar*lenbc*2+naux*lenbc)
           mkid = node(levelptr,mkid)
           go to 10
  99    return

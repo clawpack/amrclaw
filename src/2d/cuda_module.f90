@@ -100,6 +100,10 @@ contains
         ! Initialize memory pool
         call clawpack_mempool_init()
 
+        allocate(fflux_hh(maxgr))
+        allocate(fflux_hd(maxgr))
+        allocate(fflux_dd(maxgr))
+
         n_timer = 0
 
     end subroutine initialize_cuda
@@ -386,6 +390,9 @@ contains
 
 
     subroutine finalize_cuda() 
+        deallocate(fflux_hh)
+        deallocate(fflux_hd)
+        deallocate(fflux_dd)
     end subroutine finalize_cuda
 
     function get_num_devices_used() result(nDev) bind(C, name='get_num_devices_used')

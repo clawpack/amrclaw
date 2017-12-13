@@ -201,17 +201,16 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call take_cpu_timer('qad', timer_qad)
         call cpu_timer_start(timer_qad)
 #endif
-        ! We need a synchronization here since kernels launched
-        ! earlier might still be using fflux
-        call wait_for_all_gpu_tasks(device_id)
-        if (associated(fflux(mptr)%ptr)) then
+        if (associated(fflux_hh(mptr)%ptr)) then
             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvq = 1 + nvar*lenbc
             locx1d = locsvq + nvar*lenbc
+            istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
             call qad(alloc(locnew),mitot,mjtot,nvar, &
-                     fflux(mptr)%ptr,fflux(mptr)%ptr(locsvq),lenbc, &
+                     fflux_hh(mptr)%ptr,fflux_hh(mptr)%ptr(locsvq),lenbc, &
                      intratx(level-1),intraty(level-1),hx,hy, &
-                     naux,alloc(locaux),fflux(mptr)%ptr(locx1d),delt,mptr)
+                     naux,alloc(locaux),fflux_hh(mptr)%ptr(locx1d),delt,mptr)
+            istat = cudaMemcpy(fflux_hd(mptr)%ptr, fflux_hh(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
         endif
 #ifdef PROFILE
         call cpu_timer_stop(timer_qad)
@@ -313,25 +312,23 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             call fluxsv_gpu<<<numBlocks,numThreads,0,get_cuda_stream(id,device_id)>>>(mptr, &
                      fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
                      cflux_d(mptr)%ptr, &
-                     fflux, &
+                     fflux_dd, &
                      mitot,mjtot,nvar,listsp(level),delt,hx,hy)
         endif
     
-        ! We need a synchronization here since kernels launched
-        ! earlier might still be using fflux
-        call wait_for_all_gpu_tasks(device_id)
-        if (associated(fflux(mptr)%ptr)) then
+        if (associated(fflux_hh(mptr)%ptr)) then
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             call compute_kernel_size(numBlocks, numThreads,1,lenbc)
             call fluxad_gpu<<<numBlocks,numThreads,0,get_cuda_stream(id,device_id)>>>(&
                 fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
                 nghost, nx, ny, lenbc, &
                 intratx(level-1), intraty(level-1), &
-                fflux(mptr)%ptr, delt, hx, hy)
+                fflux_hd(mptr)%ptr, delt, hx, hy)
+            istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
         endif
     enddo
 
-        call wait_for_all_gpu_tasks(device_id)
+    call wait_for_all_gpu_tasks(device_id)
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_gpu_loop)
