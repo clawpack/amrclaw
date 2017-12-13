@@ -21,7 +21,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
     use cudafor
-    use sweep_module, only: fluxad_gpu, fluxsv_gpu
+    use sweep_module, only: fluxad_gpu, fluxsv_gpu, qad_cpu
 #ifdef PROFILE
     use profiling_module
 #endif
@@ -188,12 +188,20 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         locold = node(store2, mptr)
         locnew = node(store1, mptr)
     
+        ! TODO: can we switch pointer instead of deep copy?
+#ifdef PROFILE
+        call nvtxStartRange("copy q to old", 33)
+#endif
         if (level .lt. mxnest) then
             ntot   = mitot * mjtot * nvar
             do i = 1, ntot
                 alloc(locold + i - 1) = alloc(locnew + i - 1)
             enddo
         endif
+#ifdef PROFILE
+        call nvtxEndRange()
+#endif
+
         xlow = rnode(cornxlo,mptr) - nghost*hx
         ylow = rnode(cornylo,mptr) - nghost*hy
 
@@ -202,7 +210,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
         locaux = node(storeaux,mptr)
-
 #ifdef PROFILE
         call take_cpu_timer('qad', timer_qad)
         call cpu_timer_start(timer_qad)
@@ -212,10 +219,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             locsvq = 1 + nvar*lenbc
             locx1d = locsvq + nvar*lenbc
             istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
-            call qad(alloc(locnew),mitot,mjtot,nvar, &
-                     fflux_hh(mptr)%ptr,fflux_hh(mptr)%ptr(locsvq),lenbc, &
-                     intratx(level-1),intraty(level-1),hx,hy, &
-                     naux,alloc(locaux),fflux_hh(mptr)%ptr(locx1d),delt,mptr)
+            call qad_cpu(alloc(locnew),mitot,mjtot,nvar, &
+                   fflux_hh(mptr)%ptr,fflux_hh(mptr)%ptr(locsvq),lenbc, &
+                   intratx(level-1),intraty(level-1),hx,hy, &
+                   naux,alloc(locaux),fflux_hh(mptr)%ptr(locx1d),delt,mptr)
             istat = cudaMemcpy(fflux_hd(mptr)%ptr, fflux_hh(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
         endif
 #ifdef PROFILE
@@ -237,25 +244,19 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         endif
 
 #ifdef PROFILE
-        call take_cpu_timer('allocate q and fluxes', timer_allocate)
-        call cpu_timer_start(timer_allocate)
-#endif
-#ifdef PROFILE
-        call cpu_timer_stop(timer_allocate)
-#endif
-
-#ifdef PROFILE
         call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
         call cpu_timer_start(timer_aos_to_soa)
+        call nvtxStartRange("aos_to_soa", 14)
 #endif
-
         ! convert q array to SoA format
         call aos_to_soa_r2(grid_data(mptr)%ptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
-
 #ifdef PROFILE
+        call nvtxEndRange() 
         call cpu_timer_stop(timer_aos_to_soa)
 #endif
+
     enddo
+
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_before_gpu_loop)
