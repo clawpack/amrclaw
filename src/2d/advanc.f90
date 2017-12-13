@@ -15,13 +15,16 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use gauges_module, only: update_gauges, num_gauges
     use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned, &
         gpu_allocate, gpu_deallocate
-    use cuda_module, only: device_id, id_copy_cflux
+    use cuda_module, only: device_id, id_copy_cflux, toString
     use cuda_module, only: wait_for_all_gpu_tasks, wait_for_stream
     use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
     use cudafor
     use sweep_module, only: fluxad_gpu, fluxsv_gpu
+#ifdef PROFILE
+    use profiling_module
+#endif
 #endif
     implicit double precision (a-h,o-z)
 
@@ -76,6 +79,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! get start time for more detailed timing by level
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
+#ifdef PROFILE
+    call nvtxStartRange("advanc level "//toString(level),level)
+#endif
 
 
     hx   = hxposs(level)
@@ -298,6 +304,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     enddo
     call wait_for_all_gpu_tasks(device_id)
 
+#ifdef PROFILE
+       call nvtxStartRange("fluxsv and fluxad",11)
+#endif
     do j = 1, numgrids(level)
         id = j
         mptr = listOfGrids(levSt+j-1)
@@ -327,8 +336,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
         endif
     enddo
-
     call wait_for_all_gpu_tasks(device_id)
+#ifdef PROFILE
+       call nvtxEndRange()
+#endif
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_gpu_loop)
@@ -435,6 +446,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
     !
+#ifdef PROFILE
+    call nvtxEndRange()
+#endif
     return
 end subroutine advanc
     !

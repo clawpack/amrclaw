@@ -11,6 +11,9 @@ c
      .                maux,aux,auxc1d,delt,mptr)
 
       use amr_module
+#ifdef PROFILE
+      use profiling_module
+#endif
        implicit double precision (a-h, o-z)
 
 
@@ -62,6 +65,9 @@ c      auxl, auxr are work arrays needed to pass stuff to rpn2
 c      maux is the number of aux variables, which may be zero.
 c
 
+#ifdef PROFILE
+       call nvtxStartRange("qad",13)
+#endif
        tgrid = rnode(timemult, mptr)
        if (qprint) 
      .      write(dbugunit,*)" working on grid ",mptr," time ",tgrid
@@ -356,5 +362,8 @@ c      # for source terms:
 c      # how can this be right - where is the integrated src term used?
            endif
            
+#ifdef PROFILE
+       call nvtxEndRange()
+#endif
        return
        end

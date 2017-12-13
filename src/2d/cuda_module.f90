@@ -618,7 +618,7 @@ contains
         character(len=20) :: str
         character(len=8) :: fmt ! format descriptor
 
-        fmt = '(I'//trim(toString1(length))//'.'//trim(toString1(length))//')' ! an integer of width 5 with zeros at the left
+        fmt = '(I'//trim(toString1(length))//'.'//trim(toString1(length))//')' ! an integer of width **length** with zeros at the left
         write (str,fmt) k ! converting integer to string using a 'internal file'
         str = adjustl(str)
     end function toString2
