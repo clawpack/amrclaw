@@ -84,13 +84,13 @@ c 20   if (mptr .eq. 0) go to 85
          jhi     = node(ndjhi,mptr)
 c
 #ifdef CUDA
-         if (associated(cflux(mptr)%ptr) .eq. .false.) go to 25
+         if (associated(cflux_hh(mptr)%ptr) .eq. .false.) go to 25
 #else
          if (node(cfluxptr,mptr) .eq. 0) go to 25
 #endif
 
 #ifdef CUDA
-         call upbnd(cflux(mptr)%ptr,alloc(loc),nvar,
+         call upbnd(cflux_hh(mptr)%ptr,alloc(loc),nvar,
      1              naux,mitot,mjtot,listsp(lget),mptr)
 #else
          call upbnd(alloc(node(cfluxptr,mptr)),alloc(loc),nvar,

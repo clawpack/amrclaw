@@ -141,8 +141,8 @@ c
  85             if (mptr .eq. 0) go to 95
                    if (lev .lt. mxnold) then
 #ifdef CUDA
-                    deallocate(cflux(mptr)%ptr)
-                    deallocate(cflux_d(mptr)%ptr)
+                    call cpu_deallocated_pinned(cflux_hh(mptr)%ptr)
+                    call gpu_deallocate(cflux_hd(mptr)%ptr,device_id)
 #else
                     call reclam(node(cfluxptr,mptr), 5*listsp(lev))
                     node(cfluxptr,mptr) = 0

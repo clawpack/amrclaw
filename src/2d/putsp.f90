@@ -27,10 +27,10 @@ subroutine putsp(lbase,level,nvar,naux)
         mptr  = lstart(level)
         do while (mptr .ne. 0)
 #ifdef CUDA
-            call gpu_deallocate(cflux_d(mptr)%ptr, device_id)
-            cflux_d(mptr)%ptr=>null()
-            call cpu_deallocated_pinned(cflux(mptr)%ptr)
-            cflux(mptr)%ptr=>null()
+            call gpu_deallocate(cflux_hd(mptr)%ptr, device_id)
+            cflux_hd(mptr)%ptr=>null()
+            call cpu_deallocated_pinned(cflux_hh(mptr)%ptr)
+            cflux_hh(mptr)%ptr=>null()
 #else
             call reclam(node(cfluxptr,mptr), 5*listsp(level))
             node(cfluxptr,mptr) = 0

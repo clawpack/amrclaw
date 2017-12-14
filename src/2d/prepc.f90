@@ -70,10 +70,10 @@ subroutine prepc(level,nvar)
        ihi     = node(ndihi,mpar)
        jhi     = node(ndjhi,mpar)
 #ifdef CUDA
-        call cpu_allocate_pinned(cflux(mpar)%ptr, 1, 5, 1, maxsp)
-        call gpu_allocate(cflux_d(mpar)%ptr, device_id, 1, 5, 1, maxsp)
+        call cpu_allocate_pinned(cflux_hh(mpar)%ptr, 1, 5, 1, maxsp)
+        call gpu_allocate(cflux_hd(mpar)%ptr, device_id, 1, 5, 1, maxsp)
         ! initialize list to 0 (0 terminator indicates end of bc list)
-        cflux(mpar)%ptr = 0
+        cflux_hh(mpar)%ptr = 0
 #else
        locbc   = igetsp(5*maxsp)
 !      initialize list to 0 (0 terminator indicates end of bc list)
@@ -115,7 +115,7 @@ subroutine prepc(level,nvar)
           if (iplo .le. iphi+1 .and. jplo .le. jphi+1) then
                kflag = 1 ! interior stuff, no mappings
 #ifdef CUDA
-                call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid, &
+                call setuse(cflux_hh(mpar)%ptr,maxsp,ispot,mkid, &
                 ilo,ihi,jlo,jhi,iclo,ichi,jclo,jchi,kflag)
 #else
                 call setuse(alloc(locbc),maxsp,ispot,mkid, &
@@ -127,7 +127,7 @@ subroutine prepc(level,nvar)
           if  (xperdom .and. ilo .eq. 0 .and. ichi .eq. imax) then
               kflag = 1 ! periodic in x
 #ifdef CUDA
-              call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid,&
+              call setuse(cflux_hh(mpar)%ptr,maxsp,ispot,mkid,&
                 ilo,ihi,jlo,jhi,iclo-iregsz(level),ichi-iregsz(level),&
                 jclo,jchi,kflag)
 #else
@@ -141,7 +141,7 @@ subroutine prepc(level,nvar)
           if  (xperdom .and. iclo .eq. 0 .and. ihi .eq. imax) then
               kflag = 1
 #ifdef CUDA
-              call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid,&
+              call setuse(cflux_hh(mpar)%ptr,maxsp,ispot,mkid,&
                 ilo,ihi,jlo,jhi,iclo+iregsz(level),ichi+iregsz(level),&
                 jclo,jchi,kflag)
 #else
@@ -155,7 +155,7 @@ subroutine prepc(level,nvar)
           if  (yperdom .and. jlo .eq. 0 .and. jchi .eq. jmax) then
                 kflag = 1
 #ifdef CUDA
-                call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid,&
+                call setuse(cflux_hh(mpar)%ptr,maxsp,ispot,mkid,&
                 ilo,ihi,jlo,jhi,iclo,ichi,&
                 jclo-jregsz(level),jchi-jregsz(level),kflag)
 #else
@@ -169,7 +169,7 @@ subroutine prepc(level,nvar)
           if  (yperdom .and. jclo .eq. 0 .and. jhi .eq. jmax)  then
               kflag = 1
 #ifdef CUDA
-              call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid, &
+              call setuse(cflux_hh(mpar)%ptr,maxsp,ispot,mkid, &
                 ilo,ihi,jlo,jhi,iclo,ichi, &
                 jclo+jregsz(level),jchi+jregsz(level),kflag)
 #else
@@ -188,7 +188,7 @@ subroutine prepc(level,nvar)
                iwrap1 = iregsz(level) - ichi - 1  !lower mapped index
                if (max(ilo,iwrap1) .le. min(ihi,iwrap2)) then
 #ifdef CUDA
-                  call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid,&
+                  call setuse(cflux_hh(mpar)%ptr,maxsp,ispot,mkid,&
                               ilo,ihi,jlo,jhi,iclo,ichi,&
                               jclo,jchi,kflag)
 #else
@@ -207,7 +207,7 @@ subroutine prepc(level,nvar)
                iwrap1 = iregsz(level) - ichi - 1  !lower mapped index
                if (max(ilo,iwrap1) .le. min(ihi,iwrap2)) then
 #ifdef CUDA
-                  call setuse(cflux(mpar)%ptr,maxsp,ispot,mkid,&
+                  call setuse(cflux_hh(mpar)%ptr,maxsp,ispot,mkid,&
                               ilo,ihi,jlo,jhi,iclo,ichi,&
                               jclo,jchi,kflag)
 #else
@@ -231,7 +231,7 @@ subroutine prepc(level,nvar)
 !
 #ifdef CUDA
           cudaResult = cudaMemcpyAsync( &
-              cflux_d(mpar)%ptr, cflux(mpar)%ptr, &
+              cflux_hd(mpar)%ptr, cflux_hh(mpar)%ptr, &
               5*maxsp, &
               get_cuda_stream(id_copy_cflux,device_id))
 #endif

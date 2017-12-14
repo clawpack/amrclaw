@@ -135,7 +135,7 @@ c
  70   continue
       ! fflux_hd is updated so we copy it to fflux_dd
       fflux_dd = fflux_hd
-      cflux_dd = cflux_d
+      cflux_dd = cflux_hd
 c
 c
 c

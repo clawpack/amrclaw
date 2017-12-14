@@ -250,10 +250,10 @@ module amr_module
     type(gpu_1d_real_ptr_type), allocatable         :: fflux_hd(:)
     type(gpu_1d_real_ptr_type), allocatable, device :: fflux_dd(:)
 
-    type(cpu_2d_int_ptr_type) ::   cflux(maxgr)
-    type(gpu_2d_int_ptr_type) :: cflux_d(maxgr)
     ! We never allocate cflux_dd(mptr)%ptr
-    ! When we need cflux on device, we copy cflux_d to cflux_dd
+    ! When we need cflux on device, we copy cflux_hd to cflux_dd
+    type(cpu_2d_int_ptr_type), allocatable         :: cflux_hh(:)
+    type(gpu_2d_int_ptr_type), allocatable         :: cflux_hd(:)
     type(gpu_2d_int_ptr_type), allocatable, device :: cflux_dd(:)
 
     ! These are in SoA format, namely q(i,j,ivar)
