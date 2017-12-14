@@ -83,7 +83,7 @@ c
  60   continue
       ! fflux_hd is updated so we copy it to fflux_dd
       fflux_dd = fflux_hd
-      ! TODO: we might also want to copy cflux to cflux_d here
+      cflux_dd = cflux_d
 c
 c  reset numgrids per level, needed for omp parallelization.
 c  note that grids may have disappeared, so next loop resets to 0

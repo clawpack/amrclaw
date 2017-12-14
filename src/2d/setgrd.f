@@ -135,7 +135,7 @@ c
  70   continue
       ! fflux_hd is updated so we copy it to fflux_dd
       fflux_dd = fflux_hd
-      ! TODO: we might also want to copy cflux to cflux_d here
+      cflux_dd = cflux_d
 c
 c
 c

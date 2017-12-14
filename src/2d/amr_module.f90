@@ -202,14 +202,18 @@ module amr_module
 
 
     real(kind=8) tol, tolsp
-    integer ibuff,  mstart, ndfree, ndfree_bnd, lfine, node(nsize, maxgr), &
-            icheck(maxlv),lstart(maxlv),newstl(maxlv), &
-            listsp(maxlv),intratx(maxlv),intraty(maxlv), &
-            kratio(maxlv), iregsz(maxlv),jregsz(maxlv), &
-            iregst(maxlv),jregst(maxlv), &
-            iregend(maxlv),jregend(maxlv), &
-            numgrids(maxlv),numcells(maxlv), &
-            iorder,mxnest,kcheck
+    integer ibuff,  mstart, ndfree, ndfree_bnd, &
+        lfine, & !  level of the finest grid at current time
+        node(nsize, maxgr), &
+        icheck(maxlv),lstart(maxlv),newstl(maxlv), &
+        listsp(maxlv),intratx(maxlv),intraty(maxlv), &
+        kratio(maxlv), iregsz(maxlv),jregsz(maxlv), &
+        iregst(maxlv),jregst(maxlv), &
+        iregend(maxlv),jregend(maxlv), &
+        numgrids(maxlv),numcells(maxlv), &
+        iorder,&
+        mxnest,& ! maximum allowed refined level set by the user
+        kcheck
 #ifdef CUDA
     
     type cpu_2d_int_ptr_type
@@ -248,6 +252,9 @@ module amr_module
 
     type(cpu_2d_int_ptr_type) ::   cflux(maxgr)
     type(gpu_2d_int_ptr_type) :: cflux_d(maxgr)
+    ! We never allocate cflux_dd(mptr)%ptr
+    ! When we need cflux on device, we copy cflux_d to cflux_dd
+    type(gpu_2d_int_ptr_type), allocatable, device :: cflux_dd(:)
 
     ! These are in SoA format, namely q(i,j,ivar)
     type(cpu_3d_real_ptr_type) :: grid_data(maxgr)

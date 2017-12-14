@@ -21,7 +21,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
     use cudafor
-    use reflux_module, only: fluxad_gpu, fluxsv_gpu, qad_cpu, fluxad_fused_gpu
+    use reflux_module, only: fluxad_gpu, fluxsv_gpu, qad_cpu, &
+        fluxad_fused_gpu, fluxsv_fused_gpu
     use cuda_module, only: grid_type
 #ifdef PROFILE
     use profiling_module
@@ -312,27 +313,35 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef PROFILE
        call nvtxStartRange("fluxsv and fluxad",11)
 #endif
-    do j = 1, numgrids(level)
-        id = j
-        mptr = listOfGrids(levSt+j-1)
-        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-        mitot  = nx + 2*nghost
-        mjtot  = ny + 2*nghost
-        if (associated(cflux(mptr)%ptr)) then
-
-            call compute_kernel_size(numBlocks,numThreads,1,listsp(level))
-
-            call fluxsv_gpu<<<numBlocks,numThreads,0,get_cuda_stream(id,device_id)>>>(mptr, &
-                     fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
-                     cflux_d(mptr)%ptr, &
-                     fflux_dd, &
-                     mitot,mjtot,nvar,listsp(level),delt,hx,hy)
-        endif
-    enddo
+    ! one kernel launch to do fluxsv for all grids at this level
+    ! we don't do this for then fineset level
+    if (level < lfine) then
+        allocate(grids(numgrids(level)))
+        allocate(grids_d(numgrids(level)))
+        do j = 1, numgrids(level)
+            mptr = listOfGrids(levSt+j-1)
+            nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
+            ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+            grids(j)%fm => fms_d(mptr)%ptr
+            grids(j)%fp => fps_d(mptr)%ptr
+            grids(j)%gm => gms_d(mptr)%ptr
+            grids(j)%gp => gps_d(mptr)%ptr
+            grids(j)%mptr = mptr
+            grids(j)%nx   = nx 
+            grids(j)%ny   = ny 
+        enddo
+        grids_d = grids
+        call compute_kernel_size(numBlocks, numThreads, &
+            1,listsp(level),1,numgrids(level))
+        call fluxsv_fused_gpu<<<numBlocks,numThreads>>>( &
+                 grids_d, cflux_dd, fflux_dd, &
+                 nghost, numgrids(level), nvar,listsp(level),delt,hx,hy)
+        deallocate(grids)
+        deallocate(grids_d)
+    endif
     
     ! one kernel launch to do fluxad for all grids at this level
-    ! we don't do this for coarsest level
+    ! we don't do this for the coarsest level
     if (level > 1) then
         allocate(grids(numgrids(level)))
         allocate(grids_d(numgrids(level)))

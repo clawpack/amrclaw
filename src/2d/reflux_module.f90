@@ -313,6 +313,149 @@ subroutine fluxsv_gpu(mptr,&
     return
 end subroutine fluxsv_gpu
 
+attributes(device) &
+subroutine fluxsv_dev(mptr,&
+                xfluxm,xfluxp,yfluxm,yfluxp,&
+                listbc,&
+                fflux,&
+                ndimx,ndimy,nvar,maxsp,dtc,hx,hy)
+
+    use amr_module
+    implicit none
+
+    integer, value, intent(in) :: mptr
+    integer, value, intent(in) :: ndimx, ndimy, nvar, maxsp
+    double precision, value, intent(in) :: dtc, hx, hy
+    double precision, intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
+    double precision, intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
+    integer, intent(in) :: listbc(5,maxsp)
+    type(gpu_1d_real_ptr_type), intent(in) :: fflux(15000)
+    ! local
+    integer :: ispot, mkid, intopl, loc
+    integer :: i,j, ivar
+    integer :: tid
+
+    ! :::::::::::::::::::: FLUXSV :::::::::::::::::::::::::
+    !
+    !  coarse grids should save their fluxes in cells adjacent to
+    !  their nested fine grids, for later conservation fixing.
+    !  listbc holds info for where to save which fluxes.
+    !  xflux holds 'f' fluxes, yflux holds 'g' fluxes.
+    !
+    ! :::::::::::::::::::::::::::::;:::::::::::::::::::::::
+
+    tid = (blockIdx%x-1) * blockDim%x + threadIdx%x
+
+    if (tid > maxsp) then 
+        return
+    endif
+    if (listbc(1,tid) .eq. 0) then 
+        return
+    endif
+
+    ispot = tid
+
+    i        = listbc(1,ispot)
+    j        = listbc(2,ispot)
+    mkid     = listbc(4,ispot)
+    intopl   = listbc(5,ispot)
+
+    loc = nvar*(intopl-1)
+
+    ! side k (listbc 3) has which side of coarse cell has interface
+    ! so can save appropriate fluxes.  (dont know why we didnt have
+    ! which flux to save directly (i.e. put i+1,j to save that flux
+    ! rather than putting in cell center coords).
+
+    if (listbc(3,ispot) .eq. 1) then
+        !           ::::: Cell i,j is on right side of a fine grid
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = -xfluxp(i,j,ivar)*dtc*hy
+        enddo
+    endif
+
+    if (listbc(3,ispot) .eq. 2) then
+        !           ::::: Cell i,j on bottom side of fine grid
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = -yfluxm(i,j+1,ivar)*dtc*hx
+        enddo
+    endif
+
+    if (listbc(3,ispot) .eq. 3) then
+        !           ::::: Cell i,j on left side of fine grid
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = -xfluxm(i+1,j,ivar)*dtc*hy
+        enddo
+    endif
+
+    if (listbc(3,ispot) .eq. 4) then
+        !           ::::: Cell i,j on top side of fine grid
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = -yfluxp(i,j,ivar)*dtc*hx 
+        enddo
+    endif
+    !
+    !        ### new bcs 5 and 6 come from spherical mapping. note sign change:
+    !        ### previous fluxes stored negative flux, fine grids always add
+    !        ### their flux, then the delta is either added or subtracted as
+    !        ### appropriate for that side.  New bc adds or subtracts BOTH fluxes.
+    !
+    if (listbc(3,ispot) .eq. 5) then
+        !           ::::: Cell i,j on top side of fine grid with spherical mapped bc
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = yfluxm(i,j+1,ivar)*dtc*hx 
+        enddo
+    endif
+    !
+    if (listbc(3,ispot) .eq. 6) then
+        !           ::::: Cell i,j on bottom side of fine grid with spherical mapped bc
+        do ivar = 1, nvar
+            fflux(mkid)%ptr(loc + ivar) = yfluxp(i,j,ivar)*dtc*hx
+        enddo
+    endif
+    return
+end subroutine fluxsv_dev
+
+attributes(global) &
+subroutine fluxsv_fused_gpu(grids, cflux, fflux, &
+    nghost,num_grids,nvar,maxsp,delt,hx,hy)
+
+    use amr_module
+    use cuda_module, only: grid_type
+    implicit none
+
+    integer, value, intent(in) :: nghost, nvar, maxsp, num_grids
+    double precision, value, intent(in) :: delt,hx,hy
+    type(grid_type), intent(inout) :: grids(num_grids)
+    type(gpu_1d_real_ptr_type), intent(in) :: fflux(15000)
+    type(gpu_2d_int_ptr_type), intent(in)  :: cflux(15000)
+
+    integer :: mptr, ng, nx, ny, mitot, mjtot
+
+    ng  = (blockIdx%y-1) * blockDim%y + threadIdx%y
+
+    if (ng > num_grids) then
+        return
+    endif
+
+    mptr = grids(ng)%mptr
+    ! No work to do if this is the finest level
+    if (.not. associated(cflux(mptr)%ptr)) then
+        return
+    endif
+    nx = grids(ng)%nx
+    ny = grids(ng)%ny
+    mitot  = nx + 2*nghost
+    mjtot  = ny + 2*nghost
+
+    ! we call another subroutine to reshape fm ,fp ,gm, gp etc.
+    call fluxsv_dev(mptr, &
+             grids(ng)%fm,grids(ng)%fp, grids(ng)%gm, grids(ng)%gp, &
+             cflux(mptr)%ptr, &
+             fflux, &
+             mitot,mjtot,nvar,maxsp,delt,hx,hy)
+end subroutine fluxsv_fused_gpu
+
 
 !> For each coarse-fine interface, a Riemann problem between an inner
 !! ghost cell value on the fine grid and cell value in the adjacent coarse
