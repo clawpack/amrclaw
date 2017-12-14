@@ -21,7 +21,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
     use cudafor
-    use sweep_module, only: fluxad_gpu, fluxsv_gpu, qad_cpu
+    use sweep_module, only: fluxad_gpu, fluxsv_gpu, qad_cpu, fluxad_fused_gpu
+    use cuda_module, only: grid_type
 #ifdef PROFILE
     use profiling_module
 #endif
@@ -47,6 +48,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     double precision :: cfl_local
     double precision, dimension(:,:), pointer, contiguous :: cfls
     double precision, dimension(:,:), pointer, contiguous, device :: cfls_d
+
+    type(grid_type), allocatable         :: grids(:)
+    type(grid_type), allocatable, device :: grids_d(:)
+    integer :: max_lenbc
 
 #ifdef PROFILE
     integer, parameter :: timer_stepgrid = 1
@@ -172,7 +177,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call take_cpu_timer('pre-process before gpu loop', timer_before_gpu_loop)
     call cpu_timer_start(timer_before_gpu_loop)
 #endif
-    levSt = listStart(level)
     do j = 1, numgrids(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
@@ -325,18 +329,47 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                      fflux_dd, &
                      mitot,mjtot,nvar,listsp(level),delt,hx,hy)
         endif
-    
-        if (associated(fflux_hh(mptr)%ptr)) then
-            lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-            call compute_kernel_size(numBlocks, numThreads,1,lenbc)
-            call fluxad_gpu<<<numBlocks,numThreads,0,get_cuda_stream(id,device_id)>>>(&
-                fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
-                nghost, nx, ny, lenbc, &
-                intratx(level-1), intraty(level-1), &
-                fflux_hd(mptr)%ptr, delt, hx, hy)
-            istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
-        endif
     enddo
+    
+    ! one kernel launch to do fluxad for all grids at this level
+    ! we don't do this for coarsest level
+    if (level > 1) then
+        allocate(grids(numgrids(level)))
+        allocate(grids_d(numgrids(level)))
+        max_lenbc = 0
+        do j = 1, numgrids(level)
+            mptr = listOfGrids(levSt+j-1)
+            nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
+            ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+            grids(j)%fm => fms_d(mptr)%ptr
+            grids(j)%fp => fps_d(mptr)%ptr
+            grids(j)%gm => gms_d(mptr)%ptr
+            grids(j)%gp => gps_d(mptr)%ptr
+            grids(j)%mptr = mptr
+            grids(j)%nx   = nx 
+            grids(j)%ny   = ny 
+            max_lenbc = max(max_lenbc, 2*(nx/intratx(level-1)+ny/intraty(level-1)))
+        enddo
+        grids_d = grids
+        call compute_kernel_size(numBlocks, numThreads, &
+            1,max_lenbc,1,numgrids(level))
+        call fluxad_fused_gpu<<<numBlocks,numThreads>>>( &
+                grids_d, fflux_dd,&
+                nghost, numgrids(level), intratx(level-1), intraty(level-1), &
+                delt, hx, hy)
+        call wait_for_all_gpu_tasks(device_id)
+        do j = 1, numgrids(level)
+            mptr = listOfGrids(levSt+j-1)
+            nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
+            ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+            lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
+            istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
+        enddo
+        deallocate(grids)
+        deallocate(grids_d)
+    endif
+
+
     call wait_for_all_gpu_tasks(device_id)
 #ifdef PROFILE
        call nvtxEndRange()

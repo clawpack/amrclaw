@@ -1215,6 +1215,116 @@ subroutine fluxad_gpu(fm, fp, gm, gp, &
     endif
 end subroutine fluxad_gpu
 
+attributes(device) &
+subroutine fluxad_dev(fm, fp, gm, gp, &
+    mbc, mx, my, lenbc, lratiox, lratioy, &
+    svdflx, dtf, dx, dy)
+
+    real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    integer, value, intent(in)  :: mbc, mx, my, lenbc, lratiox, lratioy
+
+    real(kind=8), value, intent(in) :: dtf, dx, dy
+    real(kind=8), intent(inout) :: svdflx(NEQNS,lenbc)
+    integer :: tid, m
+    integer :: i, ifine, j, jfine
+    integer :: l
+    integer :: mxc, myc
+
+    tid = (blockIdx%x-1) * blockDim%x + threadIdx%x
+
+    mxc = mx/2
+    myc = my/2
+
+    if (tid <= myc) then
+    ! ::::: left side saved first
+        j = tid
+        jfine = (j-1)*lratioy
+        do m = 1,NEQNS
+            do l=1,lratioy
+                svdflx(m,tid) = svdflx(m,tid) + &
+                    fm(1,jfine+l,m)*dtf*dy
+            enddo
+        enddo
+
+    else if (tid <= myc+mxc) then
+    ! ::::: top side
+        i = tid - myc
+        ifine = (i-1)*lratiox
+        do m = 1,NEQNS
+            do l=1,lratiox
+                svdflx(m,tid) = svdflx(m,tid) + &
+                    gp(ifine+l,my+1,m)*dtf*dx
+            enddo
+        enddo
+    else if (tid <= 2*myc+mxc) then
+    ! ::::: right side
+        j = tid - (myc+mxc)
+        jfine = (j-1)*lratioy
+        do m = 1,NEQNS
+            do l=1,lratioy
+                svdflx(m,tid) = svdflx(m,tid) + &
+                    fp(mx+1,jfine+l,m)*dtf*dy
+            enddo
+        enddo
+    else if (tid <= 2*(myc+mxc)) then
+    ! ::::: bottom side
+        i = tid - (2*myc+mxc)
+        ifine = (i-1)*lratiox
+        do m = 1,NEQNS
+            do l=1,lratiox
+                svdflx(m,tid) = svdflx(m,tid) + &
+                    gm(ifine+l,1,m)*dtf*dx
+            enddo
+        enddo
+    endif
+end subroutine fluxad_dev
+
+attributes(global) &
+subroutine fluxad_fused_gpu( &
+            grids, fflux,&
+            nghost, num_grids, lratiox, lratioy, &
+            delt, dx, dy)
+    use cuda_module, only: grid_type
+    use amr_module
+    implicit none
+
+    integer, value, intent(in) :: lratiox, lratioy, num_grids, nghost
+    double precision, value, intent(in) :: delt, dx, dy
+    type(grid_type), intent(inout) :: grids(num_grids)
+    type(gpu_1d_real_ptr_type), intent(in) :: fflux(15000)
+
+    integer :: ng
+    integer :: mptr, nx, ny, lenbc
+
+    ng  = (blockIdx%y-1) * blockDim%y + threadIdx%y
+
+    if (ng > num_grids) then
+        return
+    endif
+
+
+    mptr = grids(ng)%mptr
+    ! No work to do if this is the coarsest level
+    if (.not. associated(fflux(mptr)%ptr)) then
+        return
+    endif
+    nx = grids(ng)%nx
+    ny = grids(ng)%ny
+    lenbc = 2*(nx/lratiox+ny/lratioy)
+
+    ! we call another subroutine to reshape fm ,fp ,gm, gp
+    ! and fflux(mptr)%ptr
+    call fluxad_dev( &
+        grids(ng)%fm, grids(ng)%fp, grids(ng)%gm, grids(ng)%gp, &
+        nghost, nx, ny, lenbc, &
+        lratiox, lratioy, &
+        fflux(mptr)%ptr, delt, dx, dy)
+end subroutine fluxad_fused_gpu
+
+
 attributes(global) &
 subroutine fluxsv_gpu(mptr,&
                 xfluxm,xfluxp,yfluxm,yfluxp,&

@@ -29,6 +29,16 @@ module cuda_module
     type(cudaEvent) :: event_stop(max_cuda_timer)
     integer :: n_timer
 
+    type grid_type
+        double precision, dimension(:,:,:), pointer, contiguous, device :: fm=>null()
+        double precision, dimension(:,:,:), pointer, contiguous, device :: fp=>null()
+        double precision, dimension(:,:,:), pointer, contiguous, device :: gm=>null()
+        double precision, dimension(:,:,:), pointer, contiguous, device :: gp=>null()
+        integer :: mptr
+        integer :: nx
+        integer :: ny
+    end type grid_type
+
     ! current number of cuda threads and cuda blocks
     type(dim3) :: numBlocks, numThreads
 
@@ -46,6 +56,7 @@ module cuda_module
 
     interface compute_kernel_size
         module procedure compute_kernel_size_r1
+        module procedure compute_kernel_size_r2
     end interface compute_kernel_size
 
 contains
@@ -195,19 +206,41 @@ contains
 	integer, intent(in)       :: xlo, xhi
 	type(dim3), intent(inout) :: numBlocks, numThreads
 
-	integer :: tile_size
+	integer :: sx
 
-	tile_size = xhi - xlo + 1
+	sx = xhi - xlo + 1
 
-	    numThreads % x = 256
-	    numThreads % y = 1
-	    numThreads % z = 1
+        numThreads % x = 256
+        numThreads % y = 1
+        numThreads % z = 1
 
-	    numBlocks % x = (tile_size + numThreads % x - 1) / numThreads % x
-	    numBlocks % y = 1
-	    numBlocks % z = 1
+        numBlocks % x = (sx + numThreads % x - 1) / numThreads % x
+        numBlocks % y = 1
+        numBlocks % z = 1
 
     end subroutine compute_kernel_size_r1
+
+    subroutine compute_kernel_size_r2(numBlocks, numThreads, xlo, xhi, ylo, yhi)
+
+	use cudafor, only: dim3
+	implicit none
+	integer, intent(in)       :: xlo, xhi, ylo, yhi
+	type(dim3), intent(inout) :: numBlocks, numThreads
+
+	integer :: sx, sy
+
+	sx = xhi - xlo + 1
+	sy = xhi - xlo + 1
+
+        numThreads % x = 32
+        numThreads % y = 8
+        numThreads % z = 1
+
+        numBlocks % x = (sx + numThreads % x - 1) / numThreads % x
+        numBlocks % y = (sy + numThreads % y - 1) / numThreads % y
+        numBlocks % z = 1
+
+    end subroutine compute_kernel_size_r2
 
     subroutine copy_cpu_to_gpu_async(p_d, p_h, sz, idx, dev_id)
 
