@@ -21,7 +21,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
     use cudafor
-    use sweep_module, only: fluxad_gpu, fluxsv_gpu, qad_cpu, fluxad_fused_gpu
+    use reflux_module, only: fluxad_gpu, fluxsv_gpu, qad_cpu, fluxad_fused_gpu
     use cuda_module, only: grid_type
 #ifdef PROFILE
     use profiling_module

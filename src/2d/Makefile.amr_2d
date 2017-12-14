@@ -15,6 +15,7 @@ COMMON_MODULES += \
   $(AMRLIB)/cuda_module.f90 \
   $(AMRLIB)/memory_module.f90 \
   $(AMRLIB)/profiling_module.f90 \
+  $(AMRLIB)/reflux_module.f90 \
   $(AMRLIB)/sweep_module.f90
 endif
 
