@@ -313,53 +313,38 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef PROFILE
        call nvtxStartRange("fluxsv and fluxad",11)
 #endif
+    allocate(grids(numgrids(level)))
+    allocate(grids_d(numgrids(level)))
+    max_lenbc = 0
+    do j = 1, numgrids(level)
+        mptr = listOfGrids(levSt+j-1)
+        nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
+        ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+        grids(j)%fm => fms_d(mptr)%ptr
+        grids(j)%fp => fps_d(mptr)%ptr
+        grids(j)%gm => gms_d(mptr)%ptr
+        grids(j)%gp => gps_d(mptr)%ptr
+        grids(j)%mptr = mptr
+        grids(j)%nx   = nx 
+        grids(j)%ny   = ny 
+        if (level > 1) then
+            max_lenbc = max(max_lenbc, 2*(nx/intratx(level-1)+ny/intraty(level-1)))
+        endif
+    enddo
+    grids_d = grids
     ! one kernel launch to do fluxsv for all grids at this level
     ! we don't do this for then fineset level
     if (level < lfine) then
-        allocate(grids(numgrids(level)))
-        allocate(grids_d(numgrids(level)))
-        do j = 1, numgrids(level)
-            mptr = listOfGrids(levSt+j-1)
-            nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
-            ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-            grids(j)%fm => fms_d(mptr)%ptr
-            grids(j)%fp => fps_d(mptr)%ptr
-            grids(j)%gm => gms_d(mptr)%ptr
-            grids(j)%gp => gps_d(mptr)%ptr
-            grids(j)%mptr = mptr
-            grids(j)%nx   = nx 
-            grids(j)%ny   = ny 
-        enddo
-        grids_d = grids
         call compute_kernel_size(numBlocks, numThreads, &
             1,listsp(level),1,numgrids(level))
         call fluxsv_fused_gpu<<<numBlocks,numThreads>>>( &
                  grids_d, cflux_dd, fflux_dd, &
                  nghost, numgrids(level), nvar,listsp(level),delt,hx,hy)
-        deallocate(grids)
-        deallocate(grids_d)
     endif
     
     ! one kernel launch to do fluxad for all grids at this level
     ! we don't do this for the coarsest level
     if (level > 1) then
-        allocate(grids(numgrids(level)))
-        allocate(grids_d(numgrids(level)))
-        max_lenbc = 0
-        do j = 1, numgrids(level)
-            mptr = listOfGrids(levSt+j-1)
-            nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
-            ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-            grids(j)%fm => fms_d(mptr)%ptr
-            grids(j)%fp => fps_d(mptr)%ptr
-            grids(j)%gm => gms_d(mptr)%ptr
-            grids(j)%gp => gps_d(mptr)%ptr
-            grids(j)%mptr = mptr
-            grids(j)%nx   = nx 
-            grids(j)%ny   = ny 
-            max_lenbc = max(max_lenbc, 2*(nx/intratx(level-1)+ny/intraty(level-1)))
-        enddo
-        grids_d = grids
         call compute_kernel_size(numBlocks, numThreads, &
             1,max_lenbc,1,numgrids(level))
         call fluxad_fused_gpu<<<numBlocks,numThreads>>>( &
@@ -374,12 +359,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
         enddo
-        deallocate(grids)
-        deallocate(grids_d)
     endif
-
-
     call wait_for_all_gpu_tasks(device_id)
+    deallocate(grids)
+    deallocate(grids_d)
 #ifdef PROFILE
        call nvtxEndRange()
 #endif
