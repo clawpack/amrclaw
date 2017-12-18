@@ -80,7 +80,10 @@ void clawpack_mempool_init()
         int num_devices = get_num_devices_used();
 	device_memory_pool.resize(num_devices);
 	for (int i=0; i<num_devices; ++i) {
-	    device_memory_pool[i].reset(new GPUMemoryManager(i,0));
+            // assume only one GPU is used for no
+            // so we don't want to pre-allocate memory on other devices
+            if (which_device_used() == i) 
+                device_memory_pool[i].reset(new GPUMemoryManager(i,0));
 	}
 
         // TODO: If one of the devices does not have enough memory

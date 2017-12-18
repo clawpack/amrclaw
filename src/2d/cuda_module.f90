@@ -95,20 +95,26 @@ contains
             write(*,*)        
         enddo
 
-        do p = 0, num_devices-1
-            cudaResult = cudaSetDevice(p)
-            call check_cuda_error(cudaResult)
-            do i = 1, max_cuda_streams
-               cudaResult = cudaStreamCreate(cuda_streams(i,p))
-                call check_cuda_error(cudaResult)
-            enddo
-        enddo
-
         call opendatafile(inunit,gpufile)
         read(inunit,*) device_id    ! which gpu will be used
         cudaResult = cudaSetDevice(device_id)
         call check_cuda_error(cudaResult)
         print *, 'Use the GPU with id: ',device_id
+
+        do p = 0, num_devices-1
+            ! Assume using only one GPU for now
+            ! So we don't want to create cuda streams on 
+            ! other devices
+            if (p .eq. device_id) then
+                cudaResult = cudaSetDevice(p)
+                call check_cuda_error(cudaResult)
+                do i = 1, max_cuda_streams
+                   cudaResult = cudaStreamCreate(cuda_streams(i,p))
+                    call check_cuda_error(cudaResult)
+                enddo
+            endif
+        enddo
+
 
         ! Initialize memory pool
         call clawpack_mempool_init()
@@ -442,6 +448,13 @@ contains
         integer(c_int) :: nDev
         nDev = int(num_devices, c_int)
     end function get_num_devices_used
+
+    function which_device_used() result(dev_id) bind(C, name='which_device_used')
+        use iso_c_binding, only: c_int
+        implicit none
+        integer(c_int) :: dev_id
+        dev_id = int(device_id, c_int)
+    end function which_device_used
 
     ! Do max reduction on array a_x 
     ! and put the maximum value in max_array(blockIdx%x, blockIdx%y) 

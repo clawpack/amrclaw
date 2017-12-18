@@ -13,6 +13,7 @@ extern "C" {
     void  clawpack_mempool_free_gpu (void* p, int dev_id);
     // void* clawpack_mempool_alloc_gpu_hold (size_t n, int tag, int dev_id);
     int get_num_devices_used(); 
+    int which_device_used(); 
 #endif
     // void  clawpack_mempool_get_stats (int& mp_min, int& mp_max, int& mp_tot);  // min, max & tot in MB
     void  clawpack_real_array_init (double* p, size_t nelems); 
