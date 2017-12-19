@@ -16,7 +16,6 @@ module reflux_module
 !  coarse cell.
 !  We assume this kernel is launched with 2*(mx+my) threads in total,
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-! TODO: move this to fluxad.f90
 attributes(global) &
 subroutine fluxad_gpu(fm, fp, gm, gp, &
     mbc, mx, my, lenbc, lratiox, lratioy, &
@@ -843,5 +842,315 @@ subroutine qad_cpu(valbig,mitot,mjtot,nvar, &
 #endif
     return
 end subroutine qad_cpu
+
+subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
+        svdflx,qc1d,lenbc,lratiox,lratioy,hx,hy,&
+        maux,aux,auxc1d,delt,mptr)
+
+    use amr_module
+#ifdef PROFILE
+    use profiling_module
+#endif
+
+
+    !
+    ! ::::::::::::::::::::::::::: QAD ::::::::::::::::::::::::::::::::::
+    !  are added in to coarse grid value, as a conservation fixup. 
+    !  Done each fine grid time step. If source terms are present, the
+    !  coarse grid value is advanced by source terms each fine time step too.
+
+    !  No change needed in this sub. for spherical mapping: correctly
+    !  mapped vals already in bcs on this fine grid and coarse saved
+    !  vals also properly prepared
+    !
+    ! Side 1 is the left side of the fine grid patch.  Then go around clockwise.
+    ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    !
+    !      # local storage
+    !      # note that dimension here are bigger than dimensions used
+    !      # in rp2, but shouldn't matter since wave is not used in qad
+    !      # and for other arrays it is only the last parameter that is wrong
+    !      #  ok as long as meqn, mwaves < maxvar
+
+    integer, parameter :: max1dp1 = max1d
+    integer :: mitot, mjtot, nvar, lenbc, maux
+    integer :: lratiox, lratioy, mptr
+    integer :: nc, nr, level, index
+    integer :: ivar, lind, ncrse
+    integer :: nedges = SPACEDIM*2 ! num of edges for a grid
+    double precision :: hx, hy, delt, tgrid
+    double precision :: ql(nvar,max1dp1,nedges), qr(nvar,max1dp1,nedges)
+    ! double precision :: wave(nvar,mwaves,max1dp1), s(mwaves,max1dp1)
+    ! double precision :: amdq(nvar,max1dp1),  apdq(nvar,max1dp1)
+    double precision :: wave(nvar,mwaves,max1dp1,nedges), s(mwaves,max1dp1,nedges)
+    double precision :: amdq(nvar,max1dp1,nedges),  apdq(nvar,max1dp1,nedges)
+    double precision :: auxl(maxaux*max1dp1),  auxr(maxaux*max1dp1)
+    double precision :: valbig(nvar,mitot,mjtot)
+    double precision :: qc1d(nvar,lenbc)
+    double precision :: svdflx(nvar,lenbc)
+    double precision :: aux(maux,mitot,mjtot)
+    double precision :: auxc1d(maux,lenbc)
+    integer :: mxs(nedges)
+
+    integer :: i,j,ma,ic,jc,l,influx,ifine,jfine
+
+
+
+#ifdef PROFILE
+    call nvtxStartRange("qad",13)
+#endif
+    tgrid = rnode(timemult, mptr)
+    nc = mjtot-2*nghost
+    nr = mitot-2*nghost
+    level = node(nestlevel, mptr)
+    index = 0
+
+
+    ! prepare ql and qr
+    !
+    ! side 1
+    do j = nghost+1, mjtot-nghost
+        do ivar = 1, nvar
+            ql(ivar,j-nghost,1) = valbig(ivar,nghost,j)
+        enddo
+    enddo
+
+    lind = 0
+    ncrse = (mjtot-2*nghost)/lratioy
+    do jc = 1, ncrse
+        index = index + 1
+        do l = 1, lratioy
+            lind = lind + 1
+            do ivar = 1, nvar
+                qr(ivar,lind,1) = qc1d(ivar,index)
+            enddo
+        enddo
+    enddo
+    ! side 2
+    do i = nghost+1, mitot-nghost
+        do ivar = 1, nvar
+            qr(ivar,i-nghost,2) = valbig(ivar,i,mjtot-nghost+1)
+        enddo
+    enddo
+
+    lind = 0
+    ncrse = (mitot-2*nghost)/lratiox
+    do ic = 1, ncrse
+        index = index + 1
+        do l = 1, lratiox
+            lind = lind + 1
+            do ivar = 1, nvar
+                ql(ivar,lind,2) = qc1d(ivar,index)
+            enddo
+        enddo
+    enddo
+
+    ! side 3
+    do j = nghost+1, mjtot-nghost
+        do ivar = 1, nvar
+            qr(ivar,j-nghost,3) = valbig(ivar,mitot-nghost+1,j)
+        enddo
+    enddo
+
+    lind = 0
+    ncrse = (mjtot-2*nghost)/lratioy
+    do jc = 1, ncrse
+        index = index + 1
+        do l = 1, lratioy
+            lind = lind + 1
+            do ivar = 1, nvar
+                ql(ivar,lind,3) = qc1d(ivar,index)
+            enddo
+        enddo
+    enddo
+
+    ! side 4
+    do i = nghost+1, mitot-nghost
+        do ivar = 1, nvar
+            ql(ivar,i-nghost,4) = valbig(ivar,i,nghost)
+        enddo
+    enddo
+
+    lind = 0
+    ncrse = (mitot-2*nghost)/lratiox
+    do ic = 1, ncrse
+        index = index + 1
+        do l = 1, lratiox
+            lind = lind + 1
+            do ivar = 1, nvar
+                qr(ivar,lind,4) = qc1d(ivar,index)
+            enddo
+        enddo
+    enddo
+
+    mxs(1) = nc
+    mxs(2) = nr
+    mxs(3) = nc
+    mxs(4) = nr
+    ! We only need amdq and apdq from this
+    call rpn2_all_edges(max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
+        mxs,ql,qr,wave,s,amdq,apdq)
+
+    !
+    !--------
+    !  side 1
+    !--------
+    !
+
+    ! call rpn2(1,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
+    !     nc+1-2*nghost,ql(:,:,1),qr(:,:,1),auxl,auxr,wave(:,:,:,1),s(:,:,1),amdq(:,:,1),apdq(:,:,1))
+    !
+    ! we have the wave. for side 1 add into sdflxm
+    !
+    influx = 0
+    do j = 1, nc/lratioy
+        influx  = influx + 1
+        jfine = (j-1)*lratioy
+        do ivar = 1, nvar
+            do l = 1, lratioy
+                svdflx(ivar,influx) = svdflx(ivar,influx) &
+                    + amdq(ivar,jfine+l,1) * hy * delt &
+                    + apdq(ivar,jfine+l,1) * hy * delt
+            enddo
+        enddo
+    enddo
+
+    !--------
+    !  side 2
+    !--------
+    !
+    ! call rpn2(2,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
+    !     nr+1-2*nghost,ql(:,:,2),qr(:,:,2),auxl,auxr,wave(:,:,:,2),s(:,:,2),amdq(:,:,2),apdq(:,:,2))
+    !
+    ! we have the wave. for side 2. add into sdflxp
+    !
+    do i = 1, nr/lratiox
+        influx  = influx + 1
+        ifine = (i-1)*lratiox
+        do ivar = 1, nvar
+            do l = 1, lratiox
+                svdflx(ivar,influx) = svdflx(ivar,influx) &
+                    - amdq(ivar,ifine+l,2) * hx * delt &
+                    - apdq(ivar,ifine+l,2) * hx * delt
+            enddo
+        enddo
+    enddo
+
+    !--------
+    !  side 3
+    !--------
+    !
+    ! call rpn2(1,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
+    !     nc+1-2*nghost,ql(:,:,3),qr(:,:,3),auxl,auxr,wave(:,:,:,3),s(:,:,3),amdq(:,:,3),apdq(:,:,3))
+    !
+    ! we have the wave. for side 3 add into sdflxp
+    !
+    do j = 1, nc/lratioy
+        influx  = influx + 1
+        jfine = (j-1)*lratioy
+        do ivar = 1, nvar
+            do l = 1, lratioy
+                svdflx(ivar,influx) = svdflx(ivar,influx) &
+                    - amdq(ivar,jfine+l,3) * hy * delt &
+                    - apdq(ivar,jfine+l,3) * hy * delt
+            enddo
+        enddo
+    enddo
+
+    !--------
+    !  side 4
+    !--------
+    !
+    ! call rpn2(2,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
+    !     nr+1-2*nghost,ql(:,:,4),qr(:,:,4),auxl,auxr,wave(:,:,:,4),s(:,:,4),amdq(:,:,4),apdq(:,:,4))
+    !
+    ! we have the wave. for side 4. add into sdflxm
+    !
+    do i = 1, nr/lratiox
+        influx  = influx + 1
+        ifine = (i-1)*lratiox
+        do ivar = 1, nvar
+            do l = 1, lratiox
+                svdflx(ivar,influx) = svdflx(ivar,influx) &
+                    + amdq(ivar,ifine+l,4) * hx * delt &
+                    + apdq(ivar,ifine+l,4) * hx * delt
+            enddo
+        enddo
+    enddo
+
+    ! # for source terms:
+    ! if (method(5) .ne. 0) then   ! should I test here if index=0 and all skipped?
+    !     call src1d(nvar,nghost,lenbc,qc1d,maux,auxc1d,tgrid,delt)
+    !     !      # how can this be right - where is the integrated src term used?
+    ! endif
+
+#ifdef PROFILE
+    call nvtxEndRange()
+#endif
+    return
+end subroutine qad_cpu2
+
+subroutine rpn2_all_edges(maxm,meqn,mwaves,maux,mbc,mxs,ql,qr,wave,s,amdq,apdq)
+
+    use problem_para_module, only: cc, zz, bulk, rho
+
+    implicit none
+
+    integer, intent(in) :: maxm, meqn, mwaves, maux, mbc
+
+    integer :: nedges = SPACEDIM*2 ! num of edges for a grid
+    integer, intent(in) :: mxs(nedges)
+
+    double precision, intent(in)  ::   ql(meqn, 1:maxm+2*mbc,nedges)
+    double precision, intent(in)  ::   qr(meqn, 1:maxm+2*mbc,nedges)
+    double precision, intent(out) :: wave(meqn, mwaves, 1:maxm+2*mbc,nedges)
+    double precision, intent(out) ::    s(1:mwaves, 1:maxm+2*mbc,nedges)
+    double precision, intent(out) :: apdq(meqn, 1:maxm+2*mbc,nedges)
+    double precision, intent(out) :: amdq(meqn, 1:maxm+2*mbc,nedges)
+
+!     local arrays
+!     ------------
+    double precision :: delta1, delta2, delta3, a1, a2
+    integer :: iedge, mu, mv, i, m
+
+    do iedge = 1, nedges
+        if ((iedge .eq. 1) .or. &
+            (iedge .eq. 3) ) then
+            mu = 2
+            mv = 3
+        else
+            mu = 3
+            mv = 2
+        endif
+        do i = 1, mxs(iedge)
+            delta1 = ql( 1,i,iedge) - qr( 1,i,iedge)
+            delta2 = ql(mu,i,iedge) - qr(mu,i,iedge)
+            a1 = (-delta1 + zz*delta2) / (2.d0*zz)
+            a2 = (delta1 + zz*delta2) / (2.d0*zz)
+        
+        !        # Compute the waves.
+        
+            wave( 1,1,i,iedge) = -a1*zz
+            wave(mu,1,i,iedge) = a1
+            wave(mv,1,i,iedge) = 0.d0
+            s(1,i,iedge) = -cc
+        
+            wave( 1,2,i,iedge) = a2*zz
+            wave(mu,2,i,iedge) = a2
+            wave(mv,2,i,iedge) = 0.d0
+            s(2,i,iedge) = cc
+        enddo
+    !     # compute the leftgoing and rightgoing flux differences:
+    !     # Note s(i,1) < 0   and   s(i,2) > 0.
+        do i = 1, mxs(iedge)
+            do m = 1,meqn
+                amdq(m,i,iedge) = s(1,i,iedge)*wave(m,1,i,iedge)
+                apdq(m,i,iedge) = s(2,i,iedge)*wave(m,2,i,iedge)
+            enddo
+        enddo
+    enddo
+
+    return
+end subroutine rpn2_all_edges
 
 end module reflux_module

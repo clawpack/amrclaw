@@ -21,7 +21,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
     use cudafor
-    use reflux_module, only: fluxad_gpu, fluxsv_gpu, qad_cpu, &
+    use reflux_module, only: fluxad_gpu, fluxsv_gpu, qad_cpu2, &
         fluxad_fused_gpu, fluxsv_fused_gpu
     use cuda_module, only: grid_type
 #ifdef PROFILE
@@ -224,7 +224,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             locsvq = 1 + nvar*lenbc
             locx1d = locsvq + nvar*lenbc
             istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
-            call qad_cpu(alloc(locnew),mitot,mjtot,nvar, &
+            call qad_cpu2(alloc(locnew),mitot,mjtot,nvar, &
                    fflux_hh(mptr)%ptr,fflux_hh(mptr)%ptr(locsvq),lenbc, &
                    intratx(level-1),intraty(level-1),hx,hy, &
                    naux,alloc(locaux),fflux_hh(mptr)%ptr(locx1d),delt,mptr)
