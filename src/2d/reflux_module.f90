@@ -843,9 +843,11 @@ subroutine qad_cpu(valbig,mitot,mjtot,nvar, &
     return
 end subroutine qad_cpu
 
+! We launch a mitot-2*nghost by njtot-2*nghost kernel to execute
+! this function on GPU
 subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
         svdflx,qc1d,lenbc,lratiox,lratioy,hx,hy,&
-        maux,aux,auxc1d,delt,mptr)
+        delt,mptr)
 
     use amr_module
 #ifdef PROFILE
@@ -872,38 +874,31 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
     !      # and for other arrays it is only the last parameter that is wrong
     !      #  ok as long as meqn, mwaves < maxvar
 
-    integer, parameter :: max1dp1 = max1d
-    integer :: mitot, mjtot, nvar, lenbc, maux
-    integer :: lratiox, lratioy, mptr
-    integer :: nc, nr, level, index
-    integer :: ivar, lind, ncrse
+    integer, value, intent(in) :: mitot, mjtot, nvar, lenbc
+    integer, value, intent(in) :: lratiox, lratioy, mptr
+    double precision, value, intent(in) :: hx, hy, delt
     integer :: nedges = SPACEDIM*2 ! num of edges for a grid
-    double precision :: hx, hy, delt, tgrid
-    double precision :: ql(nvar,max1dp1,nedges), qr(nvar,max1dp1,nedges)
-    ! double precision :: wave(nvar,mwaves,max1dp1), s(mwaves,max1dp1)
-    ! double precision :: amdq(nvar,max1dp1),  apdq(nvar,max1dp1)
-    double precision :: wave(nvar,mwaves,max1dp1,nedges), s(mwaves,max1dp1,nedges)
-    double precision :: amdq(nvar,max1dp1,nedges),  apdq(nvar,max1dp1,nedges)
-    double precision :: auxl(maxaux*max1dp1),  auxr(maxaux*max1dp1)
-    double precision :: valbig(nvar,mitot,mjtot)
-    double precision :: qc1d(nvar,lenbc)
-    double precision :: svdflx(nvar,lenbc)
-    double precision :: aux(maux,mitot,mjtot)
-    double precision :: auxc1d(maux,lenbc)
+    double precision, intent(in) :: valbig(nvar,mitot,mjtot)
+    double precision, intent(in) :: qc1d(nvar,lenbc)
+    double precision, intent(inout) :: svdflx(nvar,lenbc)
+
+    double precision :: ql(nvar,max1d,nedges), qr(nvar,max1d,nedges)
+    double precision :: wave(nvar,mwaves,max1d,nedges), s(mwaves,max1d,nedges)
+    double precision :: amdq(nvar,max1d,nedges),  apdq(nvar,max1d,nedges)
     integer :: mxs(nedges)
 
-    integer :: i,j,ma,ic,jc,l,influx,ifine,jfine
+    integer :: nc, nr
+    integer :: ivar, ncrse
+    integer :: i,j,ic,jc,l
+    integer :: base
 
 
 
 #ifdef PROFILE
     call nvtxStartRange("qad",13)
 #endif
-    tgrid = rnode(timemult, mptr)
     nc = mjtot-2*nghost
     nr = mitot-2*nghost
-    level = node(nestlevel, mptr)
-    index = 0
 
 
     ! prepare ql and qr
@@ -915,17 +910,16 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
         enddo
     enddo
 
-    lind = 0
+    base = 0
     ncrse = (mjtot-2*nghost)/lratioy
     do jc = 1, ncrse
-        index = index + 1
         do l = 1, lratioy
-            lind = lind + 1
             do ivar = 1, nvar
-                qr(ivar,lind,1) = qc1d(ivar,index)
+                qr(ivar,(jc-1)*lratioy+l,1) = qc1d(ivar,jc+base)
             enddo
         enddo
     enddo
+
     ! side 2
     do i = nghost+1, mitot-nghost
         do ivar = 1, nvar
@@ -933,14 +927,12 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
         enddo
     enddo
 
-    lind = 0
+    base = nc/lratioy
     ncrse = (mitot-2*nghost)/lratiox
     do ic = 1, ncrse
-        index = index + 1
         do l = 1, lratiox
-            lind = lind + 1
             do ivar = 1, nvar
-                ql(ivar,lind,2) = qc1d(ivar,index)
+                ql(ivar,(ic-1)*lratiox+l,2) = qc1d(ivar,ic+base)
             enddo
         enddo
     enddo
@@ -952,14 +944,12 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
         enddo
     enddo
 
-    lind = 0
+    base = nc/lratioy + nr/lratiox
     ncrse = (mjtot-2*nghost)/lratioy
     do jc = 1, ncrse
-        index = index + 1
         do l = 1, lratioy
-            lind = lind + 1
             do ivar = 1, nvar
-                ql(ivar,lind,3) = qc1d(ivar,index)
+                ql(ivar,(jc-1)*lratioy+l,3) = qc1d(ivar,jc+base)
             enddo
         enddo
     enddo
@@ -971,14 +961,12 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
         enddo
     enddo
 
-    lind = 0
+    base = 2*nc/lratioy + nr/lratiox
     ncrse = (mitot-2*nghost)/lratiox
     do ic = 1, ncrse
-        index = index + 1
         do l = 1, lratiox
-            lind = lind + 1
             do ivar = 1, nvar
-                qr(ivar,lind,4) = qc1d(ivar,index)
+                qr(ivar,(ic-1)*lratiox+l,4) = qc1d(ivar,ic+base)
             enddo
         enddo
     enddo
@@ -988,29 +976,22 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
     mxs(3) = nc
     mxs(4) = nr
     ! We only need amdq and apdq from this
-    call rpn2_all_edges(max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
+    call rpn2_all_edges(max1d,nvar,mwaves,nghost, &
         mxs,ql,qr,wave,s,amdq,apdq)
 
     !
     !--------
     !  side 1
     !--------
-    !
-
-    ! call rpn2(1,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
-    !     nc+1-2*nghost,ql(:,:,1),qr(:,:,1),auxl,auxr,wave(:,:,:,1),s(:,:,1),amdq(:,:,1),apdq(:,:,1))
-    !
     ! we have the wave. for side 1 add into sdflxm
     !
-    influx = 0
+    base = 0
     do j = 1, nc/lratioy
-        influx  = influx + 1
-        jfine = (j-1)*lratioy
         do ivar = 1, nvar
             do l = 1, lratioy
-                svdflx(ivar,influx) = svdflx(ivar,influx) &
-                    + amdq(ivar,jfine+l,1) * hy * delt &
-                    + apdq(ivar,jfine+l,1) * hy * delt
+                svdflx(ivar,j+base) = svdflx(ivar,j+base) &
+                    + amdq(ivar,(j-1)*lratioy+l,1) * hy * delt &
+                    + apdq(ivar,(j-1)*lratioy+l,1) * hy * delt
             enddo
         enddo
     enddo
@@ -1018,20 +999,15 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
     !--------
     !  side 2
     !--------
-    !
-    ! call rpn2(2,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
-    !     nr+1-2*nghost,ql(:,:,2),qr(:,:,2),auxl,auxr,wave(:,:,:,2),s(:,:,2),amdq(:,:,2),apdq(:,:,2))
-    !
     ! we have the wave. for side 2. add into sdflxp
     !
+    base = nc/lratioy
     do i = 1, nr/lratiox
-        influx  = influx + 1
-        ifine = (i-1)*lratiox
         do ivar = 1, nvar
             do l = 1, lratiox
-                svdflx(ivar,influx) = svdflx(ivar,influx) &
-                    - amdq(ivar,ifine+l,2) * hx * delt &
-                    - apdq(ivar,ifine+l,2) * hx * delt
+                svdflx(ivar,i+base) = svdflx(ivar,i+base) &
+                    - amdq(ivar,(i-1)*lratiox+l,2) * hx * delt &
+                    - apdq(ivar,(i-1)*lratiox+l,2) * hx * delt
             enddo
         enddo
     enddo
@@ -1039,20 +1015,15 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
     !--------
     !  side 3
     !--------
-    !
-    ! call rpn2(1,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
-    !     nc+1-2*nghost,ql(:,:,3),qr(:,:,3),auxl,auxr,wave(:,:,:,3),s(:,:,3),amdq(:,:,3),apdq(:,:,3))
-    !
     ! we have the wave. for side 3 add into sdflxp
     !
+    base = nc/lratioy + nr/lratiox
     do j = 1, nc/lratioy
-        influx  = influx + 1
-        jfine = (j-1)*lratioy
         do ivar = 1, nvar
             do l = 1, lratioy
-                svdflx(ivar,influx) = svdflx(ivar,influx) &
-                    - amdq(ivar,jfine+l,3) * hy * delt &
-                    - apdq(ivar,jfine+l,3) * hy * delt
+                svdflx(ivar,j+base) = svdflx(ivar,j+base) &
+                    - amdq(ivar,(j-1)*lratioy+l,3) * hy * delt &
+                    - apdq(ivar,(j-1)*lratioy+l,3) * hy * delt
             enddo
         enddo
     enddo
@@ -1060,29 +1031,19 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
     !--------
     !  side 4
     !--------
-    !
-    ! call rpn2(2,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
-    !     nr+1-2*nghost,ql(:,:,4),qr(:,:,4),auxl,auxr,wave(:,:,:,4),s(:,:,4),amdq(:,:,4),apdq(:,:,4))
-    !
     ! we have the wave. for side 4. add into sdflxm
     !
+    base = 2*nc/lratioy + nr/lratiox
     do i = 1, nr/lratiox
-        influx  = influx + 1
-        ifine = (i-1)*lratiox
         do ivar = 1, nvar
             do l = 1, lratiox
-                svdflx(ivar,influx) = svdflx(ivar,influx) &
-                    + amdq(ivar,ifine+l,4) * hx * delt &
-                    + apdq(ivar,ifine+l,4) * hx * delt
+                svdflx(ivar,i+base) = svdflx(ivar,i+base) &
+                    + amdq(ivar,(i-1)*lratiox+l,4) * hx * delt &
+                    + apdq(ivar,(i-1)*lratiox+l,4) * hx * delt
             enddo
         enddo
     enddo
 
-    ! # for source terms:
-    ! if (method(5) .ne. 0) then   ! should I test here if index=0 and all skipped?
-    !     call src1d(nvar,nghost,lenbc,qc1d,maux,auxc1d,tgrid,delt)
-    !     !      # how can this be right - where is the integrated src term used?
-    ! endif
 
 #ifdef PROFILE
     call nvtxEndRange()
@@ -1090,23 +1051,24 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
     return
 end subroutine qad_cpu2
 
-subroutine rpn2_all_edges(maxm,meqn,mwaves,maux,mbc,mxs,ql,qr,wave,s,amdq,apdq)
+subroutine rpn2_all_edges(maxm,meqn,mwaves,mbc,mxs,ql,qr,wave,s,amdq,apdq)
 
     use problem_para_module, only: cc, zz, bulk, rho
+    use amr_module
 
     implicit none
 
-    integer, intent(in) :: maxm, meqn, mwaves, maux, mbc
+    integer, intent(in) :: maxm, meqn, mwaves, mbc
 
     integer :: nedges = SPACEDIM*2 ! num of edges for a grid
     integer, intent(in) :: mxs(nedges)
 
-    double precision, intent(in)  ::   ql(meqn, 1:maxm+2*mbc,nedges)
-    double precision, intent(in)  ::   qr(meqn, 1:maxm+2*mbc,nedges)
-    double precision, intent(out) :: wave(meqn, mwaves, 1:maxm+2*mbc,nedges)
-    double precision, intent(out) ::    s(1:mwaves, 1:maxm+2*mbc,nedges)
-    double precision, intent(out) :: apdq(meqn, 1:maxm+2*mbc,nedges)
-    double precision, intent(out) :: amdq(meqn, 1:maxm+2*mbc,nedges)
+    double precision, intent(in)  ::   ql(meqn, 1:maxm,nedges)
+    double precision, intent(in)  ::   qr(meqn, 1:maxm,nedges)
+    double precision, intent(out) :: wave(meqn, mwaves, 1:maxm,nedges)
+    double precision, intent(out) ::    s(1:mwaves, 1:maxm,nedges)
+    double precision, intent(out) :: apdq(meqn, 1:maxm,nedges)
+    double precision, intent(out) :: amdq(meqn, 1:maxm,nedges)
 
 !     local arrays
 !     ------------
@@ -1152,5 +1114,6 @@ subroutine rpn2_all_edges(maxm,meqn,mwaves,maux,mbc,mxs,ql,qr,wave,s,amdq,apdq)
 
     return
 end subroutine rpn2_all_edges
+
 
 end module reflux_module

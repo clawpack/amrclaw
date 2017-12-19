@@ -215,25 +215,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
         locaux = node(storeaux,mptr)
-#ifdef PROFILE
-        call take_cpu_timer('qad', timer_qad)
-        call cpu_timer_start(timer_qad)
-#endif
-        if (associated(fflux_hh(mptr)%ptr)) then
-            lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-            locsvq = 1 + nvar*lenbc
-            locx1d = locsvq + nvar*lenbc
-            istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
-            call qad_cpu2(alloc(locnew),mitot,mjtot,nvar, &
-                   fflux_hh(mptr)%ptr,fflux_hh(mptr)%ptr(locsvq),lenbc, &
-                   intratx(level-1),intraty(level-1),hx,hy, &
-                   naux,alloc(locaux),fflux_hh(mptr)%ptr(locx1d),delt,mptr)
-            istat = cudaMemcpy(fflux_hd(mptr)%ptr, fflux_hh(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
-        endif
-#ifdef PROFILE
-        call cpu_timer_stop(timer_qad)
-#endif
-
         !        # See if the grid about to be advanced has gauge data to output.
         !        # This corresponds to previous time step, but output done
         !        # now to make linear interpolation easier, since grid
@@ -258,6 +239,35 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef PROFILE
         call nvtxEndRange() 
         call cpu_timer_stop(timer_aos_to_soa)
+#endif
+
+    enddo
+
+    do j = 1, numgrids(level)
+        mptr = listOfGrids(levSt+j-1)
+        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+        mitot  = nx + 2*nghost
+        mjtot  = ny + 2*nghost
+
+        locnew = node(store1, mptr)
+#ifdef PROFILE
+        call take_cpu_timer('qad', timer_qad)
+        call cpu_timer_start(timer_qad)
+#endif
+        if (associated(fflux_hh(mptr)%ptr)) then
+            lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
+            locsvq = 1 + nvar*lenbc
+            locx1d = locsvq + nvar*lenbc
+            istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
+            call qad_cpu2(alloc(locnew),mitot,mjtot,nvar, &
+                   fflux_hh(mptr)%ptr,fflux_hh(mptr)%ptr(locsvq),lenbc, &
+                   intratx(level-1),intraty(level-1),hx,hy, &
+                   delt,mptr)
+            istat = cudaMemcpy(fflux_hd(mptr)%ptr, fflux_hh(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
+        endif
+#ifdef PROFILE
+        call cpu_timer_stop(timer_qad)
 #endif
 
     enddo
