@@ -7,4 +7,7 @@
 #ifdef CUDA 
 #endif
 
+! Variables to be added to this header file:
+! max1d, nghost
+
 #endif

@@ -456,16 +456,11 @@ subroutine fluxsv_fused_gpu(grids, cflux, fflux, &
 end subroutine fluxsv_fused_gpu
 
 
-!> For each coarse-fine interface, a Riemann problem between an inner
-!! ghost cell value on the fine grid and cell value in the adjacent coarse
-!! cell must be solved and added to corresponding location in
-!! **node(ffluxptr, mptr)** for conservative fix later
-!!
-! -------------------------------------------------------------
-!
-subroutine qad_cpu(valbig,mitot,mjtot,nvar, &
+
+! Note that valbig here is in SoA format
+subroutine qad_cpu2(valbig,mitot,mjtot,mbc,nvar, &
         svdflx,qc1d,lenbc,lratiox,lratioy,hx,hy,&
-        maux,aux,auxc1d,delt,mptr)
+        delt,mptr,cc,zz)
 
     use amr_module
 #ifdef PROFILE
@@ -492,390 +487,12 @@ subroutine qad_cpu(valbig,mitot,mjtot,nvar, &
     !      # and for other arrays it is only the last parameter that is wrong
     !      #  ok as long as meqn, mwaves < maxvar
 
-    integer, parameter :: max1dp1 = max1d+1
-    integer :: mitot, mjtot, nvar, lenbc, maux
-    integer :: lratiox, lratioy, mptr
-    integer :: iaddaux, iaux, nc, nr, level, index
-    integer :: ivar, lind, ncrse
-    double precision :: hx, hy, delt, tgrid
-    double precision :: ql(nvar,max1dp1),    qr(nvar,max1dp1)
-    double precision :: wave(nvar,mwaves,max1dp1), s(mwaves,max1dp1)
-    double precision :: amdq(nvar,max1dp1),  apdq(nvar,max1dp1)
-    double precision :: auxl(maxaux*max1dp1),  auxr(maxaux*max1dp1)
-    double precision :: valbig(nvar,mitot,mjtot)
-    double precision :: qc1d(nvar,lenbc)
-    double precision :: svdflx(nvar,lenbc)
-    double precision :: aux(maux,mitot,mjtot)
-    double precision :: auxc1d(maux,lenbc)
+    implicit none
 
-    logical :: qprint
-
-    integer :: i,j,ma,ic,jc,l,influx,ifine,jfine
-
-    !
-    !  WARNING: auxl,auxr dimensioned at max possible, but used as if
-    !  they were dimensioned as the real maux by max1dp1. Would be better
-    !  of course to dimension by maux by max1dp1 but this wont work if maux=0
-    !  So need to access using your own indexing into auxl,auxr.
-    iaddaux(iaux,i) = iaux + maux*(i-1)
-
-    data qprint/.false./
-    !
-    !      aux is auxiliary array with user parameters needed in Riemann solvers
-    !          on fine grid corresponding to valbig
-    !      auxc1d is coarse grid stuff from around boundary, same format as qc1d
-    !      auxl, auxr are work arrays needed to pass stuff to rpn2
-    !      maux is the number of aux variables, which may be zero.
-    !
-
-#ifdef PROFILE
-    call nvtxStartRange("qad",13)
-#endif
-    tgrid = rnode(timemult, mptr)
-    if (qprint) &
-        write(dbugunit,*)" working on grid ",mptr," time ",tgrid
-    nc = mjtot-2*nghost
-    nr = mitot-2*nghost
-    level = node(nestlevel, mptr)
-    index = 0
-
-    !
-    !--------
-    !  side 1
-    !--------
-    !
-    do j = nghost+1, mjtot-nghost
-        if (maux.gt.0) then
-            do ma = 1,maux
-                if (auxtype(ma).eq."xleft") then
-                    !                # Assuming velocity at left-face, this fix
-                    !                # preserves conservation in incompressible flow:
-                    auxl(iaddaux(ma,j-nghost+1)) = aux(ma,nghost+1,j)
-                else
-                    !                # Normal case -- we set the aux arrays 
-                    !                # from the cell corresponding  to q
-                    auxl(iaddaux(ma,j-nghost+1)) = aux(ma,nghost,j)
-                endif
-            enddo
-        endif
-        do ivar = 1, nvar
-            ql(ivar,j-nghost+1) = valbig(ivar,nghost,j)
-        enddo
-    enddo
-
-    lind = 0
-    ncrse = (mjtot-2*nghost)/lratioy
-    do jc = 1, ncrse
-        index = index + 1
-        do l = 1, lratioy
-            lind = lind + 1
-            if (maux.gt.0) then
-                do ma=1,maux
-                    auxr(iaddaux(ma,lind)) = auxc1d(ma,index)
-                enddo
-            endif
-            do ivar = 1, nvar
-                qr(ivar,lind) = qc1d(ivar,index)
-            enddo
-        enddo
-    enddo
-
-    if (qprint) then
-        write(dbugunit,*) 'side 1, ql and qr:'
-        do i=2,nc
-            write(dbugunit,4101) i,qr(1,i-1),ql(1,i)
-        enddo
-        4101      format(i3,4e16.6)
-        if (maux .gt. 0) then
-            write(dbugunit,*) 'side 1, auxr:'
-            do i=2,nc
-                write(dbugunit,4101) i,(auxr(iaddaux(ma,i-1)),ma=1,maux)
-            enddo
-            write(dbugunit,*) 'side 1, auxl:'
-            do i=2,nc
-                write(dbugunit,4101) i,(auxl(iaddaux(ma,i)),ma=1,maux)
-            enddo
-        endif
-    endif
-
-    call rpn2(1,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
-        nc+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
-    !
-    ! we have the wave. for side 1 add into sdflxm
-    !
-    influx = 0
-    do j = 1, nc/lratioy
-        influx  = influx + 1
-        jfine = (j-1)*lratioy
-        do ivar = 1, nvar
-            do l = 1, lratioy
-                svdflx(ivar,influx) = svdflx(ivar,influx) &
-                    + amdq(ivar,jfine+l+1) * hy * delt &
-                    + apdq(ivar,jfine+l+1) * hy * delt
-            enddo
-        enddo
-    enddo
-
-    !--------
-    !  side 2
-    !--------
-    !
-    if (mjtot .eq. 2*nghost+1) then
-        !          # a single row of interior cells only happens when using the
-        !          # 2d amrclaw code to do a 1d problem with refinement.
-        !          # (feature added in Version 4.3)
-        !          # skip over sides 2 and 4 in this case
-        go to 299
-    endif
-
-    do i = nghost+1, mitot-nghost
-        if (maux.gt.0) then
-            do ma = 1,maux
-                auxr(iaddaux(ma,i-nghost)) = aux(ma,i,mjtot-nghost+1)
-            enddo
-        endif
-        do ivar = 1, nvar
-            qr(ivar,i-nghost) = valbig(ivar,i,mjtot-nghost+1)
-        enddo
-    enddo
-
-    lind = 0
-    ncrse = (mitot-2*nghost)/lratiox
-    do ic = 1, ncrse
-        index = index + 1
-        do l = 1, lratiox
-            lind = lind + 1
-            if (maux.gt.0) then
-                do ma=1,maux
-                    if (auxtype(ma).eq."yleft") then
-                        !                # Assuming velocity at bottom-face, this fix
-                        !                # preserves conservation in incompressible flow:
-                        ifine = (ic-1)*lratiox + nghost + l
-                        auxl(iaddaux(ma,lind+1)) = aux(ma,ifine,mjtot-nghost+1)
-                    else
-                        auxl(iaddaux(ma,lind+1)) = auxc1d(ma,index)
-                    endif
-                enddo
-            endif
-            do ivar = 1, nvar
-                ql(ivar,lind+1) = qc1d(ivar,index)
-            enddo
-        enddo
-    enddo
-
-    if (qprint) then
-        write(dbugunit,*) 'side 2, ql and qr:'
-        do i=1,nr
-            write(dbugunit,4101) i,ql(1,i+1),qr(1,i)
-        enddo
-        if (maux .gt. 0) then
-            write(dbugunit,*) 'side 2, auxr:'
-            do i = 1, nr
-                write(dbugunit,4101) i, (auxr(iaddaux(ma,i)),ma=1,maux)
-            enddo
-            write(dbugunit,*) 'side 2, auxl:'
-            do i = 1, nr
-                write(dbugunit,4101) i, (auxl(iaddaux(ma,i)),ma=1,maux)
-            enddo
-        endif
-    endif
-    call rpn2(2,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
-        nr+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
-    !
-    ! we have the wave. for side 2. add into sdflxp
-    !
-    do i = 1, nr/lratiox
-        influx  = influx + 1
-        ifine = (i-1)*lratiox
-        do ivar = 1, nvar
-            do l = 1, lratiox
-                svdflx(ivar,influx) = svdflx(ivar,influx) &
-                    - amdq(ivar,ifine+l+1) * hx * delt &
-                    - apdq(ivar,ifine+l+1) * hx * delt
-            enddo
-        enddo
-    enddo
-
-    299  continue
-
-    !--------
-    !  side 3
-    !--------
-    !
-    do j = nghost+1, mjtot-nghost
-        if (maux.gt.0) then
-            do ma = 1,maux
-                auxr(iaddaux(ma,j-nghost)) = aux(ma,mitot-nghost+1,j)
-            enddo
-        endif
-        do ivar = 1, nvar
-            qr(ivar,j-nghost) = valbig(ivar,mitot-nghost+1,j)
-        enddo
-    enddo
-
-    lind = 0
-    ncrse = (mjtot-2*nghost)/lratioy
-    do jc = 1, ncrse
-        index = index + 1
-        do l = 1, lratioy
-            lind = lind + 1
-            if (maux.gt.0) then
-                do ma=1,maux
-                    if (auxtype(ma).eq."xleft") then
-                        !                # Assuming velocity at left-face, this fix
-                        !                # preserves conservation in incompressible flow:
-                        jfine = (jc-1)*lratioy + nghost + l
-                        auxl(iaddaux(ma,lind+1)) = aux(ma,mitot-nghost+1,jfine)
-                    else
-                        auxl(iaddaux(ma,lind+1)) = auxc1d(ma,index)
-                    endif
-                enddo
-            endif
-            do ivar = 1, nvar
-                ql(ivar,lind+1) = qc1d(ivar,index)
-            enddo
-        enddo
-    enddo
-
-    if (qprint) then
-        write(dbugunit,*) 'side 3, ql and qr:'
-        do i=1,nc
-            write(dbugunit,4101) i,ql(1,i),qr(1,i)
-        enddo
-    endif
-    call rpn2(1,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
-        nc+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
-    !
-    ! we have the wave. for side 3 add into sdflxp
-    !
-    do j = 1, nc/lratioy
-        influx  = influx + 1
-        jfine = (j-1)*lratioy
-        do ivar = 1, nvar
-            do l = 1, lratioy
-                svdflx(ivar,influx) = svdflx(ivar,influx) &
-                    - amdq(ivar,jfine+l+1) * hy * delt &
-                    - apdq(ivar,jfine+l+1) * hy * delt
-            enddo
-        enddo
-    enddo
-
-    !--------
-    !  side 4
-    !--------
-    !
-    if (mjtot .eq. 2*nghost+1) then
-        !          # a single row of interior cells only happens when using the
-        !          # 2d amrclaw code to do a 1d problem with refinement.
-        !          # (feature added in Version 4.3)
-        !          # skip over sides 2 and 4 in this case
-        go to 499
-    endif
-    !
-    do i = nghost+1, mitot-nghost
-        if (maux.gt.0) then
-            do ma = 1,maux
-                if (auxtype(ma).eq."yleft") then
-                    !                # Assuming velocity at bottom-face, this fix
-                    !                # preserves conservation in incompressible flow:
-                    auxl(iaddaux(ma,i-nghost+1)) = aux(ma,i,nghost+1)
-                else
-                    auxl(iaddaux(ma,i-nghost+1)) = aux(ma,i,nghost)
-                endif
-            enddo
-        endif
-        do ivar = 1, nvar
-            ql(ivar,i-nghost+1) = valbig(ivar,i,nghost)
-        enddo
-    enddo
-
-    lind = 0
-    ncrse = (mitot-2*nghost)/lratiox
-    do ic = 1, ncrse
-        index = index + 1
-        do l = 1, lratiox
-            lind = lind + 1
-            if (maux.gt.0) then
-                do ma=1,maux
-                    auxr(iaddaux(ma,lind)) = auxc1d(ma,index)
-                enddo
-            endif
-            do ivar = 1, nvar
-                qr(ivar,lind) = qc1d(ivar,index)
-            enddo
-        enddo
-    enddo
-
-    if (qprint) then
-        write(dbugunit,*) 'side 4, ql and qr:'
-        do i=1,nr
-            write(dbugunit,4101) i, ql(1,i),qr(1,i)
-        enddo
-    endif
-    call rpn2(2,max1dp1-2*nghost,nvar,mwaves,maux,nghost, &
-        nr+1-2*nghost,ql,qr,auxl,auxr,wave,s,amdq,apdq)
-    !
-    ! we have the wave. for side 4. add into sdflxm
-    !
-    do i = 1, nr/lratiox
-        influx  = influx + 1
-        ifine = (i-1)*lratiox
-        do ivar = 1, nvar
-            do l = 1, lratiox
-                svdflx(ivar,influx) = svdflx(ivar,influx) &
-                    + amdq(ivar,ifine+l+1) * hx * delt &
-                    + apdq(ivar,ifine+l+1) * hx * delt
-            enddo
-        enddo
-    enddo
-
-    499   continue
-
-    !      # for source terms:
-    if (method(5) .ne. 0) then   ! should I test here if index=0 and all skipped?
-        call src1d(nvar,nghost,lenbc,qc1d,maux,auxc1d,tgrid,delt)
-        !      # how can this be right - where is the integrated src term used?
-    endif
-
-#ifdef PROFILE
-    call nvtxEndRange()
-#endif
-    return
-end subroutine qad_cpu
-
-subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
-        svdflx,qc1d,lenbc,lratiox,lratioy,hx,hy,&
-        delt,mptr)
-
-    use amr_module
-#ifdef PROFILE
-    use profiling_module
-#endif
-
-
-    !
-    ! ::::::::::::::::::::::::::: QAD ::::::::::::::::::::::::::::::::::
-    !  are added in to coarse grid value, as a conservation fixup. 
-    !  Done each fine grid time step. If source terms are present, the
-    !  coarse grid value is advanced by source terms each fine time step too.
-
-    !  No change needed in this sub. for spherical mapping: correctly
-    !  mapped vals already in bcs on this fine grid and coarse saved
-    !  vals also properly prepared
-    !
-    ! Side 1 is the left side of the fine grid patch.  Then go around clockwise.
-    ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    !
-    !      # local storage
-    !      # note that dimension here are bigger than dimensions used
-    !      # in rp2, but shouldn't matter since wave is not used in qad
-    !      # and for other arrays it is only the last parameter that is wrong
-    !      #  ok as long as meqn, mwaves < maxvar
-
-    integer, value, intent(in) :: mitot, mjtot, nvar, lenbc
+    integer, value, intent(in) :: mitot, mjtot, mbc, nvar, lenbc
     integer, value, intent(in) :: lratiox, lratioy, mptr
-    double precision, value, intent(in) :: hx, hy, delt
-    double precision, intent(in) :: valbig(nvar,mitot,mjtot)
+    double precision, value, intent(in) :: hx, hy, delt, cc, zz
+    double precision, intent(in) :: valbig(mitot,mjtot,nvar)
     double precision, intent(in) :: qc1d(nvar,lenbc)
     double precision, intent(inout) :: svdflx(nvar,lenbc)
 
@@ -888,12 +505,13 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
     integer :: i,j,ic,jc,l
     integer :: base
     integer :: tid
+    double precision :: add
 
 #ifdef PROFILE
     call nvtxStartRange("qad",13)
 #endif
-    nc = mjtot-2*nghost
-    nr = mitot-2*nghost
+    nc = mjtot-2*mbc
+    nr = mitot-2*mbc
     do tid = 1, (nc+nr)*2
 
         ! prepare ql and qr
@@ -903,13 +521,11 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
         if (tid > base .and. tid <= (base+nc)) then
             j = tid - base
             do ivar = 1, nvar
-                ! ql(ivar,j-nghost,1) = valbig(ivar,nghost,j)
-                ql(ivar,j,1) = valbig(ivar,nghost,j+nghost)
+                ql(ivar,j,1) = valbig(mbc,j+mbc,ivar)
             enddo
 
             jc = (j-1)/lratioy+1
             do ivar = 1, nvar
-                ! qr(ivar,(jc-1)*lratioy+l,1) = qc1d(ivar,jc+base)
                 qr(ivar,j,1) = qc1d(ivar,jc)
             enddo
         endif
@@ -919,7 +535,7 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
         if (tid > base .and. tid <= (base+nr)) then
             i = tid - base
             do ivar = 1, nvar
-                qr(ivar,i,2) = valbig(ivar,i+nghost,mjtot-nghost+1)
+                qr(ivar,i,2) = valbig(i+mbc,mjtot-mbc+1,ivar)
             enddo
 
             ic = (i-1)/lratiox+1 + nc/lratioy
@@ -933,7 +549,7 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
         if (tid > base .and. tid <= (base+nc)) then
             j = tid - base
             do ivar = 1, nvar
-                qr(ivar,j,3) = valbig(ivar,mitot-nghost+1,j+nghost)
+                qr(ivar,j,3) = valbig(mitot-mbc+1,j+mbc,ivar)
             enddo
 
             jc = (j-1)/lratioy+1 + nc/lratioy + nr/lratiox
@@ -947,7 +563,7 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
         if (tid > base .and. tid <= (base+nr)) then
             i = tid - base
             do ivar = 1, nvar
-                ql(ivar,i,4) = valbig(ivar,i+nghost,nghost)
+                ql(ivar,i,4) = valbig(i+mbc,mbc,ivar)
             enddo
 
             ic = (i-1)/lratiox+1 + 2*nc/lratioy + nr/lratiox
@@ -957,14 +573,13 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
         endif
 
         ! We only need amdq and apdq from this
-        call rpn2_all_edges(max1d,nghost, &
-                ql,qr,amdq,apdq,tid,nc,nr)
+        call rpn2_all_edges(max1d,mbc, &
+                ql,qr,amdq,apdq,tid,nc,nr,cc,zz)
 
     ! Need to make sure all tasks above are finished before
     ! Starting below
     ! But we can't synchronize arocss CUDA blocks (before CUDA 9.0)
     ! So we must rely on the execution order of CUDA threads
-    ! TODO: This part needs atomic operation on GPU
         !--------
         !  side 1
         !--------
@@ -975,10 +590,9 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
             j = tid-base
             jc = (j-1)/lratioy + 1
             do ivar = 1, nvar
-                ! svdflx(ivar,j+base) = svdflx(ivar,j+base) &
-                svdflx(ivar,jc) = svdflx(ivar,jc) &
-                    + amdq(ivar,j,1) * hy * delt &
+                add = amdq(ivar,j,1) * hy * delt &
                     + apdq(ivar,j,1) * hy * delt
+                svdflx(ivar,jc) = svdflx(ivar,jc) + add
             enddo
         endif
 
@@ -992,9 +606,9 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
             i = tid-base
             ic = (i-1)/lratiox + 1 + nc/lratioy
             do ivar = 1, nvar
-                svdflx(ivar,ic) = svdflx(ivar,ic) &
-                    - amdq(ivar,i,2) * hx * delt &
+                add = - amdq(ivar,i,2) * hx * delt &
                     - apdq(ivar,i,2) * hx * delt
+                svdflx(ivar,ic) = svdflx(ivar,ic) + add
             enddo
         endif
 
@@ -1008,9 +622,9 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
             j = tid-base
             jc = (j-1)/lratioy + 1 + nc/lratioy + nr/lratiox
             do ivar = 1, nvar
-                svdflx(ivar,jc) = svdflx(ivar,jc) &
-                    - amdq(ivar,j,3) * hy * delt &
+                add = - amdq(ivar,j,3) * hy * delt &
                     - apdq(ivar,j,3) * hy * delt
+                svdflx(ivar,jc) = svdflx(ivar,jc) + add
             enddo
         endif
 
@@ -1024,13 +638,12 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
             i = tid-base
             ic = (i-1)/lratiox + 1 + 2*nc/lratioy + nr/lratiox
             do ivar = 1, nvar
-                svdflx(ivar,ic) = svdflx(ivar,ic) &
-                    + amdq(ivar,i,4) * hx * delt &
+                add = amdq(ivar,i,4) * hx * delt &
                     + apdq(ivar,i,4) * hx * delt
+                svdflx(ivar,ic) = svdflx(ivar,ic) + add
             enddo
         endif
     enddo
-
 
 #ifdef PROFILE
     call nvtxEndRange()
@@ -1038,14 +651,14 @@ subroutine qad_cpu2(valbig,mitot,mjtot,nvar, &
     return
 end subroutine qad_cpu2
 
-subroutine rpn2_all_edges(maxm,mbc,ql,qr,amdq,apdq,tid,nc,nr)
+subroutine rpn2_all_edges(maxm,mbc,ql,qr,amdq,apdq,tid,nc,nr,cc,zz)
 
-    use problem_para_module, only: cc, zz, bulk, rho
     use amr_module
 
     implicit none
 
     integer, value, intent(in) :: maxm, mbc, tid, nc, nr
+    double precision, value, intent(in) :: cc,zz
     double precision, intent(in)  ::   ql(NEQNS, 1:maxm,SPACEDIM*2)
     double precision, intent(in)  ::   qr(NEQNS, 1:maxm,SPACEDIM*2)
     double precision, intent(out) :: apdq(NEQNS, 1:maxm,SPACEDIM*2)
@@ -1178,6 +791,319 @@ subroutine rpn2_all_edges(maxm,mbc,ql,qr,amdq,apdq,tid,nc,nr)
 end subroutine rpn2_all_edges
 
 
+! Note that valbig here is in SoA format
+#ifdef CUDA
+attributes(global) &
+subroutine qad_gpu(valbig,mitot,mjtot,mbc,nvar, &
+        svdflx,qc1d,lenbc,lratiox,lratioy,hx,hy,&
+        delt,mptr,max1d,cc,zz)
+
+    implicit none
+
+    integer, value, intent(in) :: mitot, mjtot, mbc, nvar, lenbc, max1d
+    integer, value, intent(in) :: lratiox, lratioy, mptr
+    double precision, value, intent(in) :: cc, zz
+    double precision, value, intent(in) :: hx, hy, delt
+    double precision, intent(in) :: valbig(mitot,mjtot,nvar)
+    double precision, intent(in) :: qc1d(nvar,lenbc)
+    double precision, intent(inout) :: svdflx(nvar,lenbc)
+
+    double precision :: ql(nvar,max1d,SPACEDIM*2), qr(nvar,max1d,SPACEDIM*2)
+    double precision :: amdq(nvar,max1d,SPACEDIM*2),  apdq(nvar,max1d,SPACEDIM*2)
+
+    integer :: nc, nr
+    integer :: ivar, istat
+    integer :: i,j,ic,jc,l
+    integer :: base
+    integer :: tid
+    double precision :: add
+
+#ifdef DEBUG
+    if (blockDim%y /= 1 .or. gridDim%y /= 1) then
+        print *, "qad_gpu kernel should be called with blockDim%y == 1 and gridDim%y == 1"
+        stop
+    endif
+#endif
+
+    tid = (blockIdx%x-1) * blockDim%x + threadIdx%x
+    nc = mjtot-2*mbc
+    nr = mitot-2*mbc
+
+    if (tid > (nc+nr)*2) then
+        return
+    endif
+    ! prepare ql and qr
+    !
+    ! side 1
+    base = 0
+    if (tid > base .and. tid <= (base+nc)) then
+        j = tid - base
+        do ivar = 1, nvar
+            ql(ivar,j,1) = valbig(mbc,j+mbc,ivar)
+        enddo
+
+        jc = (j-1)/lratioy+1
+        do ivar = 1, nvar
+            qr(ivar,j,1) = qc1d(ivar,jc)
+        enddo
+    endif
+
+    ! side 2
+    base = nc
+    if (tid > base .and. tid <= (base+nr)) then
+        i = tid - base
+        do ivar = 1, nvar
+            qr(ivar,i,2) = valbig(i+mbc,mjtot-mbc+1,ivar)
+        enddo
+
+        ic = (i-1)/lratiox+1 + nc/lratioy
+        do ivar = 1, nvar
+            ql(ivar,i,2) = qc1d(ivar,ic)
+        enddo
+    endif
+
+    ! side 3
+    base = nc + nr
+    if (tid > base .and. tid <= (base+nc)) then
+        j = tid - base
+        do ivar = 1, nvar
+            qr(ivar,j,3) = valbig(mitot-mbc+1,j+mbc,ivar)
+        enddo
+
+        jc = (j-1)/lratioy+1 + nc/lratioy + nr/lratiox
+        do ivar = 1, nvar
+            ql(ivar,j,3) = qc1d(ivar,jc)
+        enddo
+    endif
+
+    ! side 4
+    base = 2*nc + nr
+    if (tid > base .and. tid <= (base+nr)) then
+        i = tid - base
+        do ivar = 1, nvar
+            ql(ivar,i,4) = valbig(i+mbc,mbc,ivar)
+        enddo
+
+        ic = (i-1)/lratiox+1 + 2*nc/lratioy + nr/lratiox
+        do ivar = 1, nvar
+            qr(ivar,i,4) = qc1d(ivar,ic)
+        enddo
+    endif
+
+    ! We only need amdq and apdq from this
+    call rpn2_all_edges_dev(max1d,mbc, &
+            ql,qr,amdq,apdq,tid,nc,nr,cc,zz)
+
+    ! Need to make sure all tasks above are finished before
+    ! Starting below
+    ! But we can't synchronize arocss CUDA blocks (before CUDA 9.0)
+    ! So we must rely on the execution order of CUDA threads
+    !--------
+    !  side 1
+    !--------
+    ! we have the wave. for side 1 add into sdflxm
+    !
+    base = 0
+    if (tid > base .and. tid <= (base+nc)) then
+        j = tid-base
+        jc = (j-1)/lratioy + 1
+        do ivar = 1, nvar
+            add = amdq(ivar,j,1) * hy * delt &
+                + apdq(ivar,j,1) * hy * delt
+            istat = atomicadd(svdflx(ivar,jc), add)
+        enddo
+    endif
+
+    !--------
+    !  side 2
+    !--------
+    ! we have the wave. for side 2. add into sdflxp
+    !
+    base = nc
+    if (tid > base .and. tid <= (base+nr)) then
+        i = tid-base
+        ic = (i-1)/lratiox + 1 + nc/lratioy
+        do ivar = 1, nvar
+            add = -amdq(ivar,i,2) * hx * delt &
+                - apdq(ivar,i,2) * hx * delt
+            istat = atomicadd(svdflx(ivar,ic), add)
+        enddo
+    endif
+
+    !--------
+    !  side 3
+    !--------
+    ! we have the wave. for side 3 add into sdflxp
+    !
+    base = nc + nr
+    if (tid > base .and. tid <= (base+nc)) then
+        j = tid-base
+        jc = (j-1)/lratioy + 1 + nc/lratioy + nr/lratiox
+        do ivar = 1, nvar
+            add = - amdq(ivar,j,3) * hy * delt &
+                - apdq(ivar,j,3) * hy * delt
+            istat = atomicadd(svdflx(ivar,jc), add)
+        enddo
+    endif
+
+    !--------
+    !  side 4
+    !--------
+    ! we have the wave. for side 4. add into sdflxm
+    !
+    base = 2*nc + nr
+    if (tid > base .and. tid <= (base+nr)) then
+        i = tid-base
+        ic = (i-1)/lratiox + 1 + 2*nc/lratioy + nr/lratiox
+        do ivar = 1, nvar
+            add = amdq(ivar,i,4) * hx * delt &
+                + apdq(ivar,i,4) * hx * delt
+            istat = atomicadd(svdflx(ivar,ic), add)
+        enddo
+    endif
+    return
+end subroutine qad_gpu
+
+attributes(device) &
+subroutine rpn2_all_edges_dev(maxm,mbc,ql,qr,amdq,apdq,tid,nc,nr,cc,zz)
+
+    use amr_module
+
+    implicit none
+
+    integer, value, intent(in) :: maxm, mbc, tid, nc, nr
+    double precision, value, intent(in) :: cc, zz
+    double precision, intent(in)  ::   ql(NEQNS, 1:maxm,SPACEDIM*2)
+    double precision, intent(in)  ::   qr(NEQNS, 1:maxm,SPACEDIM*2)
+    double precision, intent(out) :: apdq(NEQNS, 1:maxm,SPACEDIM*2)
+    double precision, intent(out) :: amdq(NEQNS, 1:maxm,SPACEDIM*2)
+
+    double precision :: wave(NEQNS, NWAVES)
+    double precision ::    s(1:NWAVES)
+
+!     local arrays
+!     ------------
+    double precision :: delta1, delta2, delta3, a1, a2
+    integer :: mu, mv, i, m, iedge, base
+
+    ! side 1
+    base = 0
+    if (tid > base .and. tid <= (base+nc)) then
+        iedge = 1
+        mu = 2
+        mv = 3
+        i = tid - base
+        delta1 = ql( 1,i,iedge) - qr( 1,i,iedge)
+        delta2 = ql(mu,i,iedge) - qr(mu,i,iedge)
+        a1 = (-delta1 + zz*delta2) / (2.d0*zz)
+        a2 = (delta1 + zz*delta2) / (2.d0*zz)
+    
+    !        # Compute the waves.
+    
+        wave( 1,1) = -a1*zz
+        wave(mu,1) = a1
+        wave(mv,1) = 0.d0
+        s(1) = -cc
+    
+        wave( 1,2) = a2*zz
+        wave(mu,2) = a2
+        wave(mv,2) = 0.d0
+        s(2) = cc
+        do m = 1,NEQNS
+            amdq(m,i,iedge) = s(1)*wave(m,1)
+            apdq(m,i,iedge) = s(2)*wave(m,2)
+        enddo
+    endif
+
+    ! side 2
+    base = nc
+    if (tid > base .and. tid <= (base+nr)) then
+        iedge = 2
+        mu = 3
+        mv = 2
+        i = tid - base
+        delta1 = ql( 1,i,iedge) - qr( 1,i,iedge)
+        delta2 = ql(mu,i,iedge) - qr(mu,i,iedge)
+        a1 = (-delta1 + zz*delta2) / (2.d0*zz)
+        a2 = (delta1 + zz*delta2) / (2.d0*zz)
+    
+    !        # Compute the waves.
+    
+        wave( 1,1) = -a1*zz
+        wave(mu,1) = a1
+        wave(mv,1) = 0.d0
+        s(1) = -cc
+    
+        wave( 1,2) = a2*zz
+        wave(mu,2) = a2
+        wave(mv,2) = 0.d0
+        s(2) = cc
+        do m = 1,NEQNS
+            amdq(m,i,iedge) = s(1)*wave(m,1)
+            apdq(m,i,iedge) = s(2)*wave(m,2)
+        enddo
+    endif
+
+    ! side 3
+    base = nc + nr
+    if (tid > base .and. tid <= (base+nc)) then
+        iedge = 3
+        mu = 2
+        mv = 3
+        i = tid - base
+        delta1 = ql( 1,i,iedge) - qr( 1,i,iedge)
+        delta2 = ql(mu,i,iedge) - qr(mu,i,iedge)
+        a1 = (-delta1 + zz*delta2) / (2.d0*zz)
+        a2 = (delta1 + zz*delta2) / (2.d0*zz)
+    
+    !        # Compute the waves.
+    
+        wave( 1,1) = -a1*zz
+        wave(mu,1) = a1
+        wave(mv,1) = 0.d0
+        s(1) = -cc
+    
+        wave( 1,2) = a2*zz
+        wave(mu,2) = a2
+        wave(mv,2) = 0.d0
+        s(2) = cc
+        do m = 1,NEQNS
+            amdq(m,i,iedge) = s(1)*wave(m,1)
+            apdq(m,i,iedge) = s(2)*wave(m,2)
+        enddo
+    endif
+
+    ! side 4
+    base = 2*nc + nr
+    if (tid > base .and. tid <= (base+nr)) then
+        iedge = 4
+        mu = 3
+        mv = 2
+        i = tid - base
+        delta1 = ql( 1,i,iedge) - qr( 1,i,iedge)
+        delta2 = ql(mu,i,iedge) - qr(mu,i,iedge)
+        a1 = (-delta1 + zz*delta2) / (2.d0*zz)
+        a2 = (delta1 + zz*delta2) / (2.d0*zz)
+    
+    !        # Compute the waves.
+    
+        wave( 1,1) = -a1*zz
+        wave(mu,1) = a1
+        wave(mv,1) = 0.d0
+        s(1) = -cc
+    
+        wave( 1,2) = a2*zz
+        wave(mu,2) = a2
+        wave(mv,2) = 0.d0
+        s(2) = cc
+        do m = 1,NEQNS
+            amdq(m,i,iedge) = s(1)*wave(m,1)
+            apdq(m,i,iedge) = s(2)*wave(m,2)
+        enddo
+    endif
+    return
+end subroutine rpn2_all_edges_dev
+#endif
 
 
 end module reflux_module
