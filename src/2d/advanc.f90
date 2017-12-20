@@ -244,48 +244,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     enddo
 
-    do j = 1, numgrids(level)
-        mptr = listOfGrids(levSt+j-1)
-        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-        mitot  = nx + 2*nghost
-        mjtot  = ny + 2*nghost
-
-        locnew = node(store1, mptr)
-#ifdef PROFILE
-        call take_cpu_timer('qad', timer_qad)
-        call cpu_timer_start(timer_qad)
-#endif
-        ! copy q to GPU
-        ! cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
-        cudaResult = cudaMemcpy(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice)
-
-        if (associated(fflux_hh(mptr)%ptr)) then
-            lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-            locsvq = 1 + nvar*lenbc
-
-            ! CPU version
-            ! istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
-            ! call qad_cpu2(grid_data(mptr)%ptr,mitot,mjtot,nghost,nvar, &
-            !        fflux_hh(mptr)%ptr,fflux_hh(mptr)%ptr(locsvq),lenbc, &
-            !        intratx(level-1),intraty(level-1),hx,hy, &
-            !        delt,mptr,cc,zz)
-            ! istat = cudaMemcpy(fflux_hd(mptr)%ptr, fflux_hh(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
-
-            call compute_kernel_size(numBlocks, numThreads, &
-                1,2*(nx+ny))
-            call qad_gpu<<<numBlocks,numThreads>>>( &
-                   grid_data_d(mptr)%ptr,mitot,mjtot,nghost,nvar, &
-                   fflux_hd(mptr)%ptr,fflux_hd(mptr)%ptr(locsvq),lenbc, &
-                   intratx(level-1),intraty(level-1),hx,hy, &
-                   delt,mptr,max1d,cc,zz)
-        endif
-#ifdef PROFILE
-        call cpu_timer_stop(timer_qad)
-#endif
-
-    enddo
-    call wait_for_all_gpu_tasks(device_id)
 
 
 #ifdef PROFILE
@@ -309,7 +267,29 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         locaux = node(storeaux,mptr)
 
         ! copy q to GPU
-        ! cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
+        
+        if (associated(fflux_hh(mptr)%ptr)) then
+            lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
+            locsvq = 1 + nvar*lenbc
+
+            ! CPU version
+            ! istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
+            ! call qad_cpu2(grid_data(mptr)%ptr,mitot,mjtot,nghost,nvar, &
+            !        fflux_hh(mptr)%ptr,fflux_hh(mptr)%ptr(locsvq),lenbc, &
+            !        intratx(level-1),intraty(level-1),hx,hy, &
+            !        delt,mptr,cc,zz)
+            ! istat = cudaMemcpy(fflux_hd(mptr)%ptr, fflux_hh(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
+
+            call compute_kernel_size(numBlocks, numThreads, &
+                1,2*(nx+ny))
+            ! call qad_gpu<<<numBlocks,numThreads,0,get_cuda_stream(id,device_id)>>>( &
+            call qad_gpu<<<numBlocks,numThreads>>>( &
+                   grid_data_d(mptr)%ptr,mitot,mjtot,nghost,nvar, &
+                   fflux_hd(mptr)%ptr,fflux_hd(mptr)%ptr(locsvq),lenbc, &
+                   intratx(level-1),intraty(level-1),hx,hy, &
+                   delt,mptr,max1d,cc,zz)
+        endif
 
 
         if (dimensional_split .eq. 0) then
@@ -336,7 +316,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call wait_for_all_gpu_tasks(device_id)
 
 #ifdef PROFILE
-       call nvtxStartRange("fluxsv and fluxad",11)
+    call nvtxStartRange("fluxsv and fluxad",11)
 #endif
     allocate(grids(numgrids(level)))
     allocate(grids_d(numgrids(level)))
