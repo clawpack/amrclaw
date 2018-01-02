@@ -21,7 +21,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
     use cudafor
-    use reflux_module, only: fluxad_gpu, fluxsv_gpu, qad_cpu2, qad_gpu, &
+    use reflux_module, only: qad_cpu2, qad_gpu, &
         fluxad_fused_gpu, fluxsv_fused_gpu
     use cuda_module, only: grid_type
     use problem_para_module, only: cc, zz
@@ -283,8 +283,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
             call compute_kernel_size(numBlocks, numThreads, &
                 1,2*(nx+ny))
-            ! call qad_gpu<<<numBlocks,numThreads,0,get_cuda_stream(id,device_id)>>>( &
-            call qad_gpu<<<numBlocks,numThreads>>>( &
+            call qad_gpu<<<numBlocks,numThreads,0,get_cuda_stream(id,device_id)>>>( &
                    grid_data_d(mptr)%ptr,mitot,mjtot,nghost,nvar, &
                    fflux_hd(mptr)%ptr,fflux_hd(mptr)%ptr(locsvq),lenbc, &
                    intratx(level-1),intraty(level-1),hx,hy, &

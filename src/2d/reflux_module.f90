@@ -804,12 +804,11 @@ subroutine qad_gpu(valbig,mitot,mjtot,mbc,nvar, &
     integer, value, intent(in) :: lratiox, lratioy, mptr
     double precision, value, intent(in) :: cc, zz
     double precision, value, intent(in) :: hx, hy, delt
-    double precision, intent(in) :: valbig(mitot,mjtot,nvar)
-    double precision, intent(in) :: qc1d(nvar,lenbc)
-    double precision, intent(inout) :: svdflx(nvar,lenbc)
+    double precision, intent(in) :: valbig(mitot,mjtot,NEQNS)
+    double precision, intent(in) :: qc1d(NEQNS,lenbc)
+    double precision, intent(inout) :: svdflx(NEQNS,lenbc)
 
-    double precision :: ql(nvar,max1d,SPACEDIM*2), qr(nvar,max1d,SPACEDIM*2)
-    double precision :: amdq(nvar,max1d,SPACEDIM*2),  apdq(nvar,max1d,SPACEDIM*2)
+    double precision :: ql(NEQNS), qr(NEQNS), amdq(NEQNS), apdq(NEQNS)
 
     integer :: nc, nr
     integer :: ivar, istat
@@ -834,275 +833,141 @@ subroutine qad_gpu(valbig,mitot,mjtot,mbc,nvar, &
     endif
     ! prepare ql and qr
     !
+    if (tid <= nc) then
     ! side 1
-    base = 0
-    if (tid > base .and. tid <= (base+nc)) then
-        j = tid - base
-        do ivar = 1, nvar
-            ql(ivar,j,1) = valbig(mbc,j+mbc,ivar)
+        j = tid
+        do ivar = 1, NEQNS
+            ql(ivar) = valbig(mbc,j+mbc,ivar)
         enddo
 
         jc = (j-1)/lratioy+1
-        do ivar = 1, nvar
-            qr(ivar,j,1) = qc1d(ivar,jc)
+        do ivar = 1, NEQNS
+            qr(ivar) = qc1d(ivar,jc)
         enddo
-    endif
+        ! We only need amdq and apdq from this
+        call rpn2_single(1,ql,qr,amdq,apdq,cc,zz)
 
+        do ivar = 1, NEQNS
+            add = amdq(ivar) * hy * delt &
+                + apdq(ivar) * hy * delt
+            istat = atomicadd(svdflx(ivar,jc), add)
+        enddo
+    else if (tid <= (nc+nr)) then
     ! side 2
-    base = nc
-    if (tid > base .and. tid <= (base+nr)) then
-        i = tid - base
-        do ivar = 1, nvar
-            qr(ivar,i,2) = valbig(i+mbc,mjtot-mbc+1,ivar)
+        i = tid - nc
+        do ivar = 1, NEQNS
+            qr(ivar) = valbig(i+mbc,mjtot-mbc+1,ivar)
         enddo
 
         ic = (i-1)/lratiox+1 + nc/lratioy
-        do ivar = 1, nvar
-            ql(ivar,i,2) = qc1d(ivar,ic)
+        do ivar = 1, NEQNS
+            ql(ivar) = qc1d(ivar,ic)
         enddo
-    endif
-
+        ! We only need amdq and apdq from this
+        call rpn2_single(2,ql,qr,amdq,apdq,cc,zz)
+        do ivar = 1, NEQNS
+            add = -amdq(ivar) * hx * delt &
+                  -apdq(ivar) * hx * delt
+            istat = atomicadd(svdflx(ivar,ic), add)
+        enddo
+    else if (tid <= (2*nc+nr)) then
     ! side 3
-    base = nc + nr
-    if (tid > base .and. tid <= (base+nc)) then
-        j = tid - base
-        do ivar = 1, nvar
-            qr(ivar,j,3) = valbig(mitot-mbc+1,j+mbc,ivar)
+        j = tid - (nc+nr)
+        do ivar = 1, NEQNS
+            qr(ivar) = valbig(mitot-mbc+1,j+mbc,ivar)
         enddo
 
         jc = (j-1)/lratioy+1 + nc/lratioy + nr/lratiox
-        do ivar = 1, nvar
-            ql(ivar,j,3) = qc1d(ivar,jc)
+        do ivar = 1, NEQNS
+            ql(ivar) = qc1d(ivar,jc)
         enddo
-    endif
-
+        ! We only need amdq and apdq from this
+        call rpn2_single(1,ql,qr,amdq,apdq,cc,zz)
+        do ivar = 1, NEQNS
+            add = -amdq(ivar) * hy * delt &
+                  -apdq(ivar) * hy * delt
+            istat = atomicadd(svdflx(ivar,jc), add)
+        enddo
+    else if (tid <= 2*(nc+nr)) then
     ! side 4
-    base = 2*nc + nr
-    if (tid > base .and. tid <= (base+nr)) then
-        i = tid - base
-        do ivar = 1, nvar
-            ql(ivar,i,4) = valbig(i+mbc,mbc,ivar)
+        i = tid - (2*nc+nr)
+        do ivar = 1, NEQNS
+            ql(ivar) = valbig(i+mbc,mbc,ivar)
         enddo
 
         ic = (i-1)/lratiox+1 + 2*nc/lratioy + nr/lratiox
-        do ivar = 1, nvar
-            qr(ivar,i,4) = qc1d(ivar,ic)
+        do ivar = 1, NEQNS
+            qr(ivar) = qc1d(ivar,ic)
         enddo
-    endif
-
-    ! We only need amdq and apdq from this
-    call rpn2_all_edges_dev(max1d,mbc, &
-            ql,qr,amdq,apdq,tid,nc,nr,cc,zz)
-
-    ! Need to make sure all tasks above are finished before
-    ! Starting below
-    ! But we can't synchronize arocss CUDA blocks (before CUDA 9.0)
-    ! So we must rely on the execution order of CUDA threads
-    !--------
-    !  side 1
-    !--------
-    ! we have the wave. for side 1 add into sdflxm
-    !
-    base = 0
-    if (tid > base .and. tid <= (base+nc)) then
-        j = tid-base
-        jc = (j-1)/lratioy + 1
-        do ivar = 1, nvar
-            add = amdq(ivar,j,1) * hy * delt &
-                + apdq(ivar,j,1) * hy * delt
-            istat = atomicadd(svdflx(ivar,jc), add)
-        enddo
-    endif
-
-    !--------
-    !  side 2
-    !--------
-    ! we have the wave. for side 2. add into sdflxp
-    !
-    base = nc
-    if (tid > base .and. tid <= (base+nr)) then
-        i = tid-base
-        ic = (i-1)/lratiox + 1 + nc/lratioy
-        do ivar = 1, nvar
-            add = -amdq(ivar,i,2) * hx * delt &
-                - apdq(ivar,i,2) * hx * delt
+        ! We only need amdq and apdq from this
+        call rpn2_single(2,ql,qr,amdq,apdq,cc,zz)
+        do ivar = 1, NEQNS
+            add = amdq(ivar) * hx * delt &
+                 +apdq(ivar) * hx * delt
             istat = atomicadd(svdflx(ivar,ic), add)
         enddo
     endif
 
-    !--------
-    !  side 3
-    !--------
-    ! we have the wave. for side 3 add into sdflxp
-    !
-    base = nc + nr
-    if (tid > base .and. tid <= (base+nc)) then
-        j = tid-base
-        jc = (j-1)/lratioy + 1 + nc/lratioy + nr/lratiox
-        do ivar = 1, nvar
-            add = - amdq(ivar,j,3) * hy * delt &
-                - apdq(ivar,j,3) * hy * delt
-            istat = atomicadd(svdflx(ivar,jc), add)
-        enddo
-    endif
 
-    !--------
-    !  side 4
-    !--------
-    ! we have the wave. for side 4. add into sdflxm
-    !
-    base = 2*nc + nr
-    if (tid > base .and. tid <= (base+nr)) then
-        i = tid-base
-        ic = (i-1)/lratiox + 1 + 2*nc/lratioy + nr/lratiox
-        do ivar = 1, nvar
-            add = amdq(ivar,i,4) * hx * delt &
-                + apdq(ivar,i,4) * hx * delt
-            istat = atomicadd(svdflx(ivar,ic), add)
-        enddo
-    endif
     return
 end subroutine qad_gpu
 
+
+! Solve the Riemann problem between two states: ql and qr
 attributes(device) &
-subroutine rpn2_all_edges_dev(maxm,mbc,ql,qr,amdq,apdq,tid,nc,nr,cc,zz)
+subroutine rpn2_single(ixy,ql,qr,amdq,apdq,cc,zz)
 
     use amr_module
 
     implicit none
 
-    integer, value, intent(in) :: maxm, mbc, tid, nc, nr
-    double precision, value, intent(in) :: cc, zz
-    double precision, intent(in)  ::   ql(NEQNS, 1:maxm,SPACEDIM*2)
-    double precision, intent(in)  ::   qr(NEQNS, 1:maxm,SPACEDIM*2)
-    double precision, intent(out) :: apdq(NEQNS, 1:maxm,SPACEDIM*2)
-    double precision, intent(out) :: amdq(NEQNS, 1:maxm,SPACEDIM*2)
+    ! ixy = 1: x-direction
+    ! ixy = 2: y-direction
+    integer, intent(in) :: ixy
+    double precision, intent(in) :: cc, zz
+    double precision, intent(in)  ::   ql(NEQNS)
+    double precision, intent(in)  ::   qr(NEQNS)
+    double precision, intent(out) :: apdq(NEQNS)
+    double precision, intent(out) :: amdq(NEQNS)
 
     double precision :: wave(NEQNS, NWAVES)
     double precision ::    s(1:NWAVES)
 
 !     local arrays
 !     ------------
-    double precision :: delta1, delta2, delta3, a1, a2
-    integer :: mu, mv, i, m, iedge, base
+    double precision :: delta1, delta2, a1, a2
+    integer :: mu, mv, m
 
-    ! side 1
-    base = 0
-    if (tid > base .and. tid <= (base+nc)) then
-        iedge = 1
+    if (ixy == 1) then
         mu = 2
         mv = 3
-        i = tid - base
-        delta1 = ql( 1,i,iedge) - qr( 1,i,iedge)
-        delta2 = ql(mu,i,iedge) - qr(mu,i,iedge)
-        a1 = (-delta1 + zz*delta2) / (2.d0*zz)
-        a2 = (delta1 + zz*delta2) / (2.d0*zz)
-    
-    !        # Compute the waves.
-    
-        wave( 1,1) = -a1*zz
-        wave(mu,1) = a1
-        wave(mv,1) = 0.d0
-        s(1) = -cc
-    
-        wave( 1,2) = a2*zz
-        wave(mu,2) = a2
-        wave(mv,2) = 0.d0
-        s(2) = cc
-        do m = 1,NEQNS
-            amdq(m,i,iedge) = s(1)*wave(m,1)
-            apdq(m,i,iedge) = s(2)*wave(m,2)
-        enddo
-    endif
-
-    ! side 2
-    base = nc
-    if (tid > base .and. tid <= (base+nr)) then
-        iedge = 2
+    else
         mu = 3
         mv = 2
-        i = tid - base
-        delta1 = ql( 1,i,iedge) - qr( 1,i,iedge)
-        delta2 = ql(mu,i,iedge) - qr(mu,i,iedge)
-        a1 = (-delta1 + zz*delta2) / (2.d0*zz)
-        a2 = (delta1 + zz*delta2) / (2.d0*zz)
-    
-    !        # Compute the waves.
-    
-        wave( 1,1) = -a1*zz
-        wave(mu,1) = a1
-        wave(mv,1) = 0.d0
-        s(1) = -cc
-    
-        wave( 1,2) = a2*zz
-        wave(mu,2) = a2
-        wave(mv,2) = 0.d0
-        s(2) = cc
-        do m = 1,NEQNS
-            amdq(m,i,iedge) = s(1)*wave(m,1)
-            apdq(m,i,iedge) = s(2)*wave(m,2)
-        enddo
     endif
 
-    ! side 3
-    base = nc + nr
-    if (tid > base .and. tid <= (base+nc)) then
-        iedge = 3
-        mu = 2
-        mv = 3
-        i = tid - base
-        delta1 = ql( 1,i,iedge) - qr( 1,i,iedge)
-        delta2 = ql(mu,i,iedge) - qr(mu,i,iedge)
-        a1 = (-delta1 + zz*delta2) / (2.d0*zz)
-        a2 = (delta1 + zz*delta2) / (2.d0*zz)
-    
-    !        # Compute the waves.
-    
-        wave( 1,1) = -a1*zz
-        wave(mu,1) = a1
-        wave(mv,1) = 0.d0
-        s(1) = -cc
-    
-        wave( 1,2) = a2*zz
-        wave(mu,2) = a2
-        wave(mv,2) = 0.d0
-        s(2) = cc
-        do m = 1,NEQNS
-            amdq(m,i,iedge) = s(1)*wave(m,1)
-            apdq(m,i,iedge) = s(2)*wave(m,2)
-        enddo
-    endif
+    delta1 = ql( 1) - qr( 1)
+    delta2 = ql(mu) - qr(mu)
+    a1 = (-delta1 + zz*delta2) / (2.d0*zz)
+    a2 = (delta1 + zz*delta2) / (2.d0*zz)
 
-    ! side 4
-    base = 2*nc + nr
-    if (tid > base .and. tid <= (base+nr)) then
-        iedge = 4
-        mu = 3
-        mv = 2
-        i = tid - base
-        delta1 = ql( 1,i,iedge) - qr( 1,i,iedge)
-        delta2 = ql(mu,i,iedge) - qr(mu,i,iedge)
-        a1 = (-delta1 + zz*delta2) / (2.d0*zz)
-        a2 = (delta1 + zz*delta2) / (2.d0*zz)
-    
-    !        # Compute the waves.
-    
-        wave( 1,1) = -a1*zz
-        wave(mu,1) = a1
-        wave(mv,1) = 0.d0
-        s(1) = -cc
-    
-        wave( 1,2) = a2*zz
-        wave(mu,2) = a2
-        wave(mv,2) = 0.d0
-        s(2) = cc
-        do m = 1,NEQNS
-            amdq(m,i,iedge) = s(1)*wave(m,1)
-            apdq(m,i,iedge) = s(2)*wave(m,2)
-        enddo
-    endif
+!        # Compute the waves.
+
+    wave( 1,1) = -a1*zz
+    wave(mu,1) = a1
+    wave(mv,1) = 0.d0
+    s(1) = -cc
+
+    wave( 1,2) = a2*zz
+    wave(mu,2) = a2
+    wave(mv,2) = 0.d0
+    s(2) = cc
+    do m = 1,NEQNS
+        amdq(m) = s(1)*wave(m,1)
+        apdq(m) = s(2)*wave(m,2)
+    enddo
     return
-end subroutine rpn2_all_edges_dev
+end subroutine rpn2_single
 #endif
 
 
