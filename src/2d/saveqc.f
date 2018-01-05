@@ -115,8 +115,11 @@ c         make coarsened enlarged patch for conservative fixup
 #endif
           call reclam(loctmp,nrow*ncol*(nvar+naux))
 
+#ifdef CUDA
+          ! TODO: this can be made async
           istat = cudaMemcpy(fflux_hd(mkid)%ptr, 
      .      fflux_hh(mkid)%ptr, nvar*lenbc*2+naux*lenbc)
+#endif
           mkid = node(levelptr,mkid)
           go to 10
  99    return

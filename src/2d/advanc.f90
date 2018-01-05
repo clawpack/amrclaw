@@ -105,6 +105,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !     maxthreads initialized to 1 above in case no openmp
     !$    maxthreads = omp_get_max_threads()
 
+#ifdef PROFILE
+    call nvtxStartRange("bound", 24)
+#endif
     ! We want to do this regardless of the threading type
     !$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot,
     !$OMP&                    mjtot,time,levSt),
@@ -130,6 +133,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     end do
     !$OMP END PARALLEL DO
+#ifdef PROFILE
+    call nvtxEndRange() 
+#endif
+
     call system_clock(clock_finishBound,clock_rate)
     call cpu_time(cpu_finishBound)
     timeBound = timeBound + clock_finishBound - clock_startBound
@@ -137,11 +144,17 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     !
     ! save coarse level values if there is a finer level for wave fixup
+#ifdef PROFILE
+    call nvtxStartRange("saveqc", 24)
+#endif
     if (level+1 .le. mxnest) then
         if (lstart(level+1) .ne. null) then
             call saveqc(level+1,nvar,naux)
         endif
     endif
+#ifdef PROFILE
+    call nvtxEndRange() 
+#endif
     !
     dtlevnew = rinfinity
     cfl_level = 0.d0    !# to keep track of max cfl seen on each level
@@ -194,7 +207,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         locold = node(store2, mptr)
         locnew = node(store1, mptr)
     
-        ! TODO: can we switch pointer instead of deep copy?
 #ifdef PROFILE
         call nvtxStartRange("copy q to old", 33)
 #endif
@@ -253,6 +265,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_start(timer_gpu_loop)
 #endif
 
+#ifdef PROFILE
+    call nvtxStartRange("qad and step_grid",74)
+#endif
     do j = 1, numgrids(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
@@ -313,9 +328,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     enddo
     call wait_for_all_gpu_tasks(device_id)
+#ifdef PROFILE
+       call nvtxEndRange()
+#endif
 
 #ifdef PROFILE
-    call nvtxStartRange("fluxsv and fluxad",11)
+    call nvtxStartRange("fluxsv and fluxad",12)
 #endif
     allocate(grids(numgrids(level)))
     allocate(grids_d(numgrids(level)))
@@ -368,14 +386,15 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     deallocate(grids)
     deallocate(grids_d)
 #ifdef PROFILE
-       call nvtxEndRange()
+    call nvtxEndRange()
 #endif
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_gpu_loop)
 
-    call take_cpu_timer('post-process after gpu loop', timer_post)
-    call cpu_timer_start(timer_post)
+    call nvtxStartRange('soa_to_aos',99)
+    call take_cpu_timer('soa_to_aos', timer_soa_to_aos)
+    call cpu_timer_start(timer_soa_to_aos)
 #endif
     do j = 1, numgrids(level)
         id = j
@@ -386,26 +405,18 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         mjtot  = ny + 2*nghost
         locnew = node(store1, mptr)
 
-#ifdef PROFILE
-        call take_cpu_timer('soa_to_aos', timer_soa_to_aos)
-        call cpu_timer_start(timer_soa_to_aos)
-#endif
-
         ! TODO: use callback function to let this get executed right after grid mptr
         ! is done in its cuda stream
         call soa_to_aos_r2(alloc(locnew), grid_data(mptr)%ptr, nvar, 1, mitot, 1, mjtot)
 
-#ifdef PROFILE
-        call cpu_timer_stop(timer_soa_to_aos)
-#endif
-
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
     enddo
-
-
 #ifdef PROFILE
-    call cpu_timer_stop(timer_post)
+    call cpu_timer_stop(timer_soa_to_aos)
+    call nvtxEndRange()
 #endif
+
+
 
 #else
     !$OMP PARALLEL DO PRIVATE(j,mptr,nx,ny,mitot,mjtot)  
@@ -446,6 +457,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef CUDA
 
 #ifdef PROFILE
+    call nvtxStartRange('CFL reduction', 34)
     call take_cpu_timer('CFL reduction', timer_cfl)
     call cpu_timer_start(timer_cfl)
 #endif
@@ -469,6 +481,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_cfl)
+    call nvtxEndRange()
 #endif
 
 #else
