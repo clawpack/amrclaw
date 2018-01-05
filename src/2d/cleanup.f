@@ -69,6 +69,10 @@ c      ## done after the checkpoint so pointers sitll work on restart
                 print *, "gps_d of grid: ", mptr, " is already freed"
                 stop
             endif
+            call gpu_deallocate(sx_d(mptr)%ptr, device_id)
+            call gpu_deallocate(sy_d(mptr)%ptr, device_id)
+            call gpu_deallocate(wave_x_d(mptr)%ptr, device_id)
+            call gpu_deallocate(wave_y_d(mptr)%ptr, device_id)
 #endif
             if (level .lt. mxnest) 
      .         call reclam(node(store2, mptr), nwords)

@@ -4,7 +4,7 @@
 !! \param fp[out] fluxes on the right side of each vertical edge
 !! \param gm[out] fluxes on the lower side of each horizontal edge
 !! \param gp[out] fluxes on the upper side of each horizontal edge
-subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2,rpt2,ngrids,id)
+subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2,rpt2,mptr,ngrids,id)
 !
 !     clawpack routine ...  modified for AMRCLAW
 !
@@ -40,7 +40,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2
     
     ! Arguments
     integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
-    integer, intent(in) :: id, ngrids
+    integer, intent(in) :: id, ngrids, mptr
     real(kind=8), intent(in) :: dx,dy,dt
     real(kind=8), intent(inout) :: cfls(ngrids,2)
 
@@ -61,10 +61,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2
         cflxy
     double precision, dimension(:,:), pointer, contiguous, device :: &
         cflxy_d
-    double precision, dimension(:,:,:), pointer, contiguous, device :: &
-        sx_d, sy_d
-    double precision, dimension(:,:,:,:), pointer, contiguous, device :: &
-        wave_x_d, wave_y_d
     integer :: data_size
     integer :: istat
     integer :: cflmx, cflmy
@@ -80,10 +76,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2
     dtdy = dt/dy
 
 #ifdef CUDA
-    call gpu_allocate(    sx_d, device_id, 2-mbc, mx+mbc, 2-mbc, my+mbc-1, 1, mwaves)
-    call gpu_allocate(wave_x_d, device_id, 2-mbc, mx+mbc, 2-mbc, my+mbc-1, 1, meqn, 1, mwaves)
-    call gpu_allocate(    sy_d, device_id, 2-mbc, mx+mbc-1, 2-mbc, my+mbc, 1, mwaves)
-    call gpu_allocate(wave_y_d, device_id, 2-mbc, mx+mbc-1, 2-mbc, my+mbc, 1, meqn, 1, mwaves)
 
     data_size = meqn * (mx + 2*mbc) * (my + 2*mbc)
 
@@ -111,7 +103,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2
     call threads_and_blocks([2-mbc, 0] , [mx+mbc, my+1], numBlocks, numThreads)
 
     call x_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y, get_cuda_stream(id, device_id)>>>&
-        (q, fm, fp, sx_d, wave_x_d, &
+        (q, fm, fp, sx_d(mptr)%ptr, wave_x_d(mptr)%ptr, &
          mbc, mx, my, dtdx, & 
          cfls, ngrids, id, cc, zz)
 
@@ -135,7 +127,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2
 #else
     call threads_and_blocks([1, 0] , [mx+1, my+1], numBlocks, numThreads)
     call x_sweep_2nd_order_gpu<<<numBlocks, numThreads,0,get_cuda_stream(id,device_id)>>>&
-        (fm, fp, gm, gp, sx_d, wave_x_d, mbc, mx, my, dtdx, cc, zz)
+        (fm, fp, gm, gp, sx_d(mptr)%ptr, wave_x_d(mptr)%ptr, mbc, mx, my, dtdx, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
@@ -155,7 +147,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2
 #else
     call threads_and_blocks([0, 2-mbc] , [mx+1, my+mbc], numBlocks, numThreads)
     call y_sweep_1st_order_gpu<<<numBlocks, numThreads, 8*numThreads%x*numThreads%y,get_cuda_stream(id,device_id)>>>&
-    (q, gm, gp, sy_d, wave_y_d, &
+    (q, gm, gp, sy_d(mptr)%ptr, wave_y_d(mptr)%ptr, &
      mbc, mx, my, dtdy, &
      cfls, ngrids, id, cc, zz)
 
@@ -179,7 +171,7 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2
 
     call threads_and_blocks([0, 1] , [mx+1, my+1], numBlocks, numThreads)
     call y_sweep_2nd_order_gpu<<<numBlocks, numThreads,0,get_cuda_stream(id,device_id)>>>&
-        (fm, fp, gm, gp, sy_d, wave_y_d, mbc, mx, my, dtdx, cc, zz)
+        (fm, fp, gm, gp, sy_d(mptr)%ptr, wave_y_d(mptr)%ptr, mbc, mx, my, dtdx, cc, zz)
 
 #ifdef DEBUG
     istat = cudaDeviceSynchronize()
@@ -190,12 +182,6 @@ subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2
 
 
 
-#ifdef CUDA
-        call gpu_deallocate(    sx_d, device_id) 
-        call gpu_deallocate(wave_x_d, device_id) 
-        call gpu_deallocate(    sy_d, device_id) 
-        call gpu_deallocate(wave_y_d, device_id) 
-#endif
 
 end subroutine step2_fused
 

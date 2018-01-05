@@ -506,7 +506,7 @@ contains
       call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
           q,dx,dy,dt,cfls, &
-          fm,fp,gm,gp,rpn2,rpt2,ngrids,id)
+          fm,fp,gm,gp,rpn2,rpt2,mptr,ngrids,id)
 
 !       # update q
         dtdx = dt/dx

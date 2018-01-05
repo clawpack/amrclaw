@@ -185,7 +185,7 @@ module amr_module
 
     ! The max1d parameter should be changed if using OpenMP grid based 
     ! looping, usually set to max1d = 60
-    integer, parameter :: max1d = 60
+    integer, parameter :: max1d = 10000
 
     integer, parameter :: maxvar = 10
     integer, parameter :: maxaux = 20
@@ -216,6 +216,7 @@ module amr_module
         kcheck
 #ifdef CUDA
     
+    ! ### integer array
     type cpu_2d_int_ptr_type
         integer, dimension(:,:), pointer, contiguous :: ptr=>null()
     end type cpu_2d_int_ptr_type
@@ -224,6 +225,8 @@ module amr_module
         integer, dimension(:,:), pointer, contiguous, device :: ptr=>null()
     end type gpu_2d_int_ptr_type
 
+    ! ### double precision array
+    ! on CPU
     type cpu_1d_real_ptr_type
         double precision, dimension(:), pointer, contiguous :: ptr=>null()
     end type cpu_1d_real_ptr_type
@@ -232,6 +235,7 @@ module amr_module
         double precision, dimension(:,:,:), pointer, contiguous :: ptr=>null()
     end type cpu_3d_real_ptr_type
 
+    ! on GPU
     type gpu_1d_real_ptr_type
         double precision, dimension(:), pointer, contiguous, device :: ptr=>null()
     end type gpu_1d_real_ptr_type
@@ -239,6 +243,10 @@ module amr_module
     type gpu_3d_real_ptr_type
         double precision, dimension(:,:,:), pointer, contiguous, device :: ptr=>null()
     end type gpu_3d_real_ptr_type
+
+    type gpu_4d_real_ptr_type
+        double precision, dimension(:,:,:,:), pointer, contiguous, device :: ptr=>null()
+    end type gpu_4d_real_ptr_type
 
 
     ! fflux_hd(mptr)%ptr and fflux_dd(mptr)%ptr points to the same 
@@ -264,6 +272,11 @@ module amr_module
     type(gpu_3d_real_ptr_type) :: fps_d(maxgr)
     type(gpu_3d_real_ptr_type) :: gms_d(maxgr)
     type(gpu_3d_real_ptr_type) :: gps_d(maxgr)
+
+    type(gpu_3d_real_ptr_type) :: sx_d(maxgr)
+    type(gpu_3d_real_ptr_type) :: sy_d(maxgr)
+    type(gpu_4d_real_ptr_type) :: wave_x_d(maxgr)
+    type(gpu_4d_real_ptr_type) :: wave_y_d(maxgr)
 
 #endif
 

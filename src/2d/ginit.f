@@ -62,6 +62,15 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
      &         device_id,1,mitot,1,mjtot,1,nvar)
               call gpu_allocate(gps_d(mptr)%ptr,
      &         device_id,1,mitot,1,mjtot,1,nvar)
+              call gpu_allocate(sx_d(mptr)%ptr,
+     &         device_id,1,mitot-1,1,mjtot-2,1,NWAVES)
+              call gpu_allocate(sy_d(mptr)%ptr,
+     &         device_id,1,mitot-2,1,mjtot-1,1,NWAVES)
+              call gpu_allocate(wave_x_d(mptr)%ptr,
+     &         device_id,1,mitot-1,1,mjtot-2,1,NEQNS,1,NWAVES)
+              call gpu_allocate(wave_y_d(mptr)%ptr,
+     &         device_id,1,mitot-2,1,mjtot-1,1,NEQNS,1,NWAVES)
+         
 #endif
               if (naux .gt. 0) then
                 locaux              = igetsp(mitot*mjtot*naux)
