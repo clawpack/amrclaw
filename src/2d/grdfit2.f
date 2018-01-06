@@ -116,7 +116,7 @@ c 2/28/02 : Added naux to argument list; needed by call to outtre in nestck
       if (.not. fit2) go to 75
 c
 c     ##  grid accepted. put in list.
-      if (newstl(levnew) .eq. clawapck_null) then
+      if (newstl(levnew) .eq. clawpack_null) then
           newstl(levnew)  = mnew
       else
           node(levelptr,prvptr) = mnew
