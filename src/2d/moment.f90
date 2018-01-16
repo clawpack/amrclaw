@@ -43,8 +43,7 @@ subroutine moment(intrect, badpts, npt, usage)
     real(kind=8), intent(out) :: usage
 
     ! Locals
-    real(kind=8) :: e_min(2), e_max(2)
-    integer :: side(2)
+    real(kind=8) :: e_min(2), e_max(2), side(2)
 
     ! Compute length of enclosing rectangles to include all flagged badpts
     do i = 1, 2
