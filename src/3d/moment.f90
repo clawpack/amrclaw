@@ -1,70 +1,69 @@
-c
-c ----------------------------------------------------------
-c
-      subroutine moment (intrect,badpts,npt,usage)
-c
-      use amr_module
-      implicit double precision (a-h,o-z)
+!> Compute enclosing rectangle around flagged points.
+!! save some info., even tho. usage might be low and rect. scrapped.
+!! 
+!! \param[in] badpts  x,y,z coords of cells around which a rectangle 
+!! is to be made and compute efficiency on
+!! \param[in] npt     num. of badpts. in the cluster.
+!! \param[out] usage   ratio of flagged to unflagged badpts. in new grid
+!!                measures goodness of fit and clustering
+!! \param[out] intrect stores some info. for grid created herein.
+!!                sometimes rect = rnode, sometimes = temp. array.
+!!                sometimes intrect = node.
+!!                depending on calling prog. (grdfit or expand)
 
+subroutine moment(intrect, badpts, npt, usage)
+    !
+    ! :::::::::::::::::::::::: MOMENT ::::::::::::::::::::::::::::::::::
+    !  moment = compute enclosing rectangle around flagged points.
+    !  save some info., even tho. usage might be low and rect. scrapped.
+    !
+    ! input parameters:
+    !     badpts      = x,y,z coords of flagged badpts grouped into clusters
+    !                   are in the first two rows
+    !     npt         = num. of badpts. in the cluster.
+    !
+    ! output parameters:
+    !     usage       = ratio of flagged to unflagged badpts. in new grid
+    !                   measures goodness of fit and clustering
+    !    intrect( )    = stores some info. for grid created herein.
+    !                   sometimes rect = rnode, sometimes = temp. array.
+    !                   sometimes intrect = node.
+    !                   depending on calling prog. (grdfit or expand)
+    !
+    !
+    ! :::::::::::::::::::::::: MOMENT ::::::::::::::::::::::::::::::::::
+    !
 
-      dimension     intrect(nsize),badpts(3,npt)
-c
-c :::::::::::::::::::::::: MOMENT ::::::::::::::::::::::::::::::::::
-c  moment = compute enclosing rectangle around flagged points.
-c  save some info., even tho. usage might be low and rect. scrapped.
+    use amr_module, only: ndilo, ndjlo, ndklo, ndihi, ndjhi, ndkhi, nsize
 
-c input parameters:
-c     badpts      = x,y,z coords of flagged badpts grouped into clusters
-c                   are in the first two rows
-c     npt         = num. of badpts. in the cluster.
-c
-c output parameters:
-c     usage       = ratio of flagged to unflagged badpts. in new grid
-c                   measures goodness of fit and clustering
-c    intrect( )    = stores some info. for grid created herein.
-c                   sometimes rect = rnode, sometimes = temp. array.
-c                   sometimes intrect = node.
-c                   depending on calling prog. (grdfit or expand)
-c
-c
-c :::::::::::::::::::::::: MOMENT ::::::::::::::::::::::::::::::::::
-c
-      rn = dble(npt)
-c
-c compute length of enclosing rectangles to include all flagged badpts.
-c
-      emx1 = badpts(1,1)
-      emn1 = emx1
-      emx2 = badpts(2,1)
-      emn2 = emx2
-      emx3 = badpts(3,1)
-      emn3 = emx3
-      do 80 ipt = 1, npt
-          if (badpts(1,ipt) .gt. emx1) emx1 = badpts(1,ipt)
-          if (badpts(1,ipt) .lt. emn1) emn1 = badpts(1,ipt)
-          if (badpts(2,ipt) .gt. emx2) emx2 = badpts(2,ipt)
-          if (badpts(2,ipt) .lt. emn2) emn2 = badpts(2,ipt)
-          if (badpts(3,ipt) .gt. emx3) emx3 = badpts(3,ipt)
-          if (badpts(3,ipt) .lt. emn3) emn3 = badpts(3,ipt)
- 80   continue
-c
-c from length of the sides determine rect. corners.
-c transform to cell numbers (subtract .5)
-c
-      intrect(ndilo) = nint(emn1 - .5)
-      intrect(ndjlo) = nint(emn2 - .5)
-      intrect(ndklo) = nint(emn3 - .5)
-      intrect(ndihi) = nint(emx1 - .5)
-      intrect(ndjhi) = nint(emx2 - .5)
-      intrect(ndkhi) = nint(emx3 - .5)
-c
-c compute usage
-c
-      iside1 = intrect(ndihi) - intrect(ndilo) + 1
-      iside2 = intrect(ndjhi) - intrect(ndjlo) + 1
-      iside3 = intrect(ndkhi) - intrect(ndklo) + 1
-      gpall  = iside1 * iside2 * iside3
-      usage  = rn / gpall
-c
-      return
-      end
+    ! Input
+    integer, intent(in) :: npt
+    real(kind=8), intent(in) :: badpts(3, npt)
+    integer, intent(in out) ::  intrect(nsize)
+    real(kind=8), intent(out) :: usage
+
+    ! Locals
+    real(kind=8) :: e_min(3), e_max(3), side(3)
+
+    ! Compute length of enclosing rectangles to include all flagged badpts
+    do i = 1, 3
+        e_min(i) = minval(badpts(i, :))
+        e_max(i) = maxval(badpts(i, :))
+    end do
+
+    ! From length of the sides determine rect corners
+    ! transform to cell numebrs (subtract 0.5)
+    intrect(ndilo) = nint(e_min(1) - 0.5d0)
+    intrect(ndjlo) = nint(e_min(2) - 0.5d0)
+    intrect(ndklo) = nint(e_min(3) - 0.5d0)
+    intrect(ndihi) = nint(e_max(1) - 0.5d0)
+    intrect(ndjhi) = nint(e_max(2) - 0.5d0)
+    intrect(ndkhi) = nint(e_max(3) - 0.5d0)
+
+    ! Compute usage
+    side(1) = real(intrect(ndihi) - intrect(ndilo) + 1, kind=8)
+    side(2) = real(intrect(ndjhi) - intrect(ndjlo) + 1, kind=8)
+    side(3) = real(intrect(ndkhi) - intrect(ndklo) + 1, kind=8)
+    usage = real(npt, kind=8) / (side(1) * side(2) * side(3))
+
+end subroutine moment
