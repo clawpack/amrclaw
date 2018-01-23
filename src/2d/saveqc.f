@@ -15,7 +15,9 @@ c  ================================================================
 c
       use amr_module
 #ifdef CUDA
-      use cudafor, only: cudaMemcpy
+      use cudafor, only: cudaMemcpyAsync
+      use cuda_module, only: device_id, id_copy_fflux
+      use cuda_module, only: get_cuda_stream
 #endif
       implicit double precision (a-h,o-z)
       
@@ -116,9 +118,9 @@ c         make coarsened enlarged patch for conservative fixup
           call reclam(loctmp,nrow*ncol*(nvar+naux))
 
 #ifdef CUDA
-          ! TODO: this can be made async
-          istat = cudaMemcpy(fflux_hd(mkid)%ptr, 
-     .      fflux_hh(mkid)%ptr, nvar*lenbc*2+naux*lenbc)
+          istat = cudaMemcpyAsync(fflux_hd(mkid)%ptr, 
+     .      fflux_hh(mkid)%ptr, nvar*lenbc*2+naux*lenbc,
+     .      get_cuda_stream(id_copy_fflux,device_id))
 #endif
           mkid = node(levelptr,mkid)
           go to 10

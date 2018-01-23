@@ -52,6 +52,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     double precision, dimension(:,:), pointer, contiguous, device :: cfls_d
 
     type(grid_type), allocatable         :: grids(:)
+    ! TODO: customized memory allocator for this?
     type(grid_type), allocatable, device :: grids_d(:)
     integer :: max_lenbc
 
@@ -255,8 +256,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
     enddo
-
-
+    ! make sure saveqc is done
+    call wait_for_all_gpu_tasks(device_id)
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_before_gpu_loop)

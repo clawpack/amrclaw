@@ -15,6 +15,7 @@ module cuda_module
     ! Note that CUDA enumerates devices starting from 0
     integer(kind=cuda_stream_kind) :: cuda_streams(max_cuda_streams, 0:max_num_devices-1)
     integer, parameter :: id_copy_cflux = -1
+    integer, parameter :: id_copy_fflux = -2
 
     integer :: num_devices
     integer :: device_id ! which GPU is used
