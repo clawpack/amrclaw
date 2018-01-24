@@ -7,6 +7,9 @@ c
       use amr_module
       use gauges_module, only: setbestsrc, num_gauges
       use gauges_module, only: print_gauges_and_reset_nextLoc 
+#ifdef PROFILE
+      use profiling_module
+#endif
 
       implicit double precision (a-h,o-z)
 c     include  "call.i"
@@ -291,10 +294,19 @@ c                   adjust time steps for this and finer levels
                  go to 60
               else
                  level = level - 1
+#ifdef PROFILE
+    call nvtxStartRange("update level "//toString(level),level)
+#endif
                  call system_clock(clock_start,clock_rate)
+                 call cpu_time(cpu_start)
                  call update(level,nvar,naux)
                  call system_clock(clock_finish,clock_rate)
+                 call cpu_time(cpu_finish)
+#ifdef PROFILE
+    call nvtxEndRange() 
+#endif
                  timeUpdating=timeUpdating+clock_finish-clock_start
+                 timeUpdatingCPU=timeUpdatingCPU+cpu_finish-cpu_start
               endif
           go to 105
 c

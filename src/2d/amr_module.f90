@@ -319,6 +319,7 @@ module amr_module
     real(kind=8) tvollCPU(maxlv), timeTickCPU
     real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU
     real(kind=8) timeValoutCPU
+    real(kind=8) timeUpdatingCPU
 
     integer lentot,lenmax,lendim
 

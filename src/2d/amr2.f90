@@ -84,6 +84,7 @@ program amr2
     use amr_module, only: timeBound,timeStepgrid, timeFlagger,timeBufnst
     use amr_module, only: timeBoundCPU,timeStepGridCPU,timeRegriddingCPU
     use amr_module, only: timeValoutCPU,timeTick,timeTickCPU
+    use amr_module, only: timeUpdatingCPU
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
@@ -672,6 +673,13 @@ program amr2
             real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
     write(*,format_string) &
             real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
+
+    !updating time
+    format_string="('Updating      ',1f15.3,'        ',1f15.3,'  ')"
+    write(outunit,format_string) &
+            real(timeUpdating,kind=8) / real(clock_rate,kind=8), timeUpdatingCPU
+    write(*,format_string) &
+            real(timeUpdating,kind=8) / real(clock_rate,kind=8), timeUpdatingCPU
     
     !output time
     format_string="('Output (valout)',1f14.3,'        ',1f15.3,'  ')"
