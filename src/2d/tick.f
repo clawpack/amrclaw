@@ -8,6 +8,7 @@ c
       use gauges_module, only: setbestsrc, num_gauges
       use gauges_module, only: print_gauges_and_reset_nextLoc 
 #ifdef PROFILE
+      use cuda_module, only: toString
       use profiling_module
 #endif
 
@@ -294,8 +295,10 @@ c                   adjust time steps for this and finer levels
                  go to 60
               else
                  level = level - 1
+
 #ifdef PROFILE
-    call nvtxStartRange("update level "//toString(level),level)
+                 call nvtxStartRange("update level "//toString(level)
+     .              ,level)
 #endif
                  call system_clock(clock_start,clock_rate)
                  call cpu_time(cpu_start)
@@ -303,7 +306,7 @@ c                   adjust time steps for this and finer levels
                  call system_clock(clock_finish,clock_rate)
                  call cpu_time(cpu_finish)
 #ifdef PROFILE
-    call nvtxEndRange() 
+                 call nvtxEndRange() 
 #endif
                  timeUpdating=timeUpdating+clock_finish-clock_start
                  timeUpdatingCPU=timeUpdatingCPU+cpu_finish-cpu_start
