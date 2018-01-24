@@ -201,7 +201,14 @@ c
 
           call system_clock(clock_start,clock_rate)
           call cpu_time(cpu_start)
+#ifdef PROFILE
+          call nvtxStartRange("regrid at level "//toString(lbase)
+     .          ,lbase)
+#endif
           call regrid(nvar,lbase,cut,naux,start_time)
+#ifdef PROFILE
+          call nvtxEndRange() 
+#endif
           call system_clock(clock_finish,clock_rate)
           call cpu_time(cpu_finish)
           timeRegridding = timeRegridding + clock_finish - clock_start
@@ -296,18 +303,18 @@ c                   adjust time steps for this and finer levels
               else
                  level = level - 1
 
-#ifdef PROFILE
-                 call nvtxStartRange("update level "//toString(level)
-     .              ,level)
-#endif
                  call system_clock(clock_start,clock_rate)
                  call cpu_time(cpu_start)
+#ifdef PROFILE
+                 call nvtxStartRange("update level "//toString(level)
+     .              ,level+2)
+#endif
                  call update(level,nvar,naux)
-                 call system_clock(clock_finish,clock_rate)
-                 call cpu_time(cpu_finish)
 #ifdef PROFILE
                  call nvtxEndRange() 
 #endif
+                 call system_clock(clock_finish,clock_rate)
+                 call cpu_time(cpu_finish)
                  timeUpdating=timeUpdating+clock_finish-clock_start
                  timeUpdatingCPU=timeUpdatingCPU+cpu_finish-cpu_start
               endif

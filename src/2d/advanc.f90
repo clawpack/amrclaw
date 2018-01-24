@@ -66,7 +66,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     integer, parameter :: timer_soa_to_aos = 7
     integer, parameter :: timer_init_cfls = 8
     integer, parameter :: timer_qad = 9
-    integer, parameter :: timer_allocate = 12
+    integer, parameter :: timer_fluxsv_fluxad = 12
 #endif
 #endif
 
@@ -334,6 +334,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
 #ifdef PROFILE
+    call take_cpu_timer('fluxsv and fluxad', timer_fluxsv_fluxad)
+    call cpu_timer_start(timer_fluxsv_fluxad)
     call nvtxStartRange("fluxsv and fluxad",12)
 #endif
     allocate(grids(numgrids(level)))
@@ -388,6 +390,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     deallocate(grids_d)
 #ifdef PROFILE
     call nvtxEndRange()
+    call cpu_timer_stop(timer_fluxsv_fluxad)
 #endif
 
 #ifdef PROFILE

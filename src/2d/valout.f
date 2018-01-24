@@ -4,6 +4,9 @@ c
       subroutine valout (lst, lend, time, nvar, naux)
 c
       use amr_module
+#ifdef PROFILE
+      use profiling_module
+#endif
       implicit double precision (a-h,o-z)
       character*10  fname1, fname2, fname3, fname4, fname5
 
@@ -29,6 +32,9 @@ c
 
       call system_clock(clock_start,clock_rate)
       call cpu_time(cpu_start)
+#ifdef PROFILE
+      call nvtxStartRange("Output sol.", 47)
+#endif
 
 c     # how many aux components requested?
       output_aux_num = 0
@@ -257,7 +263,9 @@ c
       if (output_format == 3) then
           close(unit=matunit4)
       endif
-
+#ifdef PROFILE
+      call nvtxEndRange() 
+#endif
       call system_clock(clock_finish,clock_rate)
       call cpu_time(cpu_finish)
       timeValout = timeValout + clock_finish - clock_start
