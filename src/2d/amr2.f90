@@ -91,6 +91,7 @@ program amr2
     use amr_module, only: rprint, sprint, tprint, uprint
 
     use amr_module, only: t0, tstart_thisrun
+    use amr_module, only: max1d
 
     use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
@@ -542,6 +543,8 @@ program amr2
 !$   maxthreads = omp_get_max_threads() 
      write(outunit,*)" max threads set to ",maxthreads
      print *," max threads set to ",maxthreads
+     write(outunit,*)" max grid size in each direction set to ", max1d
+     print *," max grid size in each direction set to ", max1d
     
     !
     !  print out program parameters for this run
