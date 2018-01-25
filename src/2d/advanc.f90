@@ -110,13 +110,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call nvtxStartRange("bound", 24)
 #endif
     ! We want to do this regardless of the threading type
-    !$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot,
-    !$OMP&                    mjtot,time,levSt),
-    !$OMP&            SHARED(level, nvar, naux, alloc, intrat, delt,
-    !$OMP&                   listOfGrids,listStart,nghost,
-    !$OMP&                   node,rnode,numgrids,listgrids),
-    !$OMP&            SCHEDULE (dynamic,1)
-    !$OMP&            DEFAULT(none)
+    !$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot, &
+    !$OMP                     mjtot,time,levSt), &
+    !$OMP             SHARED(level, nvar, naux, alloc, intrat, delt, &
+    !$OMP                    listOfGrids,listStart,nghost, &
+    !$OMP                    node,rnode,numgrids,listgrids), &
+    !$OMP             SCHEDULE (dynamic,1) &
+    !$OMP             DEFAULT(none)
     do j = 1, numgrids(level)
         !mptr   = listgrids(j)
         levSt = listStart(level)
@@ -194,6 +194,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_start(timer_before_gpu_loop)
 #endif
     do j = 1, numgrids(level)
+        levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
@@ -270,6 +271,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call nvtxStartRange("qad and step_grid",74)
 #endif
     do j = 1, numgrids(level)
+        levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
@@ -342,6 +344,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     allocate(grids_d(numgrids(level)))
     max_lenbc = 0
     do j = 1, numgrids(level)
+        levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
         nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
         ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
@@ -378,6 +381,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                 delt, hx, hy)
         call wait_for_all_gpu_tasks(device_id)
         do j = 1, numgrids(level)
+            levSt = listStart(level)
             mptr = listOfGrids(levSt+j-1)
             nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
             ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
@@ -402,6 +406,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
     do j = 1, numgrids(level)
         id = j
+        levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
@@ -423,14 +428,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
 #else
-    !$OMP PARALLEL DO PRIVATE(j,mptr,nx,ny,mitot,mjtot)  
-    !$OMP&            PRIVATE(mythread,dtnew)
-    !$OMP&            SHARED(rvol,rvoll,level,nvar,mxnest,alloc,intrat)
-    !$OMP&            SHARED(nghost,intratx,intraty,hx,hy,naux,listsp)
-    !$OMP&            SHARED(node,rnode,dtlevnew,numgrids,listgrids)
-    !$OMP&            SHARED(listOfGrids,listStart,levSt)
-    !$OMP&            SCHEDULE (DYNAMIC,1)
-    !$OMP&            DEFAULT(none)
+    !$OMP PARALLEL DO PRIVATE(j,mptr,nx,ny,mitot,mjtot) & 
+    !$OMP             PRIVATE(mythread,dtnew) &
+    !$OMP             SHARED(rvol,rvoll,level,nvar,mxnest,alloc,intrat) &
+    !$OMP             SHARED(nghost,intratx,intraty,hx,hy,naux,listsp) &
+    !$OMP             SHARED(node,rnode,dtlevnew,numgrids,listgrids) &
+    !$OMP             SHARED(listOfGrids,listStart,levSt) &
+    !$OMP             SCHEDULE (DYNAMIC,1) &
+    !$OMP             DEFAULT(none)
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
