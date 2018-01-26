@@ -77,7 +77,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/stst1.f \
   $(AMRLIB)/tick.f \
   $(AMRLIB)/trimbd.f90 \
-  $(AMRLIB)/update.f \
+  $(AMRLIB)/update.f90 \
   $(AMRLIB)/nodget.f \
   $(AMRLIB)/upbnd.f  \
   $(AMRLIB)/basic.f \

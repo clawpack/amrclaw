@@ -1,3 +1,7 @@
+! this indexing is for amrflags array, in flag2refine from 1-mbuff:mx+mbuff
+! but here is from 1:mibuff
+#define IADD(I,J,LOCAMRFLAGS,MIBUFF) LOCAMRFLAGS+I-1+MIBUFF*(J-1)
+
 ! :::::::::::::::::::::::::: BUFNST :::::::::::::::::::::::::::::::::::
 !> After error estimation, need to tag the cell for refinement,
 !! buffer the tags, take care of level nesting, etc.
@@ -84,7 +88,7 @@
             write(outunit,*)" flagged points before projec2", &
                  lcheck," grid ",mptr, " (no buff cells)"
             do j = mjbuff-mbuff, mbuff+1, -1
-               write(outunit,100)(int(alloc(iadd_bufnst2(i,j,locamrflags,mibuff))), &
+               write(outunit,100)(int(alloc(IADD(i,j,locamrflags,mibuff))), &
                     i=mbuff+1,mibuff-mbuff)
             enddo
          endif
@@ -108,7 +112,7 @@
             write(outunit,*)" flagged points before buffering on level", &
                  lcheck," grid ",mptr, " (no buff cells)"
             do 47 j = mjbuff-mbuff, mbuff+1, -1
-               write(outunit,100)(int(alloc(iadd_bufnst2(i,j,locamrflags,mibuff))), &
+               write(outunit,100)(int(alloc(IADD(i,j,locamrflags,mibuff))), &
                     i=mbuff+1,mibuff-mbuff)
  100           format(80i1)
  47         continue
@@ -122,7 +126,7 @@
 !     buffer zone (wider ghost cell region) now set after buffering
 !     so loop over larger span of indices
             do 49 j = mjbuff-mbuff, mbuff+1, -1
-               write(outunit,100)(int(alloc(iadd_bufnst2(i,j,locamrflags,mibuff))), &
+               write(outunit,100)(int(alloc(IADD(i,j,locamrflags,mibuff))), &
                     i=mbuff+1,mibuff-mbuff)
  49         continue
          endif
@@ -137,7 +141,7 @@
          write(outunit,*)" flagged points after buffering on level", &
                           lcheck," grid ",mptr," (WITHOUT buff cells))"
          do 51 j = mjbuff-mbuff, mbuff+1, -1
-           write(outunit,100)(int(alloc(iadd_bufnst2(i,j,locamrflags,mibuff))), &
+           write(outunit,100)(int(alloc(IADD(i,j,locamrflags,mibuff))), &
                                  i=mbuff+1, mibuff-mbuff)
  51      continue
       endif
@@ -147,7 +151,7 @@
       numflagged = 0
       do 82 j = 1, mjbuff
          do 82 i = 1, mibuff
-            if (alloc(iadd_bufnst2(i,j,locamrflags,mibuff)) .ne. goodpt) then 
+            if (alloc(IADD(i,j,locamrflags,mibuff)) .ne. goodpt) then 
                numflagged=numflagged + 1
             endif
  82      continue
@@ -188,11 +192,4 @@
       return
       end
 
-!     this indexing is for amrflags array, in flag2refine from 1-mbuff:mx+mbuff
-!     but here is from 1:mibuff
-    function iadd_bufnst2(i,j,locamrflags,mibuff) result(p)
-        implicit none
-        integer :: p,i,j,locamrflags, mibuff
-        p = locamrflags + i-1+ mibuff*(j-1)
-    end function iadd_bufnst2
 
