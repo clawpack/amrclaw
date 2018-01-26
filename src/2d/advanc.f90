@@ -88,7 +88,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
 #ifdef PROFILE
-    call nvtxStartRange("advanc level "//toString(level),level)
+    call startCudaProfiler("advanc level "//toString(level),level)
 #endif
 
 
@@ -107,7 +107,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !$    maxthreads = omp_get_max_threads()
 
 #ifdef PROFILE
-    call nvtxStartRange("bound", 24)
+    call startCudaProfiler("bound", 24)
 #endif
     ! We want to do this regardless of the threading type
     !$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot, &
@@ -135,7 +135,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     end do
     !$OMP END PARALLEL DO
 #ifdef PROFILE
-    call nvtxEndRange() 
+    call endCudaProfiler() 
 #endif
 
     call system_clock(clock_finishBound,clock_rate)
@@ -146,7 +146,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !
     ! save coarse level values if there is a finer level for wave fixup
 #ifdef PROFILE
-    call nvtxStartRange("saveqc", 24)
+    call startCudaProfiler("saveqc", 24)
 #endif
     if (level+1 .le. mxnest) then
         if (lstart(level+1) .ne. null) then
@@ -154,7 +154,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         endif
     endif
 #ifdef PROFILE
-    call nvtxEndRange() 
+    call endCudaProfiler() 
 #endif
     !
     dtlevnew = rinfinity
@@ -210,7 +210,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         locnew = node(store1, mptr)
     
 #ifdef PROFILE
-        call nvtxStartRange("copy q to old", 33)
+        call startCudaProfiler("copy q to old", 33)
 #endif
         if (level .lt. mxnest) then
             ntot   = mitot * mjtot * nvar
@@ -219,7 +219,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             enddo
         endif
 #ifdef PROFILE
-        call nvtxEndRange()
+        call endCudaProfiler()
 #endif
 
         xlow = rnode(cornxlo,mptr) - nghost*hx
@@ -247,12 +247,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef PROFILE
         call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
         call cpu_timer_start(timer_aos_to_soa)
-        call nvtxStartRange("aos_to_soa", 14)
+        call startCudaProfiler("aos_to_soa", 14)
 #endif
         ! convert q array to SoA format
         call aos_to_soa_r2(grid_data(mptr)%ptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
 #ifdef PROFILE
-        call nvtxEndRange() 
+        call endCudaProfiler() 
         call cpu_timer_stop(timer_aos_to_soa)
 #endif
 
@@ -268,7 +268,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
 #ifdef PROFILE
-    call nvtxStartRange("qad and step_grid",74)
+    call startCudaProfiler("qad and step_grid",74)
 #endif
     do j = 1, numgrids(level)
         levSt = listStart(level)
@@ -332,13 +332,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     enddo
     call wait_for_all_gpu_tasks(device_id)
 #ifdef PROFILE
-       call nvtxEndRange()
+       call endCudaProfiler()
 #endif
 
 #ifdef PROFILE
     call take_cpu_timer('fluxsv and fluxad', timer_fluxsv_fluxad)
     call cpu_timer_start(timer_fluxsv_fluxad)
-    call nvtxStartRange("fluxsv and fluxad",12)
+    call startCudaProfiler("fluxsv and fluxad",12)
 #endif
     allocate(grids(numgrids(level)))
     allocate(grids_d(numgrids(level)))
@@ -393,14 +393,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     deallocate(grids)
     deallocate(grids_d)
 #ifdef PROFILE
-    call nvtxEndRange()
+    call endCudaProfiler()
     call cpu_timer_stop(timer_fluxsv_fluxad)
 #endif
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_gpu_loop)
 
-    call nvtxStartRange('soa_to_aos',99)
+    call startCudaProfiler('soa_to_aos',99)
     call take_cpu_timer('soa_to_aos', timer_soa_to_aos)
     call cpu_timer_start(timer_soa_to_aos)
 #endif
@@ -422,7 +422,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     enddo
 #ifdef PROFILE
     call cpu_timer_stop(timer_soa_to_aos)
-    call nvtxEndRange()
+    call endCudaProfiler()
 #endif
 
 
@@ -466,7 +466,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef CUDA
 
 #ifdef PROFILE
-    call nvtxStartRange('CFL reduction', 34)
+    call startCudaProfiler('CFL reduction', 34)
     call take_cpu_timer('CFL reduction', timer_cfl)
     call cpu_timer_start(timer_cfl)
 #endif
@@ -490,7 +490,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_cfl)
-    call nvtxEndRange()
+    call endCudaProfiler()
 #endif
 
 #else
@@ -499,7 +499,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     !
 #ifdef PROFILE
-    call nvtxEndRange()
+    call endCudaProfiler()
 #endif
     return
 end subroutine advanc

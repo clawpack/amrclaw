@@ -66,7 +66,7 @@
 !
 
 #ifdef PROFILE
-       call nvtxStartRange("qad",13)
+       call startCudaProfiler("qad",13)
 #endif
        tgrid = rnode(timemult, mptr)
        if (qprint) &
@@ -363,7 +363,7 @@
            endif
            
 #ifdef PROFILE
-       call nvtxEndRange()
+       call endCudaProfiler()
 #endif
        return
        end

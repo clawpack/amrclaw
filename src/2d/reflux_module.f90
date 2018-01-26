@@ -508,7 +508,7 @@ subroutine qad_cpu2(valbig,mitot,mjtot,mbc,nvar, &
     double precision :: add
 
 #ifdef PROFILE
-    call nvtxStartRange("qad",13)
+    call startCudaProfiler("qad",13)
 #endif
     nc = mjtot-2*mbc
     nr = mitot-2*mbc
@@ -646,7 +646,7 @@ subroutine qad_cpu2(valbig,mitot,mjtot,mbc,nvar, &
     enddo
 
 #ifdef PROFILE
-    call nvtxEndRange()
+    call endCudaProfiler()
 #endif
     return
 end subroutine qad_cpu2

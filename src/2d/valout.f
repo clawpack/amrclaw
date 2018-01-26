@@ -33,7 +33,7 @@ c
       call system_clock(clock_start,clock_rate)
       call cpu_time(cpu_start)
 #ifdef PROFILE
-      call nvtxStartRange("Output sol.", 47)
+      call startCudaProfiler("Output sol.", 47)
 #endif
 
 c     # how many aux components requested?
@@ -264,7 +264,7 @@ c
           close(unit=matunit4)
       endif
 #ifdef PROFILE
-      call nvtxEndRange() 
+      call endCudaProfiler() 
 #endif
       call system_clock(clock_finish,clock_rate)
       call cpu_time(cpu_finish)

@@ -39,9 +39,24 @@ module profiling_module
 	end subroutine
     end interface
 
+    ! interface nvtxRangeStart
+    !     ! start range with custom label and standard color
+    !     subroutine nvtxRangeStartA(name) bind(C, name='nvtxRangeStartA')
+    !         use iso_c_binding
+    !         character(kind=C_CHAR,len=*) :: name
+    !     end subroutine
+
+    !     ! start range with custom label and custom color
+    !     subroutine nvtxRangeStartEx(event) bind(C, name='nvtxRangeStartEx')
+    !         use iso_c_binding
+    !         import:: nvtxEventAttributes
+    !         type(nvtxEventAttributes):: event
+    !     end subroutine
+    ! end interface
+
 contains
 
-    subroutine nvtxStartRange(name,id)
+    subroutine startCudaProfiler(name,id)
 	character(kind=c_char,len=*) :: name
 	integer, optional:: id
 	type(nvtxEventAttributes):: event
@@ -57,7 +72,7 @@ contains
 	end if
     end subroutine
 
-    subroutine nvtxEndRange()
+    subroutine endCudaProfiler()
 	call nvtxRangePop
     end subroutine
 

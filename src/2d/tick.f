@@ -202,12 +202,12 @@ c
           call system_clock(clock_start,clock_rate)
           call cpu_time(cpu_start)
 #ifdef PROFILE
-          call nvtxStartRange("regrid at level "//toString(lbase)
+          call startCudaProfiler("regrid at level "//toString(lbase)
      .          ,lbase)
 #endif
           call regrid(nvar,lbase,cut,naux,start_time)
 #ifdef PROFILE
-          call nvtxEndRange() 
+          call endCudaProfiler() 
 #endif
           call system_clock(clock_finish,clock_rate)
           call cpu_time(cpu_finish)
@@ -306,12 +306,12 @@ c                   adjust time steps for this and finer levels
                  call system_clock(clock_start,clock_rate)
                  call cpu_time(cpu_start)
 #ifdef PROFILE
-                 call nvtxStartRange("update level "//toString(level)
-     .              ,level+2)
+                 call startCudaProfiler(
+     .              "update level "//toString(level),level+2)
 #endif
                  call update(level,nvar,naux)
 #ifdef PROFILE
-                 call nvtxEndRange() 
+                 call endCudaProfiler() 
 #endif
                  call system_clock(clock_finish,clock_rate)
                  call cpu_time(cpu_finish)
