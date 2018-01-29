@@ -242,7 +242,7 @@ contains
 	integer :: sx, sy
 
 	sx = xhi - xlo + 1
-	sy = xhi - xlo + 1
+	sy = yhi - ylo + 1
 
         numThreads % x = 32
         numThreads % y = 8
