@@ -14,7 +14,7 @@ contains
         real(kind=8), intent(in) :: q(meqn_f,1-mbc_f:mx_f+mbc_f,1-mbc_f:my_f+mbc_f)
 
         integer :: mx_a, my_a, mptr_a, mbc_a
-        integer :: i, j, i1, i2, j1, j2, level, loc, z, m, r
+        integer :: i, j, i1, i2, j1, j2, level, loc, z, m
         real(kind=8) :: dx_a, xlower_a, xupper_a, xupper_f
         real(kind=8) :: dy_a, ylower_a, yupper_a, yupper_f
         real(kind=8) :: x1, x2, y1, y2
@@ -30,28 +30,24 @@ contains
 
         innerprod = 0.d0
 
-        ! Considering adjoint snapshots before and after current time
-        m = max(k-1,1)
-        do r = m,k
-
         ! Loop over patches in adjoint solution
-        do z = 1, adjoints(r)%ngrids
-            mptr_a = adjoints(r)%gridpointer(z)
-            level = adjoints(r)%gridlevel(mptr_a)
+        do z = 1, adjoints(k)%ngrids
+            mptr_a = adjoints(k)%gridpointer(z)
+            level = adjoints(k)%gridlevel(mptr_a)
 
             ! Number of points in x and y
-            mx_a = adjoints(r)%ncellsx(mptr_a)
-            my_a = adjoints(r)%ncellsy(mptr_a)
+            mx_a = adjoints(k)%ncellsx(mptr_a)
+            my_a = adjoints(k)%ncellsy(mptr_a)
 
             ! Finding extreem values for grid
-            xlower_a = adjoints(r)%xlowvals(mptr_a)
-            dx_a = adjoints(r)%hxposs(level)
+            xlower_a = adjoints(k)%xlowvals(mptr_a)
+            dx_a = adjoints(k)%hxposs(level)
             xupper_a = xlower_a + mx_a*dx_a
-            ylower_a = adjoints(r)%ylowvals(mptr_a)
-            dy_a = adjoints(r)%hyposs(level)
+            ylower_a = adjoints(k)%ylowvals(mptr_a)
+            dy_a = adjoints(k)%hyposs(level)
             yupper_a = ylower_a + my_a*dy_a
 
-            loc = adjoints(r)%loc(mptr_a)
+            loc = adjoints(k)%loc(mptr_a)
 
             ! Check if adjoint patch overlaps with forward patch
             x1 = max(xlower_f,xlower_a)
@@ -94,7 +90,7 @@ contains
                 ! Note that values in q_interp will only be set properly where
                 ! mask_adjoint == .true.
                 call interp_adjoint( &
-                        adjoints(r)%meqn, r, q_interp, xlower_a, ylower_a, &
+                        adjoints(k)%meqn, k, q_interp, xlower_a, ylower_a, &
                         dx_a, dy_a, mx_a, my_a, xlower_f, ylower_f, &
                         dx_f, dy_f, mx_f, my_f, &
                         mask_adjoint, mptr_a, mask_forward)
@@ -116,7 +112,6 @@ contains
                 deallocate(mask_adjoint)
             endif
         enddo
-    enddo
 
     end function calculate_innerproduct
 

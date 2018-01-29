@@ -6,9 +6,12 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     ! Note that ghost cell values may need to be set if the aux arrays
     ! are used by the Riemann solver(s).
     !
-    ! This default version does nothing. 
+    ! This default version does nothing.
 
     use adjoint_module, only: innerprod_index
+    use amr_module, only: NEEDS_TO_BE_SET
+
+    implicit none
 
     integer, intent(in) :: mbc,mx,maux
     real(kind=8), intent(in) :: xlower,dx
@@ -18,6 +21,8 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     ! If a new grid has been created, but hadn't been flagged
     ! set innerproduct to zero.
     do ii=1-mbc,mx+mbc
-        aux(innerprod_index,ii) = 0.d0
+        if(aux(1,ii) .eq. NEEDS_TO_BE_SET) then
+            aux(innerprod_index,ii) = 0.d0
+        endif
     enddo
 end subroutine setaux
