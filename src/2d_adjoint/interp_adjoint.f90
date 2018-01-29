@@ -18,7 +18,7 @@ subroutine interp_adjoint(nvar, r, q_interp, xlower_a, ylower_a, dx_a, dy_a, &
         integer, intent(in) :: mx_f, my_f, mptr_a
         real(kind=8), intent(in) :: dx_f, dx_a, dy_f, dy_a
 
-        integer :: z,k, level, iz, jk, mitot
+        integer :: z,k, iz, jk, mitot
         integer :: ivar, i, j, iadd, iaddaux, loc
         real(kind=8) :: q_interp(nvar,mx_f,my_f), denom
         real(kind=8) :: x, xhigh_a, y, yhigh_a
