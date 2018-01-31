@@ -1,3 +1,4 @@
+#ifdef PROFILE
 module profiling_module
 
     use iso_c_binding
@@ -77,3 +78,4 @@ contains
     end subroutine
 
 end module profiling_module
+#endif
