@@ -37,6 +37,12 @@ CPUPinnedMemoryManager::~CPUPinnedMemoryManager ()
     }
     // otherwise device has been reset and 
     // all memory has been free. So we should not call cudaFreeHost
+    std::cout << "Summary from CPUPinnedMemoryManager: "<< std::endl;
+    std::cout << "  Maximum CPU heap memory taken by the CPUPinnedMemoryManager during the execution: " << ((double) m_used)/(1024*1024*1024) << " GB." << std::endl;
+    if (!m_busylist.empty()) 
+        std::cout << "  Warning: memory leak might have occured in CPUPinnedMemoryManager!!!" << std::endl;
+    else
+        std::cout << "  All memory allocated through CPUPinnedMemoryManager has been freed." << std::endl;
 }
 
 void*

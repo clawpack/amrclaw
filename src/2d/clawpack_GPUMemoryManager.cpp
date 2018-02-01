@@ -48,6 +48,12 @@ GPUMemoryManager::~GPUMemoryManager ()
     } 
     // otherwise device has been reset and 
     // all device memory has been free. So we should not call cudaFree
+    std::cout << "Summary from GPUMemoryManager: "<< std::endl;
+    std::cout << "  Maximum GPU heap memory taken by the GPUMemoryManager during the execution: " << ((double) m_used)/(1024*1024*1024) << " GB." << std::endl;
+    if (!m_busylist.empty()) 
+        std::cout << "  Warning: memory leak might have occured in GPUMemoryManager!!!" << std::endl;
+    else
+        std::cout << "  All memory allocated through GPUMemoryManager has been freed." << std::endl;
 }
 
 void*
