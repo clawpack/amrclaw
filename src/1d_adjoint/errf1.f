@@ -43,10 +43,17 @@ c
       mask_selecta = .false.
 
 c     Calculating correct tol for this level
-      levtol = tol/numcells(1)
-      do 11 levcur = 1,levm-1
-          levtol = levtol/intratx(levcur)
- 11     continue
+c     --------------------
+c     Total error allowed in this time step
+      levtol = tol*dt/tfinal
+c     Error allowed at this level
+      levtol = levtol/(2**(levm - 1))
+c     Error allowed per cell at this level
+      levtol = levtol/(numcells(levm)*hx)
+
+c      write(*,*) "Tol I am using: ", levtol
+c      write(*,*) "At level: ",levm,numcells(levm),hx,dt,tfinal,tol
+c      write(*,*) " "
  
       errmax = 0.0d0
       err2   = 0.0d0
