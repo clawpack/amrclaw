@@ -282,6 +282,16 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ylow = rnode(cornylo,mptr) - nghost*hy
         locaux = node(storeaux,mptr)
 
+        call gpu_allocate(grid_data_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        call gpu_allocate(fms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        call gpu_allocate(fps_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        call gpu_allocate(gms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        call gpu_allocate(gps_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        call gpu_allocate(sx_d(mptr)%ptr,device_id,1,mitot-1,1,mjtot-2,1,NWAVES)
+        call gpu_allocate(sy_d(mptr)%ptr,device_id,1,mitot-2,1,mjtot-1,1,NWAVES)
+        call gpu_allocate(wave_x_d(mptr)%ptr,device_id,1,mitot-1,1,mjtot-2,1,NEQNS,1,NWAVES)
+        call gpu_allocate(wave_y_d(mptr)%ptr,device_id,1,mitot-2,1,mjtot-1,1,NEQNS,1,NWAVES)
+
         ! copy q to GPU
         cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
         
@@ -330,7 +340,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     enddo
     call wait_for_all_gpu_tasks(device_id)
 #ifdef PROFILE
-       call endCudaProfiler()
+    call endCudaProfiler()
 #endif
 
 #ifdef PROFILE
@@ -422,6 +432,21 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_stop(timer_soa_to_aos)
     call endCudaProfiler()
 #endif
+
+    do j = 1, numgrids(level)
+        levSt = listStart(level)
+        mptr = listOfGrids(levSt+j-1)
+        call gpu_deallocate(grid_data_d(mptr)%ptr,device_id)
+        call gpu_deallocate(fms_d(mptr)%ptr,device_id)
+        call gpu_deallocate(fps_d(mptr)%ptr,device_id)
+        call gpu_deallocate(gms_d(mptr)%ptr,device_id)
+        call gpu_deallocate(gps_d(mptr)%ptr,device_id)
+        call gpu_deallocate(sx_d(mptr)%ptr,device_id)
+        call gpu_deallocate(sy_d(mptr)%ptr,device_id)
+        call gpu_deallocate(wave_x_d(mptr)%ptr,device_id)
+        call gpu_deallocate(wave_y_d(mptr)%ptr,device_id)
+    enddo
+
 
 
 

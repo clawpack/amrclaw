@@ -76,27 +76,8 @@
             loc    = igetsp(mitot * mjtot * nvar)
             node(store1, mptr)  = loc
 #ifdef CUDA
-    ! TODO: we may only need to allocate memory for q here
             call cpu_allocate_pinned(grid_data(mptr)%ptr,
      &       1,mitot,1,mjtot,1,nvar)
-            call gpu_allocate(grid_data_d(mptr)%ptr,
-     &       device_id,1,mitot,1,mjtot,1,nvar)
-            call gpu_allocate(fms_d(mptr)%ptr,
-     &       device_id,1,mitot,1,mjtot,1,nvar)
-            call gpu_allocate(fps_d(mptr)%ptr,
-     &       device_id,1,mitot,1,mjtot,1,nvar)
-            call gpu_allocate(gms_d(mptr)%ptr,
-     &       device_id,1,mitot,1,mjtot,1,nvar)
-            call gpu_allocate(gps_d(mptr)%ptr,
-     &       device_id,1,mitot,1,mjtot,1,nvar)
-            call gpu_allocate(sx_d(mptr)%ptr,
-     &       device_id,1,mitot-1,1,mjtot-2,1,NWAVES)
-            call gpu_allocate(sy_d(mptr)%ptr,
-     &       device_id,1,mitot-2,1,mjtot-1,1,NWAVES)
-            call gpu_allocate(wave_x_d(mptr)%ptr,
-     &       device_id,1,mitot-1,1,mjtot-2,1,NEQNS,1,NWAVES)
-            call gpu_allocate(wave_y_d(mptr)%ptr,
-     &       device_id,1,mitot-2,1,mjtot-1,1,NEQNS,1,NWAVES)
 #endif
             if (naux .gt. 0) then
               locaux = igetsp(mitot * mjtot * naux)
