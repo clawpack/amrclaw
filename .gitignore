@@ -11,3 +11,10 @@ xgeoclaw
 _output/
 _plots/
 *~
+*.DS_Store
+*.data
+*.log
+*fort.*
+*.output
+*output_*
+*_plots_*

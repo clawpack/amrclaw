@@ -1,7 +1,7 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine errest (nvar,naux,lcheck,mptr,nx)
+      subroutine errest (nvar,naux,lcheck,mptr,nx,jg)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -10,7 +10,7 @@ c   ### changed to stack based storage 2/23/13
 c   ### and broken into smaller routines to minimize 
 c   ### stack space
 
-      integer, intent(in) :: nvar,naux,lcheck,nx
+      integer, intent(in) :: nvar,naux,lcheck,nx,jg
      
       double precision valbgc(nvar,nx/2+2*nghost)
       double precision auxbgc(naux,nx/2+2*nghost)
@@ -55,7 +55,7 @@ c     ## by flag2refine so make sure not to overwrite
       mibuff = nx + 2*mbuff
       call errf1(alloc(locbig),nvar,valbgc,mptr,mi2tot,
      1           mitot,alloc(locamrflags),mibuff,
-     1           alloc(locaux),naux,nx,nghost)
+     1           alloc(locaux),naux,nx,nghost,jg)
 
 c
       return
