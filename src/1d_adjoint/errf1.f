@@ -51,7 +51,7 @@ c     Error allowed at this level
 c     Error allowed per cell at this level
       tol_exact = tol_exact/(numcells(levm)*hx)
 
-      if (start_time+possk(levm) .eq. time) levtol(levm) = tol_exact
+      if (t0+possk(levm) .eq. time) levtol(levm) = tol_exact
  
       errmax = 0.0d0
       err2   = 0.0d0

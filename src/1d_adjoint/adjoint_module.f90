@@ -114,7 +114,7 @@ contains
         cutoff = tol / 2**(lcheck)
 
        ! Sorting errors
-       call qsorti_doub(sorted, numcells(lcheck), errors)
+       call qsortr(sorted, numcells(lcheck), errors)
 
        errtotal = 0
        do celln = 1, numcells(lcheck)
