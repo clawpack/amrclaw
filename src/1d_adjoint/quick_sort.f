@@ -21,7 +21,7 @@ C good, still one of the best available.
 C Modified by Brisa Davis, 1/26/2018 to sort reals rather than integers.
 
 
-      SUBROUTINE QSORTI_DOUB (ORD,N,A)
+      SUBROUTINE QSORTR (ORD,N,A)
 C
 C==============SORTS THE ARRAY A(I),I=1,2,...,N BY PUTTING THE
 C   ASCENDING ORDER VECTOR IN ORD.  THAT IS ASCENDING ORDERED A
@@ -41,9 +41,6 @@ C
       real(kind=8) :: ORD(N),POPLST(2,20), A(N)
       real(kind=8) :: X,XX,Z,ZZ,Y
 C
-C     TO SORT DIFFERENT INPUT TYPES, CHANGE THE FOLLOWING
-C     SPECIFICATION STATEMENTS; FOR EXAMPLE, FOR FORTRAN CHARACTER
-C     USE THE FOLLOWING:  CHARACTER *(*) A(N)
 C
 C
       NDEEP=0
