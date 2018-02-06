@@ -66,7 +66,7 @@ c
       call initTimers()   ! used to be done here, but needs to be called from restarting too when stst1 not called
 
       do 60 i   = 1, maxlv
-         tvoll(i) = 0.d0
+         tvoll(i) = 0
          iregridcount(i) = 0
          avenumgrids(i) = 0
          numgrids(i) = 0
