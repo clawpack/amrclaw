@@ -193,6 +193,15 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call take_cpu_timer('pre-process before gpu loop', timer_before_gpu_loop)
     call cpu_timer_start(timer_before_gpu_loop)
 #endif
+
+    !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny,mitot,mjtot) & 
+    !$OMP             PRIVATE(locold,locnew,ntot,xlow,ylow,locaux) &
+    !$OMP             SHARED(numgrids,listStart,level,listOfGrids,node,ndihi,ndjhi) &
+    !$OMP             SHARED(nghost,store1,store2,mxnest,alloc,rnode,cornxlo,cornylo,hx,hy) &
+    !$OMP             SHARED(rvol,rvoll,storeaux,num_gauges,nvar,naux) &
+    !$OMP             SHARED(timer_aos_to_soa,grid_data) &
+    !$OMP             SCHEDULE (DYNAMIC,1) &
+    !$OMP             DEFAULT(none)
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
@@ -225,8 +234,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         xlow = rnode(cornxlo,mptr) - nghost*hx
         ylow = rnode(cornylo,mptr) - nghost*hy
 
+        !$OMP CRITICAL(rv)
         rvol = rvol + nx * ny
         rvoll(level) = rvoll(level) + nx * ny
+        !$OMP END CRITICAL(rv)
 
 
         locaux = node(storeaux,mptr)
@@ -257,6 +268,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
     enddo
+    !$OMP END PARALLEL DO
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_before_gpu_loop)
@@ -351,6 +363,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     allocate(grids(numgrids(level)))
     allocate(grids_d(numgrids(level)))
     max_lenbc = 0
+
+    !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny) & 
+    !$OMP             SHARED(numgrids,listStart,level,listOfGrids,node,ndihi,ndjhi,grids) &
+    !$OMP             SHARED(max_lenbc,intratx,intraty) &
+    !$OMP             SHARED(fms_d,fps_d,gms_d,gps_d) &
+    !$OMP             SCHEDULE (DYNAMIC,1) &
+    !$OMP             DEFAULT(none)
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
@@ -364,9 +383,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         grids(j)%nx   = nx 
         grids(j)%ny   = ny 
         if (level > 1) then
+            !$OMP CRITICAL (max_lenbc)
             max_lenbc = max(max_lenbc, 2*(nx/intratx(level-1)+ny/intraty(level-1)))
+            !$OMP END CRITICAL (max_lenbc)
         endif
     enddo
+    !$OMP END PARALLEL DO
+
     grids_d = grids
     ! one kernel launch to do fluxsv for all grids at this level
     ! we don't do this for then fineset level
@@ -412,8 +435,15 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call take_cpu_timer('soa_to_aos', timer_soa_to_aos)
     call cpu_timer_start(timer_soa_to_aos)
 #endif
+
+    !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny,mitot,mjtot) & 
+    !$OMP             SHARED(numgrids,listStart,level,listOfGrids,node,ndihi,ndjhi) &
+    !$OMP             SHARED(nghost,locnew,store1,alloc) &
+    !$OMP             SHARED(grid_data,nvar,rnode,timebult,delt,device_id) &
+    !$OMP             SHARED(grid_data_d,fms_d,fps_d,gms_d,gps_d,sx_d,sy_d,wave_x_d,wave_y_d) &
+    !$OMP             SCHEDULE (DYNAMIC,1) &
+    !$OMP             DEFAULT(none)
     do j = 1, numgrids(level)
-        id = j
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
@@ -427,15 +457,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call soa_to_aos_r2(alloc(locnew), grid_data(mptr)%ptr, nvar, 1, mitot, 1, mjtot)
 
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
-    enddo
-#ifdef PROFILE
-    call cpu_timer_stop(timer_soa_to_aos)
-    call endCudaProfiler()
-#endif
 
-    do j = 1, numgrids(level)
-        levSt = listStart(level)
-        mptr = listOfGrids(levSt+j-1)
         call gpu_deallocate(grid_data_d(mptr)%ptr,device_id)
         call gpu_deallocate(fms_d(mptr)%ptr,device_id)
         call gpu_deallocate(fps_d(mptr)%ptr,device_id)
@@ -446,6 +468,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call gpu_deallocate(wave_x_d(mptr)%ptr,device_id)
         call gpu_deallocate(wave_y_d(mptr)%ptr,device_id)
     enddo
+    !$OMP END PARALLEL DO
+#ifdef PROFILE
+    call cpu_timer_stop(timer_soa_to_aos)
+    call endCudaProfiler()
+#endif
 
 
 
