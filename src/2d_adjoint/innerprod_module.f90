@@ -60,7 +60,7 @@ contains
                 mask_forward = .false.
                 continue
             else
-                mbc_a = adjoints(r)%nghost
+                mbc_a = adjoints(k)%nghost
                 allocate(mask_adjoint(1-mbc_a:mx_a+mbc_a, 1-mbc_a:my_a+mbc_a))
 
                 ! Create a mask that is .true. only in part of patch intersecting forward patch:

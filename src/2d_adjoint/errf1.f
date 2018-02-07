@@ -3,23 +3,23 @@ c --------------------------------------------------------------
 c
       subroutine errf1(rctfine,nvar,rctcrse,mptr,mi2tot,mj2tot,
      2                 mitot,mjtot,rctflg,mibuff,mjbuff,auxfine,
-     2                 naux,nx,ny,mbc)
+     2                 naux,nx,ny,mbc,jg)
       use amr_module
       use innerprod_module, only : calculate_innerproduct
       use adjoint_module, only: innerprod_index,
-     .        totnum_adjoints, adjoints, trange_start, trange_final
-      implicit none
+     .        totnum_adjoints, adjoints, trange_start, trange_final,
+     .        levtol, eptr, errors
 
  
       real(kind=8),intent(in)::rctfine(nvar,1-mbc:nx+mbc,1-mbc:ny+mbc)
       real(kind=8),intent(in)::rctcrse(nvar,mi2tot,mj2tot)
-      integer, intent(in) :: nx,ny,mbc,nvar,naux
+      integer, intent(in) :: nx,ny,mbc,nvar,naux, jg
       integer, intent(in) :: mibuff, mjbuff, mptr
       integer, intent(in) :: mitot,mjtot,mi2tot,mj2tot
 
       real(kind=8) :: rctflg(mibuff,mjbuff)
       real(kind=8) :: est(nvar,1-mbc:nx+mbc,1-mbc:ny+mbc)
-      logical :: mask_selecta(totnum_adjoints)
+      logical :: mask_selecta(totnum_adjoints), adjoints_found
 
       real(kind=8) :: auxfine(naux,1-mbc:nx+mbc,1-mbc:ny+mbc)
       real(kind=8) :: aux_temp(1:nx,1:ny)
@@ -27,6 +27,7 @@ c
 
       real(kind=8) :: xleft,ybot,time,hx,hy,dt,order
       integer :: levm,i,j,ifine,jfine,jj,k
+      real(kind=8) :: tol_exact
 
 c
 c
@@ -51,6 +52,18 @@ c
       dt    = possk(levm)
       auxfine(innerprod_index,:,:) = 0.0d0
       mask_selecta = .false.
+      adjoints_found = .false.
+
+c     Calculating correct tol for this level
+c     --------------------
+c     Total error allowed in this time step
+      tol_exact = tol*dt/tfinal
+c     Error allowed at this level
+      tol_exact = tol_exact/(2**(levm - 1))
+c     Error allowed per cell at this level
+      tol_exact = tol_exact/(numcells(levm)*hx*hy)
+
+      if (t0+possk(levm) .eq. time) levtol(levm) = tol_exact
 
 c     order  = dt*dble(2**(iorder+1) - 2)
       order  = dble(2**(iorder+1) - 2)
@@ -106,8 +119,17 @@ c     Loop over adjoint snapshots
           if ((time+adjoints(k)%time) >= trange_start .and.
      .        (time+adjoints(k)%time) <= trange_final) then
               mask_selecta(k) = .true.
+              adjoints_found = .true.
           endif
       enddo
+
+      if(.not. adjoints_found) then
+          write(*,*) "Error: no adjoint snapshots ",
+     .        "found in time range."
+          write(*,*) "Increase time rage of interest, ",
+     .        "or add more snapshots."
+          stop
+      endif
 
       do k=1,totnum_adjoints-1
           if((.not. mask_selecta(k)) .and.
@@ -138,8 +160,10 @@ c             set innerproduct for fine grid
                   auxfine(innerprod_index,i,j) =
      .                max(auxfine(innerprod_index,i,j),
      .                    aux_temp(i,j))
+                 errors(eptr(jg)+i*j) = auxfine(innerprod_index,i,j)
 
-                  if (auxfine(innerprod_index,i,j) .ge. tol) then
+                  if (auxfine(innerprod_index,i,j)
+     .                               .ge. levtol(levm)) then
 c                     ## never set rctflg to good, since flag2refine may
 c                     ## have previously set it to bad
 c                     ## can only add bad pts in this routine

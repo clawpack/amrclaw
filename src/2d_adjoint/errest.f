@@ -1,7 +1,7 @@
 c
 c -------------------------------------------------------------
 c
-      subroutine errest (nvar,naux,lcheck,mptr,nx,ny)
+      subroutine errest (nvar,naux,lcheck,mptr,nx,ny,jg)
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -57,7 +57,7 @@ c     ## by flag2refine so make sure not to overwrite
       mjbuff = ny + 2*mbuff 
       call errf1(alloc(locbig),nvar,valbgc,mptr,mi2tot,mj2tot,
      1           mitot,mjtot,alloc(locamrflags),mibuff,mjbuff,
-     1           alloc(locaux),naux,nx,ny,nghost)
+     1           alloc(locaux),naux,nx,ny,nghost,jg)
 
 c
       return

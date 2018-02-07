@@ -21,9 +21,11 @@ module adjoint_module
     type(adjointData_type), allocatable :: adjoints(:)
     integer :: totnum_adjoints, &
                counter, innerprod_index
-    real(kind=8) :: trange_start, trange_final
+    real(kind=8) :: trange_start, trange_final, levtol(maxlv)
     character(len=365), allocatable :: adj_files(:)
     logical :: adjoint_flagging
+    real(kind=8), allocatable, dimension(:) :: errors
+    integer, allocatable, dimension(:) :: eptr
 
 contains
 
@@ -33,7 +35,7 @@ contains
 
         ! Function Arguments
         character(len=*), parameter :: adjointfile = 'adjoint.data'
-        character(len=200) :: adjoint_output
+        character(len=400) :: adjoint_output
         logical :: fileExists
         integer :: iunit, k, r
         integer :: fileStatus = 0
@@ -43,6 +45,7 @@ contains
         ! Read adjoint specific information
 
         adjoint_flagging = .true.
+        levtol = 0.0d0
 
         inquire(file=adjointfile, exist=fileExists)
         if (fileExists) then
@@ -98,6 +101,34 @@ contains
         write(*,*) "Time range: ", t1, t2
 
     end subroutine set_time_window
+
+    subroutine calculate_tol(lcheck)
+
+        use amr_module
+        implicit none
+
+        ! Function Arguments
+        integer, intent(in) :: lcheck
+        real(kind=8) :: errtotal, cutoff, sorted(numcells(lcheck))
+        integer :: celln
+
+        ! Setting our goal for the maximum amount of error
+        ! for this level
+        cutoff = tol / 2**(lcheck)
+
+        ! Sorting errors
+        call qsortr(sorted, numcells(lcheck), errors)
+
+        errtotal = 0
+        do celln = 1, numcells(lcheck)
+            errtotal = errtotal + errors(sorted(celln))
+            if (errtotal .ge. cutoff) then
+                levtol(lcheck) = errors(sorted(celln))
+                EXIT
+            endif
+        end do
+
+    end subroutine calculate_tol
 
 
 end module adjoint_module
