@@ -44,7 +44,6 @@ COMMON_SOURCES += \
   $(AMRLIB)/filpatch.f90 \
   $(AMRLIB)/prefilp.f90 \
   $(AMRLIB)/flglvl2.f \
-  $(AMRLIB)/flagger.f \
   $(AMRLIB)/prepregstep.f \
   $(AMRLIB)/prepbigstep.f \
   $(AMRLIB)/fluxad.f \
@@ -129,3 +128,5 @@ COMMON_SOURCES += \
   $(ADJLIB)/setaux.f90 \
   $(ADJLIB)/reload.f \
   $(ADJLIB)/interp_adjoint.f \
+  $(ADJLIB)/flagger.f \
+  $(ADJLIB)/quick_sort.f \
