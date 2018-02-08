@@ -15,7 +15,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use gauges_module, only: update_gauges, num_gauges
     use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned, &
         gpu_allocate, gpu_deallocate
-    use cuda_module, only: device_id, id_copy_cflux, toString
+    use cuda_module, only: device_id, id_copy_cflux, toString, id_copy_fflux
     use cuda_module, only: wait_for_all_gpu_tasks, wait_for_stream
     use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
@@ -106,6 +106,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !     maxthreads initialized to 1 above in case no openmp
     !$    maxthreads = omp_get_max_threads()
 
+
+
+
+!! ################################################################## 
+!! Filling ghost cells 
+!! ##################################################################
 #ifdef PROFILE
     call startCudaProfiler("bound", 24)
 #endif
@@ -143,8 +149,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     timeBound = timeBound + clock_finishBound - clock_startBound
     timeBoundCPU=timeBoundCPU+cpu_finishBound-cpu_startBound
 
-    !
-    ! save coarse level values if there is a finer level for wave fixup
+
+!! ##################################################################
+!! Save coarse level values if there is a finer level for wave fixup
+!! ##################################################################
 #ifdef PROFILE
     call startCudaProfiler("saveqc", 24)
 #endif
@@ -194,11 +202,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_start(timer_before_gpu_loop)
 #endif
 
+!! ##################################################################
+!! Convert solution array from AOS to SOA
+!! ##################################################################
     !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny,mitot,mjtot) & 
-    !$OMP             PRIVATE(locold,locnew,ntot,xlow,ylow,locaux) &
+    !$OMP             PRIVATE(locold,locnew,ntot) &
     !$OMP             SHARED(numgrids,listStart,level,listOfGrids,node,ndihi,ndjhi) &
-    !$OMP             SHARED(nghost,store1,store2,mxnest,alloc,rnode,cornxlo,cornylo,hx,hy) &
-    !$OMP             SHARED(rvol,rvoll,storeaux,num_gauges,nvar,naux) &
+    !$OMP             SHARED(nghost,nvar,alloc) &
     !$OMP             SHARED(timer_aos_to_soa,grid_data) &
     !$OMP             SCHEDULE (DYNAMIC,1) &
     !$OMP             DEFAULT(none)
@@ -209,51 +219,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
         mitot  = nx + 2*nghost
         mjtot  = ny + 2*nghost
-
-        !  copy old soln. values into  next time step's soln. values
-        !  since integrator will overwrite it. only for grids not at
-        !  the finest level. finest level grids do not maintain copies
-        !  of old and new time solution values.
-
-        locold = node(store2, mptr)
         locnew = node(store1, mptr)
-    
-#ifdef PROFILE
-        call startCudaProfiler("copy q to old", 33)
-#endif
-        if (level .lt. mxnest) then
-            ntot   = mitot * mjtot * nvar
-            do i = 1, ntot
-                alloc(locold + i - 1) = alloc(locnew + i - 1)
-            enddo
-        endif
-#ifdef PROFILE
-        call endCudaProfiler()
-#endif
-
-        xlow = rnode(cornxlo,mptr) - nghost*hx
-        ylow = rnode(cornylo,mptr) - nghost*hy
-
-        !$OMP CRITICAL(rv)
-        rvol = rvol + nx * ny
-        rvoll(level) = rvoll(level) + nx * ny
-        !$OMP END CRITICAL(rv)
-
-
-        locaux = node(storeaux,mptr)
-        !        # See if the grid about to be advanced has gauge data to output.
-        !        # This corresponds to previous time step, but output done
-        !        # now to make linear interpolation easier, since grid
-        !        # now has boundary conditions filled in.
-
-        !     should change the way print_gauges does io - right now is critical section
-        !     no more,  each gauge has own array.
-
-        if (num_gauges > 0) then
-            call update_gauges(alloc(locnew:locnew+nvar*mitot*mjtot), &
-                               alloc(locaux:locaux+nvar*mitot*mjtot), &
-                               xlow,ylow,nvar,mitot,mjtot,naux,mptr)
-        endif
 
 #ifdef PROFILE
         call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
@@ -280,6 +246,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef PROFILE
     call startCudaProfiler("qad and step_grid",74)
 #endif
+!! ##################################################################
+!! qad and stepgrid
+!! ##################################################################
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
@@ -350,31 +319,76 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
 
     enddo
-    call wait_for_all_gpu_tasks(device_id)
-#ifdef PROFILE
-    call endCudaProfiler()
-#endif
 
-#ifdef PROFILE
-    call take_cpu_timer('fluxsv and fluxad', timer_fluxsv_fluxad)
-    call cpu_timer_start(timer_fluxsv_fluxad)
-    call startCudaProfiler("fluxsv and fluxad",12)
-#endif
+!! ##################################################################
+!! Copying old solution
+!! ##################################################################
     allocate(grids(numgrids(level)))
     allocate(grids_d(numgrids(level)))
     max_lenbc = 0
 
-    !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny) & 
-    !$OMP             SHARED(numgrids,listStart,level,listOfGrids,node,ndihi,ndjhi,grids) &
-    !$OMP             SHARED(max_lenbc,intratx,intraty) &
+    !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny,mitot,mjtot) & 
+    !$OMP             PRIVATE(locold,locnew,ntot,xlow,ylow,locaux) &
+    !$OMP             SHARED(numgrids,listStart,level,listOfGrids,node,ndihi,ndjhi) &
+    !$OMP             SHARED(grids,max_lenbc,intratx,intraty) &
     !$OMP             SHARED(fms_d,fps_d,gms_d,gps_d) &
+    !$OMP             SHARED(nghost,store1,store2,mxnest,alloc,rnode,cornxlo,cornylo,hx,hy) &
+    !$OMP             SHARED(rvol,rvoll,storeaux,num_gauges,nvar,naux) &
     !$OMP             SCHEDULE (DYNAMIC,1) &
     !$OMP             DEFAULT(none)
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
-        nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
-        ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+        mitot  = nx + 2*nghost
+        mjtot  = ny + 2*nghost
+
+        !  copy old soln. values into  next time step's soln. values
+        !  since integrator will overwrite it. only for grids not at
+        !  the finest level. finest level grids do not maintain copies
+        !  of old and new time solution values.
+
+        locold = node(store2, mptr)
+        locnew = node(store1, mptr)
+    
+#ifdef PROFILE
+        call startCudaProfiler("copy q to old", 33)
+#endif
+        if (level .lt. mxnest) then
+            ntot   = mitot * mjtot * nvar
+            do i = 1, ntot
+                alloc(locold + i - 1) = alloc(locnew + i - 1)
+            enddo
+        endif
+#ifdef PROFILE
+        call endCudaProfiler()
+#endif
+
+        xlow = rnode(cornxlo,mptr) - nghost*hx
+        ylow = rnode(cornylo,mptr) - nghost*hy
+
+        !$OMP CRITICAL(rv)
+        rvol = rvol + nx * ny
+        rvoll(level) = rvoll(level) + nx * ny
+        !$OMP END CRITICAL(rv)
+
+
+        locaux = node(storeaux,mptr)
+        !        # See if the grid about to be advanced has gauge data to output.
+        !        # This corresponds to previous time step, but output done
+        !        # now to make linear interpolation easier, since grid
+        !        # now has boundary conditions filled in.
+
+        !     should change the way print_gauges does io - right now is critical section
+        !     no more,  each gauge has own array.
+
+        if (num_gauges > 0) then
+            call update_gauges(alloc(locnew:locnew+nvar*mitot*mjtot), &
+                               alloc(locaux:locaux+nvar*mitot*mjtot), &
+                               xlow,ylow,nvar,mitot,mjtot,naux,mptr)
+        endif
+
         grids(j)%fm => fms_d(mptr)%ptr
         grids(j)%fp => fps_d(mptr)%ptr
         grids(j)%gm => gms_d(mptr)%ptr
@@ -387,42 +401,47 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             max_lenbc = max(max_lenbc, 2*(nx/intratx(level-1)+ny/intraty(level-1)))
             !$OMP END CRITICAL (max_lenbc)
         endif
+
     enddo
     !$OMP END PARALLEL DO
 
+    ! This implicitly synchronize the GPU
+    ! Namely, it's equivalent to calling wait_for_all_gpu_tasks(device_id)
     grids_d = grids
-    ! one kernel launch to do fluxsv for all grids at this level
-    ! we don't do this for then fineset level
-    if (level < lfine) then
-        call compute_kernel_size(numBlocks, numThreads, &
-            1,listsp(level),1,numgrids(level))
-        call fluxsv_fused_gpu<<<numBlocks,numThreads>>>( &
-                 grids_d, cflux_dd, fflux_dd, &
-                 nghost, numgrids(level), nvar,listsp(level),delt,hx,hy)
-    endif
+#ifdef PROFILE
+    call endCudaProfiler()
+#endif
+
+#ifdef PROFILE
+    call take_cpu_timer('fluxsv and fluxad', timer_fluxsv_fluxad)
+    call cpu_timer_start(timer_fluxsv_fluxad)
+    call startCudaProfiler("fluxsv and fluxad",12)
+#endif
+
+
     
+!! ##################################################################
+!! fluxad and fluxsv
+!! ##################################################################
     ! one kernel launch to do fluxad for all grids at this level
     ! we don't do this for the coarsest level
     if (level > 1) then
         call compute_kernel_size(numBlocks, numThreads, &
             1,max_lenbc,1,numgrids(level))
-        call fluxad_fused_gpu<<<numBlocks,numThreads>>>( &
+        call fluxad_fused_gpu<<<numBlocks,numThreads,0,get_cuda_stream(1,device_id)>>>( &
                 grids_d, fflux_dd,&
                 nghost, numgrids(level), intratx(level-1), intraty(level-1), &
                 delt, hx, hy)
-        call wait_for_all_gpu_tasks(device_id)
-        do j = 1, numgrids(level)
-            levSt = listStart(level)
-            mptr = listOfGrids(levSt+j-1)
-            nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
-            ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-            lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-            istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
-        enddo
     endif
-    call wait_for_all_gpu_tasks(device_id)
-    deallocate(grids)
-    deallocate(grids_d)
+    ! one kernel launch to do fluxsv for all grids at this level
+    ! we don't do this for the fineset level
+    if (level < lfine) then
+        call compute_kernel_size(numBlocks, numThreads, &
+            1,listsp(level),1,numgrids(level))
+        call fluxsv_fused_gpu<<<numBlocks,numThreads,0,get_cuda_stream(2,device_id)>>>( &
+                 grids_d, cflux_dd, fflux_dd, &
+                 nghost, numgrids(level), nvar,listsp(level),delt,hx,hy)
+    endif
 #ifdef PROFILE
     call endCudaProfiler()
     call cpu_timer_stop(timer_fluxsv_fluxad)
@@ -474,7 +493,21 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call endCudaProfiler()
 #endif
 
+    call wait_for_all_gpu_tasks(device_id)
+    deallocate(grids)
+    deallocate(grids_d)
 
+    if (level > 1) then
+        do j = 1, numgrids(level)
+            levSt = listStart(level)
+            mptr = listOfGrids(levSt+j-1)
+            nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
+            ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+            lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
+            istat = cudaMemcpyAsync(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, &
+                nvar*lenbc*2+naux*lenbc,get_cuda_stream(id_copy_fflux,device_id))
+        enddo
+    endif
 
 
 #else
@@ -502,6 +535,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !$OMP END PARALLEL DO
 
 #endif
+
+
+
+
     !
 #ifdef PROFILE
     call cpu_timer_stop(timer_stepgrid)
@@ -515,6 +552,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #ifdef CUDA
 
+
+!! ##################################################################
+!! CFL reduction
+!! ##################################################################
 #ifdef PROFILE
     call startCudaProfiler('CFL reduction', 34)
     call take_cpu_timer('CFL reduction', timer_cfl)
@@ -546,6 +587,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #else
     cflmax = dmax1(cflmax, cfl_level)
 #endif
+    call wait_for_all_gpu_tasks(device_id)
 
     !
 #ifdef PROFILE

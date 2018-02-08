@@ -118,8 +118,8 @@ c         make coarsened enlarged patch for conservative fixup
           call reclam(loctmp,nrow*ncol*(nvar+naux))
 
 #ifdef CUDA
-          istat = cudaMemcpyAsync(fflux_hd(mkid)%ptr, 
-     .      fflux_hh(mkid)%ptr, nvar*lenbc*2+naux*lenbc,
+          istat = cudaMemcpyAsync(fflux_hd(mkid)%ptr(nvar*lenbc+1), 
+     .      fflux_hh(mkid)%ptr(nvar*lenbc+1), nvar*lenbc+naux*lenbc,
      .      get_cuda_stream(id_copy_fflux,device_id))
 #endif
           mkid = node(levelptr,mkid)
