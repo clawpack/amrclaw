@@ -50,6 +50,8 @@ c
       ybot  = rnode(cornylo,mptr)
       hy    = hyposs(levm)
       dt    = possk(levm)
+
+      est(:,:,:) = 0.0d0
       auxfine(innerprod_index,:,:) = 0.0d0
       mask_selecta = .false.
       adjoints_found = .false.
