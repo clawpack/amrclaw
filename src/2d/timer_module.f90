@@ -19,9 +19,10 @@ module timer_module
     implicit none
     save
 
+    public
+
     ! initialized to be 0
     integer, parameter :: max_cpu_timers = 20
-    integer, parameter :: timer_total_run_time = 0
     integer(kind=8) :: clock_rate
     character(len=364) :: format_string
 
@@ -38,6 +39,28 @@ module timer_module
 
     ! measure wall time of CPU codes
     type(timer_type) :: cpu_timers(0:max_cpu_timers)
+
+    private :: max_cpu_timers, clock_rate, format_string, timer_type, cpu_timers
+
+#ifdef PROFILE
+    ! What's each timer used for
+    integer, parameter :: timer_total_run_time = 0
+
+    integer, parameter :: timer_stepgrid = 1
+    integer, parameter :: timer_gpu_loop = 2
+    integer, parameter :: timer_launch_compute_kernels = 3
+    integer, parameter :: timer_copy_old_solution = 4
+    integer, parameter :: timer_cfl = 5
+    integer, parameter :: timer_aos_to_soa = 6
+    integer, parameter :: timer_soa_to_aos = 7
+    integer, parameter :: timer_init_cfls = 8
+    integer, parameter :: timer_fluxsv_fluxad = 9
+    integer, parameter :: timer_advanc = 10
+    integer, parameter :: timer_bound = 11
+    integer, parameter :: timer_updating = 12
+    integer, parameter :: timer_regridding = 13
+#endif
+
 contains
     subroutine take_cpu_timer(timer_name_, timer_id)
         implicit none
@@ -122,7 +145,7 @@ contains
                 format_string = "('"//trim(cpu_timers(i)%timer_name)//": ')"
                 write(*,format_string)
                 write(outunit,format_string)
-                format_string="(1f15.3,'           ',1f15.3,'        ',i9)"
+                format_string="(1f15.3,'           ',1f15.2,'        ',i9)"
                 write(*,format_string) &
                     real(cpu_timers(i)%accumulated_time,kind=8)/real(clock_rate,kind=8), &
                     real(cpu_timers(i)%accumulated_time,kind=8)/real(clock_rate,kind=8)/total_run_time*100, &

@@ -10,6 +10,7 @@ c
 #ifdef PROFILE
       use cuda_module, only: toString
       use profiling_module
+      use timer_module
 #endif
 
       implicit double precision (a-h,o-z)
@@ -204,9 +205,12 @@ c
 #ifdef PROFILE
           call startCudaProfiler("regrid at level "//toString(lbase)
      .          ,lbase)
+          call take_cpu_timer("Regridding", timer_regridding)
+          call cpu_timer_start(timer_regridding)
 #endif
           call regrid(nvar,lbase,cut,naux,start_time)
 #ifdef PROFILE
+          call cpu_timer_stop(timer_regridding)
           call endCudaProfiler() 
 #endif
           call system_clock(clock_finish,clock_rate)
@@ -308,9 +312,12 @@ c                   adjust time steps for this and finer levels
 #ifdef PROFILE
                  call startCudaProfiler(
      .              "update level "//toString(level),level+2)
+                 call take_cpu_timer("Updating", timer_updating)
+                 call cpu_timer_start(timer_updating)
 #endif
                  call update(level,nvar,naux)
 #ifdef PROFILE
+                 call cpu_timer_stop(timer_updating)
                  call endCudaProfiler() 
 #endif
                  call system_clock(clock_finish,clock_rate)

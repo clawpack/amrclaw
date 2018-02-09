@@ -19,7 +19,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: wait_for_all_gpu_tasks, wait_for_stream
     use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
     use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
-    use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop
+    use timer_module
     use cudafor
     use reflux_module, only: qad_cpu2, qad_gpu, &
         fluxad_fused_gpu, fluxsv_fused_gpu
@@ -56,18 +56,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     type(grid_type), allocatable, device :: grids_d(:)
     integer :: max_lenbc
 
-#ifdef PROFILE
-    integer, parameter :: timer_stepgrid = 1
-    integer, parameter :: timer_gpu_loop = 2
-    integer, parameter :: timer_before_gpu_loop = 3
-    integer, parameter :: timer_post = 4
-    integer, parameter :: timer_cfl = 5
-    integer, parameter :: timer_aos_to_soa = 6
-    integer, parameter :: timer_soa_to_aos = 7
-    integer, parameter :: timer_init_cfls = 8
-    integer, parameter :: timer_qad = 9
-    integer, parameter :: timer_fluxsv_fluxad = 12
-#endif
 #endif
 
     !     maxgr is maximum number of grids  many things are
@@ -89,6 +77,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_time(cpu_start)
 #ifdef PROFILE
     call startCudaProfiler("advanc level "//toString(level),level)
+    call take_cpu_timer("advanc", timer_advanc)
+    call cpu_timer_start(timer_advanc)
 #endif
 
 
@@ -114,6 +104,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !! ##################################################################
 #ifdef PROFILE
     call startCudaProfiler("bound", 24)
+    call take_cpu_timer("Filling ghost cells", timer_bound)
+    call cpu_timer_start(timer_bound)
 #endif
     ! We want to do this regardless of the threading type
     !$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot, &
@@ -141,7 +133,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     end do
     !$OMP END PARALLEL DO
 #ifdef PROFILE
-    call endCudaProfiler() 
+    call cpu_timer_stop(timer_bound)
+    call endCudaProfiler() ! bound
 #endif
 
     call system_clock(clock_finishBound,clock_rate)
@@ -162,7 +155,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         endif
     endif
 #ifdef PROFILE
-    call endCudaProfiler() 
+    call endCudaProfiler() ! saveqc
 #endif
     !
     dtlevnew = rinfinity
@@ -175,6 +168,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef PROFILE
     call take_cpu_timer('stepgrid', timer_stepgrid)
     call cpu_timer_start(timer_stepgrid)
+    call startCudaProfiler("Stepgrid", 24)
 #endif
 
 
@@ -197,14 +191,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
 
-#ifdef PROFILE
-    call take_cpu_timer('pre-process before gpu loop', timer_before_gpu_loop)
-    call cpu_timer_start(timer_before_gpu_loop)
-#endif
-
 !! ##################################################################
 !! Convert solution array from AOS to SOA
 !! ##################################################################
+#ifdef PROFILE
+        call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
+        call cpu_timer_start(timer_aos_to_soa)
+        call startCudaProfiler("aos_to_soa", 14)
+#endif
     !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny,mitot,mjtot) & 
     !$OMP             PRIVATE(locold,locnew,ntot) &
     !$OMP             SHARED(numgrids,listStart,level,listOfGrids,node,ndihi,ndjhi) &
@@ -221,30 +215,28 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         mjtot  = ny + 2*nghost
         locnew = node(store1, mptr)
 
-#ifdef PROFILE
-        call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
-        call cpu_timer_start(timer_aos_to_soa)
-        call startCudaProfiler("aos_to_soa", 14)
-#endif
         ! convert q array to SoA format
         call aos_to_soa_r2(grid_data(mptr)%ptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
+    enddo
+    !$OMP END PARALLEL DO
 #ifdef PROFILE
-        call endCudaProfiler() 
+        call endCudaProfiler() ! aos_to_soa
         call cpu_timer_stop(timer_aos_to_soa)
 #endif
 
-    enddo
-    !$OMP END PARALLEL DO
 
 #ifdef PROFILE
-    call cpu_timer_stop(timer_before_gpu_loop)
-
-    call take_cpu_timer('gpu_loop', timer_gpu_loop)
+    call take_cpu_timer('qad, advance sol. and copy old sol.', timer_gpu_loop)
     call cpu_timer_start(timer_gpu_loop)
-#endif
 
-#ifdef PROFILE
-    call startCudaProfiler("qad and step_grid",74)
+    call take_cpu_timer('Launch qad and stepgrid_soa', timer_launch_compute_kernels)
+    call cpu_timer_start(timer_launch_compute_kernels)
+
+    call startCudaProfiler("qad, advance sol. and copy old sol.",74)
+    call startCudaProfiler("Launch qad and stepgrid_soa",74)
+    allocate(grids(numgrids(level)))
+    allocate(grids_d(numgrids(level)))
+    max_lenbc = 0
 #endif
 !! ##################################################################
 !! qad and stepgrid
@@ -319,13 +311,19 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
 
     enddo
+#ifdef PROFILE
+        call endCudaProfiler() ! Launch qad and stepgrid_soa
+        call cpu_timer_stop(timer_launch_compute_kernels)
+#endif
 
 !! ##################################################################
 !! Copying old solution
 !! ##################################################################
-    allocate(grids(numgrids(level)))
-    allocate(grids_d(numgrids(level)))
-    max_lenbc = 0
+#ifdef PROFILE
+    call take_cpu_timer('Copy q to old storage and update gauges', timer_copy_old_solution)
+    call cpu_timer_start(timer_copy_old_solution)
+    call startCudaProfiler("copy q to old storage and update gauges", 33)
+#endif
 
     !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny,mitot,mjtot) & 
     !$OMP             PRIVATE(locold,locnew,ntot,xlow,ylow,locaux) &
@@ -352,18 +350,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         locold = node(store2, mptr)
         locnew = node(store1, mptr)
     
-#ifdef PROFILE
-        call startCudaProfiler("copy q to old", 33)
-#endif
         if (level .lt. mxnest) then
             ntot   = mitot * mjtot * nvar
             do i = 1, ntot
                 alloc(locold + i - 1) = alloc(locnew + i - 1)
             enddo
         endif
-#ifdef PROFILE
-        call endCudaProfiler()
-#endif
 
         xlow = rnode(cornxlo,mptr) - nghost*hx
         ylow = rnode(cornylo,mptr) - nghost*hy
@@ -405,24 +397,29 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     enddo
     !$OMP END PARALLEL DO
 
-    ! This implicitly synchronize the GPU
-    ! Namely, it's equivalent to calling wait_for_all_gpu_tasks(device_id)
+#ifdef PROFILE
+    call endCudaProfiler()
+    call cpu_timer_stop(timer_copy_old_solution)
+#endif
+
+    call wait_for_all_gpu_tasks(device_id)
     grids_d = grids
 #ifdef PROFILE
     call endCudaProfiler()
+    call cpu_timer_stop(timer_gpu_loop)
 #endif
-
-#ifdef PROFILE
-    call take_cpu_timer('fluxsv and fluxad', timer_fluxsv_fluxad)
-    call cpu_timer_start(timer_fluxsv_fluxad)
-    call startCudaProfiler("fluxsv and fluxad",12)
-#endif
-
 
     
 !! ##################################################################
 !! fluxad and fluxsv
 !! ##################################################################
+#ifdef PROFILE
+    call take_cpu_timer('fluxsv, fluxad and soa-aos conversion', timer_fluxsv_fluxad)
+    call cpu_timer_start(timer_fluxsv_fluxad)
+    call startCudaProfiler("fluxsv, fluxad and soa-aos conversion",12)
+    call startCudaProfiler("Launch fluxad and fluxsv",12)
+#endif
+
     ! one kernel launch to do fluxad for all grids at this level
     ! we don't do this for the coarsest level
     if (level > 1) then
@@ -443,13 +440,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                  nghost, numgrids(level), nvar,listsp(level),delt,hx,hy)
     endif
 #ifdef PROFILE
-    call endCudaProfiler()
-    call cpu_timer_stop(timer_fluxsv_fluxad)
+    call endCudaProfiler() ! Launch fluxad and fluxsv
 #endif
 
 #ifdef PROFILE
-    call cpu_timer_stop(timer_gpu_loop)
-
     call startCudaProfiler('soa_to_aos',99)
     call take_cpu_timer('soa_to_aos', timer_soa_to_aos)
     call cpu_timer_start(timer_soa_to_aos)
@@ -489,13 +483,15 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     enddo
     !$OMP END PARALLEL DO
 #ifdef PROFILE
+    call endCudaProfiler() ! soa_to_aos
     call cpu_timer_stop(timer_soa_to_aos)
-    call endCudaProfiler()
 #endif
 
     call wait_for_all_gpu_tasks(device_id)
-    deallocate(grids)
-    deallocate(grids_d)
+
+#ifdef PROFILE
+    call startCudaProfiler('Transfer fflux to CPU',99)
+#endif
 
     if (level > 1) then
         do j = 1, numgrids(level)
@@ -508,6 +504,15 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                 nvar*lenbc*2+naux*lenbc,get_cuda_stream(id_copy_fflux,device_id))
         enddo
     endif
+
+#ifdef PROFILE
+    call endCudaProfiler() ! Transfer fflux to CPU
+    call endCudaProfiler() ! fluxsv, fluxad and soa-aos conversion
+    call cpu_timer_stop(timer_fluxsv_fluxad)
+#endif
+
+    deallocate(grids)
+    deallocate(grids_d)
 
 
 #else
@@ -542,6 +547,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !
 #ifdef PROFILE
     call cpu_timer_stop(timer_stepgrid)
+    call endCudaProfiler() ! Stepgrid
 #endif
     call system_clock(clock_finish,clock_rate)
     call cpu_time(cpu_finish)
@@ -581,17 +587,17 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_cfl)
-    call endCudaProfiler()
+    call endCudaProfiler() ! CFL reduction
 #endif
 
 #else
     cflmax = dmax1(cflmax, cfl_level)
 #endif
-    call wait_for_all_gpu_tasks(device_id)
 
     !
 #ifdef PROFILE
-    call endCudaProfiler()
+    call cpu_timer_stop(timer_advanc)
+    call endCudaProfiler() ! advanc level 
 #endif
     return
 end subroutine advanc
