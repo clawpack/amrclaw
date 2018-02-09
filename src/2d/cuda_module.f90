@@ -20,18 +20,6 @@ module cuda_module
     integer :: num_devices
     integer :: device_id ! which GPU is used
 
-    ! For timing
-    ! use 0-index array
-    ! The timer here is deprecated. Use the timer in timer_module instead.
-    integer, parameter :: max_cuda_timer =  100
-    real(kind=8) :: elapsed_time(max_cuda_timer)
-    character(len=20) :: timer_name(max_cuda_timer)
-    logical :: timer_initialized(max_cuda_timer)
-    integer :: n_calls(max_cuda_timer)
-    type(cudaEvent) :: event_start(max_cuda_timer)
-    type(cudaEvent) :: event_stop(max_cuda_timer)
-    integer :: n_timer
-
     type grid_type
         double precision, dimension(:,:,:), pointer, contiguous, device :: fm=>null()
         double precision, dimension(:,:,:), pointer, contiguous, device :: fp=>null()
@@ -126,8 +114,6 @@ contains
         allocate(cflux_hh(maxgr))
         allocate(cflux_hd(maxgr))
         allocate(cflux_dd(maxgr))
-
-        n_timer = 0
 
     end subroutine initialize_cuda
 
@@ -379,59 +365,6 @@ contains
         cudaResult = cudaStreamSynchronize(cuda_streams(s, dev_id))
 
     end subroutine wait_for_stream
-
-    ! put a timer with name t_name and ID id
-    ! id should be in the range 1:max_cuda_timer
-    subroutine timer_take(t_name, id)
-        implicit none
-        integer, intent(in) :: id
-        character(len=10), intent(in) :: t_name
-        if (timer_initialized(id) .eq. .false.) then
-            timer_name(id) = t_name
-            elapsed_time(id) = 0.0
-            n_calls(id) = 0
-            timer_initialized(id) = .true.
-        endif
-    end subroutine timer_take
-
-    subroutine timer_start(id)
-        use cudafor, only: cudaEventCreate, cudaEventRecord
-        implicit none
-        integer :: id, cuda_result
-        cuda_result = cudaEventCreate(event_start(id))
-        cuda_result = cudaEventCreate(event_stop(id))
-        cuda_result = cudaEventRecord(event_start(id), 0)
-        n_calls(id) = n_calls(id) + 1
-    end subroutine timer_start
-
-    subroutine timer_stop(id)
-        use cudafor, only: cudaEventRecord, cudaEventDestroy, & 
-            cudaEventSynchronize, cudaEventElapsedTime
-        implicit none
-        integer :: id, cuda_result
-        real :: local_time
-        cuda_result = cudaEventRecord(event_stop(id), 0)
-        cuda_result = cudaEventSynchronize(event_stop(id))
-        cuda_result = cudaEventElapsedTime(local_time, event_start(id), event_stop(id))
-        cuda_result = cudaEventDestroy(event_start(id))
-        cuda_result = cudaEventDestroy(event_stop(id))
-        elapsed_time(id) = elapsed_time(id) + local_time/1000
-    end subroutine timer_stop
-
-    ! returned time is in second
-    subroutine get_cuda_time(id, time) 
-        implicit none
-        integer, intent(in) :: id
-        real(kind=8), intent(out) :: time
-        time = elapsed_time(id)
-    end subroutine get_cuda_time
-
-    subroutine get_cuda_num_calls(id, n) 
-        implicit none
-        integer, intent(in) :: id
-        integer, intent(out) :: n
-        n= n_calls(id)
-    end subroutine get_cuda_num_calls
 
 
     subroutine finalize_cuda() 

@@ -97,11 +97,12 @@ program amr2
     use gauges_module, only: set_gauges, num_gauges
 
     use problem_para_module, only: setprob
+    use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop, &
+        print_all_cpu_timers, timer_total_run_time
 
 
 #ifdef CUDA
    use cuda_module, only: initialize_cuda, finalize_cuda
-   use timer_module, only: print_all_cpu_timers
 #endif
 
     implicit none
@@ -596,6 +597,10 @@ program amr2
     call cpu_time(cpu_start)
     call system_clock(clock_start,clock_rate)
 
+#ifdef PROFILE
+    call take_cpu_timer("Total run time", timer_total_run_time)
+    call cpu_timer_start(timer_total_run_time)
+#endif
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
     ! --------------------------------------------------------
@@ -603,6 +608,9 @@ program amr2
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
 
+#ifdef PROFILE
+    call cpu_timer_stop(timer_total_run_time)
+#endif
     call cpu_time(cpu_finish)
 
     !output timing data
