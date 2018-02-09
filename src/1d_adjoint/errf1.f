@@ -38,6 +38,8 @@ c
       levm  = node(nestlevel, mptr)
       hx    = hxposs(levm)
       dt    = possk(levm)
+
+      est(:,:) = 0.0d0
       auxfine(innerprod_index,:) = 0.0d0
       mask_selecta = .false.
       adjoints_found = .false.
