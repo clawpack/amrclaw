@@ -18,13 +18,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: device_id, id_copy_cflux, toString, id_copy_fflux
     use cuda_module, only: wait_for_all_gpu_tasks, wait_for_stream
     use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
-    use cuda_module, only: compute_kernel_size, numBlocks, numThreads, device_id
+    use cuda_module, only: compute_kernel_size, device_id
     use timer_module
     use cudafor
     use reflux_module, only: qad_cpu2, qad_gpu, &
         fluxad_fused_gpu, fluxsv_fused_gpu
     use cuda_module, only: grid_type
     use problem_para_module, only: cc, zz
+    use cudafor, only: dim3
 #ifdef PROFILE
     use profiling_module
 #endif
@@ -48,6 +49,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     integer :: cudaResult
     double precision :: xlow, ylow
     double precision :: cfl_local
+    type(dim3) :: numBlocks, numThreads
     double precision, dimension(:,:), pointer, contiguous :: cfls
     double precision, dimension(:,:), pointer, contiguous, device :: cfls_d
 
@@ -241,6 +243,18 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !! ##################################################################
 !! qad and stepgrid
 !! ##################################################################
+    !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny,mitot,mjtot) & 
+    !$OMP             PRIVATE(id,xlow,ylow,locaux,cudaResult) &
+    !$OMP             PRIVATE(lenbc,locsvq,numBlocks,numThreads) &
+    !$OMP             SHARED(numgrids,listStart,level,listOfGrids,ndihi,ndjhi) &
+    !$OMP             SHARED(rnode,node,cornxlo,cornylo,storeaux,hx,hy,nghost) &
+    !$OMP             SHARED(grid_data,grid_data_d,device_id,nvar) &
+    !$OMP             SHARED(fms_d,fps_d,gms_d,gps_d) &
+    !$OMP             SHARED(sx_d,sy_d,wave_x_d,wave_y_d) &
+    !$OMP             SHARED(fflux_hh,fflux_hd,intratx,intraty,delt,max1d,cc,zz) &
+    !$OMP             SHARED(dimensional_split,time,naux,alloc,cfls_d) &
+    !$OMP             SCHEDULE (DYNAMIC,1) &
+    !$OMP             DEFAULT(none)
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
@@ -266,6 +280,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call gpu_allocate(wave_y_d(mptr)%ptr,device_id,1,mitot-2,1,mjtot-1,1,NEQNS,1,NWAVES)
 
         ! copy q to GPU
+        !$OMP CRITICAL(launch)
         cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
         
         if (associated(fflux_hh(mptr)%ptr)) then
@@ -309,6 +324,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         endif
 
         cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        !$OMP END CRITICAL(launch)
 
     enddo
 #ifdef PROFILE
