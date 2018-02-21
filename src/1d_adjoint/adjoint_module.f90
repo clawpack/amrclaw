@@ -106,12 +106,15 @@ contains
 
        ! Function Arguments
        integer, intent(in) :: lcheck
-       real(kind=8) :: errtotal, cutoff, sorted(numcells(lcheck))
+       real(kind=8) :: errtotal, cutoff
+       real(kind=8) :: sorted(numcells(lcheck)), dt
        integer :: celln
 
        ! Setting our goal for the maximum amount of error 
        ! for this level
-        cutoff = tol / 2**(lcheck)
+       dt = possk(lcheck)
+       cutoff = tol*dt/tfinal ! Total error allowed in this time step
+       cutoff = cutoff / 2**(lcheck)
 
        ! Sorting errors
        call qsortr(sorted, numcells(lcheck), errors)
@@ -120,7 +123,7 @@ contains
        do celln = 1, numcells(lcheck)
            errtotal = errtotal + errors(sorted(celln))
            if (errtotal .ge. cutoff) then
-               levtol(lcheck) = errors(sorted(celln))
+               levtol(lcheck) = errors(sorted(celln-1))
                EXIT
            endif
        end do
