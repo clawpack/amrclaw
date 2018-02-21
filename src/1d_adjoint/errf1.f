@@ -49,7 +49,7 @@ c     --------------------
 c     Total error allowed in this time step
       tol_exact = tol*dt/tfinal
 c     Error allowed at this level
-      tol_exact = tol_exact/(2**(levm - 1))
+      tol_exact = tol_exact/(2**levm)
 c     Error allowed per cell at this level
       tol_exact = tol_exact/(numcells(levm)*hx)
 
@@ -104,9 +104,8 @@ c     Loop over adjoint snapshots
       if(.not. adjoints_found) then
           write(*,*) "Error: no adjoint snapshots ",
      .        "found in time range."
-          write(*,*) "Increase time rage of interest, ",
-     .        "or add more snapshots."
-          stop
+          write(*,*) "Consider increasing time rage of interest, ",
+     .        "or adding more snapshots."
       endif
 
       do k=1,totnum_adjoints-1
