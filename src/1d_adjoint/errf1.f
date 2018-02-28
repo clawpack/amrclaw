@@ -8,7 +8,7 @@ c
       use amr_module
       use innerprod_module, only : calculate_innerproduct
       use adjoint_module, only: innerprod_index,
-     .        totnum_adjoints, adjoints, trange_start, trange_final
+     .        totnum_adjoints, adjoints, trange_start, trange_final,
      .        levtol, eptr, errors
       implicit double precision (a-h,o-z)
 
@@ -21,6 +21,7 @@ c
       dimension  err_crse(nvar,mi2tot)
       logical mask_selecta(totnum_adjoints), adjoints_found
       dimension  auxfine(naux,mitot)
+
 c
 c
 c ::::::::::::::::::::::::::::: ERRF1 ::::::::::::::::::::::::::::::::
@@ -48,9 +49,22 @@ c
 c      auxfine(innerprod_index,:) = 0.0d0
       mask_selecta = .false.
       adjoints_found = .false.
+      aux_crse = 0.0d0
+      aux_temp = 0.0d0
 
 c     order  = dt*dble(2**(iorder+1) - 2)
       order  = dble(2**(iorder+1) - 2)
+c
+c     Calculating correct tol for this level
+c     --------------------
+c     Total error allowed in this time step
+      tol_exact = tol*dt/tfinal
+c     Error allowed at this level
+      tol_exact = tol_exact/(2**levm)
+c     Error allowed per cell at this level
+      tol_exact = tol_exact/(numcells(levm)*hx)
+
+      if (t0+possk(levm) .eq. time) levtol(levm) = tol_exact
 c
       if (.not. (edebug)) go to 20
          write(outunit,107) mptr
@@ -84,6 +98,8 @@ c             write(outunit,104) term1,term2,term3,term4
 c             rctcrse(2,i,j) = est
 c
               err_crse(k,i) = est
+c             retaining directionality of the wave
+              err_crse(k,i) = sign(est,rctcrse(k,i))
  40       continue
 
         ifine = ifine + 2
@@ -132,8 +148,9 @@ c             set innerproduct for fine grid
 
               do 22  i  = nghost+1, mi2tot-nghost
                   aux_crse(i) = max(aux_crse(i),aux_temp(i))
-cerrors(eptr(jg)+i) = auxfine(innerprod_index,i)
+                  errors(eptr(jg)+i) = aux_crse(i)
 
+                 rctcrse(1,i)  = goodpt
                  if (aux_crse(i) .ge. levtol(levm)) then
 c                    ## never set rctflg to good, since flag2refine may
 c                    ## have previously set it to bad
