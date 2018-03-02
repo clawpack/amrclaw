@@ -98,7 +98,6 @@ contains
 
         trange_final = t2
         trange_start = t1
-        write(*,*) "Time range: ", t1, t2
 
     end subroutine set_time_window
 
@@ -109,21 +108,25 @@ contains
 
         ! Function Arguments
         integer, intent(in) :: lcheck
-        real(kind=8) :: errtotal, cutoff, sorted(numcells(lcheck))
+        real(kind=8) :: errtotal, cutoff, sorted(numcells(lcheck)), dt
         integer :: celln
+
+        levtol(lcheck) = NEEDS_TO_BE_SET
 
         ! Setting our goal for the maximum amount of error
         ! for this level
-        cutoff = tol / 2**(lcheck)
+        dt = possk(lcheck)
+        cutoff = tol*dt/tfinal ! Total error allowed in this time step
+        cutoff = cutoff / 2**(lcheck)
 
         ! Sorting errors
-        call qsortr(sorted, numcells(lcheck), errors)
+        call qsortr(sorted, numcells(lcheck)/2, errors)
 
         errtotal = 0
-        do celln = 1, numcells(lcheck)
+        do celln = 1, numcells(lcheck)/2
             errtotal = errtotal + errors(sorted(celln))
             if (errtotal .ge. cutoff) then
-                levtol(lcheck) = errors(sorted(celln))
+                levtol(lcheck) = errors(sorted(celln-1))
                 EXIT
             endif
         end do

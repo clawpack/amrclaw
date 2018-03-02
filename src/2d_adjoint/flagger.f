@@ -43,7 +43,7 @@ c      call prepgrids(listgrids,numgrids(lcheck),lcheck)
 c before parallel loop give grids the extra storage they need for error estimation
 
          if (flag_richardson) then
-             allocate(errors(numcells(lcheck)))
+             allocate(errors(numcells(lcheck)/2))
              allocate(eptr(numgrids(lcheck)))
              errors = 0
              eptr(1) = 0
@@ -62,7 +62,7 @@ c            mptr = listgrids(jg)
                node(tempptr,mptr) = locbig
 
                if (jg .ne. numgrids(lcheck)) then
-                   eptr(jg+1) = eptr(jg)+nx*ny
+                   eptr(jg+1) = eptr(jg)+(nx/2)*(ny/2)
                endif
             else
                locbig = 0
