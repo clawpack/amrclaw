@@ -74,9 +74,17 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !                  adjusting fluxes for flux conservation step later
     ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     !
+!$OMP PARALLEL PRIVATE(hx, hy, delt, maxthreads, &
+!$OMP                  j, levSt, mptr, nx, ny, mitot, mjtot, locold, locnew, locaux, time, &
+!$OMP                  id, xlow, ylow, cudaResult, lenbc, locsvq, numBlocks, numThreads, &
+!$OMP                  ntot, mythread, dtnew) &
+!$OMP          DEFAULT(SHARED)
+
     ! get start time for more detailed timing by level
+    !$OMP MASTER
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
+    !$OMP END MASTER
 #ifdef PROFILE
     call startCudaProfiler("advanc level "//toString(level),level)
     call take_cpu_timer("advanc", timer_advanc)
@@ -91,8 +99,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !     call prepgrids(listgrids,numgrids(level),level)
     !
 
+    !$OMP MASTER 
     call system_clock(clock_startBound,clock_rate)
     call cpu_time(cpu_startBound)
+    !$OMP END MASTER 
 
 
     !     maxthreads initialized to 1 above in case no openmp
@@ -110,13 +120,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_start(timer_bound)
 #endif
     ! We want to do this regardless of the threading type
-    !$OMP PARALLEL DO PRIVATE(j,locnew, locaux, mptr,nx,ny,mitot, &
-    !$OMP                     mjtot,time,levSt), &
-    !$OMP             SHARED(level, nvar, naux, alloc, intrat, delt, &
-    !$OMP                    listOfGrids,listStart,nghost, &
-    !$OMP                    node,rnode,numgrids,listgrids), &
-    !$OMP             SCHEDULE (dynamic,1) &
-    !$OMP             DEFAULT(none)
+    !$OMP DO SCHEDULE (dynamic,1)
     do j = 1, numgrids(level)
         !mptr   = listgrids(j)
         levSt = listStart(level)
@@ -133,16 +137,19 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call bound(time,nvar,nghost,alloc(locnew),mitot,mjtot,mptr, alloc(locaux),naux)
 
     end do
-    !$OMP END PARALLEL DO
+    !$OMP END DO
 #ifdef PROFILE
     call cpu_timer_stop(timer_bound)
     call endCudaProfiler() ! bound
 #endif
 
+    !$OMP MASTER 
     call system_clock(clock_finishBound,clock_rate)
     call cpu_time(cpu_finishBound)
     timeBound = timeBound + clock_finishBound - clock_startBound
     timeBoundCPU=timeBoundCPU+cpu_finishBound-cpu_startBound
+    !$OMP END MASTER 
+
 
 
 !! ##################################################################
@@ -151,21 +158,25 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef PROFILE
     call startCudaProfiler("saveqc", 24)
 #endif
+    !$OMP MASTER 
     if (level+1 .le. mxnest) then
         if (lstart(level+1) .ne. null) then
             call saveqc(level+1,nvar,naux)
         endif
     endif
+    !$OMP END MASTER 
 #ifdef PROFILE
     call endCudaProfiler() ! saveqc
 #endif
     !
+    !$OMP MASTER 
     dtlevnew = rinfinity
     cfl_level = 0.d0    !# to keep track of max cfl seen on each level
 
     ! 
     call system_clock(clock_startStepgrid,clock_rate)
     call cpu_time(cpu_startStepgrid)
+    !$OMP END MASTER 
 
 #ifdef PROFILE
     call take_cpu_timer('stepgrid', timer_stepgrid)
@@ -182,11 +193,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_start(timer_init_cfls)
 #endif
 
+    !$OMP MASTER 
     call cpu_allocate_pinned(cfls,1,numgrids(level),1,2)
     call gpu_allocate(cfls_d,device_id,1,numgrids(level),1,2)
 
     ! TODO: merge this with something else
     cfls_d = 0.d0
+    !$OMP END MASTER 
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_init_cfls)
@@ -201,13 +214,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call cpu_timer_start(timer_aos_to_soa)
         call startCudaProfiler("aos_to_soa", 14)
 #endif
-    !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny,mitot,mjtot) & 
-    !$OMP             PRIVATE(locold,locnew,ntot) &
-    !$OMP             SHARED(numgrids,listStart,level,listOfGrids,node,ndihi,ndjhi) &
-    !$OMP             SHARED(nghost,nvar,alloc) &
-    !$OMP             SHARED(timer_aos_to_soa,grid_data) &
-    !$OMP             SCHEDULE (DYNAMIC,1) &
-    !$OMP             DEFAULT(none)
+    !$OMP DO SCHEDULE (DYNAMIC,1) 
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
@@ -220,7 +227,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ! convert q array to SoA format
         call aos_to_soa_r2(grid_data(mptr)%ptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
     enddo
-    !$OMP END PARALLEL DO
+    !$OMP END DO
+
 #ifdef PROFILE
         call endCudaProfiler() ! aos_to_soa
         call cpu_timer_stop(timer_aos_to_soa)
@@ -236,25 +244,17 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     call startCudaProfiler("qad, advance sol. and copy old sol.",74)
     call startCudaProfiler("Launch qad and stepgrid_soa",74)
+    !$OMP MASTER 
     allocate(grids(numgrids(level)))
     allocate(grids_d(numgrids(level)))
     max_lenbc = 0
+    !$OMP END MASTER 
+    !$OMP BARRIER
 #endif
 !! ##################################################################
 !! qad and stepgrid
 !! ##################################################################
-    !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny,mitot,mjtot) & 
-    !$OMP             PRIVATE(id,xlow,ylow,locaux,cudaResult) &
-    !$OMP             PRIVATE(lenbc,locsvq,numBlocks,numThreads) &
-    !$OMP             SHARED(numgrids,listStart,level,listOfGrids,ndihi,ndjhi) &
-    !$OMP             SHARED(rnode,node,cornxlo,cornylo,storeaux,hx,hy,nghost) &
-    !$OMP             SHARED(grid_data,grid_data_d,device_id,nvar) &
-    !$OMP             SHARED(fms_d,fps_d,gms_d,gps_d) &
-    !$OMP             SHARED(sx_d,sy_d,wave_x_d,wave_y_d) &
-    !$OMP             SHARED(fflux_hh,fflux_hd,intratx,intraty,delt,max1d,cc,zz) &
-    !$OMP             SHARED(dimensional_split,time,naux,alloc,cfls_d) &
-    !$OMP             SCHEDULE (DYNAMIC,1) &
-    !$OMP             DEFAULT(none)
+    !$OMP DO SCHEDULE (DYNAMIC,1)
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
@@ -327,6 +327,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         !$OMP END CRITICAL(launch)
 
     enddo
+    !$OMP END DO 
+    !$OMP NOWAIT
+    
 #ifdef PROFILE
         call endCudaProfiler() ! Launch qad and stepgrid_soa
         call cpu_timer_stop(timer_launch_compute_kernels)
@@ -341,15 +344,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call startCudaProfiler("copy q to old storage and update gauges", 33)
 #endif
 
-    !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny,mitot,mjtot) & 
-    !$OMP             PRIVATE(locold,locnew,ntot,xlow,ylow,locaux) &
-    !$OMP             SHARED(numgrids,listStart,level,listOfGrids,node,ndihi,ndjhi) &
-    !$OMP             SHARED(grids,max_lenbc,intratx,intraty) &
-    !$OMP             SHARED(fms_d,fps_d,gms_d,gps_d) &
-    !$OMP             SHARED(nghost,store1,store2,mxnest,alloc,rnode,cornxlo,cornylo,hx,hy) &
-    !$OMP             SHARED(rvol,rvoll,storeaux,num_gauges,nvar,naux) &
-    !$OMP             SCHEDULE (DYNAMIC,1) &
-    !$OMP             DEFAULT(none)
+    !$OMP DO SCHEDULE (DYNAMIC,1)
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
@@ -411,15 +406,17 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         endif
 
     enddo
-    !$OMP END PARALLEL DO
+    !$OMP END DO
 
 #ifdef PROFILE
     call endCudaProfiler()
     call cpu_timer_stop(timer_copy_old_solution)
 #endif
 
+    !$OMP MASTER 
     call wait_for_all_gpu_tasks(device_id)
     grids_d = grids
+    !$OMP END MASTER 
 #ifdef PROFILE
     call endCudaProfiler()
     call cpu_timer_stop(timer_gpu_loop)
@@ -438,6 +435,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     ! one kernel launch to do fluxad for all grids at this level
     ! we don't do this for the coarsest level
+    !$OMP MASTER 
     if (level > 1) then
         call compute_kernel_size(numBlocks, numThreads, &
             1,max_lenbc,1,numgrids(level))
@@ -455,6 +453,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                  grids_d, cflux_dd, fflux_dd, &
                  nghost, numgrids(level), nvar,listsp(level),delt,hx,hy)
     endif
+    !$OMP END MASTER 
+    !$OMP BARRIER
 #ifdef PROFILE
     call endCudaProfiler() ! Launch fluxad and fluxsv
 #endif
@@ -465,13 +465,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_start(timer_soa_to_aos)
 #endif
 
-    !$OMP PARALLEL DO PRIVATE(j,levSt,mptr,nx,ny,mitot,mjtot) & 
-    !$OMP             SHARED(numgrids,listStart,level,listOfGrids,node,ndihi,ndjhi) &
-    !$OMP             SHARED(nghost,locnew,store1,alloc) &
-    !$OMP             SHARED(grid_data,nvar,rnode,timebult,delt,device_id) &
-    !$OMP             SHARED(grid_data_d,fms_d,fps_d,gms_d,gps_d,sx_d,sy_d,wave_x_d,wave_y_d) &
-    !$OMP             SCHEDULE (DYNAMIC,1) &
-    !$OMP             DEFAULT(none)
+    !$OMP DO SCHEDULE (DYNAMIC,1)
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
@@ -497,18 +491,21 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call gpu_deallocate(wave_x_d(mptr)%ptr,device_id)
         call gpu_deallocate(wave_y_d(mptr)%ptr,device_id)
     enddo
-    !$OMP END PARALLEL DO
+    !$OMP END DO
 #ifdef PROFILE
     call endCudaProfiler() ! soa_to_aos
     call cpu_timer_stop(timer_soa_to_aos)
 #endif
 
+    !$OMP MASTER 
     call wait_for_all_gpu_tasks(device_id)
+    !$OMP END MASTER 
 
 #ifdef PROFILE
     call startCudaProfiler('Transfer fflux to CPU',99)
 #endif
 
+    !$OMP MASTER 
     if (level > 1) then
         do j = 1, numgrids(level)
             levSt = listStart(level)
@@ -520,6 +517,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                 nvar*lenbc*2+naux*lenbc,get_cuda_stream(id_copy_fflux,device_id))
         enddo
     endif
+    !$OMP END MASTER 
 
 #ifdef PROFILE
     call endCudaProfiler() ! Transfer fflux to CPU
@@ -527,19 +525,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_stop(timer_fluxsv_fluxad)
 #endif
 
+    !$OMP MASTER 
     deallocate(grids)
     deallocate(grids_d)
+    !$OMP END MASTER 
 
 
 #else
-    !$OMP PARALLEL DO PRIVATE(j,mptr,nx,ny,mitot,mjtot) & 
-    !$OMP             PRIVATE(mythread,dtnew) &
-    !$OMP             SHARED(rvol,rvoll,level,nvar,mxnest,alloc,intrat) &
-    !$OMP             SHARED(nghost,intratx,intraty,hx,hy,naux,listsp) &
-    !$OMP             SHARED(node,rnode,dtlevnew,numgrids,listgrids) &
-    !$OMP             SHARED(listOfGrids,listStart,levSt) &
-    !$OMP             SCHEDULE (DYNAMIC,1) &
-    !$OMP             DEFAULT(none)
+    !$OMP DO SCHEDULE (DYNAMIC,1)
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
@@ -553,7 +546,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         dtlevnew = dmin1(dtlevnew,dtnew)
         !$OMP END CRITICAL (newdt)    
     end do
-    !$OMP END PARALLEL DO
+    !$OMP END DO
 
 #endif
 
@@ -565,12 +558,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_stop(timer_stepgrid)
     call endCudaProfiler() ! Stepgrid
 #endif
+    !$OMP MASTER 
     call system_clock(clock_finish,clock_rate)
     call cpu_time(cpu_finish)
     tvoll(level) = tvoll(level) + clock_finish - clock_start
     tvollCPU(level) = tvollCPU(level) + cpu_finish - cpu_start
     timeStepgrid = timeStepgrid +clock_finish-clock_startStepgrid
     timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid      
+    !$OMP END MASTER 
 
 #ifdef CUDA
 
@@ -585,6 +580,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
     ! reduction to get cflmax and dtlevnew
+    !$OMP MASTER 
     cudaResult = cudaMemcpy(cfls, cfls_d, numgrids(level)*2)
     do j = 1,numgrids(level)
         cfl_local = max(cfls(j,1),cfls(j,2))
@@ -600,6 +596,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     cflmax = dmax1(cflmax, cfl_level)
     call cpu_deallocated_pinned(cfls)
     call gpu_deallocate(cfls_d,device_id)
+    !$OMP END MASTER 
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_cfl)
@@ -615,6 +612,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_stop(timer_advanc)
     call endCudaProfiler() ! advanc level 
 #endif
+    !$OMP END PARALLEL 
     return
 end subroutine advanc
     !
