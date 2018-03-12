@@ -67,8 +67,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[1] = 1.000000e+00          # yupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 50      # mx
-    clawdata.num_cells[1] = 50      # my
+    clawdata.num_cells[0] = 200      # mx
+    clawdata.num_cells[1] = 200      # my
     
 
     # ---------------
@@ -113,9 +113,7 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        # clawdata.num_output_times = 4
-        # clawdata.tfinal = 0.2
-        clawdata.num_output_times = 20 
+        clawdata.num_output_times = 20
         clawdata.tfinal = 1.0
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
@@ -202,7 +200,6 @@ def setrun(claw_pkg='amrclaw'):
     #   3 or 'vanleer'  ==> van Leer
     #   4 or 'mc'       ==> MC limiter
     clawdata.limiter = ['vanleer','vanleer']
-    # clawdata.limiter = ['none','none']
     
     clawdata.use_fwaves = False    # True ==> use f-wave version of algorithms
     
@@ -297,7 +294,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 0.2 # tolerance used in this routine
+    amrdata.flag2refine_tol = 0.05 # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
     # between a cell and each of its neighbors.
@@ -316,7 +313,6 @@ def setrun(claw_pkg='amrclaw'):
     # print info about each regridding up to this level:
     amrdata.verbosity_regrid = 0      
 
-
     # ---------------
     # All parameters for GPU computing:
     # ---------------
@@ -325,7 +321,6 @@ def setrun(claw_pkg='amrclaw'):
     # which gpu you would like to use
     # must between 0 and num_of_total_gpus-1
     gpudata.which_gpu = 0
-
 
 
     # ---------------
