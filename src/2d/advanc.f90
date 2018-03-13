@@ -25,7 +25,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         fluxad_fused_gpu, fluxsv_fused_gpu
     use cuda_module, only: grid_type
     use problem_para_module, only: cc, zz
-    use cudafor, only: dim3
 #ifdef PROFILE
     use profiling_module
 #endif
@@ -79,6 +78,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !$OMP                  id, xlow, ylow, cudaResult, lenbc, locsvq, numBlocks, numThreads, &
 !$OMP                  ntot, mythread, dtnew) &
 !$OMP          DEFAULT(SHARED)
+    cudaResult = cudaSetDevice(device_id)
 
     ! get start time for more detailed timing by level
     !$OMP MASTER
