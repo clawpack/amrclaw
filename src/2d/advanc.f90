@@ -120,7 +120,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_start(timer_bound)
 #endif
     ! We want to do this regardless of the threading type
-    !$OMP DO SCHEDULE (dynamic,1)
+    !$OMP DO SCHEDULE (DYNAMIC,1)
     do j = 1, numgrids(level)
         !mptr   = listgrids(j)
         levSt = listStart(level)
@@ -157,6 +157,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !! ##################################################################
 #ifdef PROFILE
     call startCudaProfiler("saveqc", 24)
+    call take_cpu_timer('saveqc', timer_saveqc)
+    call cpu_timer_start(timer_saveqc)
 #endif
     !$OMP MASTER 
     if (level+1 .le. mxnest) then
@@ -166,6 +168,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     endif
     !$OMP END MASTER 
 #ifdef PROFILE
+    call cpu_timer_stop(timer_saveqc)
     call endCudaProfiler() ! saveqc
 #endif
     !
@@ -327,8 +330,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         !$OMP END CRITICAL(launch)
 
     enddo
-    !$OMP END DO 
-    !$OMP NOWAIT
+    !$OMP END DO NOWAIT
     
 #ifdef PROFILE
         call endCudaProfiler() ! Launch qad and stepgrid_soa
@@ -553,20 +555,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
 
-    !
-#ifdef PROFILE
-    call cpu_timer_stop(timer_stepgrid)
-    call endCudaProfiler() ! Stepgrid
-#endif
-    !$OMP MASTER 
-    call system_clock(clock_finish,clock_rate)
-    call cpu_time(cpu_finish)
-    tvoll(level) = tvoll(level) + clock_finish - clock_start
-    tvollCPU(level) = tvollCPU(level) + cpu_finish - cpu_start
-    timeStepgrid = timeStepgrid +clock_finish-clock_startStepgrid
-    timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid      
-    !$OMP END MASTER 
-
 #ifdef CUDA
 
 
@@ -607,11 +595,22 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     cflmax = dmax1(cflmax, cfl_level)
 #endif
 
-    !
 #ifdef PROFILE
+    call cpu_timer_stop(timer_stepgrid)
+    call endCudaProfiler() ! Stepgrid
     call cpu_timer_stop(timer_advanc)
     call endCudaProfiler() ! advanc level 
 #endif
+    !$OMP MASTER 
+    call system_clock(clock_finish,clock_rate)
+    call cpu_time(cpu_finish)
+    ! tvoll = timeStepgrid + time_bound + time_saveqc
+    tvoll(level) = tvoll(level) + clock_finish - clock_start
+    tvollCPU(level) = tvollCPU(level) + cpu_finish - cpu_start
+    timeStepgrid = timeStepgrid +clock_finish-clock_startStepgrid
+    timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid      
+    !$OMP END MASTER 
+
     !$OMP END PARALLEL 
     return
 end subroutine advanc

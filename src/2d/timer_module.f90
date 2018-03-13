@@ -11,7 +11,8 @@
 !        end of the code section you want to time.
 !     4) A summary of all timers that have been taken by doing step 1) will be
 !        printed out at the end of the program.
-!  2. If OpenMP is used, only the master thread is timed.
+!  2. If OpenMP is used, only the master thread is timed and number of function 
+!     calls made by the master thread is counted.
 ! =========================================================================
 module timer_module
     use amr_module
@@ -59,6 +60,7 @@ module timer_module
     integer, parameter :: timer_bound = 11
     integer, parameter :: timer_updating = 12
     integer, parameter :: timer_regridding = 13
+    integer, parameter :: timer_saveqc = 14
 #endif
 
 contains
