@@ -49,10 +49,6 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
           if(.not. (first)) go to 20
               loc                 = igetsp(mitot*mjtot*nvar)
               node(store1,mptr)   = loc
-#ifdef CUDA
-              call cpu_allocate_pinned(grid_data(mptr)%ptr,
-     &         1,mitot,1,mjtot,1,nvar)
-#endif
               if (naux .gt. 0) then
                 locaux              = igetsp(mitot*mjtot*naux)
                 do k = 1, mitot*mjtot*naux,naux  ! set first component of aux to signal that it

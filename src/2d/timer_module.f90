@@ -43,7 +43,6 @@ module timer_module
 
     private :: max_cpu_timers, clock_rate, format_string, timer_type, cpu_timers
 
-#ifdef PROFILE
     ! What's each timer used for
     integer, parameter :: timer_total_run_time = 0
 
@@ -61,7 +60,6 @@ module timer_module
     integer, parameter :: timer_updating = 12
     integer, parameter :: timer_regridding = 13
     integer, parameter :: timer_saveqc = 14
-#endif
 
 contains
     subroutine take_cpu_timer(timer_name_, timer_id)

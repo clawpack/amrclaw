@@ -26,15 +26,6 @@ c      ## done after the checkpoint so pointers sitll work on restart
             mjtot  = ny + 2*nghost
             nwords  = mitot*mjtot*nvar
             call reclam(node(store1, mptr), nwords)
-#ifdef CUDA
-            if (associated(grid_data(mptr)%ptr)) then
-                call cpu_deallocated_pinned(grid_data(mptr)%ptr)
-            else
-                print *, 'grid_data of grid: ',mptr,' is already freed'
-                stop
-            endif
-
-#endif
             if (level .lt. mxnest) 
      .         call reclam(node(store2, mptr), nwords)
             if (naux .gt. 0) 

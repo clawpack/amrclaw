@@ -75,10 +75,6 @@
             mjtot = ny + 2*nghost
             loc    = igetsp(mitot * mjtot * nvar)
             node(store1, mptr)  = loc
-#ifdef CUDA
-            call cpu_allocate_pinned(grid_data(mptr)%ptr,
-     &       1,mitot,1,mjtot,1,nvar)
-#endif
             if (naux .gt. 0) then
               locaux = igetsp(mitot * mjtot * naux)
              else
@@ -160,18 +156,6 @@
           mitot = nx + 2*nghost
           mjtot = ny + 2*nghost
           call reclam(node(store1,mptr),mitot*mjtot*nvar)
-#ifdef CUDA
-          call cpu_deallocated_pinned(grid_data(mptr)%ptr)
-          call gpu_deallocate(grid_data_d(mptr)%ptr, device_id)
-          call gpu_deallocate(fms_d(mptr)%ptr, device_id)
-          call gpu_deallocate(fps_d(mptr)%ptr, device_id)
-          call gpu_deallocate(gms_d(mptr)%ptr, device_id)
-          call gpu_deallocate(gps_d(mptr)%ptr, device_id)
-          call gpu_deallocate(sx_d(mptr)%ptr, device_id)
-          call gpu_deallocate(sy_d(mptr)%ptr, device_id)
-          call gpu_deallocate(wave_x_d(mptr)%ptr, device_id)
-          call gpu_deallocate(wave_y_d(mptr)%ptr, device_id)
-#endif
           if (naux .gt. 0) then
             call reclam(node(storeaux,mptr),mitot*mjtot*naux)
           endif

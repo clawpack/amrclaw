@@ -168,9 +168,6 @@ c
                    if (lev .gt. mxnest) then ! if level going away take away first storage
                       call reclam(node(store1,mptr),mitot*mjtot*nvar)
                       node(store1,mptr) = 0
-#ifdef CUDA
-                      call cpu_deallocated_pinned(grid_data(mptr)%ptr)
-#endif
                       if (naux .gt. 0) then ! and aux arrays
                        call reclam(node(storeaux,mptr),mitot*mjtot*naux)
                        node(storeaux,mptr) = 0

@@ -217,6 +217,21 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call cpu_timer_start(timer_aos_to_soa)
         call startCudaProfiler("aos_to_soa", 14)
 #endif
+
+    !$OMP MASTER 
+    do j = 1, numgrids(level)
+        levSt = listStart(level)
+        mptr = listOfGrids(levSt+j-1)
+        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+        mitot  = nx + 2*nghost
+        mjtot  = ny + 2*nghost
+        call cpu_allocate_pinned(grid_data(mptr)%ptr, &
+                1,mitot,1,mjtot,1,nvar)
+    enddo
+    !$OMP END MASTER 
+    !$OMP BARRIER
+
     !$OMP DO SCHEDULE (DYNAMIC,1) 
     do j = 1, numgrids(level)
         levSt = listStart(level)
@@ -247,13 +262,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     call startCudaProfiler("qad, advance sol. and copy old sol.",74)
     call startCudaProfiler("Launch qad and stepgrid_soa",74)
+#endif
     !$OMP MASTER 
     allocate(grids(numgrids(level)))
     allocate(grids_d(numgrids(level)))
     max_lenbc = 0
     !$OMP END MASTER 
     !$OMP BARRIER
-#endif
 !! ##################################################################
 !! qad and stepgrid
 !! ##################################################################
@@ -291,12 +306,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             locsvq = 1 + nvar*lenbc
 
             ! CPU version
-            ! istat = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
+            ! cudaResult = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
             ! call qad_cpu2(grid_data(mptr)%ptr,mitot,mjtot,nghost,nvar, &
             !        fflux_hh(mptr)%ptr,fflux_hh(mptr)%ptr(locsvq),lenbc, &
             !        intratx(level-1),intraty(level-1),hx,hy, &
             !        delt,mptr,cc,zz)
-            ! istat = cudaMemcpy(fflux_hd(mptr)%ptr, fflux_hh(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
+            ! cudaResult = cudaMemcpy(fflux_hd(mptr)%ptr, fflux_hh(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
 
             call compute_kernel_size(numBlocks, numThreads, &
                 1,2*(nx+ny))
@@ -330,11 +345,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         !$OMP END CRITICAL(launch)
 
     enddo
-    !$OMP END DO NOWAIT
+    !$OMP END DO
     
 #ifdef PROFILE
-        call endCudaProfiler() ! Launch qad and stepgrid_soa
-        call cpu_timer_stop(timer_launch_compute_kernels)
+    call endCudaProfiler() ! Launch qad and stepgrid_soa
+    call cpu_timer_stop(timer_launch_compute_kernels)
 #endif
 
 !! ##################################################################
@@ -483,6 +498,32 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
 
+    enddo
+    !$OMP END DO
+#ifdef PROFILE
+    call endCudaProfiler() ! soa_to_aos
+    call cpu_timer_stop(timer_soa_to_aos)
+#endif
+
+    !$OMP MASTER 
+    call wait_for_all_gpu_tasks(device_id)
+    !$OMP END MASTER 
+
+
+    !$OMP MASTER 
+    do j = 1, numgrids(level)
+        levSt = listStart(level)
+        mptr = listOfGrids(levSt+j-1)
+        call cpu_deallocated_pinned(grid_data(mptr)%ptr)
+    enddo
+    !$OMP END MASTER 
+    !$OMP BARRIER
+
+    !$OMP DO SCHEDULE (DYNAMIC,1)
+    do j = 1, numgrids(level)
+        levSt = listStart(level)
+        mptr = listOfGrids(levSt+j-1)
+
         call gpu_deallocate(grid_data_d(mptr)%ptr,device_id)
         call gpu_deallocate(fms_d(mptr)%ptr,device_id)
         call gpu_deallocate(fps_d(mptr)%ptr,device_id)
@@ -494,14 +535,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call gpu_deallocate(wave_y_d(mptr)%ptr,device_id)
     enddo
     !$OMP END DO
-#ifdef PROFILE
-    call endCudaProfiler() ! soa_to_aos
-    call cpu_timer_stop(timer_soa_to_aos)
-#endif
-
-    !$OMP MASTER 
-    call wait_for_all_gpu_tasks(device_id)
-    !$OMP END MASTER 
 
 #ifdef PROFILE
     call startCudaProfiler('Transfer fflux to CPU',99)
@@ -515,7 +548,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
             ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
             lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-            istat = cudaMemcpyAsync(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, &
+            cudaResult = cudaMemcpyAsync(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, &
                 nvar*lenbc*2+naux*lenbc,get_cuda_stream(id_copy_fflux,device_id))
         enddo
     endif

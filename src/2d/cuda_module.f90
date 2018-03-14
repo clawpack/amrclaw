@@ -86,9 +86,6 @@ contains
 
         call opendatafile(inunit,gpufile)
         read(inunit,*) device_id    ! which gpu will be used
-        cudaResult = cudaSetDevice(device_id)
-        call check_cuda_error(cudaResult)
-        print *, 'Use the GPU with id: ',device_id
 
         do p = 0, num_devices-1
             ! Assume using only one GPU for now
@@ -104,6 +101,9 @@ contains
             endif
         enddo
 
+        cudaResult = cudaSetDevice(device_id)
+        call check_cuda_error(cudaResult)
+        print *, 'Use the GPU with id: ',device_id
 
         ! Initialize memory pool
         call clawpack_mempool_init()
