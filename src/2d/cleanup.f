@@ -9,10 +9,6 @@ c :::::::::::::::::::::: CLEANUP ::::::::::::::::::::::::::::::::;
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       use amr_module
-#ifdef CUDA
-      use memory_module, only: gpu_deallocate, cpu_deallocated_pinned
-      use cuda_module, only: device_id
-#endif
       implicit double precision (a-h,o-z)
 c
 c      ## clean up storage to double check that everything taken care of

@@ -13,7 +13,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use parallel_advanc_module
 #ifdef CUDA
     use gauges_module, only: update_gauges, num_gauges
-    use memory_module, only: cpu_allocate_pinned, cpu_deallocated_pinned, &
+    use memory_module, only: cpu_allocate_pinned, cpu_deallocate_pinned, &
         gpu_allocate, gpu_deallocate
     use cuda_module, only: device_id, id_copy_cflux, toString, id_copy_fflux
     use cuda_module, only: wait_for_all_gpu_tasks, wait_for_stream
@@ -514,7 +514,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
-        call cpu_deallocated_pinned(grid_data(mptr)%ptr)
+        call cpu_deallocate_pinned(grid_data(mptr)%ptr)
     enddo
     !$OMP END MASTER 
     !$OMP BARRIER
@@ -615,7 +615,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     enddo
     dtlevnew = delt*cfl/cfl_level
     cflmax = dmax1(cflmax, cfl_level)
-    call cpu_deallocated_pinned(cfls)
+    call cpu_deallocate_pinned(cfls)
     call gpu_deallocate(cfls_d,device_id)
     !$OMP END MASTER 
 

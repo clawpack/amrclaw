@@ -37,7 +37,7 @@ module memory_module
         module procedure cpu_allocate_pinned_i3
     end interface cpu_allocate_pinned
 
-    interface cpu_deallocated_pinned
+    interface cpu_deallocate_pinned
         module procedure cpu_deallocate_pinned_r1
         module procedure cpu_deallocate_pinned_r2
         module procedure cpu_deallocate_pinned_r3
@@ -45,7 +45,7 @@ module memory_module
         module procedure cpu_deallocate_pinned_i1
         module procedure cpu_deallocate_pinned_i2
         module procedure cpu_deallocate_pinned_i3
-    end interface cpu_deallocated_pinned
+    end interface cpu_deallocate_pinned
 
     interface 
         subroutine clawpack_mempool_init() bind(C, name='clawpack_mempool_init')

@@ -7,11 +7,6 @@
      .                  maxnumnewgrids)
 !
       use amr_module
-#ifdef CUDA
-      use memory_module, only: gpu_allocate, cpu_allocate_pinned
-      use memory_module, only: gpu_deallocate, cpu_deallocated_pinned
-      use cuda_module, only: device_id
-#endif
       implicit double precision (a-h,o-z)
 
       integer omp_get_thread_num, omp_get_max_threads

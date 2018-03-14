@@ -149,7 +149,7 @@ contains
 
         use amr_module
 #ifdef CUDA
-        use memory_module, only: gpu_allocate, gpu_deallocate, cpu_allocate_pinned, cpu_deallocated_pinned
+        use memory_module, only: gpu_allocate, gpu_deallocate, cpu_allocate_pinned, cpu_deallocate_pinned
         use cuda_module, only: device_id, wait_for_all_gpu_tasks, cuda_streams
         use cudafor
 #endif
@@ -347,11 +347,11 @@ contains
             enddo
         enddo
 
-        call cpu_deallocated_pinned( q1) 
-        call cpu_deallocated_pinned(fp1) 
-        call cpu_deallocated_pinned(gp1) 
-        call cpu_deallocated_pinned(fm1) 
-        call cpu_deallocated_pinned(gm1) 
+        call cpu_deallocate_pinned( q1) 
+        call cpu_deallocate_pinned(fp1) 
+        call cpu_deallocate_pinned(gp1) 
+        call cpu_deallocate_pinned(fm1) 
+        call cpu_deallocate_pinned(gm1) 
 
         call gpu_deallocate( q_d, device_id) 
         call gpu_deallocate(fp_d, device_id) 
@@ -431,7 +431,7 @@ contains
 
         use amr_module
 #ifdef CUDA
-        use memory_module, only: gpu_allocate, gpu_deallocate, cpu_allocate_pinned, cpu_deallocated_pinned
+        use memory_module, only: gpu_allocate, gpu_deallocate, cpu_allocate_pinned, cpu_deallocate_pinned
         use cuda_module, only: device_id, wait_for_all_gpu_tasks
         use cuda_module, only: get_cuda_stream
         use cudafor

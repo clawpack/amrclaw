@@ -6,7 +6,7 @@ c
 c
       use amr_module
 #ifdef CUDA
-      use memory_module, only: cpu_deallocated_pinned, gpu_deallocate
+      use memory_module, only: cpu_deallocate_pinned, gpu_deallocate
       use cuda_module, only: device_id
 #endif
       implicit double precision (a-h,o-z)
@@ -141,7 +141,7 @@ c
  85             if (mptr .eq. 0) go to 95
                    if (lev .lt. mxnold) then
 #ifdef CUDA
-                    call cpu_deallocated_pinned(cflux_hh(mptr)%ptr)
+                    call cpu_deallocate_pinned(cflux_hh(mptr)%ptr)
                     call gpu_deallocate(cflux_hd(mptr)%ptr,device_id)
 #else
                     call reclam(node(cfluxptr,mptr), 5*listsp(lev))
@@ -155,7 +155,7 @@ c
                    lenbc = 2*(ikeep+jkeep)
                    if (lev .gt. mxnest) then
 #ifdef CUDA
-                    call cpu_deallocated_pinned(fflux_hh(mptr)%ptr)
+                    call cpu_deallocate_pinned(fflux_hh(mptr)%ptr)
                     call gpu_deallocate(fflux_hd(mptr)%ptr,device_id)
 #else
                        call reclam

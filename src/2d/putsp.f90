@@ -9,7 +9,7 @@ subroutine putsp(lbase,level,nvar,naux)
     !
     use amr_module
 #ifdef CUDA
-    use memory_module, only: gpu_deallocate, cpu_deallocated_pinned
+    use memory_module, only: gpu_deallocate, cpu_deallocate_pinned
     use cuda_module, only: device_id
 #endif
     implicit double precision (a-h,o-z)
@@ -29,7 +29,7 @@ subroutine putsp(lbase,level,nvar,naux)
 #ifdef CUDA
             call gpu_deallocate(cflux_hd(mptr)%ptr, device_id)
             cflux_hd(mptr)%ptr=>null()
-            call cpu_deallocated_pinned(cflux_hh(mptr)%ptr)
+            call cpu_deallocate_pinned(cflux_hh(mptr)%ptr)
             cflux_hh(mptr)%ptr=>null()
 #else
             call reclam(node(cfluxptr,mptr), 5*listsp(level))
@@ -50,7 +50,7 @@ subroutine putsp(lbase,level,nvar,naux)
             !         twice perimeter since saving plus or minus fluxes 
             !         plus coarse solution storage
 #ifdef CUDA
-            call cpu_deallocated_pinned(fflux_hh(mptr)%ptr)
+            call cpu_deallocate_pinned(fflux_hh(mptr)%ptr)
             call gpu_deallocate(fflux_hd(mptr)%ptr,device_id)
 #else
             call reclam(node(ffluxptr,mptr), 2*nvar*lenbc+naux*lenbc)

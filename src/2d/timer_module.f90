@@ -125,6 +125,7 @@ contains
         integer :: i
         double precision :: total_run_time
 
+#ifdef PROFILE
         !$OMP MASTER
         total_run_time = real(cpu_timers(timer_total_run_time)%accumulated_time,kind=8) &
             /real(clock_rate,kind=8) 
@@ -161,6 +162,7 @@ contains
             endif
         enddo
         !$OMP END MASTER
+#endif
     end subroutine print_all_cpu_timers
 
 
