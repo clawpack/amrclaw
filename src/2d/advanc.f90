@@ -218,19 +218,19 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call startCudaProfiler("aos_to_soa", 14)
 #endif
 
-    !$OMP MASTER 
-    do j = 1, numgrids(level)
-        levSt = listStart(level)
-        mptr = listOfGrids(levSt+j-1)
-        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-        mitot  = nx + 2*nghost
-        mjtot  = ny + 2*nghost
-        call cpu_allocate_pinned(grid_data(mptr)%ptr, &
-                1,mitot,1,mjtot,1,nvar)
-    enddo
-    !$OMP END MASTER 
-    !$OMP BARRIER
+    ! !$OMP MASTER 
+    ! do j = 1, numgrids(level)
+    !     levSt = listStart(level)
+    !     mptr = listOfGrids(levSt+j-1)
+    !     nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+    !     ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+    !     mitot  = nx + 2*nghost
+    !     mjtot  = ny + 2*nghost
+    !     call cpu_allocate_pinned(grid_data(mptr)%ptr, &
+    !             1,mitot,1,mjtot,1,nvar)
+    ! enddo
+    ! !$OMP END MASTER 
+    ! !$OMP BARRIER
 
     !$OMP DO SCHEDULE (DYNAMIC,1) 
     do j = 1, numgrids(level)
@@ -242,6 +242,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         mjtot  = ny + 2*nghost
         locnew = node(store1, mptr)
 
+        call cpu_allocate_pinned(grid_data(mptr)%ptr, &
+                1,mitot,1,mjtot,1,nvar)
         ! convert q array to SoA format
         call aos_to_soa_r2(grid_data(mptr)%ptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
     enddo
@@ -510,19 +512,21 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !$OMP END MASTER 
 
 
-    !$OMP MASTER 
-    do j = 1, numgrids(level)
-        levSt = listStart(level)
-        mptr = listOfGrids(levSt+j-1)
-        call cpu_deallocate_pinned(grid_data(mptr)%ptr)
-    enddo
-    !$OMP END MASTER 
-    !$OMP BARRIER
+    ! !$OMP MASTER 
+    ! do j = 1, numgrids(level)
+    !     levSt = listStart(level)
+    !     mptr = listOfGrids(levSt+j-1)
+    !     call cpu_deallocate_pinned(grid_data(mptr)%ptr)
+    ! enddo
+    ! !$OMP END MASTER 
+    ! !$OMP BARRIER
 
     !$OMP DO SCHEDULE (DYNAMIC,1)
     do j = 1, numgrids(level)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
+
+        call cpu_deallocate_pinned(grid_data(mptr)%ptr)
 
         call gpu_deallocate(grid_data_d(mptr)%ptr,device_id)
         call gpu_deallocate(fms_d(mptr)%ptr,device_id)

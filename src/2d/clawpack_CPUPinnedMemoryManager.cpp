@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cassert>
 #include <iostream>
+#include <mutex>
 
 #include "clawpack_CPUPinnedMemoryManager.H"
 
@@ -13,6 +14,7 @@
 #include <cuda.h>
 
 static bool local_verbose = false;
+static std::mutex NL_mutex;
 
 CPUPinnedMemoryManager::CPUPinnedMemoryManager (size_t hunk_size)
 {
@@ -48,6 +50,7 @@ CPUPinnedMemoryManager::~CPUPinnedMemoryManager ()
 void*
 CPUPinnedMemoryManager::alloc_pinned (size_t nbytes)
 {
+    std::lock_guard<std::mutex> alloc_pinned_guard(NL_mutex);
     nbytes = CPUPinnedMemoryManager::align(nbytes == 0 ? 1 : nbytes);
     //
     // Find node in freelist at lowest memory address that'll satisfy request.
@@ -127,6 +130,7 @@ CPUPinnedMemoryManager::alloc_pinned (size_t nbytes)
 void
 CPUPinnedMemoryManager::free_pinned (void* vp)
 {
+    std::lock_guard<std::mutex> free_pinned_guard(NL_mutex);
     if (vp == 0)
         //
         // Allow calls with NULL as allowed by C++ delete.
