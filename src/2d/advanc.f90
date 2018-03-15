@@ -155,31 +155,30 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !! ##################################################################
 !! Save coarse level values if there is a finer level for wave fixup
 !! ##################################################################
+    !$OMP MASTER 
 #ifdef PROFILE
     call startCudaProfiler("saveqc", 24)
     call take_cpu_timer('saveqc', timer_saveqc)
     call cpu_timer_start(timer_saveqc)
 #endif
-    !$OMP MASTER 
     if (level+1 .le. mxnest) then
         if (lstart(level+1) .ne. null) then
             call saveqc(level+1,nvar,naux)
         endif
     endif
-    !$OMP END MASTER 
+    call system_clock(clock_startStepgrid,clock_rate)
+    call cpu_time(cpu_startStepgrid)
 #ifdef PROFILE
     call cpu_timer_stop(timer_saveqc)
     call endCudaProfiler() ! saveqc
 #endif
-    !
-    !$OMP MASTER 
+    !$OMP END MASTER 
+
+    !$OMP SINGLE
     dtlevnew = rinfinity
     cfl_level = 0.d0    !# to keep track of max cfl seen on each level
 
-    ! 
-    call system_clock(clock_startStepgrid,clock_rate)
-    call cpu_time(cpu_startStepgrid)
-    !$OMP END MASTER 
+    !$OMP END SINGLE
 
 #ifdef PROFILE
     call take_cpu_timer('stepgrid', timer_stepgrid)
@@ -192,45 +191,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef CUDA
 
 
-    !$OMP MASTER
+    !$OMP SINGLE
     call cpu_allocate_pinned(cfls,1,numgrids(level),1,2)
     call gpu_allocate(cfls_d,device_id,1,numgrids(level),1,2)
 
     ! TODO: merge this with something else
     cfls_d = 0.d0
-    !$OMP END MASTER 
-
-
-!! ##################################################################
-!! Convert solution array from AOS to SOA
-!! ##################################################################
-! #ifdef PROFILE
-!         call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
-!         call cpu_timer_start(timer_aos_to_soa)
-!         call startCudaProfiler("aos_to_soa", 14)
-! #endif
-! 
-!     !$OMP DO SCHEDULE (DYNAMIC,1) 
-!     do j = 1, numgrids(level)
-!         levSt = listStart(level)
-!         mptr = listOfGrids(levSt+j-1)
-!         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-!         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-!         mitot  = nx + 2*nghost
-!         mjtot  = ny + 2*nghost
-!         locnew = node(store1, mptr)
-! 
-!         call cpu_allocate_pinned(grid_data(mptr)%ptr, &
-!                 1,mitot,1,mjtot,1,nvar)
-!         ! convert q array to SoA format
-!         call aos_to_soa_r2(grid_data(mptr)%ptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
-!     enddo
-!     !$OMP END DO
-! 
-! #ifdef PROFILE
-!         call endCudaProfiler() ! aos_to_soa
-!         call cpu_timer_stop(timer_aos_to_soa)
-! #endif
+    !$OMP END SINGLE 
 
 
 #ifdef PROFILE
@@ -243,11 +210,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call startCudaProfiler("qad, advance sol. and copy old sol.",74)
     call startCudaProfiler("Launch qad and stepgrid_soa",74)
 #endif
-    !$OMP MASTER 
+    !$OMP SINGLE 
     allocate(grids(numgrids(level)))
     allocate(grids_d(numgrids(level)))
     max_lenbc = 0
-    !$OMP END MASTER 
+    !$OMP END SINGLE 
     !$OMP BARRIER
 !! ##################################################################
 !! qad and stepgrid
@@ -429,6 +396,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call wait_for_all_gpu_tasks(device_id)
     grids_d = grids
     !$OMP END MASTER 
+    !$OMP BARRIER
 #ifdef PROFILE
     call endCudaProfiler()
     call cpu_timer_stop(timer_gpu_loop)
@@ -528,7 +496,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call startCudaProfiler('Transfer fflux to CPU',99)
 #endif
 
-    !$OMP MASTER 
+    !$OMP SINGLE
     if (level > 1) then
         do j = 1, numgrids(level)
             levSt = listStart(level)
@@ -540,7 +508,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                 nvar*lenbc*2+naux*lenbc,get_cuda_stream(id_copy_fflux,device_id))
         enddo
     endif
-    !$OMP END MASTER 
+    !$OMP END SINGLE
+
+    !$OMP SINGLE
+    deallocate(grids)
+    deallocate(grids_d)
+    !$OMP END SINGLE
+    !$OMP BARRIER
 
 #ifdef PROFILE
     call endCudaProfiler() ! Transfer fflux to CPU
@@ -548,10 +522,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_stop(timer_fluxsv_fluxad)
 #endif
 
-    !$OMP MASTER
-    deallocate(grids)
-    deallocate(grids_d)
-    !$OMP END MASTER
 
 
 #else
