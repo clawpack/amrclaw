@@ -191,12 +191,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 #ifdef CUDA
 
-#ifdef PROFILE
-    call take_cpu_timer('Initialize cfls', timer_init_cfls)
-    call cpu_timer_start(timer_init_cfls)
-#endif
 
-    !$OMP MASTER 
+    !$OMP MASTER
     call cpu_allocate_pinned(cfls,1,numgrids(level),1,2)
     call gpu_allocate(cfls_d,device_id,1,numgrids(level),1,2)
 
@@ -204,55 +200,37 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     cfls_d = 0.d0
     !$OMP END MASTER 
 
-#ifdef PROFILE
-    call cpu_timer_stop(timer_init_cfls)
-#endif
-
 
 !! ##################################################################
 !! Convert solution array from AOS to SOA
 !! ##################################################################
-#ifdef PROFILE
-        call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
-        call cpu_timer_start(timer_aos_to_soa)
-        call startCudaProfiler("aos_to_soa", 14)
-#endif
-
-    ! !$OMP MASTER 
-    ! do j = 1, numgrids(level)
-    !     levSt = listStart(level)
-    !     mptr = listOfGrids(levSt+j-1)
-    !     nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-    !     ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-    !     mitot  = nx + 2*nghost
-    !     mjtot  = ny + 2*nghost
-    !     call cpu_allocate_pinned(grid_data(mptr)%ptr, &
-    !             1,mitot,1,mjtot,1,nvar)
-    ! enddo
-    ! !$OMP END MASTER 
-    ! !$OMP BARRIER
-
-    !$OMP DO SCHEDULE (DYNAMIC,1) 
-    do j = 1, numgrids(level)
-        levSt = listStart(level)
-        mptr = listOfGrids(levSt+j-1)
-        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
-        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-        mitot  = nx + 2*nghost
-        mjtot  = ny + 2*nghost
-        locnew = node(store1, mptr)
-
-        call cpu_allocate_pinned(grid_data(mptr)%ptr, &
-                1,mitot,1,mjtot,1,nvar)
-        ! convert q array to SoA format
-        call aos_to_soa_r2(grid_data(mptr)%ptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
-    enddo
-    !$OMP END DO
-
-#ifdef PROFILE
-        call endCudaProfiler() ! aos_to_soa
-        call cpu_timer_stop(timer_aos_to_soa)
-#endif
+! #ifdef PROFILE
+!         call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
+!         call cpu_timer_start(timer_aos_to_soa)
+!         call startCudaProfiler("aos_to_soa", 14)
+! #endif
+! 
+!     !$OMP DO SCHEDULE (DYNAMIC,1) 
+!     do j = 1, numgrids(level)
+!         levSt = listStart(level)
+!         mptr = listOfGrids(levSt+j-1)
+!         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+!         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+!         mitot  = nx + 2*nghost
+!         mjtot  = ny + 2*nghost
+!         locnew = node(store1, mptr)
+! 
+!         call cpu_allocate_pinned(grid_data(mptr)%ptr, &
+!                 1,mitot,1,mjtot,1,nvar)
+!         ! convert q array to SoA format
+!         call aos_to_soa_r2(grid_data(mptr)%ptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
+!     enddo
+!     !$OMP END DO
+! 
+! #ifdef PROFILE
+!         call endCudaProfiler() ! aos_to_soa
+!         call cpu_timer_stop(timer_aos_to_soa)
+! #endif
 
 
 #ifdef PROFILE
@@ -282,7 +260,22 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
         mitot  = nx + 2*nghost
         mjtot  = ny + 2*nghost
+        locnew = node(store1, mptr)
         id = j
+
+        call cpu_allocate_pinned(grid_data(mptr)%ptr, &
+                1,mitot,1,mjtot,1,nvar)
+#ifdef PROFILE
+        call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
+        call cpu_timer_start(timer_aos_to_soa)
+        call startCudaProfiler("aos_to_soa", 14)
+#endif
+        ! convert q array to SoA format
+        call aos_to_soa_r2(grid_data(mptr)%ptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
+#ifdef PROFILE
+        call endCudaProfiler() ! aos_to_soa
+        call cpu_timer_stop(timer_aos_to_soa)
+#endif
 
 
         xlow = rnode(cornxlo,mptr) - nghost*hx
@@ -510,16 +503,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !$OMP MASTER 
     call wait_for_all_gpu_tasks(device_id)
     !$OMP END MASTER 
-
-
-    ! !$OMP MASTER 
-    ! do j = 1, numgrids(level)
-    !     levSt = listStart(level)
-    !     mptr = listOfGrids(levSt+j-1)
-    !     call cpu_deallocate_pinned(grid_data(mptr)%ptr)
-    ! enddo
-    ! !$OMP END MASTER 
-    ! !$OMP BARRIER
+    !$OMP BARRIER
 
     !$OMP DO SCHEDULE (DYNAMIC,1)
     do j = 1, numgrids(level)
@@ -564,10 +548,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_stop(timer_fluxsv_fluxad)
 #endif
 
-    !$OMP MASTER 
+    !$OMP MASTER
     deallocate(grids)
     deallocate(grids_d)
-    !$OMP END MASTER 
+    !$OMP END MASTER
 
 
 #else
@@ -605,7 +589,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
     ! reduction to get cflmax and dtlevnew
-    !$OMP MASTER 
+    !$OMP MASTER
     cudaResult = cudaMemcpy(cfls, cfls_d, numgrids(level)*2)
     do j = 1,numgrids(level)
         cfl_local = max(cfls(j,1),cfls(j,2))
@@ -621,7 +605,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     cflmax = dmax1(cflmax, cfl_level)
     call cpu_deallocate_pinned(cfls)
     call gpu_deallocate(cfls_d,device_id)
-    !$OMP END MASTER 
+    !$OMP END MASTER
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_cfl)
