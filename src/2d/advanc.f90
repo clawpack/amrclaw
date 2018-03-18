@@ -199,6 +199,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     cfls_d = 0.d0
     !$OMP END SINGLE 
 
+    !$OMP SINGLE 
+    allocate(grids(numgrids(level)))
+    allocate(grids_d(numgrids(level)))
+    max_lenbc = 0
+    !$OMP END SINGLE 
+    !$OMP BARRIER
 
 #ifdef PROFILE
     call take_cpu_timer('qad, advance sol. and copy old sol.', timer_gpu_loop)
@@ -210,12 +216,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call startCudaProfiler("qad, advance sol. and copy old sol.",74)
     call startCudaProfiler("Launch qad and stepgrid_soa",74)
 #endif
-    !$OMP SINGLE 
-    allocate(grids(numgrids(level)))
-    allocate(grids_d(numgrids(level)))
-    max_lenbc = 0
-    !$OMP END SINGLE 
-    !$OMP BARRIER
 !! ##################################################################
 !! qad and stepgrid
 !! ##################################################################
