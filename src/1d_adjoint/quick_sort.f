@@ -37,8 +37,8 @@ C                                 UNIVERSITY PARK, PA.  16802
 C
       IMPLICIT real(kind=8) (A-Z)
 C
-      integer :: N
-      real(kind=8) :: ORD(N),POPLST(2,20), A(N)
+      integer :: N,I,P,Q,IX,IZ,NDEEP,ORD(N)
+      real(kind=8) :: POPLST(2,20), A(N)
       real(kind=8) :: X,XX,Z,ZZ,Y
 C
 C
