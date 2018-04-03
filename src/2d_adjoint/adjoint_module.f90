@@ -116,7 +116,7 @@ contains
         ! Setting our goal for the maximum amount of error
         ! for this level
         dt = possk(lcheck)
-        cutoff = tol*dt/tfinal ! Total error allowed in this time step
+        cutoff = tol !*dt/tfinal ! Total error allowed in this time step
         cutoff = cutoff / 2**(lcheck)
 
         ! Sorting errors
