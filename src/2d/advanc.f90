@@ -73,6 +73,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !                  adjusting fluxes for flux conservation step later
     ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     !
+
+#ifdef PROFILE
+    call take_cpu_timer("advanc", timer_advanc)
+    call cpu_timer_start(timer_advanc)
+#endif
+
 !$OMP PARALLEL PRIVATE(hx, hy, delt, maxthreads, &
 !$OMP                  j, levSt, mptr, nx, ny, mitot, mjtot, locold, locnew, locaux, time, &
 !$OMP                  id, xlow, ylow, cudaResult, lenbc, locsvq, numBlocks, numThreads, &
@@ -80,16 +86,15 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !$OMP          DEFAULT(SHARED)
     cudaResult = cudaSetDevice(device_id)
 
+#ifdef PROFILE
+    call startCudaProfiler("advanc level "//toString(level),level)
+#endif
+
     ! get start time for more detailed timing by level
     !$OMP MASTER
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
     !$OMP END MASTER
-#ifdef PROFILE
-    call startCudaProfiler("advanc level "//toString(level),level)
-    call take_cpu_timer("advanc", timer_advanc)
-    call cpu_timer_start(timer_advanc)
-#endif
 
 
     hx   = hxposs(level)
@@ -410,12 +415,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call take_cpu_timer('fluxsv, fluxad and soa-aos conversion', timer_fluxsv_fluxad)
     call cpu_timer_start(timer_fluxsv_fluxad)
     call startCudaProfiler("fluxsv, fluxad and soa-aos conversion",12)
-    call startCudaProfiler("Launch fluxad and fluxsv",12)
 #endif
 
     ! one kernel launch to do fluxad for all grids at this level
     ! we don't do this for the coarsest level
     !$OMP MASTER 
+#ifdef PROFILE
+    call startCudaProfiler("Launch fluxad and fluxsv",12)
+#endif
     if (level > 1) then
         call compute_kernel_size(numBlocks, numThreads, &
             1,max_lenbc,1,numgrids(level))
@@ -433,11 +440,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                  grids_d, cflux_dd, fflux_dd, &
                  nghost, numgrids(level), nvar,listsp(level),delt,hx,hy)
     endif
-    !$OMP END MASTER 
-    !$OMP BARRIER
 #ifdef PROFILE
     call endCudaProfiler() ! Launch fluxad and fluxsv
 #endif
+    !$OMP END MASTER 
+    !$OMP BARRIER
 
 #ifdef PROFILE
     call startCudaProfiler('soa_to_aos',99)
@@ -589,7 +596,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef PROFILE
     call cpu_timer_stop(timer_stepgrid)
     call endCudaProfiler() ! Stepgrid
-    call cpu_timer_stop(timer_advanc)
     call endCudaProfiler() ! advanc level 
 #endif
     !$OMP MASTER 
@@ -603,6 +609,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !$OMP END MASTER 
 
     !$OMP END PARALLEL 
+
+#ifdef PROFILE
+    call cpu_timer_stop(timer_advanc)
+#endif
     return
 end subroutine advanc
     !
