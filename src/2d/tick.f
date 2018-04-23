@@ -334,7 +334,14 @@ c
  110      continue
           time    = time   + possk(1)
           ncycle  = ncycle + 1
+#ifdef PROFILE
+          call take_cpu_timer("conservation check", timer_conck)
+          call cpu_timer_start(timer_conck)
+#endif
           call conck(1,nvar,naux,time,rest)
+#ifdef PROFILE
+          call cpu_timer_stop(timer_conck)
+#endif
 
       if ( vtime) then
 c

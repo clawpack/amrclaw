@@ -78,7 +78,7 @@ GPUMemoryManager::alloc_device (size_t nbytes, int dev_id)
         const size_t N = nbytes < m_hunk ? m_hunk : nbytes;
 
         if ( (m_used + N) > max_heap_size ) {
-            std::cout << "Not enough GPU memory available in GPUMemoryManager." << std::endl;
+            std::cout << "No enough GPU memory available in GPUMemoryManager." << std::endl;
             std::abort();
         }
 

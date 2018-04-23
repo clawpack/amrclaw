@@ -60,6 +60,8 @@ module timer_module
     integer, parameter :: timer_updating = 12
     integer, parameter :: timer_regridding = 13
     integer, parameter :: timer_saveqc = 14
+    integer, parameter :: timer_conck = 15
+    integer, parameter :: timer_memory = 16
 
 contains
     subroutine take_cpu_timer(timer_name_, timer_id)

@@ -254,6 +254,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ylow = rnode(cornylo,mptr) - nghost*hy
         locaux = node(storeaux,mptr)
 
+#ifdef PROFILE
+        call take_cpu_timer('memory operation', timer_memory)
+        call cpu_timer_start(timer_memory)
+#endif
         call gpu_allocate(grid_data_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         call gpu_allocate(fms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         call gpu_allocate(fps_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
@@ -263,6 +267,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call gpu_allocate(sy_d(mptr)%ptr,device_id,1,mitot-2,1,mjtot-1,1,NWAVES)
         call gpu_allocate(wave_x_d(mptr)%ptr,device_id,1,mitot-1,1,mjtot-2,1,NEQNS,1,NWAVES)
         call gpu_allocate(wave_y_d(mptr)%ptr,device_id,1,mitot-2,1,mjtot-1,1,NEQNS,1,NWAVES)
+#ifdef PROFILE
+        call cpu_timer_stop(timer_memory)
+#endif
 
         ! copy q to GPU
         !$OMP CRITICAL(launch)
@@ -480,6 +487,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !$OMP END MASTER 
     !$OMP BARRIER
 
+#ifdef PROFILE
+    call take_cpu_timer('memory operation', timer_memory)
+    call cpu_timer_start(timer_memory)
+#endif
     !$OMP DO SCHEDULE (DYNAMIC,1)
     do j = 1, numgrids(level)
         levSt = listStart(level)
@@ -498,6 +509,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call gpu_deallocate(wave_y_d(mptr)%ptr,device_id)
     enddo
     !$OMP END DO
+#ifdef PROFILE
+    call cpu_timer_stop(timer_memory)
+#endif
 
 #ifdef PROFILE
     call startCudaProfiler('Transfer fflux to CPU',99)
