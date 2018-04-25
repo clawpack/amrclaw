@@ -143,7 +143,7 @@ contains
 !
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-
+! TODO: this is deprecated when CUDA is used
     subroutine stepgrid(q,fm,fp,gm,gp,mitot,mjtot,mbc,dt,dtnew,dx,dy, &
             nvar,xlow,ylow,time,mptr,maux,aux)
 
@@ -178,6 +178,9 @@ contains
 #endif
         logical    debug,  dump
         data       debug/.false./,  dump/.false./
+
+        print *, "stepgrid should not be used in this version. Exit"
+        stop
 
 #ifdef CUDA
         call cpu_allocate_pinned( q1, 1, mitot, 1, mjtot, 1, nvar) 
@@ -250,17 +253,18 @@ contains
 #endif
 
 ! assume no aux here
-#ifdef CUDA
-      call step2_fused(mbig,nvar,maux, &
-          mbc,mx,my, &
-          q_d,dx,dy,dt,cflgrid, &
-          fm_d,fp_d,gm_d,gp_d,rpn2,rpt2,mptr)
-#else
-      call step2_fused(mbig,nvar,maux, &
-          mbc,mx,my, &
-          q,dx,dy,dt,cflgrid, &
-          fm,fp,gm,gp,rpn2,rpt2,mptr)
-#endif
+! #ifdef CUDA
+!       call step2_fused(mbig,nvar,maux, &
+!           mbc,mx,my, &
+!           q_d,dx,dy,dt,cflgrid, &
+!           fm_d,fp_d,gm_d,gp_d,rpn2,rpt2,mptr,ngrids,id)
+! 
+! #else
+!       call step2_fused(mbig,nvar,maux, &
+!           mbc,mx,my, &
+!           q,dx,dy,dt,cflgrid, &
+!           fm,fp,gm,gp,rpn2,rpt2,mptr)
+! #endif
 
 !$OMP  CRITICAL (cflm)
 
@@ -423,6 +427,7 @@ contains
       return
     end subroutine stepgrid
 
+
 !
 ! This subroutine should be used only if CUDA is defined
 !
@@ -434,6 +439,7 @@ contains
         use memory_module, only: gpu_allocate, gpu_deallocate, cpu_allocate_pinned, cpu_deallocate_pinned
         use cuda_module, only: device_id, wait_for_all_gpu_tasks
         use cuda_module, only: get_cuda_stream
+        use step2_cuda_module, only: step2_fused
         use cudafor
 #endif
         implicit double precision (a-h,o-z)
@@ -562,4 +568,126 @@ contains
 
         return
     end subroutine stepgrid_soa
+
+!
+! This subroutine should be used only if CUDA is defined
+!
+#ifdef CUDA
+    subroutine stepgrid_dimsplit_soa(q,fm,fp,gm,gp,mitot,mjtot,mbc,dt,dx,dy, &
+            nvar,xlow,ylow,time,mptr,maux,aux,ngrids,id,cfls)
+
+        use amr_module
+        use memory_module, only: gpu_allocate, gpu_deallocate, cpu_allocate_pinned, cpu_deallocate_pinned
+        use cuda_module, only: device_id, wait_for_all_gpu_tasks
+        use cuda_module, only: get_cuda_stream
+        use step2_cuda_module, only: step2_and_update
+        use cudafor
+        implicit double precision (a-h,o-z)
+        external rpn2,rpt2
+
+        parameter (msize=max1d+4)
+        parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
+
+        integer, intent(in) :: id, ngrids
+        double precision, intent(out) :: cfls(ngrids,2)
+        ! These are all in SoA format
+        double precision ::   q(mitot,mjtot,nvar)
+        double precision ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)
+        double precision ::  fm(mitot,mjtot,nvar),gm(mitot,mjtot,nvar)
+        double precision :: aux(mitot,mjtot,maux)
+        attributes(device) :: q
+        attributes(device) :: fp, fm, gp, gm
+        attributes(device) :: cfls
+        ! attributes(device) :: aux
+
+        double precision :: dtdx, dtdy
+        integer :: i,j,m
+
+        logical    debug,  dump
+        data       debug/.false./,  dump/.false./
+
+!     # set tcom = time.  This is in the common block comxyt that could
+!     # be included in the Riemann solver, for example, if t is explicitly
+!     # needed there.
+
+        meqn   = nvar
+        mx = mitot - 2*mbc
+        my = mjtot - 2*mbc
+        maxm = max(mx,my)       !# size for 1d scratch array
+        mbig = maxm
+        xlowmbc = xlow + mbc*dx
+        ylowmbc = ylow + mbc*dy
+
+!       # method(2:7) and mthlim
+!       #    are set in the amr2ez file (read by amr)
+!
+        method(1) = 0
+
+!
+!
+        ! For now this does nothing
+        call b4step2(mbc,mx,my,nvar,q, &
+          xlowmbc,ylowmbc,dx,dy,time,dt,maux,aux)
+
+! assume no aux here
+      call step2_and_update(mbig,nvar,maux, &
+          mbc,mx,my, &
+          q,dx,dy,dt,cfls, &
+          fm,fp,gm,gp,rpn2,rpt2,mptr,ngrids,id)
+
+!       # update q
+        dtdx = dt/dx
+        dtdy = dt/dy
+
+        !$cuf kernel do(3) <<<*, *, 0, get_cuda_stream(id,device_id)>>>
+        do m=1,nvar
+            do j=mbc+1,mjtot-mbc
+                do i=mbc+1,mitot-mbc
+                    if (mcapa.eq.0) then
+                        !            # no capa array.  Standard flux differencing:
+                        q(i,j,m) = q(i,j,m) &
+                            - dtdx * (fm(i+1,j,m) - fp(i,j,m)) &
+                            - dtdy * (gm(i,j+1,m) - gp(i,j,m)) 
+                    else
+                        print *, "With-capa-array case is not implemented"
+                        stop
+                        !            # with capa array.
+                        ! q(m,i,j) = q(m,i,j) &
+                        !     - (dtdx * (fm(m,i+1,j) - fp(m,i,j)) &
+                        !     +  dtdy * (gm(m,i,j+1) - gp(m,i,j))) / aux(mcapa,i,j)
+                    endif
+                enddo
+            enddo
+        enddo
+!
+!
+        ! this has not been implemented for CUDA
+        ! if (method(5).eq.1) then
+!       !  # with source term:   use Godunov splitting
+        !  call src2(nvar,mbc,mx,my,xlowmbc,ylowmbc,dx,dy, &
+        !      q,maux,aux,time,dt)
+        ! endif
+!
+!
+!
+!         ! this has not been implemented for CUDA
+! !     # output fluxes for debugging purposes:
+!         if (debug) then
+!             write(dbugunit,*)" fluxes for grid ",mptr
+! !           do 830 j = mbc+1, mjtot-1
+!                do 830 i = mbc+1, mitot-1
+!             do 830 j = mbc+1, mjtot-1
+!                   write(dbugunit,831) i,j,fm(1,i,j),fp(1,i,j), &
+!                       gm(1,i,j),gp(1,i,j)
+!                   do 830 m = 2, meqn
+!                      write(dbugunit,832) fm(m,i,j),fp(m,i,j), &
+!                          gm(m,i,j),gp(m,i,j)
+!   831             format(2i4,4d16.6)
+!   832             format(8x,4d16.6)
+!   830       continue
+!         endif
+
+        return
+    end subroutine stepgrid_dimsplit_soa
+#endif
 end module parallel_advanc_module

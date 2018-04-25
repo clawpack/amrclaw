@@ -16,6 +16,7 @@ COMMON_MODULES += \
   $(AMRLIB)/memory_module.f90 \
   $(AMRLIB)/profiling_module.f90 \
   $(AMRLIB)/reflux_module.f90 \
+  $(AMRLIB)/step2_cuda_module.f90 \
   $(AMRLIB)/sweep_module.f90
 endif
 
@@ -130,8 +131,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/resize_alloc.f90
 
 ifeq ($(USE_CUDA), TRUE)
-COMMON_SOURCES += \
-  $(AMRLIB)/step2_fused.f90
+# COMMON_SOURCES += 
 endif
 
 ifeq ($(USE_CPP), TRUE)

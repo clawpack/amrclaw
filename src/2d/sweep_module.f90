@@ -3,7 +3,6 @@
 module sweep_module
 
     use amr_module
-    use parallel_advanc_module, only: dtcom, dxcom, dycom, icom, jcom
     use problem_para_module, only: rho,bulk,cc,zz
     use cuda_module, only: max_reduce_device_2d, max_reduce_device_local_2d
 

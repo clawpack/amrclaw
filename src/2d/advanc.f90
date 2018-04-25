@@ -307,8 +307,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                     numgrids(level),id,cfls_d)
         else if (dimensional_split .eq. 1) then
 !           # Godunov splitting
-            print *, "CUDA version not implemented."
-            stop
+            call stepgrid_dimsplit_soa( &
+                    grid_data_d(mptr)%ptr,fms_d(mptr)%ptr,fps_d(mptr)%ptr,gms_d(mptr)%ptr,gps_d(mptr)%ptr, &
+                    mitot,mjtot,nghost, &
+                    delt,hx,hy,nvar, &
+                    xlow,ylow,time,mptr,naux,alloc(locaux),& 
+                    numgrids(level),id,cfls_d)
         else 
 !           # should never get here due to check in amr2
             write(6,*) '*** Strang splitting not supported'
