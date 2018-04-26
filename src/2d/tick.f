@@ -274,7 +274,7 @@ c
 c done with a level of integration. update counts, decide who next.
 c
           ntogo(level)  = ntogo(level) - 1
-          dtnew(level)  = dmin1(dtnew(level),dtlevnew)
+          dtnew(level)  = min(dtnew(level),dtlevnew)
           tlevel(level) = tlevel(level) + possk(level)
           icheck(level) = icheck(level) + 1
 c

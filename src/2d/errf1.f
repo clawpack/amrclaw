@@ -71,7 +71,7 @@ c
           term4 = rctfine(1,ifine,jfine+1)
 c         # divide by (aval*order) for relative error
           aval  = (term1+term2+term3+term4)/4.d0
-          est   =  dabs((aval-rctcrse(1,i,j))/ order)
+          est   =  abs((aval-rctcrse(1,i,j))/ order)
           if (est .gt. errmax) errmax = est
           err2 = err2 + est*est
 c         write(outunit,102) i,j,est,rctcrse(1,i,j)
@@ -92,7 +92,7 @@ c
 c  print out intermediate flagged rctcrse (for debugging)
 c
       if (eprint) then
-         err2 = dsqrt(err2/dble((mi2tot-2*nghost)*(mj2tot-2*nghost)))
+         err2 = sqrt(err2/dble((mi2tot-2*nghost)*(mj2tot-2*nghost)))
          write(outunit,103) mptr, levm, time,errmax, err2
  103     format(' grid ',i4,' level ',i4,' time ',e12.5,
      .          ' max. error = ',e15.7,' err2 = ',e15.7)
