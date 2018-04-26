@@ -96,10 +96,10 @@ c
 
       implicit none
 
-      real*8  val(meqn,nrow,ncol), aux(naux,nrow,ncol)
+      real(CLAW_REAL)  val(meqn,nrow,ncol), aux(naux,nrow,ncol)
       integer nrow,ncol,meqn,naux,level
-      real*8  hx,hy,time, hxmarg, hymarg
-      real*8  xlo_patch,xhi_patch,ylo_patch,yhi_patch
+      real(CLAW_REAL)  hx,hy,time, hxmarg, hymarg
+      real(CLAW_REAL)  xlo_patch,xhi_patch,ylo_patch,yhi_patch
       integer nxl,nxr,ibeg,nyb,nyt,jbeg,i,j,m
       
 
