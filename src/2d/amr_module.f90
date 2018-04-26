@@ -167,13 +167,13 @@ module amr_module
     ! :::::::  for flagging points   
     ! TODO: can use one bit for this instead of real?
     ! needs no refine
-    real(CLAW_REAL), parameter :: goodpt = 0.0
+    real(kind=8), parameter :: goodpt = 0.0
     ! needs refine
-    real(CLAW_REAL), parameter :: badpt  = 2.0
-    real(CLAW_REAL), parameter :: badpro = 3.0
+    real(kind=8), parameter :: badpt  = 2.0
+    real(kind=8), parameter :: badpro = 3.0
 
-    real(CLAW_REAL), parameter :: NEEDS_TO_BE_SET = 10.e33
-    real(CLAW_REAL), parameter :: rinfinity = 10.e32
+    real(kind=8), parameter :: NEEDS_TO_BE_SET = 10.e33
+    real(kind=8), parameter :: rinfinity = 10.e32
     integer, parameter :: iinfinity = 999999999
     integer, parameter :: horizontal = 1
     integer, parameter :: vertical = 2
@@ -197,11 +197,11 @@ module amr_module
     integer,parameter :: bndListSize = 8*maxgr
     integer :: bndList(bndListSize,2)  ! guess size, average # nbors 4? manage as linked list
 
-    real(CLAW_REAL) hxposs(maxlv), hyposs(maxlv),possk(maxlv),rnode(rsize, maxgr) 
+    real(kind=8) hxposs(maxlv), hyposs(maxlv),possk(maxlv),rnode(rsize, maxgr) 
 
 
 
-    real(CLAW_REAL) tol, tolsp
+    real(kind=8) tol, tolsp
     integer ibuff,  mstart, ndfree, ndfree_bnd, &
         lfine, & !  level of the finest grid at current time
         node(nsize, maxgr), &
@@ -225,27 +225,27 @@ module amr_module
         integer, dimension(:,:), pointer, contiguous, device :: ptr=>null()
     end type gpu_2d_int_ptr_type
 
-    ! ### real(CLAW_REAL) array
+    ! ### double precision array
     ! on CPU
     type cpu_1d_real_ptr_type
-        real(CLAW_REAL), dimension(:), pointer, contiguous :: ptr=>null()
+        double precision, dimension(:), pointer, contiguous :: ptr=>null()
     end type cpu_1d_real_ptr_type
 
     type cpu_3d_real_ptr_type
-        real(CLAW_REAL), dimension(:,:,:), pointer, contiguous :: ptr=>null()
+        double precision, dimension(:,:,:), pointer, contiguous :: ptr=>null()
     end type cpu_3d_real_ptr_type
 
     ! on GPU
     type gpu_1d_real_ptr_type
-        real(CLAW_REAL), dimension(:), pointer, contiguous, device :: ptr=>null()
+        double precision, dimension(:), pointer, contiguous, device :: ptr=>null()
     end type gpu_1d_real_ptr_type
 
     type gpu_3d_real_ptr_type
-        real(CLAW_REAL), dimension(:,:,:), pointer, contiguous, device :: ptr=>null()
+        double precision, dimension(:,:,:), pointer, contiguous, device :: ptr=>null()
     end type gpu_3d_real_ptr_type
 
     type gpu_4d_real_ptr_type
-        real(CLAW_REAL), dimension(:,:,:,:), pointer, contiguous, device :: ptr=>null()
+        double precision, dimension(:,:,:,:), pointer, contiguous, device :: ptr=>null()
     end type gpu_4d_real_ptr_type
 
 
@@ -289,9 +289,9 @@ module amr_module
     ! common  /calloc/   alloc(memsize)
 
     ! Dynamic memory: 
-    !real(CLAW_REAL), allocatable, target, dimension(:) :: storage
-    !real(CLAW_REAL), pointer, dimension(:) :: alloc   ! old way, changed mjb Sept. 2014
-    real(CLAW_REAL), allocatable, dimension(:) :: alloc    ! new way, use allocatable, not pointer
+    !real(kind=8), allocatable, target, dimension(:) :: storage
+    !real(kind=8), pointer, dimension(:) :: alloc   ! old way, changed mjb Sept. 2014
+    real(kind=8), allocatable, dimension(:) :: alloc    ! new way, use allocatable, not pointer
     integer memsize
        
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\
@@ -304,22 +304,22 @@ module amr_module
     ! :::::  domain description variables
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     logical xperdom, yperdom, spheredom
-    real(CLAW_REAL) :: xupper, yupper, xlower, ylower
+    real(kind=8) :: xupper, yupper, xlower, ylower
     integer :: nghost, mthbc(4)
 
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ! :::::  collect stats
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    real(CLAW_REAL)  rvoll(maxlv),evol,rvol,avenumgrids(maxlv)
+    real(kind=8)  rvoll(maxlv),evol,rvol,avenumgrids(maxlv)
     integer ::  iregridcount(maxlv), tvoll(maxlv)
     integer :: timeRegridding, timeUpdating, timeValout
     integer :: timeFlglvl,timeGrdfit2,timeGrdfit3,timeGrdfitAll
     integer :: timeBound,timeStepgrid
     integer :: timeFlagger, timeBufnst,timeTick
-    real(CLAW_REAL) tvollCPU(maxlv), timeTickCPU
-    real(CLAW_REAL) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU
-    real(CLAW_REAL) timeValoutCPU
-    real(CLAW_REAL) timeUpdatingCPU
+    real(kind=8) tvollCPU(maxlv), timeTickCPU
+    real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU
+    real(kind=8) timeValoutCPU
+    real(kind=8) timeUpdatingCPU
 
     integer lentot,lenmax,lendim
 
@@ -329,7 +329,7 @@ module amr_module
     character(len=10), allocatable :: auxtype(:)
     integer  method(7), mwaves, mcapa, dimensional_split
     integer, allocatable :: mthlim(:)
-    real(CLAW_REAL) cfl,cflmax,cflv1,cfl_level
+    real(kind=8) cfl,cflmax,cflv1,cfl_level
 
     logical :: use_fwaves
     logical :: flag_richardson,flag_gradient
@@ -341,13 +341,13 @@ module amr_module
     logical    printout,matlabout,ncarout
 
     ! variables for conservation checking:
-    real(CLAW_REAL) tmass0
+    real(kind=8) tmass0
 
     ! variables for specifying output format
     integer :: output_style, nstop, nout, iout
-    real(CLAW_REAL), allocatable :: tout(:)
-    real(CLAW_REAL) :: t0, tfinal
-    real(CLAW_REAL) :: tstart_thisrun  ! /= t0 in case of restart
+    real(kind=8), allocatable :: tout(:)
+    real(kind=8) :: t0, tfinal
+    real(kind=8) :: tstart_thisrun  ! /= t0 in case of restart
     integer :: nq_components, naux_components, output_format
     integer, allocatable :: output_q_components(:)
     integer, allocatable :: output_aux_components(:)
@@ -355,7 +355,7 @@ module amr_module
 
     ! checkpointing:
     integer :: checkpt_style, nchkpt, checkpt_interval
-    real(CLAW_REAL), allocatable :: tchk(:)
+    real(kind=8), allocatable :: tchk(:)
 
     integer :: matlabu
 

@@ -7,7 +7,7 @@ c
 #ifdef PROFILE
       use profiling_module
 #endif
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
       character*10  fname1, fname2, fname3, fname4, fname5
 
 !> Output the results for a general system of conservation laws
@@ -21,7 +21,7 @@ c
       logical outaux
       integer output_aux_num 
       integer clock_start, clock_finish, clock_rate
-      real(CLAW_REAL) cpu_start, cpu_finish
+      real(kind=8) cpu_start, cpu_finish
 
 c      iadd(i,j,ivar) = loc + i - 1 + mitot*((ivar-1)*mjtot+j-1)
 c      iaddaux(i,j,ivar) = locaux + i - 1 + mitot*((ivar-1)*mjtot+j-1)

@@ -16,7 +16,7 @@ subroutine prepc(level,nvar)
         use memory_module, only: gpu_allocate, cpu_allocate_pinned
         use cudafor, only: cudaMemcpyAsync
 #endif
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
 #ifdef CUDA
       integer :: cudaResult
 #endif

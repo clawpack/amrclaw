@@ -14,7 +14,7 @@
 #ifdef PROFILE
       use profiling_module
 #endif
-       implicit real(CLAW_REAL) (a-h, o-z)
+       implicit double precision (a-h, o-z)
 
 
        logical qprint

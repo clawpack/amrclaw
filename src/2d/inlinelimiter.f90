@@ -27,7 +27,7 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !     # given by dotl/wnorm2 and dotr/wnorm2, where wnorm2 is the 2-norm
 !     # of wave.
 !
-    implicit real(CLAW_REAL) (a-h,o-z)
+    implicit double precision (a-h,o-z)
     dimension mthlim(mwaves)
     dimension wave(meqn, mwaves, 1-mbc:maxm+mbc)
     dimension    s(mwaves, 1-mbc:maxm+mbc)
@@ -36,7 +36,7 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
     attributes(device) :: wave, s
     integer, device :: mthlim_d(mwaves)
     ! put this on stack
-    real(CLAW_REAL), device :: wave_tmp(meqn, mwaves, 1-mbc:maxm+mbc)
+    double precision, device :: wave_tmp(meqn, mwaves, 1-mbc:maxm+mbc)
 #endif
 
 #ifdef CUDA
@@ -75,26 +75,26 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !               --------
 !               # minmod
 !               --------
-                wlimitr = max(0.d0, min(1.d0, r))
+                wlimitr = dmax1(0.d0, dmin1(1.d0, r))
 
             else if (mthlim_d(mw) .eq. 2) then
 !               ----------
 !               # superbee
 !               ----------
-                wlimitr = max(0.d0, min(1.d0, 2.d0*r), min(2.d0, r))
+                wlimitr = dmax1(0.d0, dmin1(1.d0, 2.d0*r), dmin1(2.d0, r))
 
             else if (mthlim_d(mw) .eq. 3) then
 !               ----------
 !               # van Leer
 !               ----------
-                wlimitr = (r + abs(r)) / (1.d0 + abs(r))
+                wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
 
             else if (mthlim_d(mw) .eq. 4) then
 !               ------------------------------
 !               # monotinized centered
 !               ------------------------------
                 c = (1.d0 + r)/2.d0
-                wlimitr = max(0.d0, min(c, 2.d0, 2.d0*r))
+                wlimitr = dmax1(0.d0, dmin1(c, 2.d0, 2.d0*r))
             else if (mthlim_d(mw) .eq. 5) then
 !               ------------------------------
 !               # Beam-Warming
@@ -142,21 +142,21 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !           --------
 !           # minmod
 !           --------
-            wlimitr = max(0.d0, min(1.d0, r))
+            wlimitr = dmax1(0.d0, dmin1(1.d0, r))
             go to 170
 
             20       continue
 !           ----------
 !           # superbee
 !           ----------
-            wlimitr = max(0.d0, min(1.d0, 2.d0*r), min(2.d0, r))
+            wlimitr = dmax1(0.d0, dmin1(1.d0, 2.d0*r), dmin1(2.d0, r))
             go to 170
 
             30       continue
 !           ----------
 !           # van Leer
 !           ----------
-            wlimitr = (r + abs(r)) / (1.d0 + abs(r))
+            wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
             go to 170
 
             40       continue
@@ -164,7 +164,7 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !           # monotinized centered
 !           ------------------------------
             c = (1.d0 + r)/2.d0
-            wlimitr = max(0.d0, min(c, 2.d0, 2.d0*r))
+            wlimitr = dmax1(0.d0, dmin1(c, 2.d0, 2.d0*r))
             go to 170
 
             50       continue

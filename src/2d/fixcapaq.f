@@ -5,7 +5,7 @@ c ------------------------------------------------------------------
      &                      nvar,naux,levc,setflags)
 
       use amr_module
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
 
 c
 c :::::::::::::::::::::::  FIXCAPAQ ::::::::::::::::::::::::::::::
@@ -40,7 +40,7 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
        dcapaq = auxc(mcapa,ic,jc)*valc(ivar,ic,jc)-
      &          capaqfine/(lratiox*lratioy)
-       dcapamax = max(dcapamax,abs(dcapaq))
+       dcapamax = dmax1(dcapamax,dabs(dcapaq))
       
        do 30 ico = 1, lratiox
        ifine = (ic-2)*lratiox + nghost + ico

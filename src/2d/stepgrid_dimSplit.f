@@ -28,7 +28,7 @@ c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
       use amr_module
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
       external rpn2
 
       parameter (msize=max1d+4)
@@ -80,7 +80,7 @@ c                                   1.  First step in x direction:
 c
 !$OMP  CRITICAL (cflm)
 
-        cfl_level = max(cfl_level,cflgrid)
+        cfl_level = dmax1(cfl_level,cflgrid)
 
 !$OMP END CRITICAL (cflm)
 
@@ -110,7 +110,7 @@ c                                 2.  Second step in x direction:
 c
 !$OMP  CRITICAL (cflm)
 
-        cfl_level = max(cfl_level,cflgrid)
+        cfl_level = dmax1(cfl_level,cflgrid)
 
 !$OMP END CRITICAL (cflm)
 c

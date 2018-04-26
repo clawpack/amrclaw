@@ -76,7 +76,7 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
     use amr_module
     use parallel_advanc_module, only: icom, jcom
 
-    implicit real(CLAW_REAL) (a-h,o-z)
+    implicit double precision (a-h,o-z)
     external rpn2, rpt2, rpn2_no_aux
     dimension    q1d(meqn,1-mbc:maxm+mbc)
     dimension   amdq(meqn,1-mbc:maxm+mbc)
@@ -144,7 +144,7 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
         do i=1,mx+1
             !          # if s>0 use dtdx1d(i) to compute CFL,
             !          # if s<0 use dtdx1d(i-1) to compute CFL:
-            cfl1d = max(cfl1d, dtdx1d(i)*s(mw,i),-dtdx1d(i-1)*s(mw,i))
+            cfl1d = dmax1(cfl1d, dtdx1d(i)*s(mw,i),-dtdx1d(i-1)*s(mw,i))
         enddo
     enddo
     !
@@ -175,11 +175,11 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
                     if (use_fwaves) then
                         abs_sign = dsign(1.d0,s(mw,i))
                     else
-                        abs_sign = abs(s(mw,i))
+                        abs_sign = dabs(s(mw,i))
                     endif
 
                     cqxx(m,i) = cqxx(m,i) + abs_sign * &
-                        (1.d0 - abs(s(mw,i))*dtdxave) * wave(m,mw,i)
+                        (1.d0 - dabs(s(mw,i))*dtdxave) * wave(m,mw,i)
                     !
                 enddo
                 faddm(m,i) = faddm(m,i) + 0.5d0 * cqxx(m,i)

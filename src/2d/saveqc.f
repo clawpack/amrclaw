@@ -19,7 +19,7 @@ c
       use cuda_module, only: device_id, id_copy_fflux
       use cuda_module, only: get_cuda_stream
 #endif
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
       
       logical sticksout, found
 !     make fliparray largest possible grid size

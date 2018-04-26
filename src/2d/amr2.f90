@@ -112,17 +112,17 @@ program amr2
     integer :: ndim, nvar, naux, mcapa1, mindim
     integer :: nstart, nsteps, nv1, nx, ny, lentotsave, num_gauge_SAVE
     integer :: omp_get_max_threads, maxthreads
-    real(CLAW_REAL) :: time, ratmet, cut, dtinit, dt_max
+    real(kind=8) :: time, ratmet, cut, dtinit, dt_max
     logical :: vtime, rest, output_t0    
 
     ! Timing variables
     integer ::  ttotal
-    real(CLAW_REAL) ::ttotalcpu, cpu_start,cpu_finish 
+    real(kind=8) ::ttotalcpu, cpu_start,cpu_finish 
     integer :: clock_start, clock_finish, clock_rate  
 
 
     ! Common block variables
-    real(CLAW_REAL) :: dxmin, dymin
+    real(kind=8) :: dxmin, dymin
 
     common /comfine/ dxmin,dymin
 

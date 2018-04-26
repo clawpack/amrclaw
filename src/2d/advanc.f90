@@ -29,7 +29,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use profiling_module
 #endif
 #endif
-    implicit real(CLAW_REAL) (a-h,o-z)
+    implicit double precision (a-h,o-z)
 
 
     logical    vtime
@@ -38,19 +38,19 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     integer listgrids(numgrids(level))
     integer clock_start, clock_finish, clock_rate
     integer clock_startStepgrid,clock_startBound,clock_finishBound
-    real(CLAW_REAL) cpu_start, cpu_finish
-    real(CLAW_REAL) cpu_startBound, cpu_finishBound
-    real(CLAW_REAL) cpu_startStepgrid, cpu_finishStepgrid
+    real(kind=8) cpu_start, cpu_finish
+    real(kind=8) cpu_startBound, cpu_finishBound
+    real(kind=8) cpu_startStepgrid, cpu_finishStepgrid
 
 #ifdef CUDA
     integer :: locold, locnew, locaux
     integer :: i,j, id
     integer :: cudaResult
-    real(CLAW_REAL) :: xlow, ylow
-    real(CLAW_REAL) :: cfl_local
+    double precision :: xlow, ylow
+    double precision :: cfl_local
     type(dim3) :: numBlocks, numThreads
-    real(CLAW_REAL), dimension(:,:), pointer, contiguous :: cfls
-    real(CLAW_REAL), dimension(:,:), pointer, contiguous, device :: cfls_d
+    double precision, dimension(:,:), pointer, contiguous :: cfls
+    double precision, dimension(:,:), pointer, contiguous, device :: cfls_d
 
     type(grid_type), allocatable         :: grids(:)
     ! TODO: customized memory allocator for this?
@@ -561,7 +561,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         !
         call par_advanc(mptr,mitot,mjtot,nvar,naux,dtnew)
         !$OMP CRITICAL (newdt)
-        dtlevnew = min(dtlevnew,dtnew)
+        dtlevnew = dmin1(dtlevnew,dtnew)
         !$OMP END CRITICAL (newdt)    
     end do
     !$OMP END DO
@@ -594,10 +594,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
       810   format('*** WARNING *** Courant number  =', d12.4, &
           '  is larger than input cfl_max = ', d12.4)
         endif
-        cfl_level = max(cfl_level, cfl_local)
+        cfl_level = dmax1(cfl_level, cfl_local)
     enddo
     dtlevnew = delt*cfl/cfl_level
-    cflmax = max(cflmax, cfl_level)
+    cflmax = dmax1(cflmax, cfl_level)
     call cpu_deallocate_pinned(cfls)
     call gpu_deallocate(cfls_d,device_id)
     !$OMP END MASTER
@@ -608,7 +608,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
 #else
-    cflmax = max(cflmax, cfl_level)
+    cflmax = dmax1(cflmax, cfl_level)
 #endif
 
 #ifdef PROFILE
@@ -639,7 +639,7 @@ end subroutine advanc
 subroutine prepgrids(listgrids, num, level)
 
     use amr_module
-    implicit real(CLAW_REAL) (a-h,o-z)
+    implicit double precision (a-h,o-z)
     integer listgrids(num)
 
     mptr = lstart(level)

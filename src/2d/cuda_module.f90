@@ -21,10 +21,10 @@ module cuda_module
     integer :: device_id ! which GPU is used
 
     type grid_type
-        real(CLAW_REAL), dimension(:,:,:), pointer, contiguous, device :: fm=>null()
-        real(CLAW_REAL), dimension(:,:,:), pointer, contiguous, device :: fp=>null()
-        real(CLAW_REAL), dimension(:,:,:), pointer, contiguous, device :: gm=>null()
-        real(CLAW_REAL), dimension(:,:,:), pointer, contiguous, device :: gp=>null()
+        double precision, dimension(:,:,:), pointer, contiguous, device :: fm=>null()
+        double precision, dimension(:,:,:), pointer, contiguous, device :: fp=>null()
+        double precision, dimension(:,:,:), pointer, contiguous, device :: gm=>null()
+        double precision, dimension(:,:,:), pointer, contiguous, device :: gp=>null()
         integer :: mptr
         integer :: nx
         integer :: ny
@@ -401,11 +401,11 @@ contains
         ! we assume index of the entire grid is (1:mx, 1:my)
         ! TODO: add functionality to handle (lox:hix, loy:hiy)
 	integer, value, intent(in) :: mx, my, rmx, rmy
-	real(CLAW_REAL), intent(out) :: max_array(rmx, rmy)
+	double precision, intent(out) :: max_array(rmx, rmy)
 
 	! local
 	integer :: i, j, tidx, tidy, sy
-	real(CLAW_REAL) :: a_s(blockDim%x, blockDim%y)
+	double precision :: a_s(blockDim%x, blockDim%y)
 
 	tidx = threadIdx%x
 	tidy = threadIdx%y
@@ -499,11 +499,11 @@ contains
         ! we assume index of the entire grid is (1:mx, 1:my)
         ! TODO: add functionality to handle (lox:hix, loy:hiy)
 	integer, value, intent(in) :: mx, my ! dimension of the entire grid
-	real(CLAW_REAL), intent(out) :: local_max
+	double precision, intent(out) :: local_max
 
 	! local
 	integer :: i, j, tidx, tidy, sy
-	real(CLAW_REAL) :: a_s(blockDim%x, blockDim%y)
+	double precision :: a_s(blockDim%x, blockDim%y)
 
 	tidx = threadIdx%x
 	tidy = threadIdx%y
@@ -623,7 +623,7 @@ contains
     !! ################################################ !
     subroutine write_grid_r2(q, lox, hix, loy, hiy, fname, iframe)
         integer, intent(in) :: lox, hix, loy, hiy, iframe
-        real(CLAW_REAL), intent(in) :: q(lox:hix, loy:hiy)
+        real(kind=8), intent(in) :: q(lox:hix, loy:hiy)
         character(len=*), intent(in) :: fname
         integer :: i,j
 
@@ -660,8 +660,8 @@ contains
     subroutine aos_to_soa_r2(soa, aos, nvar, xlo, xhi, ylo, yhi)
         implicit none
         integer, intent(in) :: nvar, xlo, xhi, ylo, yhi
-        real(CLAW_REAL), intent(in) :: aos(1:nvar, xlo:xhi, ylo:yhi)
-        real(CLAW_REAL), intent(inout) :: soa(xlo:xhi, ylo:yhi, 1:nvar)
+        real(kind=8), intent(in) :: aos(1:nvar, xlo:xhi, ylo:yhi)
+        real(kind=8), intent(inout) :: soa(xlo:xhi, ylo:yhi, 1:nvar)
         integer :: i,j,m
 
         do j = ylo, yhi
@@ -676,8 +676,8 @@ contains
     subroutine soa_to_aos_r2(aos, soa, nvar, xlo, xhi, ylo, yhi)
         implicit none
         integer, intent(in) :: nvar, xlo, xhi, ylo, yhi
-        real(CLAW_REAL), intent(inout) :: aos(1:nvar, xlo:xhi, ylo:yhi)
-        real(CLAW_REAL), intent(in) :: soa(xlo:xhi, ylo:yhi, 1:nvar)
+        double precision, intent(inout) :: aos(1:nvar, xlo:xhi, ylo:yhi)
+        double precision, intent(in) :: soa(xlo:xhi, ylo:yhi, 1:nvar)
         integer :: i,j,m
         do m = 1,nvar
             do j = ylo, yhi

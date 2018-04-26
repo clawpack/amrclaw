@@ -21,7 +21,7 @@ c
 c     1                  maxsp,iused,mptr)
  
       use amr_module
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
 
  
        dimension val(nvar,mitot,mjtot),listbc(5,maxsp),

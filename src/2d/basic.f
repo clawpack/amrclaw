@@ -8,7 +8,7 @@ c
       subroutine basic (time,lst,lend)
 c
       use amr_module
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
 
 c
 c :::::::::::::::::::::: BASIC :::::::::::::::::::::::::

@@ -9,7 +9,7 @@ c
       use memory_module, only: cpu_deallocate_pinned, gpu_deallocate
       use cuda_module, only: device_id
 #endif
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
       logical   ee
  
  

@@ -4,7 +4,7 @@ c
       subroutine domcopy(iflags2,iflags,isize,jsize)
 
       use amr_module
-      implicit real(CLAW_REAL) (a-h, o-z)
+      implicit double precision (a-h, o-z)
 
 
       integer(kind=1)  iflags2(0:isize+1,0:jsize+1)

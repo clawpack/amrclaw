@@ -14,7 +14,7 @@ c   zero crossing of laplacian.
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
       use amr_module
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
 
 
       ! TODO: not necessarily use array of size idim?

@@ -13,7 +13,7 @@ c
       use timer_module
 #endif
 
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
 c     include  "call.i"
 
       logical    vtime, dumpout/.false./, dumpchk/.false./
@@ -274,7 +274,7 @@ c
 c done with a level of integration. update counts, decide who next.
 c
           ntogo(level)  = ntogo(level) - 1
-          dtnew(level)  = min(dtnew(level),dtlevnew)
+          dtnew(level)  = dmin1(dtnew(level),dtlevnew)
           tlevel(level) = tlevel(level) + possk(level)
           icheck(level) = icheck(level) + 1
 c

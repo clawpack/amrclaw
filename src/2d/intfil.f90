@@ -107,23 +107,23 @@ subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nva
 
     ! Input
     integer, intent(in) :: mi, mj, nrowst, ncolst, ilo, ihi, jlo, jhi, level, nvar, naux,msrc
-    real(CLAW_REAL), intent(in) :: time
+    real(kind=8), intent(in) :: time
 
     ! In/Out
     integer(kind=1), intent(in out) :: flaguse(ilo:ihi, jlo:jhi)
-    real(CLAW_REAL), intent(in out) :: val(nvar,mi,mj)
+    real(kind=8), intent(in out) :: val(nvar,mi,mj)
 
     ! Locals
     integer :: imlo, jmlo, imhi, jmhi, nx, ny, mitot, mjtot
     integer :: ixlo, ixhi, jxlo, jxhi, locold, locnew, nextSpot
     integer :: icount, bndNum, bndLoc, levSt
     integer :: ivar, i, j, mptr, mstart, loc, numg
-    real(CLAW_REAL) :: dt, alphac, alphai
+    real(kind=8) :: dt, alphac, alphai
     logical :: t_interpolate
 
     integer :: patch_rect(4)
 
-    real(CLAW_REAL), parameter :: t_epsilon = 1.0d-4
+    real(kind=8), parameter :: t_epsilon = 1.0d-4
 
     ! Formats for error statements
     character(len=*), parameter :: missing_error = &
@@ -209,7 +209,7 @@ subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nva
             if (abs(alphai - 1.d0) < t_epsilon) then
                 ! need no interpolation
                 loc = node(store1,mptr)
-            else if (abs(alphai) .lt. t_epsilon) then
+            else if (dabs(alphai) .lt. t_epsilon) then
                 loc = node(store2,mptr)
                 if (level == mxnest) then
                     write(outunit,'(A,E24.16)') 'Line 95', dt

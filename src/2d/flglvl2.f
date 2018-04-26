@@ -25,7 +25,7 @@ c
      &                   start_time)
 c
       use amr_module
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
       integer clock_start, clock_finish, clock_rate
 c
 c
@@ -79,7 +79,7 @@ c
        subroutine freeFlags(lcheck)
 
        use amr_module
-       implicit real(CLAW_REAL) (a-h, o-z)
+       implicit double precision (a-h, o-z)
 
        mptr = lstart(lcheck)
  10          continue

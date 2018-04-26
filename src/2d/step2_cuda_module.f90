@@ -45,25 +45,25 @@ contains
         ! Arguments
         integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
         integer, intent(in) :: id, ngrids, mptr
-        real(CLAW_REAL), intent(in) :: dx,dy,dt
-        real(CLAW_REAL), intent(inout) :: cfls(ngrids,2)
+        real(kind=8), intent(in) :: dx,dy,dt
+        real(kind=8), intent(inout) :: cfls(ngrids,2)
 
-        real(CLAW_REAL), intent(in)    ::  q(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-        real(CLAW_REAL), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-        real(CLAW_REAL), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-        real(CLAW_REAL), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-        real(CLAW_REAL), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+        real(kind=8), intent(in)    ::  q(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+        real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+        real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+        real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+        real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
 
         ! Looping scalar storage
         integer :: i,j, m, mw
-        real(CLAW_REAL) :: dtdx,dtdy
+        real(kind=8) :: dtdx,dtdy
 
         #ifdef CUDA
         attributes(device) :: q, fm, fp, gm, gp
         attributes(device) :: cfls
-        real(CLAW_REAL), dimension(:,:), pointer, contiguous :: &
+        double precision, dimension(:,:), pointer, contiguous :: &
             cflxy
-        real(CLAW_REAL), dimension(:,:), pointer, contiguous, device :: &
+        double precision, dimension(:,:), pointer, contiguous, device :: &
             cflxy_d
         integer :: data_size
         integer :: istat
@@ -227,25 +227,25 @@ contains
         ! Arguments
         integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
         integer, intent(in) :: id, ngrids, mptr
-        real(CLAW_REAL), intent(in) :: dx,dy,dt
-        real(CLAW_REAL), intent(inout) :: cfls(ngrids,2)
+        real(kind=8), intent(in) :: dx,dy,dt
+        real(kind=8), intent(inout) :: cfls(ngrids,2)
 
-        real(CLAW_REAL), intent(in)    ::  q(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-        real(CLAW_REAL), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-        real(CLAW_REAL), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-        real(CLAW_REAL), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
-        real(CLAW_REAL), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+        real(kind=8), intent(in)    ::  q(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+        real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+        real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+        real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
+        real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
 
         ! Looping scalar storage
         integer :: i,j, m, mw
-        real(CLAW_REAL) :: dtdx,dtdy
+        real(kind=8) :: dtdx,dtdy
 
         #ifdef CUDA
         attributes(device) :: q, fm, fp, gm, gp
         attributes(device) :: cfls
-        real(CLAW_REAL), dimension(:,:), pointer, contiguous :: &
+        double precision, dimension(:,:), pointer, contiguous :: &
             cflxy
-        real(CLAW_REAL), dimension(:,:), pointer, contiguous, device :: &
+        double precision, dimension(:,:), pointer, contiguous, device :: &
             cflxy_d
         integer :: data_size
         integer :: istat
@@ -387,10 +387,10 @@ contains
         ! id of this grid on current level
         integer, intent(in) :: id
         #endif
-        real(CLAW_REAL), intent(inout) :: fm(xlo:xhi, ylo:yhi, 1:nvar)
-        real(CLAW_REAL), intent(inout) :: fp(xlo:xhi, ylo:yhi, 1:nvar)
-        real(CLAW_REAL), intent(inout) :: gm(xlo:xhi, ylo:yhi, 1:nvar)
-        real(CLAW_REAL), intent(inout) :: gp(xlo:xhi, ylo:yhi, 1:nvar)
+        double precision, intent(inout) :: fm(xlo:xhi, ylo:yhi, 1:nvar)
+        double precision, intent(inout) :: fp(xlo:xhi, ylo:yhi, 1:nvar)
+        double precision, intent(inout) :: gm(xlo:xhi, ylo:yhi, 1:nvar)
+        double precision, intent(inout) :: gp(xlo:xhi, ylo:yhi, 1:nvar)
         integer :: i,j,m
         #ifdef CUDA
         attributes(device) :: fm, fp, gm, gp

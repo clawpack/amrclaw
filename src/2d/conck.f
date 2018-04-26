@@ -6,7 +6,7 @@ c
       subroutine conck(level, nvar, naux, time, rest)
 c
       use amr_module
-      implicit real(CLAW_REAL) (a-h,o-z)
+      implicit double precision (a-h,o-z)
 
       logical  rest
 
