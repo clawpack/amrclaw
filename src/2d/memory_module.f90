@@ -89,14 +89,14 @@ module memory_module
 contains
     subroutine gpu_allocate_r1(a, dev_id, lo1, hi1)
         use cudafor
-        real(kind=8), pointer, device, intent(inout) :: a(:)
+        real(CLAW_REAL), pointer, device, intent(inout) :: a(:)
         integer, intent(in) :: lo1, hi1
         integer, intent(in) :: dev_id
         integer (kind=c_size_t) :: dev_id_c
         integer :: n1
         integer (kind=c_size_t) :: sz
         type(c_devptr) :: cp
-        real(kind=8), pointer, device :: fp(:)
+        real(CLAW_REAL), pointer, device :: fp(:)
         integer :: istat
 
         n1 = max(hi1-lo1+1, 1)
@@ -109,22 +109,22 @@ contains
     contains
         subroutine shift_bound_d1(fp, lo1, a)
             integer, intent(in) :: lo1
-            real(kind=8), target,  device, intent(in) :: fp(lo1:)
-            real(kind=8), pointer, device, intent(inout) :: a(:)
+            real(CLAW_REAL), target,  device, intent(in) :: fp(lo1:)
+            real(CLAW_REAL), pointer, device, intent(inout) :: a(:)
             a => fp
         end subroutine shift_bound_d1
     end subroutine gpu_allocate_r1
 
     subroutine gpu_allocate_r2(a, dev_id, lo1, hi1, lo2, hi2)
         use cudafor
-        real(kind=8), pointer, device, intent(inout) :: a(:,:)
+        real(CLAW_REAL), pointer, device, intent(inout) :: a(:,:)
         integer, intent(in) :: lo1, hi1, lo2, hi2
         integer, intent(in) :: dev_id
         integer (kind=c_size_t) :: dev_id_c
         integer :: n1, n2
         integer (kind=c_size_t) :: sz
         type(c_devptr) :: cp
-        real(kind=8), pointer, device :: fp(:,:)
+        real(CLAW_REAL), pointer, device :: fp(:,:)
         integer :: istat
 
         n1 = max(hi1-lo1+1, 1)
@@ -138,22 +138,22 @@ contains
     contains
         subroutine shift_bound_d2(fp, lo1, lo2, a)
             integer, intent(in) :: lo1, lo2
-            real(kind=8), target,  device, intent(in) :: fp(lo1:,lo2:)
-            real(kind=8), pointer, device, intent(inout) :: a(:,:)
+            real(CLAW_REAL), target,  device, intent(in) :: fp(lo1:,lo2:)
+            real(CLAW_REAL), pointer, device, intent(inout) :: a(:,:)
             a => fp
         end subroutine shift_bound_d2
     end subroutine gpu_allocate_r2
 
     subroutine gpu_allocate_r3(a, dev_id, lo1, hi1, lo2, hi2, lo3, hi3)
         use cudafor
-        real(kind=8), pointer, device, intent(inout) :: a(:,:,:)
+        real(CLAW_REAL), pointer, device, intent(inout) :: a(:,:,:)
         integer, intent(in) :: lo1, hi1, lo2, hi2, lo3, hi3
         integer, intent(in) :: dev_id
         integer (kind=c_size_t) :: dev_id_c
         integer :: n1, n2, n3
         integer (kind=c_size_t) :: sz
         type(c_devptr) :: cp
-        real(kind=8), pointer, device :: fp(:,:,:)
+        real(CLAW_REAL), pointer, device :: fp(:,:,:)
         integer :: istat
 
         n1 = max(hi1-lo1+1, 1)
@@ -168,22 +168,22 @@ contains
     contains
         subroutine shift_bound_d3(fp, lo1, lo2, lo3, a)
             integer, intent(in) :: lo1, lo2, lo3
-            real(kind=8), target,  device, intent(in) :: fp(lo1:,lo2:,lo3:)
-            real(kind=8), pointer, device, intent(inout) :: a(:,:,:)
+            real(CLAW_REAL), target,  device, intent(in) :: fp(lo1:,lo2:,lo3:)
+            real(CLAW_REAL), pointer, device, intent(inout) :: a(:,:,:)
             a => fp
         end subroutine shift_bound_d3
     end subroutine gpu_allocate_r3
 
     subroutine gpu_allocate_r4(a, dev_id, lo1, hi1, lo2, hi2, lo3, hi3, lo4, hi4)
         use cudafor
-        real(kind=8), pointer, device, intent(inout) :: a(:,:,:,:)
+        real(CLAW_REAL), pointer, device, intent(inout) :: a(:,:,:,:)
         integer, intent(in) :: lo1, hi1, lo2, hi2, lo3, hi3, lo4, hi4
         integer, intent(in) :: dev_id
         integer (kind=c_size_t) :: dev_id_c
         integer :: n1, n2, n3, n4
         integer (kind=c_size_t) :: sz
         type(c_devptr) :: cp
-        real(kind=8), pointer, device :: fp(:,:,:,:)
+        real(CLAW_REAL), pointer, device :: fp(:,:,:,:)
         integer :: istat
 
         n1 = max(hi1-lo1+1, 1)
@@ -199,8 +199,8 @@ contains
     contains
         subroutine shift_bound_d4(fp, lo1, lo2, lo3, lo4, a)
             integer, intent(in) :: lo1, lo2, lo3, lo4
-            real(kind=8), target,  device, intent(in) :: fp(lo1:,lo2:,lo3:,lo4:)
-            real(kind=8), pointer, device, intent(inout) :: a(:,:,:,:)
+            real(CLAW_REAL), target,  device, intent(in) :: fp(lo1:,lo2:,lo3:,lo4:)
+            real(CLAW_REAL), pointer, device, intent(inout) :: a(:,:,:,:)
             a => fp
         end subroutine shift_bound_d4
     end subroutine gpu_allocate_r4
@@ -286,7 +286,7 @@ contains
 
     subroutine gpu_deallocate_r1(a, dev_id)
         use cudafor
-        real(kind=8), pointer, device, intent(inout) :: a(:)
+        real(CLAW_REAL), pointer, device, intent(inout) :: a(:)
         integer, intent(in) :: dev_id
         integer (kind=c_size_t) :: dev_id_c
         integer :: lo(1)
@@ -300,7 +300,7 @@ contains
 
     subroutine gpu_deallocate_r2(a, dev_id)
         use cudafor
-        real(kind=8), pointer, device, intent(inout) :: a(:,:)
+        real(CLAW_REAL), pointer, device, intent(inout) :: a(:,:)
         integer, intent(in) :: dev_id
         integer (kind=c_size_t) :: dev_id_c
         integer :: lo(2)
@@ -314,7 +314,7 @@ contains
 
     subroutine gpu_deallocate_r3(a, dev_id)
         use cudafor
-        real(kind=8), pointer, device, intent(inout) :: a(:,:,:)
+        real(CLAW_REAL), pointer, device, intent(inout) :: a(:,:,:)
         integer, intent(in) :: dev_id
         integer (kind=c_size_t) :: dev_id_c
         integer :: lo(3)
@@ -328,7 +328,7 @@ contains
 
     subroutine gpu_deallocate_r4(a, dev_id)
         use cudafor
-        real(kind=8), pointer, device, intent(inout) :: a(:,:,:,:)
+        real(CLAW_REAL), pointer, device, intent(inout) :: a(:,:,:,:)
         integer, intent(in) :: dev_id
         integer (kind=c_size_t) :: dev_id_c
         integer :: lo(4)
@@ -386,12 +386,12 @@ contains
 ! ####################### allocating real and int arrays on CPU ################## !
 
     subroutine cpu_allocate_pinned_r1(a, lo1, hi1)
-        real(kind=8), pointer, intent(inout) :: a(:)
+        real(CLAW_REAL), pointer, intent(inout) :: a(:)
         integer, intent(in) :: lo1, hi1
         integer :: n1
         integer (kind=c_size_t) :: sz
         type(c_ptr) :: cp
-        real(kind=8), pointer :: fp(:)
+        real(CLAW_REAL), pointer :: fp(:)
         n1 = max(hi1-lo1+1, 1)
         sz = int(n1,c_size_t)
         cp = clawpack_mempool_alloc_pinned(szr*sz)
@@ -401,19 +401,19 @@ contains
     contains
         subroutine shift_bound_d1(fp, lo1, a)
             integer, intent(in) :: lo1
-            real(kind=8), target, intent(in) :: fp(lo1:)
-            real(kind=8), pointer, intent(inout) :: a(:)
+            real(CLAW_REAL), target, intent(in) :: fp(lo1:)
+            real(CLAW_REAL), pointer, intent(inout) :: a(:)
             a => fp
         end subroutine shift_bound_d1
     end subroutine cpu_allocate_pinned_r1
 
     subroutine cpu_allocate_pinned_r2(a, lo1, hi1, lo2, hi2)
-        real(kind=8), pointer, intent(inout) :: a(:,:)
+        real(CLAW_REAL), pointer, intent(inout) :: a(:,:)
         integer, intent(in) :: lo1, hi1, lo2, hi2
         integer :: n1, n2
         integer (kind=c_size_t) :: sz
         type(c_ptr) :: cp
-        real(kind=8), pointer :: fp(:,:)
+        real(CLAW_REAL), pointer :: fp(:,:)
         n1 = max(hi1-lo1+1, 1)
         n2 = max(hi2-lo2+1, 1)
         sz = int(n1,c_size_t) * int(n2,c_size_t) 
@@ -424,19 +424,19 @@ contains
     contains
         subroutine shift_bound_d2(fp, lo1, lo2, a)
             integer, intent(in) :: lo1, lo2
-            real(kind=8), target, intent(in) :: fp(lo1:,lo2:)
-            real(kind=8), pointer, intent(inout) :: a(:,:)
+            real(CLAW_REAL), target, intent(in) :: fp(lo1:,lo2:)
+            real(CLAW_REAL), pointer, intent(inout) :: a(:,:)
             a => fp
         end subroutine shift_bound_d2
     end subroutine cpu_allocate_pinned_r2
 
     subroutine cpu_allocate_pinned_r3(a, lo1, hi1, lo2, hi2, lo3, hi3)
-        real(kind=8), pointer, intent(inout) :: a(:,:,:)
+        real(CLAW_REAL), pointer, intent(inout) :: a(:,:,:)
         integer, intent(in) :: lo1, hi1, lo2, hi2, lo3, hi3
         integer :: n1, n2, n3
         integer (kind=c_size_t) :: sz
         type(c_ptr) :: cp
-        real(kind=8), pointer :: fp(:,:,:)
+        real(CLAW_REAL), pointer :: fp(:,:,:)
         n1 = max(hi1-lo1+1, 1)
         n2 = max(hi2-lo2+1, 1)
         n3 = max(hi3-lo3+1, 1)
@@ -448,19 +448,19 @@ contains
     contains
         subroutine shift_bound_d3(fp, lo1, lo2, lo3, a)
             integer, intent(in) :: lo1, lo2, lo3
-            real(kind=8), target, intent(in) :: fp(lo1:,lo2:,lo3:)
-            real(kind=8), pointer, intent(inout) :: a(:,:,:)
+            real(CLAW_REAL), target, intent(in) :: fp(lo1:,lo2:,lo3:)
+            real(CLAW_REAL), pointer, intent(inout) :: a(:,:,:)
             a => fp
         end subroutine shift_bound_d3
     end subroutine cpu_allocate_pinned_r3
 
     subroutine cpu_allocate_pinned_r4(a, lo1, hi1, lo2, hi2, lo3, hi3, lo4, hi4)
-        real(kind=8), pointer, intent(inout) :: a(:,:,:,:)
+        real(CLAW_REAL), pointer, intent(inout) :: a(:,:,:,:)
         integer, intent(in) :: lo1, hi1, lo2, hi2, lo3, hi3, lo4, hi4
         integer :: n1, n2, n3, n4
         integer (kind=c_size_t) :: sz
         type(c_ptr) :: cp
-        real(kind=8), pointer :: fp(:,:,:,:)
+        real(CLAW_REAL), pointer :: fp(:,:,:,:)
         n1 = max(hi1-lo1+1, 1)
         n2 = max(hi2-lo2+1, 1)
         n3 = max(hi3-lo3+1, 1)
@@ -473,8 +473,8 @@ contains
     contains
         subroutine shift_bound_d4(fp, lo1, lo2, lo3, lo4, a)
             integer, intent(in) :: lo1, lo2, lo3, lo4
-            real(kind=8), target, intent(in) :: fp(lo1:,lo2:,lo3:,lo4:)
-            real(kind=8), pointer, intent(inout) :: a(:,:,:,:)
+            real(CLAW_REAL), target, intent(in) :: fp(lo1:,lo2:,lo3:,lo4:)
+            real(CLAW_REAL), pointer, intent(inout) :: a(:,:,:,:)
             a => fp
         end subroutine shift_bound_d4
     end subroutine cpu_allocate_pinned_r4
@@ -547,7 +547,7 @@ contains
     end subroutine cpu_allocate_pinned_i3
 
     subroutine cpu_deallocate_pinned_r1(a)
-        real(kind=8), pointer, intent(inout) :: a(:)
+        real(CLAW_REAL), pointer, intent(inout) :: a(:)
         integer :: lo(1)
         type(c_ptr) :: cp
         lo = lbound(a)
@@ -557,7 +557,7 @@ contains
     end subroutine cpu_deallocate_pinned_r1
 
     subroutine cpu_deallocate_pinned_r2(a)
-        real(kind=8), pointer, intent(inout) :: a(:,:)
+        real(CLAW_REAL), pointer, intent(inout) :: a(:,:)
         integer :: lo(2)
         type(c_ptr) :: cp
         lo = lbound(a)
@@ -567,7 +567,7 @@ contains
     end subroutine cpu_deallocate_pinned_r2
 
     subroutine cpu_deallocate_pinned_r3(a)
-        real(kind=8), pointer, intent(inout) :: a(:,:,:)
+        real(CLAW_REAL), pointer, intent(inout) :: a(:,:,:)
         integer :: lo(3)
         type(c_ptr) :: cp
         lo = lbound(a)
@@ -577,7 +577,7 @@ contains
     end subroutine cpu_deallocate_pinned_r3
 
     subroutine cpu_deallocate_pinned_r4(a)
-        real(kind=8), pointer, intent(inout) :: a(:,:,:,:)
+        real(CLAW_REAL), pointer, intent(inout) :: a(:,:,:,:)
         integer :: lo(4)
         type(c_ptr) :: cp
         lo = lbound(a)

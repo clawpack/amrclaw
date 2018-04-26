@@ -16,7 +16,7 @@ c
        subroutine signs(badpts,npts,iscr,jscr,idim,jdim,ist,iend,
      &                  ilo,ihi,jlo,jhi)
 c
-       implicit double precision (a-h,o-z)
+       implicit real(CLAW_REAL) (a-h,o-z)
        dimension badpts(2,npts)
        ! TODO: can iscr use an array, say ihi-ilo?
        dimension iscr(idim), jscr(jdim)

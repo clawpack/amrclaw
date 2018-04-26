@@ -29,7 +29,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use profiling_module
 #endif
 #endif
-    implicit double precision (a-h,o-z)
+    implicit real(CLAW_REAL) (a-h,o-z)
 
 
     logical    vtime
@@ -38,19 +38,19 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     integer listgrids(numgrids(level))
     integer clock_start, clock_finish, clock_rate
     integer clock_startStepgrid,clock_startBound,clock_finishBound
-    real(kind=8) cpu_start, cpu_finish
-    real(kind=8) cpu_startBound, cpu_finishBound
-    real(kind=8) cpu_startStepgrid, cpu_finishStepgrid
+    real(CLAW_REAL) cpu_start, cpu_finish
+    real(CLAW_REAL) cpu_startBound, cpu_finishBound
+    real(CLAW_REAL) cpu_startStepgrid, cpu_finishStepgrid
 
 #ifdef CUDA
     integer :: locold, locnew, locaux
     integer :: i,j, id
     integer :: cudaResult
-    double precision :: xlow, ylow
-    double precision :: cfl_local
+    real(CLAW_REAL) :: xlow, ylow
+    real(CLAW_REAL) :: cfl_local
     type(dim3) :: numBlocks, numThreads
-    double precision, dimension(:,:), pointer, contiguous :: cfls
-    double precision, dimension(:,:), pointer, contiguous, device :: cfls_d
+    real(CLAW_REAL), dimension(:,:), pointer, contiguous :: cfls
+    real(CLAW_REAL), dimension(:,:), pointer, contiguous, device :: cfls_d
 
     type(grid_type), allocatable         :: grids(:)
     ! TODO: customized memory allocator for this?
@@ -639,7 +639,7 @@ end subroutine advanc
 subroutine prepgrids(listgrids, num, level)
 
     use amr_module
-    implicit double precision (a-h,o-z)
+    implicit real(CLAW_REAL) (a-h,o-z)
     integer listgrids(num)
 
     mptr = lstart(level)

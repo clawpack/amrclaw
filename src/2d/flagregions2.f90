@@ -46,16 +46,16 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
 
     ! Subroutine arguments
     integer, intent(in) :: mx,my,level,mbuff
-    real(kind=8), intent(in) :: xlower,ylower,dx,dy,t
+    real(CLAW_REAL), intent(in) :: xlower,ylower,dx,dy,t
     
     ! Flagging
-    real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
-    real(kind=8), intent(in) :: DONTFLAG
-    real(kind=8), intent(in) :: DOFLAG
+    real(CLAW_REAL),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
+    real(CLAW_REAL), intent(in) :: DONTFLAG
+    real(CLAW_REAL), intent(in) :: DOFLAG
     
     ! Locals
     integer :: i,j,m,i1,i2,j1,j2
-    real(kind=8) :: x_low,y_low,x_hi,y_hi, xupper,yupper
+    real(CLAW_REAL) :: x_low,y_low,x_hi,y_hi, xupper,yupper
     integer, allocatable :: minlevel(:,:), maxlevel(:,:)
 
     allocate(minlevel(mx,my), maxlevel(mx,my))

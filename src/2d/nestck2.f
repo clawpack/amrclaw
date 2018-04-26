@@ -38,7 +38,7 @@ c
      1                        nclust, nvar,naux)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       dimension  badpts(2,npts)
       logical baseCheck, isNested1, isNested2
       logical projecCheck

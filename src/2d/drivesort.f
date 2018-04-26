@@ -7,7 +7,7 @@ c
        subroutine drivesort(npts,badpts,level,index,mbuff)
 
       use amr_module
-      implicit  double precision (a-h,o-z)
+      implicit  real(CLAW_REAL) (a-h,o-z)
       dimension badpts(2,npts)
       dimension iflags(npts), ixArray(npts)
       logical db/.false./

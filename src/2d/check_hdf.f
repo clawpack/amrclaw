@@ -8,7 +8,7 @@ c :::::::::::::::::::::: CHECK ::::::::::::::::::::::::::::::::;
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
       character*16  chkname
 c
@@ -116,7 +116,7 @@ c     #      SINCE THE SAME HDF ROUTINES ARE USED TO READ BOTH INTEGER
 c     #      AND DOUBLE PRECISION ARRAYS.
 c=================================================================
       subroutine dump_double_vector(sd_id,idims,qname,out)
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       character*6  qname
 c
 c     # HDF: Declare variables that describe datasets and HDF files.
@@ -187,7 +187,7 @@ c
 
 c==========================================================
       subroutine dump_double_array(sd_id,idim1,idim2,qname,out)
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       character*6  qname
 c
 c     # HDF: Declare variables that describe datasets and HDF files.
@@ -264,7 +264,7 @@ c
 
 c==========================================================
       subroutine read_double_vector(sd_id,idims,index,qname,out)
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       character*6  qname
 c
 c     # HDF: Declare variables that describe datasets and HDF files.
@@ -323,7 +323,7 @@ c
 
 c==========================================================
       subroutine read_double_array(sd_id,idim1,idim2,index,qname,out)
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       character*6  qname
 c
 c     # HDF: Declare variables that describe datasets and HDF files.

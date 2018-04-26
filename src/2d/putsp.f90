@@ -12,7 +12,7 @@ subroutine putsp(lbase,level,nvar,naux)
     use memory_module, only: gpu_deallocate, cpu_deallocate_pinned
     use cuda_module, only: device_id
 #endif
-    implicit double precision (a-h,o-z)
+    implicit real(CLAW_REAL) (a-h,o-z)
 
     !
     ! ::::::::::::::::::::::::::::::: PUTSP :::::::::::::::::::::::::

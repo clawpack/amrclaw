@@ -3,7 +3,7 @@ c ---------------------------------------------------
 c
        subroutine coarsen(valdub,midub,mjdub,valbgc,mi2tot,mj2tot,nvar)
       
-       implicit double precision (a-h, o-z)
+       implicit real(CLAW_REAL) (a-h, o-z)
 
        dimension  valdub(nvar,midub, mjdub)
        dimension  valbgc(nvar,mi2tot,mj2tot)

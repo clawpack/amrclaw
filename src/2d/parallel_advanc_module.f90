@@ -1,5 +1,5 @@
 module parallel_advanc_module
-    double precision :: dtcom,dxcom,dycom,tcom
+    real(CLAW_REAL) :: dtcom,dxcom,dycom,tcom
     integer :: icom,jcom
 contains
 !  :::::::::::::: PAR_ADVANC :::::::::::::::::::::::::::::::::::::::::::
@@ -15,14 +15,14 @@ contains
     subroutine par_advanc (mptr,mitot,mjtot,nvar,naux,dtnew)
         use amr_module
         use gauges_module, only: update_gauges, num_gauges
-        implicit double precision (a-h,o-z)
+        implicit real(CLAW_REAL) (a-h,o-z)
 
 
         integer omp_get_thread_num, omp_get_max_threads
         integer mythread/0/, maxthreads/1/
 
-        double precision fp(nvar,mitot,mjtot),fm(nvar,mitot,mjtot)
-        double precision gp(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
+        real(CLAW_REAL) fp(nvar,mitot,mjtot),fm(nvar,mitot,mjtot)
+        real(CLAW_REAL) gp(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
         level = node(nestlevel,mptr)
         hx    = hxposs(level)
         hy    = hyposs(level)
@@ -153,7 +153,7 @@ contains
         use cuda_module, only: device_id, wait_for_all_gpu_tasks, cuda_streams
         use cudafor
 #endif
-        implicit double precision (a-h,o-z)
+        implicit real(CLAW_REAL) (a-h,o-z)
         external rpn2,rpt2
 
         parameter (msize=max1d+4)
@@ -164,14 +164,14 @@ contains
         dimension fm(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
         dimension aux(maux,mitot,mjtot)
 
-        double precision :: dtdx, dtdy
+        real(CLAW_REAL) :: dtdx, dtdy
         integer :: i,j,m
 
 #ifdef CUDA
         ! These are all in SoA format
-        double precision, dimension(:,:,:), pointer, contiguous :: &
+        real(CLAW_REAL), dimension(:,:,:), pointer, contiguous :: &
             q1, fp1, gp1, fm1, gm1
-        double precision, dimension(:,:,:), pointer, contiguous, device :: &
+        real(CLAW_REAL), dimension(:,:,:), pointer, contiguous, device :: &
             q_d, fp_d, gp_d, fm_d, gm_d
         integer :: data_size, aux_size
         integer :: cudaResult
@@ -442,19 +442,19 @@ contains
         use step2_cuda_module, only: step2_fused
         use cudafor
 #endif
-        implicit double precision (a-h,o-z)
+        implicit real(CLAW_REAL) (a-h,o-z)
         external rpn2,rpt2
 
         parameter (msize=max1d+4)
         parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
 
         integer, intent(in) :: id, ngrids
-        double precision, intent(out) :: cfls(ngrids,2)
+        real(CLAW_REAL), intent(out) :: cfls(ngrids,2)
         ! These are all in SoA format
-        double precision ::   q(mitot,mjtot,nvar)
-        double precision ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)
-        double precision ::  fm(mitot,mjtot,nvar),gm(mitot,mjtot,nvar)
-        double precision :: aux(mitot,mjtot,maux)
+        real(CLAW_REAL) ::   q(mitot,mjtot,nvar)
+        real(CLAW_REAL) ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)
+        real(CLAW_REAL) ::  fm(mitot,mjtot,nvar),gm(mitot,mjtot,nvar)
+        real(CLAW_REAL) :: aux(mitot,mjtot,maux)
 #ifdef CUDA
         attributes(device) :: q
         attributes(device) :: fp, fm, gp, gm
@@ -462,7 +462,7 @@ contains
         ! attributes(device) :: aux
 #endif
 
-        double precision :: dtdx, dtdy
+        real(CLAW_REAL) :: dtdx, dtdy
         integer :: i,j,m
 
         logical    debug,  dump
@@ -582,25 +582,25 @@ contains
         use cuda_module, only: get_cuda_stream
         use step2_cuda_module, only: step2_and_update
         use cudafor
-        implicit double precision (a-h,o-z)
+        implicit real(CLAW_REAL) (a-h,o-z)
         external rpn2,rpt2
 
         parameter (msize=max1d+4)
         parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
 
         integer, intent(in) :: id, ngrids
-        double precision, intent(out) :: cfls(ngrids,2)
+        real(CLAW_REAL), intent(out) :: cfls(ngrids,2)
         ! These are all in SoA format
-        double precision ::   q(mitot,mjtot,nvar)
-        double precision ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)
-        double precision ::  fm(mitot,mjtot,nvar),gm(mitot,mjtot,nvar)
-        double precision :: aux(mitot,mjtot,maux)
+        real(CLAW_REAL) ::   q(mitot,mjtot,nvar)
+        real(CLAW_REAL) ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)
+        real(CLAW_REAL) ::  fm(mitot,mjtot,nvar),gm(mitot,mjtot,nvar)
+        real(CLAW_REAL) :: aux(mitot,mjtot,maux)
         attributes(device) :: q
         attributes(device) :: fp, fm, gp, gm
         attributes(device) :: cfls
         ! attributes(device) :: aux
 
-        double precision :: dtdx, dtdy
+        real(CLAW_REAL) :: dtdx, dtdy
         integer :: i,j,m
 
         logical    debug,  dump

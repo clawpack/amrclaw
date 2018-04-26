@@ -14,7 +14,7 @@ subroutine fluxsv(mptr,xfluxm,xfluxp,yfluxm,yfluxp,listbc, &
         ndimx,ndimy,nvar,maxsp,dtc,hx,hy)
 
     use amr_module
-    implicit double precision (a-h,o-z)
+    implicit real(CLAW_REAL) (a-h,o-z)
 
 
     dimension xfluxp(nvar,ndimx,ndimy), yfluxp(nvar,ndimx,ndimy)
@@ -127,9 +127,9 @@ subroutine fluxsv_cpu(mptr,&
 
     integer, intent(in) :: mptr
     integer, intent(in) :: ndimx, ndimy, nvar, maxsp
-    double precision, intent(in) :: dtc, hx, hy
-    double precision, intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
-    double precision, intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
+    real(CLAW_REAL), intent(in) :: dtc, hx, hy
+    real(CLAW_REAL), intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
+    real(CLAW_REAL), intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
     integer, intent(in) :: listbc(5,maxsp)
     type(cpu_1d_real_ptr_type), intent(in) :: fflux(15000)
 

@@ -21,14 +21,14 @@ subroutine fluxad_gpu(fm, fp, gm, gp, &
     mbc, mx, my, lenbc, lratiox, lratioy, &
     svdflx, dtf, dx, dy)
 
-    real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
     integer, value, intent(in)  :: mbc, mx, my, lenbc, lratiox, lratioy
 
-    real(kind=8), value, intent(in) :: dtf, dx, dy
-    real(kind=8), intent(inout) :: svdflx(NEQNS,lenbc)
+    real(CLAW_REAL), value, intent(in) :: dtf, dx, dy
+    real(CLAW_REAL), intent(inout) :: svdflx(NEQNS,lenbc)
     integer :: tid, m
     integer :: i, ifine, j, jfine
     integer :: l
@@ -95,14 +95,14 @@ subroutine fluxad_dev(fm, fp, gm, gp, &
     mbc, mx, my, lenbc, lratiox, lratioy, &
     svdflx, dtf, dx, dy)
 
-    real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
     integer, value, intent(in)  :: mbc, mx, my, lenbc, lratiox, lratioy
 
-    real(kind=8), value, intent(in) :: dtf, dx, dy
-    real(kind=8), intent(inout) :: svdflx(NEQNS,lenbc)
+    real(CLAW_REAL), value, intent(in) :: dtf, dx, dy
+    real(CLAW_REAL), intent(inout) :: svdflx(NEQNS,lenbc)
     integer :: tid, m
     integer :: i, ifine, j, jfine
     integer :: l
@@ -167,7 +167,7 @@ subroutine fluxad_fused_gpu( &
     implicit none
 
     integer, value, intent(in) :: lratiox, lratioy, num_grids, nghost
-    double precision, value, intent(in) :: delt, dx, dy
+    real(CLAW_REAL), value, intent(in) :: delt, dx, dy
     type(grid_type), intent(inout) :: grids(num_grids)
     type(gpu_1d_real_ptr_type), intent(in) :: fflux(15000)
 
@@ -213,9 +213,9 @@ subroutine fluxsv_gpu(mptr,&
 
     integer, value, intent(in) :: mptr
     integer, value, intent(in) :: ndimx, ndimy, nvar, maxsp
-    double precision, value, intent(in) :: dtc, hx, hy
-    double precision, intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
-    double precision, intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
+    real(CLAW_REAL), value, intent(in) :: dtc, hx, hy
+    real(CLAW_REAL), intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
+    real(CLAW_REAL), intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
     integer, intent(in) :: listbc(5,maxsp)
     type(gpu_1d_real_ptr_type), intent(in) :: fflux(15000)
     ! local
@@ -324,9 +324,9 @@ subroutine fluxsv_dev(mptr,&
 
     integer, value, intent(in) :: mptr
     integer, value, intent(in) :: ndimx, ndimy, nvar, maxsp
-    double precision, value, intent(in) :: dtc, hx, hy
-    double precision, intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
-    double precision, intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
+    real(CLAW_REAL), value, intent(in) :: dtc, hx, hy
+    real(CLAW_REAL), intent(in) :: xfluxp(ndimx,ndimy,nvar), yfluxp(ndimx,ndimy,nvar)
+    real(CLAW_REAL), intent(in) :: xfluxm(ndimx,ndimy,nvar), yfluxm(ndimx,ndimy,nvar)
     integer, intent(in) :: listbc(5,maxsp)
     type(gpu_1d_real_ptr_type), intent(in) :: fflux(15000)
     ! local
@@ -424,7 +424,7 @@ subroutine fluxsv_fused_gpu(grids, cflux, fflux, &
     implicit none
 
     integer, value, intent(in) :: nghost, nvar, maxsp, num_grids
-    double precision, value, intent(in) :: delt,hx,hy
+    real(CLAW_REAL), value, intent(in) :: delt,hx,hy
     type(grid_type), intent(inout) :: grids(num_grids)
     type(gpu_1d_real_ptr_type), intent(in) :: fflux(15000)
     type(gpu_2d_int_ptr_type), intent(in)  :: cflux(15000)
@@ -491,21 +491,21 @@ subroutine qad_cpu2(valbig,mitot,mjtot,mbc,nvar, &
 
     integer, value, intent(in) :: mitot, mjtot, mbc, nvar, lenbc
     integer, value, intent(in) :: lratiox, lratioy, mptr
-    double precision, value, intent(in) :: hx, hy, delt, cc, zz
-    double precision, intent(in) :: valbig(mitot,mjtot,nvar)
-    double precision, intent(in) :: qc1d(nvar,lenbc)
-    double precision, intent(inout) :: svdflx(nvar,lenbc)
+    real(CLAW_REAL), value, intent(in) :: hx, hy, delt, cc, zz
+    real(CLAW_REAL), intent(in) :: valbig(mitot,mjtot,nvar)
+    real(CLAW_REAL), intent(in) :: qc1d(nvar,lenbc)
+    real(CLAW_REAL), intent(inout) :: svdflx(nvar,lenbc)
 
-    double precision :: ql(nvar,max1d,SPACEDIM*2), qr(nvar,max1d,SPACEDIM*2)
-    double precision :: wave(nvar,mwaves,max1d,SPACEDIM*2), s(mwaves,max1d,SPACEDIM*2)
-    double precision :: amdq(nvar,max1d,SPACEDIM*2),  apdq(nvar,max1d,SPACEDIM*2)
+    real(CLAW_REAL) :: ql(nvar,max1d,SPACEDIM*2), qr(nvar,max1d,SPACEDIM*2)
+    real(CLAW_REAL) :: wave(nvar,mwaves,max1d,SPACEDIM*2), s(mwaves,max1d,SPACEDIM*2)
+    real(CLAW_REAL) :: amdq(nvar,max1d,SPACEDIM*2),  apdq(nvar,max1d,SPACEDIM*2)
 
     integer :: nc, nr
     integer :: ivar, ncrse
     integer :: i,j,ic,jc,l
     integer :: base
     integer :: tid
-    double precision :: add
+    real(CLAW_REAL) :: add
 
 #ifdef PROFILE
     call startCudaProfiler("qad",13)
@@ -658,18 +658,18 @@ subroutine rpn2_all_edges(maxm,mbc,ql,qr,amdq,apdq,tid,nc,nr,cc,zz)
     implicit none
 
     integer, value, intent(in) :: maxm, mbc, tid, nc, nr
-    double precision, value, intent(in) :: cc,zz
-    double precision, intent(in)  ::   ql(NEQNS, 1:maxm,SPACEDIM*2)
-    double precision, intent(in)  ::   qr(NEQNS, 1:maxm,SPACEDIM*2)
-    double precision, intent(out) :: apdq(NEQNS, 1:maxm,SPACEDIM*2)
-    double precision, intent(out) :: amdq(NEQNS, 1:maxm,SPACEDIM*2)
+    real(CLAW_REAL), value, intent(in) :: cc,zz
+    real(CLAW_REAL), intent(in)  ::   ql(NEQNS, 1:maxm,SPACEDIM*2)
+    real(CLAW_REAL), intent(in)  ::   qr(NEQNS, 1:maxm,SPACEDIM*2)
+    real(CLAW_REAL), intent(out) :: apdq(NEQNS, 1:maxm,SPACEDIM*2)
+    real(CLAW_REAL), intent(out) :: amdq(NEQNS, 1:maxm,SPACEDIM*2)
 
-    double precision :: wave(NEQNS, NWAVES)
-    double precision ::    s(1:NWAVES)
+    real(CLAW_REAL) :: wave(NEQNS, NWAVES)
+    real(CLAW_REAL) ::    s(1:NWAVES)
 
 !     local arrays
 !     ------------
-    double precision :: delta1, delta2, delta3, a1, a2
+    real(CLAW_REAL) :: delta1, delta2, delta3, a1, a2
     integer :: mu, mv, i, m, iedge, base
 
     ! side 1
@@ -802,20 +802,20 @@ subroutine qad_gpu(valbig,mitot,mjtot,mbc,nvar, &
 
     integer, value, intent(in) :: mitot, mjtot, mbc, nvar, lenbc, max1d
     integer, value, intent(in) :: lratiox, lratioy, mptr
-    double precision, value, intent(in) :: cc, zz
-    double precision, value, intent(in) :: hx, hy, delt
-    double precision, intent(in) :: valbig(mitot,mjtot,NEQNS)
-    double precision, intent(in) :: qc1d(NEQNS,lenbc)
-    double precision, intent(inout) :: svdflx(NEQNS,lenbc)
+    real(CLAW_REAL), value, intent(in) :: cc, zz
+    real(CLAW_REAL), value, intent(in) :: hx, hy, delt
+    real(CLAW_REAL), intent(in) :: valbig(mitot,mjtot,NEQNS)
+    real(CLAW_REAL), intent(in) :: qc1d(NEQNS,lenbc)
+    real(CLAW_REAL), intent(inout) :: svdflx(NEQNS,lenbc)
 
-    double precision :: ql(NEQNS), qr(NEQNS), amdq(NEQNS), apdq(NEQNS)
+    real(CLAW_REAL) :: ql(NEQNS), qr(NEQNS), amdq(NEQNS), apdq(NEQNS)
 
     integer :: nc, nr
     integer :: ivar, istat
     integer :: i,j,ic,jc,l
     integer :: base
     integer :: tid
-    double precision :: add
+    real(CLAW_REAL) :: add
 
 #ifdef DEBUG
     if (blockDim%y /= 1 .or. gridDim%y /= 1) then
@@ -924,18 +924,18 @@ subroutine rpn2_single(ixy,ql,qr,amdq,apdq,cc,zz)
     ! ixy = 1: x-direction
     ! ixy = 2: y-direction
     integer, intent(in) :: ixy
-    double precision, intent(in) :: cc, zz
-    double precision, intent(in)  ::   ql(NEQNS)
-    double precision, intent(in)  ::   qr(NEQNS)
-    double precision, intent(out) :: apdq(NEQNS)
-    double precision, intent(out) :: amdq(NEQNS)
+    real(CLAW_REAL), intent(in) :: cc, zz
+    real(CLAW_REAL), intent(in)  ::   ql(NEQNS)
+    real(CLAW_REAL), intent(in)  ::   qr(NEQNS)
+    real(CLAW_REAL), intent(out) :: apdq(NEQNS)
+    real(CLAW_REAL), intent(out) :: amdq(NEQNS)
 
-    double precision :: wave(NEQNS, NWAVES)
-    double precision ::    s(1:NWAVES)
+    real(CLAW_REAL) :: wave(NEQNS, NWAVES)
+    real(CLAW_REAL) ::    s(1:NWAVES)
 
 !     local arrays
 !     ------------
-    double precision :: delta1, delta2, a1, a2
+    real(CLAW_REAL) :: delta1, delta2, a1, a2
     integer :: mu, mv, m
 
     if (ixy == 1) then

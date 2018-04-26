@@ -1,9 +1,9 @@
 c
 c
 c     =====================================================
-      double precision function philim(a,b,meth)
+      real(CLAW_REAL) function philim(a,b,meth)
 c     =====================================================
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 c
 c     # Compute a limiter based on wave strengths a and b.
 c     # meth determines what limiter is used.

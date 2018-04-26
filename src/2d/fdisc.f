@@ -4,7 +4,7 @@ c
 c     =================================================
       function fdisc(x,y)
 c     =================================================
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       common/cdisc/ x0,y0,alf,beta,r0,idisc
 c
 c     # for computing cell averages for initial data that has a

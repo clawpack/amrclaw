@@ -5,7 +5,7 @@ c
      &                       ishift,jshift,level)
 
        use amr_module
-       implicit double precision (a-h,o-z)
+       implicit real(CLAW_REAL) (a-h,o-z)
 
        dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
 

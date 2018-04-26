@@ -24,30 +24,30 @@ subroutine step2y(maxm,meqn,maux,mbc,mx,my,qold,aux,dy,dt,cflgrid,gm,gp,rpn2)
     
     ! Arguments
     integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
-    real(kind=8), intent(in) :: dy,dt
-    real(kind=8), intent(inout) :: cflgrid
-    real(kind=8), intent(inout) :: qold(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(in) :: dy,dt
+    real(CLAW_REAL), intent(inout) :: cflgrid
+    real(CLAW_REAL), intent(inout) :: qold(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     
     ! Local storage for flux accumulation (these help compute normal g flux, based on step2 usage)
-    real(kind=8) :: faddm(meqn,1-mbc:maxm+mbc)
-    real(kind=8) :: faddp(meqn,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: faddm(meqn,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: faddp(meqn,1-mbc:maxm+mbc)
 
     
     ! Scratch storage for Sweeps and Riemann problems
-    real(kind=8) ::  q1d(meqn,1-mbc:maxm+mbc)
-    real(kind=8) :: aux2(maux,1-mbc:maxm+mbc)
-    real(kind=8) :: dtdy1d(1-mbc:maxm+mbc)
+    real(CLAW_REAL) ::  q1d(meqn,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: aux2(maux,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: dtdy1d(1-mbc:maxm+mbc)
     
-    real(kind=8) ::  wave(meqn, mwaves, 1-mbc:maxm+mbc)
-    real(kind=8) ::     s(mwaves, 1-mbc:maxm + mbc)
-    real(kind=8) ::  cqxx(meqn,1-mbc:maxm + mbc)
+    real(CLAW_REAL) ::  wave(meqn, mwaves, 1-mbc:maxm+mbc)
+    real(CLAW_REAL) ::     s(mwaves, 1-mbc:maxm + mbc)
+    real(CLAW_REAL) ::  cqxx(meqn,1-mbc:maxm + mbc)
     
     ! Looping scalar storage
     integer :: i
-    real(kind=8) :: dtdy,cfl1d
+    real(CLAW_REAL) :: dtdy,cfl1d
     
     
     cflgrid = 0.d0

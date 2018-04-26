@@ -13,7 +13,7 @@ c
       use timer_module
 #endif
 
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 c     include  "call.i"
 
       logical    vtime, dumpout/.false./, dumpchk/.false./

@@ -23,10 +23,10 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !     =====================================================
 !
 !
-    implicit double precision (a-h,o-z)
-    double precision, intent(in) :: mthlim(mwaves)
-    double precision, intent(inout) :: wave(meqn, mwaves, 1-mbc:maxm+mbc)
-    double precision, intent(in) ::    s(mwaves, 1-mbc:maxm+mbc)
+    implicit real(CLAW_REAL) (a-h,o-z)
+    real(CLAW_REAL), intent(in) :: mthlim(mwaves)
+    real(CLAW_REAL), intent(inout) :: wave(meqn, mwaves, 1-mbc:maxm+mbc)
+    real(CLAW_REAL), intent(in) ::    s(mwaves, 1-mbc:maxm+mbc)
 
     do mw=1,mwaves
         if (mthlim(mw) .eq. 0) cycle

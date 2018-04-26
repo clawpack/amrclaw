@@ -5,7 +5,7 @@ c =======================================================================
 c =======================================================================
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
       dimension  val(nvar,mitot,mjtot)
       dimension  aux(naux,mitot,mjtot)

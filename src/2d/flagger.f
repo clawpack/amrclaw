@@ -31,7 +31,7 @@ c
       subroutine flagger(nvar,naux,lcheck,start_time)
 
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
       integer omp_get_thread_num, omp_get_max_threads
       integer mythread/0/, maxthreads/1/

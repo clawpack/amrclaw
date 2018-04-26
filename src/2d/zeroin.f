@@ -4,7 +4,7 @@ c
 c     =================================================
       function zeroin(ax,bx,f,tol)        
 c     =================================================
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       external f
 c  
 c      a zero of the function  f(x)  is computed in the interval ax,bx .

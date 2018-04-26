@@ -125,7 +125,7 @@ contains
     subroutine print_all_cpu_timers()
         implicit none
         integer :: i
-        double precision :: total_run_time
+        real(CLAW_REAL) :: total_run_time
 
 #ifdef PROFILE
         !$OMP MASTER

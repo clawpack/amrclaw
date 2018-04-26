@@ -6,7 +6,7 @@ c
 c     =================================================
       function fss(s)
 c     =================================================
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       common/fsscorn/ xc0,yc0,xc1,yc1
 c   
 c     # compute fdisc at distance s between corners (xc0,yc0) and (xc1,yc1)

@@ -31,25 +31,25 @@ recursive subroutine prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,nro
     ! Input
     integer, intent(in) :: level, nvar, naux, mitot, mjtot, nrowst, ncolst
     integer, intent(in) :: ilo,ihi,jlo,jhi
-    real(kind=8), intent(in) :: time
+    real(CLAW_REAL), intent(in) :: time
     logical  :: fullGrid  ! true first time called, false for recursive coarse sub-patches
 
     ! Output
-    real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
-    real(kind=8), intent(in out) :: aux(naux,mitot,mjtot)
+    real(CLAW_REAL), intent(in out) :: valbig(nvar,mitot,mjtot)
+    real(CLAW_REAL), intent(in out) :: aux(naux,mitot,mjtot)
     
     ! Local storage
     integer :: i, j, ii, jj, ivar, nr, nc, ng, i1, i2, j1, j2, iputst, jputst
     integer :: jbump, iwrap1, iwrap2, jwrap1, tmp, locflip, rect(4)
-    real(kind=8) :: xlwrap, ybwrap
+    real(CLAW_REAL) :: xlwrap, ybwrap
 
     integer :: ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
-    real(kind=8) :: scratch(max(mitot,mjtot)*nghost*nvar)
-    real(kind=8) :: scratchaux(max(mitot,mjtot)*nghost*naux)
+    real(CLAW_REAL) :: scratch(max(mitot,mjtot)*nghost*nvar)
+    real(CLAW_REAL) :: scratchaux(max(mitot,mjtot)*nghost*naux)
     
     !for timings
     integer :: clock_start, clock_finish, clock_rate
-    real(kind=8) :: cpu_start, cpu_finish
+    real(CLAW_REAL) :: cpu_start, cpu_finish
 
 !     # will divide patch into 9 possibilities (some empty): 
 !       x sticks out left, x interior, x sticks out right

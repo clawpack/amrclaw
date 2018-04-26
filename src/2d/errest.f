@@ -4,14 +4,14 @@ c
       subroutine errest (nvar,naux,lcheck,mptr,nx,ny)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 c
 c   ### changed to stack based storage 2/23/13 
 c   ### and broken into smaller routines to minimize 
 c   ### stack space
      
-      double precision valbgc(nvar,nx/2+2*nghost,ny/2+2*nghost)
-      double precision auxbgc(naux,nx/2+2*nghost,ny/2+2*nghost)
+      real(CLAW_REAL) valbgc(nvar,nx/2+2*nghost,ny/2+2*nghost)
+      real(CLAW_REAL) auxbgc(naux,nx/2+2*nghost,ny/2+2*nghost)
      
  
 c :::::::::::::::::::::::::: ERREST :::::::::::::::::::::::::::::::::::

@@ -16,19 +16,19 @@ subroutine x_sweep_1st_order(q, fm, fp, s_x, wave_x, meqn, mwaves, mbc, mx, my, 
     implicit none
 
     integer, intent(in) :: meqn, mbc, mx, my, mwaves
-    real(kind=8), intent(in) :: q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_x(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(inout) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(inout) :: cflgrid
-    real(kind=8), intent(in) :: dtdx
+    real(CLAW_REAL), intent(in) :: q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: s_x(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(CLAW_REAL), intent(inout) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(CLAW_REAL), intent(inout) :: cflgrid
+    real(CLAW_REAL), intent(in) :: dtdx
 
     ! Local variables for the Riemann solver
     integer :: i,j
-    real(kind=8) :: delta1, delta2, a1, a2
+    real(CLAW_REAL) :: delta1, delta2, a1, a2
     integer :: m, mw, mu, mv
-    real(kind=8) :: amdq(meqn), apdq(meqn)
+    real(CLAW_REAL) :: amdq(meqn), apdq(meqn)
 
 
     ! ============================================================================
@@ -83,26 +83,26 @@ subroutine x_sweep_1st_order_gpu(q, fm, fp, s_x, wave_x, mbc, mx, my, dtdx, cfls
     implicit none
 
     integer, value, intent(in) :: mbc, mx, my
-    real(kind=8), intent(in) ::     q(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) ::    s_x(2-mbc:mx + mbc, 2-mbc:my+mbc-1, NWAVES)
-    real(kind=8), intent(inout) :: wave_x(2-mbc:mx+mbc, 2-mbc:my+mbc-1, NEQNS, NWAVES)
-    real(kind=8), value, intent(in) :: dtdx
-    real(kind=8), value, intent(in) :: cc, zz
+    real(CLAW_REAL), intent(in) ::     q(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) ::    s_x(2-mbc:mx + mbc, 2-mbc:my+mbc-1, NWAVES)
+    real(CLAW_REAL), intent(inout) :: wave_x(2-mbc:mx+mbc, 2-mbc:my+mbc-1, NEQNS, NWAVES)
+    real(CLAW_REAL), value, intent(in) :: dtdx
+    real(CLAW_REAL), value, intent(in) :: cc, zz
     integer, value, intent(in) :: ngrids, id
-    real(kind=8), intent(inout) :: cfls(ngrids,2)
+    real(CLAW_REAL), intent(inout) :: cfls(ngrids,2)
 
     ! Local variables for the Riemann solver
     integer :: i,j, tidx, tidy
-    real(kind=8) :: delta1, delta2, a1, a2
+    real(CLAW_REAL) :: delta1, delta2, a1, a2
     integer :: m, mw
-    real(kind=8) :: amdq(NEQNS), apdq(NEQNS)
-    real(kind=8) :: cfl_local
-    real(kind=8) :: atomic_result
+    real(CLAW_REAL) :: amdq(NEQNS), apdq(NEQNS)
+    real(CLAW_REAL) :: cfl_local
+    real(CLAW_REAL) :: atomic_result
 
 
-    double precision, shared :: cfl_s(blockDim%x, blockDim%y)
+    real(CLAW_REAL), shared :: cfl_s(blockDim%x, blockDim%y)
 
 
     tidx = threadIdx%x
@@ -166,21 +166,21 @@ subroutine x_sweep_2nd_order(fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, mbc, mx,
     implicit none
 
     integer, intent(in) :: meqn, mbc, mx, my, mwaves
-    real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(in) :: s_x(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(in) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(in) :: dtdx
+    real(CLAW_REAL), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(in) :: s_x(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(CLAW_REAL), intent(in) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(CLAW_REAL), intent(in) :: dtdx
 
     ! Local variables for the Riemann solver
-    real(kind=8) :: wave_x_tilde(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    real(kind=8) :: cqxx(meqn)
-    real(kind=8) :: amdq(meqn), apdq(meqn)
-    real(kind=8) :: bpamdq(meqn), bmamdq(meqn), bpapdq(meqn), bmapdq(meqn)
-    real(kind=8) :: delta1, delta2, a1, a2
-    real(kind=8) :: dot, wnorm2, wlimitr, abs_sign, c, r
+    real(CLAW_REAL) :: wave_x_tilde(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(CLAW_REAL) :: cqxx(meqn)
+    real(CLAW_REAL) :: amdq(meqn), apdq(meqn)
+    real(CLAW_REAL) :: bpamdq(meqn), bmamdq(meqn), bpapdq(meqn), bmapdq(meqn)
+    real(CLAW_REAL) :: delta1, delta2, a1, a2
+    real(CLAW_REAL) :: dot, wnorm2, wlimitr, abs_sign, c, r
     integer :: i,j
     integer :: m, mw, mu, mv
     logical limit
@@ -383,26 +383,26 @@ subroutine x_sweep_2nd_order_gpu(fm, fp, gm, gp, s_x, wave_x, mbc, mx, my, dtdx,
     implicit none
 
     integer, value, intent(in) :: mbc, mx, my
-    real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
-    real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
-    real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
-    real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
-    real(kind=8), intent(in) ::    s_x(2-mbc:mx+mbc, 2-mbc:my+mbc-1, NWAVES)
-    real(kind=8), intent(in) :: wave_x(2-mbc:mx+mbc, 2-mbc:my+mbc-1, NEQNS, NWAVES)
+    real(CLAW_REAL), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
+    real(CLAW_REAL), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
+    real(CLAW_REAL), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
+    real(CLAW_REAL), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc,NEQNS)
+    real(CLAW_REAL), intent(in) ::    s_x(2-mbc:mx+mbc, 2-mbc:my+mbc-1, NWAVES)
+    real(CLAW_REAL), intent(in) :: wave_x(2-mbc:mx+mbc, 2-mbc:my+mbc-1, NEQNS, NWAVES)
 
-    real(kind=8), value, intent(in) :: dtdx
-    real(kind=8), value, intent(in) :: cc, zz
+    real(CLAW_REAL), value, intent(in) :: dtdx
+    real(CLAW_REAL), value, intent(in) :: cc, zz
 
     ! Local variables for the Riemann solver
-    real(kind=8) :: cqxx(NEQNS)
-    real(kind=8) :: amdq(NEQNS), apdq(NEQNS)
-    real(kind=8) :: wave_x_tilde(NEQNS, NWAVES)
-    real(kind=8) :: bpamdq(NEQNS), bmamdq(NEQNS), bpapdq(NEQNS), bmapdq(NEQNS)
-    real(kind=8) :: a1, a2
-    real(kind=8) :: dot, wnorm2, wlimitr, r
+    real(CLAW_REAL) :: cqxx(NEQNS)
+    real(CLAW_REAL) :: amdq(NEQNS), apdq(NEQNS)
+    real(CLAW_REAL) :: wave_x_tilde(NEQNS, NWAVES)
+    real(CLAW_REAL) :: bpamdq(NEQNS), bmamdq(NEQNS), bpapdq(NEQNS), bmapdq(NEQNS)
+    real(CLAW_REAL) :: a1, a2
+    real(CLAW_REAL) :: dot, wnorm2, wlimitr, r
     integer :: i,j
     integer :: m, mw
-    real(kind=8) :: atomic_result
+    real(CLAW_REAL) :: atomic_result
 
 
     i = (blockIdx%x-1) * blockDim%x + threadIdx%x
@@ -515,21 +515,21 @@ subroutine x_sweep_2nd_order_simple(fm, fp, gm, gp, s_x, wave_x, meqn, mwaves, m
     implicit none
 
     integer, intent(in) :: meqn, mbc, mx, my, mwaves
-    real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(in) :: s_x(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(in) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    real(kind=8), intent(in) :: dtdx
+    real(CLAW_REAL), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(in) :: s_x(mwaves, 2-mbc:mx + mbc, 2-mbc:my+mbc-1)
+    real(CLAW_REAL), intent(in) :: wave_x(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(CLAW_REAL), intent(in) :: dtdx
 
     ! Local variables for the Riemann solver
-    real(kind=8) :: wave_x_tilde(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
-    real(kind=8) :: cqxx(meqn)
-    real(kind=8) :: amdq(meqn), apdq(meqn)
-    real(kind=8) :: bpamdq(meqn), bmamdq(meqn), bpapdq(meqn), bmapdq(meqn)
-    real(kind=8) :: delta1, delta2, a1, a2
-    real(kind=8) :: dot, wnorm2, wlimitr, abs_sign, c, r
+    real(CLAW_REAL) :: wave_x_tilde(meqn, mwaves, 2-mbc:mx+mbc, 2-mbc:my+mbc-1)
+    real(CLAW_REAL) :: cqxx(meqn)
+    real(CLAW_REAL) :: amdq(meqn), apdq(meqn)
+    real(CLAW_REAL) :: bpamdq(meqn), bmamdq(meqn), bpapdq(meqn), bmapdq(meqn)
+    real(CLAW_REAL) :: delta1, delta2, a1, a2
+    real(CLAW_REAL) :: dot, wnorm2, wlimitr, abs_sign, c, r
     integer :: i,j
     integer :: m, mw
 
@@ -644,19 +644,19 @@ subroutine y_sweep_1st_order(q, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx, my, 
     implicit none
 
     integer, intent(in) :: meqn, mbc, mx, my, mwaves
-    real(kind=8), intent(in) :: q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: s_y(mwaves, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
-    real(kind=8), intent(inout) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
-    real(kind=8), intent(inout) :: cflgrid
-    real(kind=8), intent(in) :: dtdy
+    real(CLAW_REAL), intent(in) :: q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: s_y(mwaves, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
+    real(CLAW_REAL), intent(inout) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: cflgrid
+    real(CLAW_REAL), intent(in) :: dtdy
 
     ! Local variables for the Riemann solver
     integer :: i,j
-    real(kind=8) :: delta1, delta2, a1, a2
+    real(CLAW_REAL) :: delta1, delta2, a1, a2
     integer :: m, mw, mu, mv
-    real(kind=8) :: bmdq(meqn), bpdq(meqn)
+    real(CLAW_REAL) :: bmdq(meqn), bpdq(meqn)
 
     ! ============================================================================
     !  y-sweeps    
@@ -707,25 +707,25 @@ subroutine y_sweep_1st_order_gpu(q, gm, gp, s_y, wave_y, mbc, mx, my, dtdy, cfls
     implicit none
 
     integer, value, intent(in) :: mbc, mx, my
-    real(kind=8), intent(in) ::     q(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) ::    s_y(2-mbc:mx+mbc-1, 2-mbc:my + mbc, NWAVES)
-    real(kind=8), intent(inout) :: wave_y(2-mbc:mx+mbc-1, 2-mbc:my+mbc, NEQNS, NWAVES)
-    real(kind=8), value, intent(in) :: dtdy
-    real(kind=8), value, intent(in) :: cc, zz
+    real(CLAW_REAL), intent(in) ::     q(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) ::    s_y(2-mbc:mx+mbc-1, 2-mbc:my + mbc, NWAVES)
+    real(CLAW_REAL), intent(inout) :: wave_y(2-mbc:mx+mbc-1, 2-mbc:my+mbc, NEQNS, NWAVES)
+    real(CLAW_REAL), value, intent(in) :: dtdy
+    real(CLAW_REAL), value, intent(in) :: cc, zz
     integer, value, intent(in) :: ngrids, id
-    real(kind=8), intent(inout) :: cfls(ngrids,2)
+    real(CLAW_REAL), intent(inout) :: cfls(ngrids,2)
 
     ! Local variables for the Riemann solver
     integer :: i,j, tidx, tidy
-    real(kind=8) :: delta1, delta2, a1, a2
+    real(CLAW_REAL) :: delta1, delta2, a1, a2
     integer :: m, mw
-    real(kind=8) :: bmdq(NEQNS), bpdq(NEQNS)
-    real(kind=8) :: cfl_local
-    real(kind=8) :: atomic_result
+    real(CLAW_REAL) :: bmdq(NEQNS), bpdq(NEQNS)
+    real(CLAW_REAL) :: cfl_local
+    real(CLAW_REAL) :: atomic_result
 
-    double precision, shared :: cfl_s(blockDim%x, blockDim%y)
+    real(CLAW_REAL), shared :: cfl_s(blockDim%x, blockDim%y)
 
 
     tidx = threadIdx%x
@@ -789,21 +789,21 @@ subroutine y_sweep_2nd_order(fm, fp, gm, gp, s_y, wave_y, meqn, mwaves, mbc, mx,
     implicit none
 
     integer, intent(in) :: meqn, mbc, mx, my, mwaves
-    real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(in) :: s_y(mwaves, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
-    real(kind=8), intent(in) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
-    real(kind=8), intent(in) :: dtdy
+    real(CLAW_REAL), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: fp(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(in) :: s_y(mwaves, 2-mbc:mx+mbc-1, 2-mbc:my + mbc)
+    real(CLAW_REAL), intent(in) :: wave_y(meqn, mwaves, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
+    real(CLAW_REAL), intent(in) :: dtdy
 
     ! Local variables for the Riemann solver
-    real(kind=8) :: wave_y_tilde(meqn, mwaves, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
-    real(kind=8) :: cqyy(meqn)
-    real(kind=8) :: bmdq(meqn), bpdq(meqn)
-    real(kind=8) :: apbmdq(meqn), ambmdq(meqn), apbpdq(meqn), ambpdq(meqn)
-    real(kind=8) :: delta1, delta2, a1, a2
-    real(kind=8) :: dot, wnorm2, wlimitr, abs_sign, c, r
+    real(CLAW_REAL) :: wave_y_tilde(meqn, mwaves, 2-mbc:mx+mbc-1, 2-mbc:my+mbc)
+    real(CLAW_REAL) :: cqyy(meqn)
+    real(CLAW_REAL) :: bmdq(meqn), bpdq(meqn)
+    real(CLAW_REAL) :: apbmdq(meqn), ambmdq(meqn), apbpdq(meqn), ambpdq(meqn)
+    real(CLAW_REAL) :: delta1, delta2, a1, a2
+    real(CLAW_REAL) :: dot, wnorm2, wlimitr, abs_sign, c, r
     integer :: i,j
     integer :: m, mw, mu, mv
     logical limit
@@ -1004,25 +1004,25 @@ subroutine y_sweep_2nd_order_gpu(fm, fp, gm, gp, s_y, wave_y, &
     implicit none
 
     integer, value, intent(in) :: mbc, mx, my
-    real(kind=8), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
-    real(kind=8), intent(in) ::    s_y(2-mbc:mx+mbc-1, 2-mbc:my + mbc, NWAVES)
-    real(kind=8), intent(in) :: wave_y(2-mbc:mx+mbc-1, 2-mbc:my+mbc, NEQNS, NWAVES)
-    real(kind=8), value, intent(in) :: dtdy
-    real(kind=8), value, intent(in) :: cc, zz
+    real(CLAW_REAL), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: fp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: gm(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(inout) :: gp(1-mbc:mx+mbc, 1-mbc:my+mbc, NEQNS)
+    real(CLAW_REAL), intent(in) ::    s_y(2-mbc:mx+mbc-1, 2-mbc:my + mbc, NWAVES)
+    real(CLAW_REAL), intent(in) :: wave_y(2-mbc:mx+mbc-1, 2-mbc:my+mbc, NEQNS, NWAVES)
+    real(CLAW_REAL), value, intent(in) :: dtdy
+    real(CLAW_REAL), value, intent(in) :: cc, zz
 
     ! Local variables for the Riemann solver
-    real(kind=8) :: cqyy(NEQNS)
-    real(kind=8) :: bmdq(NEQNS), bpdq(NEQNS)
-    real(kind=8) :: wave_y_tilde(NEQNS, NWAVES)
-    real(kind=8) :: apbmdq(NEQNS), ambmdq(NEQNS), apbpdq(NEQNS), ambpdq(NEQNS)
-    real(kind=8) :: a1, a2
-    real(kind=8) :: dot, wnorm2, wlimitr, r
+    real(CLAW_REAL) :: cqyy(NEQNS)
+    real(CLAW_REAL) :: bmdq(NEQNS), bpdq(NEQNS)
+    real(CLAW_REAL) :: wave_y_tilde(NEQNS, NWAVES)
+    real(CLAW_REAL) :: apbmdq(NEQNS), ambmdq(NEQNS), apbpdq(NEQNS), ambpdq(NEQNS)
+    real(CLAW_REAL) :: a1, a2
+    real(CLAW_REAL) :: dot, wnorm2, wlimitr, r
     integer :: i,j
     integer :: m, mw
-    real(kind=8) :: atomic_result
+    real(CLAW_REAL) :: atomic_result
 
 
     i = (blockIdx%x-1) * blockDim%x + threadIdx%x

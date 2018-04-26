@@ -21,7 +21,7 @@ c
      1                   start_time)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       integer clock_start, clock_finish, clock_rate
       integer clock_start1
 c

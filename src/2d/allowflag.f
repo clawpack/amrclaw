@@ -35,7 +35,7 @@ c     # This routine is called from routine flag2refine.
 c     # If Richardson error estimates are used (if flag_richardson is true) 
 c     # then this routine is also called from errf1.
 
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
 c     # default version allows refinement anywhere:
       allowflag = .true.

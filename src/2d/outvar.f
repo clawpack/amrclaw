@@ -4,7 +4,7 @@ c
       subroutine outvar(rect,mitot,mjtot,nvar,mptr,ng)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
 
       dimension rect(nvar,mitot,mjtot)
