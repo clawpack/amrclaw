@@ -150,7 +150,11 @@ c
 c  done colating - safe to reclam
         call reclam(locamrflags,mibuff*mjbuff)
 
+#if (CLAW_REAL == 8) 
         ibytesPerDP = 8
+#else
+        ibytesPerDP = 4
+#endif
         iflagsize =  (mibuff*mjbuff)/ibytesPerDP+1
         call reclam(node(domflags_base,mptr),iflagsize)
         call reclam(node(domflags2,mptr),iflagsize)

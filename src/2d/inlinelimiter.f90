@@ -87,7 +87,7 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !               ----------
 !               # van Leer
 !               ----------
-                wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
+                wlimitr = (r + abs(r)) / (1.d0 + abs(r))
 
             else if (mthlim_d(mw) .eq. 4) then
 !               ------------------------------
@@ -156,7 +156,7 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !           ----------
 !           # van Leer
 !           ----------
-            wlimitr = (r + dabs(r)) / (1.d0 + dabs(r))
+            wlimitr = (r + abs(r)) / (1.d0 + abs(r))
             go to 170
 
             40       continue

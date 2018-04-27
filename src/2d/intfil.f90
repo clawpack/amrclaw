@@ -213,7 +213,7 @@ subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nva
             if (abs(alphai - 1.d0) < t_epsilon) then
                 ! need no interpolation
                 loc = node(store1,mptr)
-            else if (dabs(alphai) .lt. t_epsilon) then
+            else if (abs(alphai) .lt. t_epsilon) then
                 loc = node(store2,mptr)
                 if (level == mxnest) then
                     write(outunit,'(A,E24.16)') 'Line 95', dt

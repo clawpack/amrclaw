@@ -136,11 +136,11 @@ c
                if (use_fwaves) then
                    abs_sign = sign(1.d0,s(mw,i))
                  else
-                   abs_sign = dabs(s(mw,i))
+                   abs_sign = abs(s(mw,i))
                  endif
 
                cqxx(m,i) = cqxx(m,i) + abs_sign
-     &             * (1.d0 - dabs(s(mw,i))*dtdxave) * wave(m,mw,i)
+     &             * (1.d0 - abs(s(mw,i))*dtdxave) * wave(m,mw,i)
 c
   119          continue
             faddm(m,i) = faddm(m,i) + 0.5d0 * cqxx(m,i)

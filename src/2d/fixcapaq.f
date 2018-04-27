@@ -40,7 +40,7 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
        dcapaq = auxc(mcapa,ic,jc)*valc(ivar,ic,jc)-
      &          capaqfine/(lratiox*lratioy)
-       dcapamax = max(dcapamax,dabs(dcapaq))
+       dcapamax = max(dcapamax,abs(dcapaq))
       
        do 30 ico = 1, lratiox
        ifine = (ic-2)*lratiox + nghost + ico

@@ -61,10 +61,10 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_dim = num_dim
     
     # Lower and upper edge of computational domain:
-    clawdata.lower[0] = -1.000000e+01          # xlower
-    clawdata.upper[0] = 1.000000e+01          # xupper
-    clawdata.lower[1] = -1.000000e+01          # ylower
-    clawdata.upper[1] = 1.000000e+01          # yupper
+    clawdata.lower[0] = -1.000000e+00          # xlower
+    clawdata.upper[0] = 1.000000e+00          # xupper
+    clawdata.lower[1] = -1.000000e+00          # ylower
+    clawdata.upper[1] = 1.000000e+00          # yupper
     
     # Number of grid cells:
     clawdata.num_cells[0] = 200      # mx
@@ -114,7 +114,7 @@ def setrun(claw_pkg='amrclaw'):
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
         clawdata.num_output_times = 10
-        clawdata.tfinal = 10.0
+        clawdata.tfinal = 1.0
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -237,8 +237,8 @@ def setrun(claw_pkg='amrclaw'):
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
     rundata.gaugedata.gauges.append([0, 0.0, 0.0, 0., 10.])
-    rundata.gaugedata.gauges.append([1, 7.0, 0.0, 0., 10.])
-    rundata.gaugedata.gauges.append([2, 7.0/np.sqrt(20.), 7.0/np.sqrt(20.), 0., 10.])
+    rundata.gaugedata.gauges.append([1, 0.7, 0.0, 0., 10.])
+    rundata.gaugedata.gauges.append([2, 0.7/np.sqrt(2.), 0.7/np.sqrt(2.), 0., 10.])
     
     # --------------
     # Checkpointing:

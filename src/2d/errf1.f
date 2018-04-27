@@ -71,7 +71,7 @@ c
           term4 = rctfine(1,ifine,jfine+1)
 c         # divide by (aval*order) for relative error
           aval  = (term1+term2+term3+term4)/4.d0
-          est   =  dabs((aval-rctcrse(1,i,j))/ order)
+          est   =  abs((aval-rctcrse(1,i,j))/ order)
           if (est .gt. errmax) errmax = est
           err2 = err2 + est*est
 c         write(outunit,102) i,j,est,rctcrse(1,i,j)

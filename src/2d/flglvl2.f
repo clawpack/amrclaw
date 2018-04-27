@@ -93,7 +93,11 @@ c
              mibuff = nx + 2*mbuff
              mjbuff = ny + 2*mbuff
 
+#if (CLAW_REAL == 8) 
              ibytesPerDP = 8
+#else
+             ibytesPerDP = 4
+#endif
              nwords = (mibuff*mjbuff)/ibytesPerDP+1
              call reclam(locdomflags, nwords)
              call reclam(locdom2, nwords)

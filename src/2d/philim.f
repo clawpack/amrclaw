@@ -37,7 +37,7 @@ c
 c     ----------
 c     # van Leer
 c     ----------
-      philim = (r + dabs(r)) / (1.d0 + dabs(r))
+      philim = (r + abs(r)) / (1.d0 + abs(r))
       return
 c
    40 continue
