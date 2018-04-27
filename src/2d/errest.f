@@ -10,8 +10,8 @@ c   ### changed to stack based storage 2/23/13
 c   ### and broken into smaller routines to minimize 
 c   ### stack space
      
-      double precision valbgc(nvar,nx/2+2*nghost,ny/2+2*nghost)
-      double precision auxbgc(naux,nx/2+2*nghost,ny/2+2*nghost)
+      real(CLAW_REAL) valbgc(nvar,nx/2+2*nghost,ny/2+2*nghost)
+      real(CLAW_REAL) auxbgc(naux,nx/2+2*nghost,ny/2+2*nghost)
      
  
 c :::::::::::::::::::::::::: ERREST :::::::::::::::::::::::::::::::::::

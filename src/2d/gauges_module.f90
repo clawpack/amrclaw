@@ -366,13 +366,13 @@ contains
         
         ! Input
         integer, intent(in) ::  num_eqn, mitot, mjtot, num_aux, mptr
-        real(kind=8), intent(in) :: q(num_eqn, mitot, mjtot)
-        real(kind=8), intent(in) :: aux(num_aux, mitot, mjtot)
-        real(kind=8), intent(in) :: xlow, ylow
+        real(CLAW_REAL), intent(in) :: q(num_eqn, mitot, mjtot)
+        real(CLAW_REAL), intent(in) :: aux(num_aux, mitot, mjtot)
+        real(CLAW_REAL), intent(in) :: xlow, ylow
         
         ! Locals
-        real(kind=8) :: var(maxvar + maxaux)
-        real(kind=8) :: xcent, ycent, xoff, yoff, tgrid, hx, hy
+        real(CLAW_REAL) :: var(maxvar + maxaux)
+        real(CLAW_REAL) :: xcent, ycent, xoff, yoff, tgrid, hx, hy
         integer :: i, j, i1, i2, iindex, jindex, n, ii, index, level, var_index
 
         ! No gauges to record, exit

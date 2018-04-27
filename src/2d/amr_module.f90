@@ -216,7 +216,7 @@ module amr_module
         kcheck
 #ifdef CUDA
     
-    ! ### integer array
+    ! ### integer array ###
     type cpu_2d_int_ptr_type
         integer, dimension(:,:), pointer, contiguous :: ptr=>null()
     end type cpu_2d_int_ptr_type
@@ -225,27 +225,27 @@ module amr_module
         integer, dimension(:,:), pointer, contiguous, device :: ptr=>null()
     end type gpu_2d_int_ptr_type
 
-    ! ### double precision array
+    ! ### grid patch data array ###
     ! on CPU
     type cpu_1d_real_ptr_type
-        double precision, dimension(:), pointer, contiguous :: ptr=>null()
+        real(CLAW_REAL), dimension(:), pointer, contiguous :: ptr=>null()
     end type cpu_1d_real_ptr_type
 
     type cpu_3d_real_ptr_type
-        double precision, dimension(:,:,:), pointer, contiguous :: ptr=>null()
+        real(CLAW_REAL), dimension(:,:,:), pointer, contiguous :: ptr=>null()
     end type cpu_3d_real_ptr_type
 
     ! on GPU
     type gpu_1d_real_ptr_type
-        double precision, dimension(:), pointer, contiguous, device :: ptr=>null()
+        real(CLAW_REAL), dimension(:), pointer, contiguous, device :: ptr=>null()
     end type gpu_1d_real_ptr_type
 
     type gpu_3d_real_ptr_type
-        double precision, dimension(:,:,:), pointer, contiguous, device :: ptr=>null()
+        real(CLAW_REAL), dimension(:,:,:), pointer, contiguous, device :: ptr=>null()
     end type gpu_3d_real_ptr_type
 
     type gpu_4d_real_ptr_type
-        double precision, dimension(:,:,:,:), pointer, contiguous, device :: ptr=>null()
+        real(CLAW_REAL), dimension(:,:,:,:), pointer, contiguous, device :: ptr=>null()
     end type gpu_4d_real_ptr_type
 
 
@@ -291,7 +291,7 @@ module amr_module
     ! Dynamic memory: 
     !real(kind=8), allocatable, target, dimension(:) :: storage
     !real(kind=8), pointer, dimension(:) :: alloc   ! old way, changed mjb Sept. 2014
-    real(kind=8), allocatable, dimension(:) :: alloc    ! new way, use allocatable, not pointer
+    real(CLAW_REAL), allocatable, dimension(:) :: alloc    ! new way, use allocatable, not pointer
     integer memsize
        
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\
@@ -329,7 +329,7 @@ module amr_module
     character(len=10), allocatable :: auxtype(:)
     integer  method(7), mwaves, mcapa, dimensional_split
     integer, allocatable :: mthlim(:)
-    real(kind=8) cfl,cflmax,cflv1,cfl_level
+    real(CLAW_REAL) cfl,cflmax,cflv1,cfl_level
 
     logical :: use_fwaves
     logical :: flag_richardson,flag_gradient

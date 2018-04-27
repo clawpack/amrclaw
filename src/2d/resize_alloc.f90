@@ -22,7 +22,7 @@ subroutine resize_storage(new_size,status)
     integer, intent(out) :: status
     integer, intent(in) :: new_size
     
-    real(kind=8), allocatable, target, dimension(:) :: new_storage
+    real(CLAW_REAL), allocatable, target, dimension(:) :: new_storage
 #ifdef CUDA
     attributes(pinned) :: new_storage
     logical :: plog

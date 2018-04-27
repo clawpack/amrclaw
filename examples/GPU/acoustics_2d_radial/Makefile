@@ -23,10 +23,10 @@ OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
 
 FC = pgi
 USE_CUDA = TRUE
-
 # FC = gfortran
 # USE_CUDA = FALSE
-#
+ 
+ 
 # DEBUG = TRUE
 DEBUG = FALSE
 
@@ -39,6 +39,9 @@ PROFILE = TRUE
 USE_OPENMP = FALSE
 
 VERBOSE = FALSE
+
+USE_DOUBLE_PRECISION = FALSE
+# USE_DOUBLE_PRECISION = TRUE
 
 DIM = 2
 NUM_EQUATIONS = 3

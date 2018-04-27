@@ -1,6 +1,6 @@
 module problem_para_module
 
-    double precision, save :: rho, bulk, cc, zz
+    real(CLAW_REAL), save :: rho, bulk, cc, zz
 
     contains
     subroutine setprob
@@ -26,7 +26,7 @@ module problem_para_module
         !
         !     # Compute sound speed and impendance:
 
-        cc = dsqrt(bulk/rho)
+        cc = sqrt(bulk/rho)
         zz = rho*cc
 
         return
