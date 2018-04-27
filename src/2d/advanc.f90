@@ -562,7 +562,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         !
         call par_advanc(mptr,mitot,mjtot,nvar,naux,dtnew)
         !$OMP CRITICAL (newdt)
-        dtlevnew = dmin1(dtlevnew,dtnew)
+        dtlevnew = min(dtlevnew,dtnew)
         !$OMP END CRITICAL (newdt)    
     end do
     !$OMP END DO
@@ -595,10 +595,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
       810   format('*** WARNING *** Courant number  =', d12.4, &
           '  is larger than input cfl_max = ', d12.4)
         endif
-        cfl_level = dmax1(cfl_level, cfl_local)
+        cfl_level = max(cfl_level, cfl_local)
     enddo
     dtlevnew = delt*cfl/cfl_level
-    cflmax = dmax1(cflmax, cfl_level)
+    cflmax = max(cflmax, cfl_level)
     call cpu_deallocate_pinned(cfls)
     call gpu_deallocate(cfls_d,device_id)
     !$OMP END MASTER
@@ -609,7 +609,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
 #else
-    cflmax = dmax1(cflmax, cfl_level)
+    cflmax = max(cflmax, cfl_level)
 #endif
 
 #ifdef PROFILE

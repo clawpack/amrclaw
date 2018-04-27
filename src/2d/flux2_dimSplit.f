@@ -106,7 +106,7 @@ c     # compute maximum wave speed for checking Courant number:
          do 50 i=1,mx+1
 c          # if s>0 use dtdx1d(i) to compute CFL,
 c          # if s<0 use dtdx1d(i-1) to compute CFL:
-            cfl1d = dmax1(cfl1d, dtdx1d(i)*s(mw,i),
+            cfl1d = max(cfl1d, dtdx1d(i)*s(mw,i),
      &                          -dtdx1d(i-1)*s(mw,i))
    50       continue
 c
@@ -134,7 +134,7 @@ c        # second order corrections:
             do 119 mw=1,mwaves
 c
                if (use_fwaves) then
-                   abs_sign = dsign(1.d0,s(mw,i))
+                   abs_sign = sign(1.d0,s(mw,i))
                  else
                    abs_sign = dabs(s(mw,i))
                  endif

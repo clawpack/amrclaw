@@ -17,7 +17,7 @@ c
      &                  ilo,ihi,jlo,jhi)
 c
        implicit double precision (a-h,o-z)
-       dimension badpts(2,npts)
+       real(CLAW_REAL) :: badpts(2,npts)
        ! TODO: can iscr use an array, say ihi-ilo?
        dimension iscr(idim), jscr(jdim)
 c

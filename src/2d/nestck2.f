@@ -39,7 +39,7 @@ c
 c
       use amr_module
       implicit double precision (a-h,o-z)
-      dimension  badpts(2,npts)
+      real(CLAW_REAL) :: badpts(2,npts)
       logical baseCheck, isNested1, isNested2
       logical projecCheck
 

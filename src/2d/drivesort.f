@@ -8,7 +8,7 @@ c
 
       use amr_module
       implicit  double precision (a-h,o-z)
-      dimension badpts(2,npts)
+      real(CLAW_REAL) :: badpts(2,npts)
       dimension iflags(npts), ixArray(npts)
       logical db/.false./
  

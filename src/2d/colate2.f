@@ -11,7 +11,7 @@ c
 c
       use amr_module
       implicit  double precision (a-h,o-z)
-      dimension badpts(2,len)
+      real(CLAW_REAL) :: badpts(2,len)
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
       logical db/.false./
       integer*8 largestIntEquiv

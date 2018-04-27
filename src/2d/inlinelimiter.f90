@@ -75,13 +75,13 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !               --------
 !               # minmod
 !               --------
-                wlimitr = dmax1(0.d0, dmin1(1.d0, r))
+                wlimitr = max(0.d0, min(1.d0, r))
 
             else if (mthlim_d(mw) .eq. 2) then
 !               ----------
 !               # superbee
 !               ----------
-                wlimitr = dmax1(0.d0, dmin1(1.d0, 2.d0*r), dmin1(2.d0, r))
+                wlimitr = max(0.d0, min(1.d0, 2.d0*r), min(2.d0, r))
 
             else if (mthlim_d(mw) .eq. 3) then
 !               ----------
@@ -94,7 +94,7 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !               # monotinized centered
 !               ------------------------------
                 c = (1.d0 + r)/2.d0
-                wlimitr = dmax1(0.d0, dmin1(c, 2.d0, 2.d0*r))
+                wlimitr = max(0.d0, min(c, 2.d0, 2.d0*r))
             else if (mthlim_d(mw) .eq. 5) then
 !               ------------------------------
 !               # Beam-Warming
@@ -142,14 +142,14 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !           --------
 !           # minmod
 !           --------
-            wlimitr = dmax1(0.d0, dmin1(1.d0, r))
+            wlimitr = max(0.d0, min(1.d0, r))
             go to 170
 
             20       continue
 !           ----------
 !           # superbee
 !           ----------
-            wlimitr = dmax1(0.d0, dmin1(1.d0, 2.d0*r), dmin1(2.d0, r))
+            wlimitr = max(0.d0, min(1.d0, 2.d0*r), min(2.d0, r))
             go to 170
 
             30       continue
@@ -164,7 +164,7 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !           # monotinized centered
 !           ------------------------------
             c = (1.d0 + r)/2.d0
-            wlimitr = dmax1(0.d0, dmin1(c, 2.d0, 2.d0*r))
+            wlimitr = max(0.d0, min(c, 2.d0, 2.d0*r))
             go to 170
 
             50       continue

@@ -19,7 +19,8 @@ c
       implicit double precision (a-h,o-z)
 
 
-      dimension     intrect(nsize),badpts(2,npt)
+      real(CLAW_REAL) :: badpts(2,npt)
+      dimension     intrect(nsize)
 c
 c :::::::::::::::::::::::: MOMENT ::::::::::::::::::::::::::::::::::
 c  moment = compute enclosing rectangle around flagged points.

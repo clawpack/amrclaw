@@ -118,7 +118,7 @@ c
    80 a = b   
       fa = fb 
       if (dabs(d) .gt. tol1) b = b + d          
-      if (dabs(d) .le. tol1) b = b + dsign(tol1, xm)        
+      if (dabs(d) .le. tol1) b = b + sign(tol1, xm)        
       fb = f(b)          
       if ((fb*(fc/dabs(fc))) .gt. 0.d0) go to 20 
       go to 30

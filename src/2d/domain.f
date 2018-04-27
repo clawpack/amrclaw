@@ -86,7 +86,7 @@ c
 c             # added cfl to call to estdt so call.i isnt needed in estdt:
               call estdt(alloc(node(store1,mptr)),mitot,mjtot,nvar,
      1                   dx,dy,dtgrid,nghost,alloc(locaux),naux,cfl)
-              dt = dmin1(dt,dtgrid)
+              dt = min(dt,dtgrid)
               mptr   = node(levelptr,mptr)
             if (mptr .ne. 0) go to 60
          possk(1) = dt

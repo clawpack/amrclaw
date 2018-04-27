@@ -144,7 +144,7 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
         do i=1,mx+1
             !          # if s>0 use dtdx1d(i) to compute CFL,
             !          # if s<0 use dtdx1d(i-1) to compute CFL:
-            cfl1d = dmax1(cfl1d, dtdx1d(i)*s(mw,i),-dtdx1d(i-1)*s(mw,i))
+            cfl1d = max(cfl1d, dtdx1d(i)*s(mw,i),-dtdx1d(i-1)*s(mw,i))
         enddo
     enddo
     !
@@ -173,7 +173,7 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
                 do mw=1,mwaves
                     !
                     if (use_fwaves) then
-                        abs_sign = dsign(1.d0,s(mw,i))
+                        abs_sign = sign(1.d0,s(mw,i))
                     else
                         abs_sign = dabs(s(mw,i))
                     endif
