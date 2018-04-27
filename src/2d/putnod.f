@@ -5,7 +5,7 @@ c
       subroutine putnod (mptr)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
 
 c :::::::::::::::::::::::::::::: PUTNOD :::::::::::::::::::::;
@@ -25,7 +25,7 @@ c
       subroutine putnod_bnd (mcell)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
 
 c :::::::::::::::::::::::::::::: PUTNOD_BND :::::::::::::::::::::;

@@ -5,7 +5,7 @@ c
      1                      level,fliparray)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
       dimension fliparray((mitot+mjtot)*nghost*nvar)
       dimension val(nvar,mitot,mjtot)

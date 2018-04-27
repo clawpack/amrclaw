@@ -17,7 +17,7 @@ c
      .                     mbuff,lev,ilofine,ihifine,jlofine,jhifine)
 
       use amr_module
-      implicit double precision (a-h, o-z)
+      implicit real(CLAW_REAL) (a-h, o-z)
 
       integer*1  iflags (ilo-mbuff:ihi+mbuff,jlo-mbuff:jhi+mbuff)
       integer*1  iflags2(ilofine-mbuff:ihifine+mbuff,

@@ -16,7 +16,7 @@ c
       subroutine moment (intrect,badpts,npt,usage)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
 
       real(CLAW_REAL) :: badpts(2,npt)

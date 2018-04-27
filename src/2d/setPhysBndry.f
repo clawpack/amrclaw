@@ -4,7 +4,7 @@ c
        subroutine setPhysBndry(rectflags,ilo,ihi,jlo,jhi,mbuff,level)
 
        use amr_module
-       implicit double precision (a-h, o-z)
+       implicit real(CLAW_REAL) (a-h, o-z)
 
        dimension rectflags(ilo-mbuff:ihi+mbuff, jlo-mbuff:jhi+mbuff)
 

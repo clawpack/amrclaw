@@ -80,12 +80,12 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   ! Input
   integer, intent(in) :: level, nvar, naux, mitot, mjtot, nrowst, ncolst
   integer, intent(in) :: ilo,ihi,jlo,jhi, msrc
-  real(kind=8), intent(in) :: t
+  real(CLAW_REAL), intent(in) :: t
   logical  :: patchOnly
 
   ! Output
-  real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
-  real(kind=8), intent(in out) :: aux(naux,mitot,mjtot)
+  real(CLAW_REAL), intent(in out) :: valbig(nvar,mitot,mjtot)
+  real(CLAW_REAL), intent(in out) :: aux(naux,mitot,mjtot)
 
   ! Local storage
   integer :: i_fine, j_fine, i_coarse, j_coarse, n, k
@@ -93,17 +93,17 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   integer :: mitot_patch, mjtot_patch, mitot_coarse, mjtot_coarse, nghost_patch, lencrse
   integer :: refinement_ratio_x, refinement_ratio_y
   integer :: unset_indices(4)
-  real(kind=8) :: dx_fine, dy_fine, dx_coarse, dy_coarse
-  real(kind=8) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine
-  real(kind=8) :: xcent_fine, xcent_coarse, ycent_fine, ycent_coarse,ratiox,ratioy,floor    
+  real(CLAW_REAL) :: dx_fine, dy_fine, dx_coarse, dy_coarse
+  real(CLAW_REAL) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine
+  real(CLAW_REAL) :: xcent_fine, xcent_coarse, ycent_fine, ycent_coarse,ratiox,ratioy,floor    
 
   !for timing
   integer :: clock_start, clock_finish, clock_rate
-  real(kind=8) :: cpu_start, cpu_finish
+  real(CLAW_REAL) :: cpu_start, cpu_finish
 
   ! Interpolation variables
-  real(kind=8) :: eta1, eta2, valp10, valm10, valc, valp01, valm01, dupc, dumc
-  real(kind=8) :: ducc, du, fu, dvpc, dvmc, dvcc, dv, fv, valint, uslope, vslope
+  real(CLAW_REAL) :: eta1, eta2, valp10, valm10, valc, valp01, valm01, dupc, dumc
+  real(CLAW_REAL) :: ducc, du, fu, dvpc, dvmc, dvcc, dv, fv, valint, uslope, vslope
 
   ! Cell set tracking
   logical :: set
@@ -123,8 +123,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   !--      dimension auxcrse((ihi-ilo+2)*(jhi-jlo+2)*naux)  ! the +2 is to expand on coarse grid to enclose fine
   ! ### turns out you need 3 rows, forget offset of 1 plus one on each side
   ! the +3 is to expand on coarse grid to enclose fine
-  real(kind=8) :: valcrse((ihi-ilo+3) * (jhi-jlo+3) * nvar)  
-  real(kind=8) :: auxcrse((ihi-ilo+3) * (jhi-jlo+3) * naux)  
+  real(CLAW_REAL) :: valcrse((ihi-ilo+3) * (jhi-jlo+3) * nvar)  
+  real(CLAW_REAL) :: auxcrse((ihi-ilo+3) * (jhi-jlo+3) * naux)  
 
   ! We begin by filling values for grids at level level. If all values can be
   ! filled in this way, we return;
@@ -252,15 +252,15 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
      endif
 
      ! convert to real for use below
-     ratiox = real(refinement_ratio_x,kind=8)
-     ratioy = real(refinement_ratio_y,kind=8)
+     ratiox = real(refinement_ratio_x,kind=CLAW_REAL)
+     ratioy = real(refinement_ratio_y,kind=CLAW_REAL)
 
      ! fine below refers to level "level"
      ! coarse below refers to level "level-1"
      do j_fine  = 1,mjtot_patch
         !j_coarse = 2 + (j_fine - (unset_indices(3) - jlo) - 1) / refinement_ratio_y
-        !eta2 = (-0.5d0 + real(mod(j_fine - 1, refinement_ratio_y),kind=8)) &
-        !                    / real(refinement_ratio_y,kind=8)
+        !eta2 = (-0.5d0 + real(mod(j_fine - 1, refinement_ratio_y),kind=CLAW_REAL)) &
+        !                    / real(refinement_ratio_y,kind=CLAW_REAL)
 
         ! we are now processing the j_fine^{th} column of the fine patch
         ! this is contained in the j_coarse^{th} column of the coarse patch below it  
@@ -275,8 +275,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
 
         do i_fine = 1,mitot_patch
               !i_coarse = 2 + (i_fine - (unset_indices(1) - ilo) - 1) / refinement_ratio_x
-              !eta1 = (-0.5d0 + real(mod(i_fine - 1, refinement_ratio_x),kind=8)) &
-              !                    / real(refinement_ratio_x,kind=8)
+              !eta1 = (-0.5d0 + real(mod(i_fine - 1, refinement_ratio_x),kind=CLAW_REAL)) &
+              !                    / real(refinement_ratio_x,kind=CLAW_REAL)
 
               ! new coarse indexing
               !i_coarse =(i_fine+ilo-1)/refinement_ratio_x - iplo + 1

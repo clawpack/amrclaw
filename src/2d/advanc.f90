@@ -29,7 +29,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use profiling_module
 #endif
 #endif
-    implicit double precision (a-h,o-z)
+    implicit real(CLAW_REAL) (a-h,o-z)
 
 
     logical    vtime
@@ -39,9 +39,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     integer clock_start, clock_finish, clock_rate
     integer clock_startStepgrid,clock_startBound,clock_finishBound
     real(CLAW_REAL) hx,hy,delt
-    real(kind=8) cpu_start, cpu_finish
-    real(kind=8) cpu_startBound, cpu_finishBound
-    real(kind=8) cpu_startStepgrid, cpu_finishStepgrid
+    real(CLAW_REAL) cpu_start, cpu_finish
+    real(CLAW_REAL) cpu_startBound, cpu_finishBound
+    real(CLAW_REAL) cpu_startStepgrid, cpu_finishStepgrid
 
 #ifdef CUDA
     integer :: locold, locnew, locaux
@@ -640,7 +640,7 @@ end subroutine advanc
 subroutine prepgrids(listgrids, num, level)
 
     use amr_module
-    implicit double precision (a-h,o-z)
+    implicit real(CLAW_REAL) (a-h,o-z)
     integer listgrids(num)
 
     mptr = lstart(level)

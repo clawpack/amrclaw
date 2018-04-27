@@ -27,7 +27,7 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 !     # given by dotl/wnorm2 and dotr/wnorm2, where wnorm2 is the 2-norm
 !     # of wave.
 !
-    implicit double precision (a-h,o-z)
+    implicit real(CLAW_REAL) (a-h,o-z)
     dimension mthlim(mwaves)
     dimension wave(meqn, mwaves, 1-mbc:maxm+mbc)
     dimension    s(mwaves, 1-mbc:maxm+mbc)
@@ -36,7 +36,7 @@ subroutine limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
     attributes(device) :: wave, s
     integer, device :: mthlim_d(mwaves)
     ! put this on stack
-    double precision, device :: wave_tmp(meqn, mwaves, 1-mbc:maxm+mbc)
+    real(CLAW_REAL), device :: wave_tmp(meqn, mwaves, 1-mbc:maxm+mbc)
 #endif
 
 #ifdef CUDA

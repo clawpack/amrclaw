@@ -28,7 +28,7 @@ c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       external rpn2
 
       parameter (msize=max1d+4)

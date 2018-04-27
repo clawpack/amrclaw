@@ -6,7 +6,7 @@ c
 c      # Need this routine to initialize since iflags is part of double 
 c      # precision alloc array but is used as an integer(kind=1) to save storage.
 
-       implicit double precision (a-h,o-z)
+       implicit real(CLAW_REAL) (a-h,o-z)
 
        integer(kind=1)  iflags (0:isize+1,0:jsize+1)
 

@@ -10,12 +10,12 @@ c
 c     # Set initial conditions for q.
 c     # Acoustics with smooth radially symmetric profile to test accuracy
 c
-       implicit double precision (a-h,o-z)
+       implicit real(CLAW_REAL) (a-h,o-z)
        real(CLAW_REAL) :: q(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
        real(CLAW_REAL) :: aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
 c
        pi = 4.d0*atan(1.d0)
-       width = 0.2d0
+       width = 2.0d0
 
        do 20 i=1,mx
           xcell = xlower + (i-0.5d0)*dx
@@ -23,8 +23,8 @@ c
              ycell = ylower + (j-0.5d0)*dy
              r = sqrt(xcell**2 + ycell**2)
 
-             if (abs(r-0.5d0) .le. width) then
-                 pressure = 1.d0 + cos(pi*(r - 0.5d0)/width)
+             if (abs(r-5.d0) .le. width) then
+                 pressure = (1.d0 + cos(pi*(r - 5.d0)/width))*10
                else
                  pressure = 0.d0
                endif

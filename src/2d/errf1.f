@@ -4,7 +4,7 @@ c
       subroutine errf1(rctfine,nvar,rctcrse,mptr,mi2tot,mj2tot,
      2                 mitot,mjtot,rctflg,mibuff,mjbuff)
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
  
       dimension  rctfine(nvar,mitot,mjtot)

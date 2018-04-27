@@ -11,7 +11,7 @@ module regions_module
     ! Region type definition
     type region_type
         integer :: min_level,max_level
-        real(kind=8) :: x_low,y_low,x_hi,y_hi,t_low,t_hi
+        real(CLAW_REAL) :: x_low,y_low,x_hi,y_hi,t_low,t_hi
     end type region_type
 
     logical, private :: module_setup

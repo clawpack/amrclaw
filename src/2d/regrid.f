@@ -4,7 +4,7 @@ c
       subroutine regrid  (nvar,lbase,cut,naux,start_time)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       integer newnumgrids(maxlv)
       integer clock_start2, clock_finish, clock_rate
 c
@@ -135,7 +135,7 @@ c
       subroutine arrangeGrids(level, numg)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       integer listgrids(numg), cost(numg), index(numg), prevptr
 c
 c   slow sort for now, putting most expensive grids first on lstart list

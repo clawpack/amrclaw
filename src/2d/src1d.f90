@@ -19,8 +19,8 @@ subroutine src1d(meqn,mbc,mx1d,q1d,maux,aux1d,t,dt)
  
     implicit none
     integer, intent(in) :: meqn,mbc,mx1d,maux
-    real(kind=8), intent(in) :: t, dt
-    real(kind=8), intent(in) ::  aux1d(maux,mx1d)
-    real(kind=8), intent(inout) ::  q1d(meqn,mx1d)
+    real(CLAW_REAL), intent(in) :: t, dt
+    real(CLAW_REAL), intent(in) ::  aux1d(maux,mx1d)
+    real(CLAW_REAL), intent(inout) ::  q1d(meqn,mx1d)
 
 end subroutine src1d

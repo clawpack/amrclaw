@@ -10,7 +10,7 @@ c
       integer function nodget()
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
 c
 c ::::::::::::::::: NODGET ::::::::::::::::::::::::::::::::::::;
@@ -53,7 +53,7 @@ c
       integer function nodget_bnd()
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
 c
 c ::::::::::::::::: NODGET_BND ::::::::::::::::::::::::::::::::::::;

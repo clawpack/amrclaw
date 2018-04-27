@@ -11,7 +11,7 @@ c
 c     # This is a wrapper for a 1d Riemann solver rp1 so that it
 c     # can be used with AMR by using the 2d amrclaw routines with my=1.
 c
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 c
       dimension wave(meqn, mwaves, 1-mbc:maxm+mbc)
       dimension    s(mwaves, 1-mbc:maxm+mbc)

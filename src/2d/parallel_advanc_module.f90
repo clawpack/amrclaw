@@ -15,7 +15,7 @@ contains
     subroutine par_advanc (mptr,mitot,mjtot,nvar,naux,dtnew)
         use amr_module
         use gauges_module, only: update_gauges, num_gauges
-        implicit double precision (a-h,o-z)
+        implicit real(CLAW_REAL) (a-h,o-z)
 
 
         integer omp_get_thread_num, omp_get_max_threads
@@ -153,7 +153,7 @@ contains
         use cuda_module, only: device_id, wait_for_all_gpu_tasks, cuda_streams
         use cudafor
 #endif
-        implicit double precision (a-h,o-z)
+        implicit real(CLAW_REAL) (a-h,o-z)
         external rpn2,rpt2
 
         parameter (msize=max1d+4)
@@ -442,7 +442,7 @@ contains
         use step2_cuda_module, only: step2_fused
         use cudafor
 #endif
-        implicit double precision (a-h,o-z)
+        implicit real(CLAW_REAL) (a-h,o-z)
         external rpn2,rpt2
 
         parameter (msize=max1d+4)
@@ -584,7 +584,7 @@ contains
         use cuda_module, only: get_cuda_stream
         use step2_cuda_module, only: step2_and_update
         use cudafor
-        implicit double precision (a-h,o-z)
+        implicit real(CLAW_REAL) (a-h,o-z)
         external rpn2,rpt2
 
         parameter (msize=max1d+4)

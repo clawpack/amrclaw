@@ -59,14 +59,14 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
 
   ! Input
   integer, intent(in) :: nvar, ng, mitot, mjtot, mptr, naux
-  real(kind=8), intent(in) :: time
-  real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
-  real(kind=8), intent(in out) :: aux(naux,mitot,mjtot)
+  real(CLAW_REAL), intent(in) :: time
+  real(CLAW_REAL), intent(in out) :: valbig(nvar,mitot,mjtot)
+  real(CLAW_REAL), intent(in out) :: aux(naux,mitot,mjtot)
 
   ! Locals
   integer :: ilo, ihi, jlo, jhi, level  ! rect(4)
-  real(kind=8) :: xleft, xright, ybot, ytop, hx, hy, xl, xr, yb, yt
-  real(kind=8) :: xloWithGhost,  xhiWithGhost,  yloWithGhost, yhiWithGhost
+  real(CLAW_REAL) :: xleft, xright, ybot, ytop, hx, hy, xl, xr, yb, yt
+  real(CLAW_REAL) :: xloWithGhost,  xhiWithGhost,  yloWithGhost, yhiWithGhost
   logical      :: patchOnly
 
   xleft  = rnode(cornxlo, mptr)

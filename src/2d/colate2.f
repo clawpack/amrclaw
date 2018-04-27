@@ -10,7 +10,7 @@ c
       subroutine colate2 (badpts, len, lcheck, nUniquePts, lbase)
 c
       use amr_module
-      implicit  double precision (a-h,o-z)
+      implicit  real(CLAW_REAL) (a-h,o-z)
       real(CLAW_REAL) :: badpts(2,len)
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
       logical db/.false./

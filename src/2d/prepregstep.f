@@ -6,12 +6,12 @@ c
 
        use amr_module
        use parallel_advanc_module, only: stepgrid
-       implicit double precision (a-h,o-z)
+       implicit real(CLAW_REAL) (a-h,o-z)
 
        dimension fp(nvar,mitot,mjtot),gp(nvar,mitot,mjtot)
        dimension fm(nvar,mitot,mjtot),gm(nvar,mitot,mjtot)
-       double precision :: valbig(nvar,mitot,mjtot)
-       double precision :: auxbig(naux,mitot,mjtot)
+       real(CLAW_REAL) :: valbig(nvar,mitot,mjtot)
+       real(CLAW_REAL) :: auxbig(naux,mitot,mjtot)
 
 
        hx   = hxposs(lcheck)

@@ -24,17 +24,17 @@ module timer_module
 
     ! initialized to be 0
     integer, parameter :: max_cpu_timers = 20
-    integer(kind=8) :: clock_rate
+    integer(kind=CLAW_REAL) :: clock_rate
     character(len=364) :: format_string
 
     type timer_type
         character(len=364) :: timer_name
         logical :: used = .false.
         logical :: running = .false.
-        integer(kind=8) :: start_time = 0
-        integer(kind=8) :: stop_time = 0
-        integer(kind=8) :: accumulated_time = 0 ! in clock_cycle, not seconds
-        integer(kind=8) :: n_calls = 0 ! how many times this section is called
+        integer(kind=CLAW_REAL) :: start_time = 0
+        integer(kind=CLAW_REAL) :: stop_time = 0
+        integer(kind=CLAW_REAL) :: accumulated_time = 0 ! in clock_cycle, not seconds
+        integer(kind=CLAW_REAL) :: n_calls = 0 ! how many times this section is called
     end type timer_type
 
 
@@ -125,12 +125,12 @@ contains
     subroutine print_all_cpu_timers()
         implicit none
         integer :: i
-        double precision :: total_run_time
+        real(CLAW_REAL) :: total_run_time
 
 #ifdef PROFILE
         !$OMP MASTER
-        total_run_time = real(cpu_timers(timer_total_run_time)%accumulated_time,kind=8) &
-            /real(clock_rate,kind=8) 
+        total_run_time = real(cpu_timers(timer_total_run_time)%accumulated_time,kind=CLAW_REAL) &
+            /real(clock_rate,kind=CLAW_REAL) 
 
         format_string="('Elapsed wall time recorded by all cpu timers: ')"
         write(*,format_string)
@@ -150,12 +150,12 @@ contains
                 write(outunit,format_string)
                 format_string="(1f15.3,'           ',1f15.2,'        ',i9)"
                 write(*,format_string) &
-                    real(cpu_timers(i)%accumulated_time,kind=8)/real(clock_rate,kind=8), &
-                    real(cpu_timers(i)%accumulated_time,kind=8)/real(clock_rate,kind=8)/total_run_time*100, &
+                    real(cpu_timers(i)%accumulated_time,kind=CLAW_REAL)/real(clock_rate,kind=CLAW_REAL), &
+                    real(cpu_timers(i)%accumulated_time,kind=CLAW_REAL)/real(clock_rate,kind=CLAW_REAL)/total_run_time*100, &
                     cpu_timers(i)%n_calls
                 write(outunit,format_string) &
-                    real(cpu_timers(i)%accumulated_time,kind=8)/real(clock_rate,kind=8), &
-                    real(cpu_timers(i)%accumulated_time,kind=8)/real(clock_rate,kind=8)/total_run_time*100, &
+                    real(cpu_timers(i)%accumulated_time,kind=CLAW_REAL)/real(clock_rate,kind=CLAW_REAL), &
+                    real(cpu_timers(i)%accumulated_time,kind=CLAW_REAL)/real(clock_rate,kind=CLAW_REAL)/total_run_time*100, &
                     cpu_timers(i)%n_calls
                 format_string = "(' ')"
                 write(*,format_string)
