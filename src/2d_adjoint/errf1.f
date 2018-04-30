@@ -56,12 +56,10 @@ c     order  = dt*dble(2**(iorder+1) - 2)
       order  = dble(2**(iorder+1) - 2)
 c
 c     Calculating correct tol for this level
+c     nxnest is the maximum number of refinement levels, from amr_module
 c     --------------------
-c     Total error allowed in this time step
-      tol_exact = tol*dt/tfinal
-c     Error allowed at this level
-      tol_exact = tol_exact/(2**(levm))
-c     Error allowed per cell at this level
+      tol_exact = tol*dt/(tfinal-t0)
+      tol_exact = tol_exact/(mxnest - 1)
       tol_exact = tol_exact/(numcells(levm)*hx*hy)
 
       if (t0+possk(levm) .eq. time) levtol(levm) = tol_exact
