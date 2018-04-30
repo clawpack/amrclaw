@@ -56,12 +56,10 @@ c     order  = dt*dble(2**(iorder+1) - 2)
       order  = dble(2**(iorder+1) - 2)
 c
 c     Calculating correct tol for this level
+c     nxnest is the maximum number of refinement levels, from amr_module
 c     --------------------
-c     Total error allowed in this time step
-      tol_exact = tol*dt/tfinal
-c     Error allowed at this level
-      tol_exact = tol_exact/(2**levm)
-c     Error allowed per cell at this level
+      tol_exact = tol*dt/(tfinal-t0)
+      tol_exact = tol_exact/(mxnest - 1)
       tol_exact = tol_exact/(numcells(levm)*hx)
 
       if (t0+possk(levm) .eq. time) levtol(levm) = tol_exact
@@ -141,14 +139,14 @@ c     Loop over adjoint snapshots
 c         ! Consider only snapshots that are within the desired time range
           if (mask_selecta(k)) then
 
-c             set innerproduct for fine grid
+c             set innerproduct
               aux_temp =
      .              calculate_innerproduct(time,err_crse,k,nx/2,
      .              xleft,hx*2,nvar,mbc)
 
               do 22  i  = nghost+1, mi2tot-nghost
                   aux_crse(i) = max(aux_crse(i),aux_temp(i))
-                  errors(eptr(jg)+i) = aux_crse(i)
+                  errors(eptr(jg)+i-nghost) = aux_crse(i)
 
                  rctcrse(1,i)  = goodpt
                  if (aux_crse(i) .ge. levtol(levm)) then

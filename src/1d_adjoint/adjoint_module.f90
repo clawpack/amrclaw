@@ -107,23 +107,25 @@ contains
        ! Function Arguments
        integer, intent(in) :: lcheck
        real(kind=8) :: errtotal, cutoff
-       real(kind=8) :: dt
-       integer :: celln, sorted(numcells(lcheck))
+       real(kind=8) :: dt, hx
+       integer :: celln, sorted(numcells(lcheck)/2)
 
-       ! Setting our goal for the maximum amount of error 
-       ! for this level
        dt = possk(lcheck)
-       cutoff = tol !*dt/tfinal ! Total error allowed in this time step
-       cutoff = cutoff / 2**(lcheck)
+       hx = hxposs(lcheck)
+
+       ! Setting our goal for the maximum amount of error
+       ! for this level
+       cutoff = tol*(dt/hx)/(tfinal-t0)
+       cutoff = cutoff/(mxnest - 1)
 
        ! Sorting errors
-       call qsortr(sorted, numcells(lcheck), errors)
+       call qsortr(sorted, numcells(lcheck)/2, errors)
 
        errtotal = 0
-       do celln = 1, numcells(lcheck)
+       do celln = 1, numcells(lcheck)/2
            errtotal = errtotal + errors(sorted(celln))
            if (errtotal .ge. cutoff) then
-               levtol(lcheck) = errors(sorted(celln-1))
+               levtol(lcheck) = errors(sorted(celln))
                EXIT
            endif
        end do
