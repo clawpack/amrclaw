@@ -116,7 +116,7 @@ contains
        ! Setting our goal for the maximum amount of error
        ! for this level
        cutoff = tol*(dt/hx)/(tfinal-t0)
-       cutoff = cutoff/(mxnest - 1)
+       cutoff = cutoff/mxnest
 
        ! Sorting errors
        call qsortr(sorted, numcells(lcheck)/2, errors)

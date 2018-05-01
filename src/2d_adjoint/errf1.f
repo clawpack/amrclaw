@@ -59,7 +59,7 @@ c     Calculating correct tol for this level
 c     nxnest is the maximum number of refinement levels, from amr_module
 c     --------------------
       tol_exact = tol*dt/(tfinal-t0)
-      tol_exact = tol_exact/(mxnest - 1)
+      tol_exact = tol_exact/mxnest
       tol_exact = tol_exact/(numcells(levm)*hx*hy)
 
       if (t0+possk(levm) .eq. time) levtol(levm) = tol_exact
