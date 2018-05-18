@@ -37,9 +37,7 @@ contains
         character(len=*), parameter :: adjointfile = 'adjoint.data'
         character(len=400) :: adjoint_output
         logical :: fileExists
-        integer :: iunit, k, r
-        integer :: fileStatus = 0
-        real(kind=8) :: finalT
+        integer :: iunit, k
         real(kind=8) :: t1,t2
 
         ! Read adjoint specific information
@@ -108,9 +106,9 @@ contains
 
         ! Function Arguments
         integer, intent(in) :: lcheck
-        real(kind=8) :: errtotal, cutoff, sorted(numcells(lcheck)/2)
+        real(kind=8) :: errtotal, cutoff
         real(kind=8) :: dt,hx,hy
-        integer :: celln
+        integer :: celln, sorted(numcells(lcheck)/2)
 
         levtol(lcheck) = NEEDS_TO_BE_SET
 
