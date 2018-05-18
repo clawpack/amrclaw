@@ -35,10 +35,11 @@ C                                 CENTER FOR ACADEMIC COMPUTING
 C                                 THE PENNSYLVANIA STATE UNIVERSITY
 C                                 UNIVERSITY PARK, PA.  16802
 C
-      IMPLICIT real(kind=8) (A-Z)
+      IMPLICIT none
 C
-      integer :: N,I,P,Q,IX,IZ,NDEEP,ORD(N)
-      real(kind=8) :: POPLST(2,20), A(N)
+      integer :: N, ORD(N),NDEEP
+      integer :: P,Q,I,L,U,L1,U1,YP,IX,IZ,IP,IQ,POPLST(2,20)
+      real(kind=8) :: A(N)
       real(kind=8) :: X,XX,Z,ZZ,Y
 C
 C

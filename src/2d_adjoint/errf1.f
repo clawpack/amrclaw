@@ -154,7 +154,7 @@ c         ! Consider only snapshots that are within the desired time range
 c             set innerproduct for fine grid
               aux_temp(
      .              nghost+1:mi2tot-nghost, nghost+1:mj2tot-nghost) =
-     .              calculate_innerproduct(time,err_crse,k,nx/2,
+     .              calculate_innerproduct(err_crse,k,nx/2,
      .              ny/2,xleft,ybot,hx*2,hy*2,nvar,mbc)
 
               do 22  i  = nghost+1, mi2tot-nghost
