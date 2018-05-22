@@ -37,11 +37,10 @@
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
-                            tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
+                        tolsp,q,aux,amrflags,DONTFLAG,DOFLAG,mask_selecta)
 
     use innerprod_module, only: calculate_innerproduct
     use adjoint_module, only: totnum_adjoints, innerprod_index
-    use adjoint_module, only: adjoints, trange_start, trange_final
     use regions_module
 
     implicit none
@@ -61,39 +60,14 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
 
     logical :: allowflag
     external allowflag
+    logical mask_selecta(totnum_adjoints)
 
     ! Locals
     integer :: i, r
-    logical :: mask_selecta(totnum_adjoints)
 
     ! Initialize flags
     amrflags = DONTFLAG
     aux(innerprod_index,:) = 0.0
-    mask_selecta = .false.
-
-    ! Loop over adjoint snapshots
-    do r=1,totnum_adjoints
-        if ((t+adjoints(r)%time) >= trange_start .and. &
-            (t+adjoints(r)%time) <= trange_final) then
-            mask_selecta(r) = .true.
-        endif
-    enddo
-
-    do r=1,totnum_adjoints-1
-        if((.not. mask_selecta(r)) .and. &
-          (mask_selecta(r+1))) then
-            mask_selecta(r) = .true.
-            exit
-        endif
-    enddo
-
-    do r=totnum_adjoints,2,-1
-        if((.not. mask_selecta(r)) .and. &
-          (mask_selecta(r-1))) then
-            mask_selecta(r) = .true.
-            exit
-        endif
-    enddo
 
     aloop: do r=1,totnum_adjoints
 
