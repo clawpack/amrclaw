@@ -50,7 +50,6 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     
     real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
     real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
-    real(kind=8) :: aux_temp(1:mx,1:my)
 
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
@@ -74,18 +73,8 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
         ! Consider only snapshots that are within the desired time range
         if (mask_selecta(r)) then
             ! Calculate inner product with current snapshot
-            aux_temp(:,:) = &
-                calculate_innerproduct(q,r,mx,my,xlower,ylower,dx,dy,meqn,mbc)
-
-            ! Save max inner product
-            do i=1,mx
-                do j = 1,my
-                    aux(innerprod_index,i,j) = &
-                        max(aux(innerprod_index,i,j), &
-                        aux_temp(i,j))
-                enddo
-            enddo
-
+            call calculate_innerproduct(q,r,mx,my,xlower,ylower,dx, &
+                    dy,meqn,mbc,aux(innerprod_index,1:mx,1:my))
         endif
 
     enddo aloop

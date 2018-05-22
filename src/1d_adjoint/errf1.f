@@ -17,7 +17,6 @@ c
       dimension  rctcrse(nvar,mi2tot)
       dimension  rctflg(mibuff)
       dimension  aux_crse(mi2tot)
-      dimension  aux_temp(mi2tot)
       dimension  err_crse(nvar,mi2tot)
       dimension  auxfine(naux,mitot)
       logical mask_selecta(totnum_adjoints)
@@ -48,7 +47,6 @@ c
       err_crse = 0.0d0
       auxfine(innerprod_index,:) = 0.0d0
       aux_crse = 0.0d0
-      aux_temp = 0.0d0
 
 c     order  = dt*dble(2**(iorder+1) - 2)
       order  = dble(2**(iorder+1) - 2)
@@ -106,25 +104,23 @@ c         ! Consider only snapshots that are within the desired time range
           if (mask_selecta(k)) then
 
 c             set innerproduct
-              aux_temp =
-     .              calculate_innerproduct(time,err_crse,k,nx/2,
-     .              xleft,hx*2,nvar,mbc)
+              call calculate_innerproduct(time,err_crse,k,nx/2,
+     .              xleft,hx*2,nvar,mbc,aux_crse)
+          endif
+ 12   continue
 
-              do 22  i  = nghost+1, mi2tot-nghost
-                  aux_crse(i) = max(aux_crse(i),aux_temp(i))
-                  errors(eptr(jg)+i-nghost) = aux_crse(i)
+      do 22  i  = nghost+1, mi2tot-nghost
+          errors(eptr(jg)+i-nghost) = aux_crse(i)
 
-                 rctcrse(1,i)  = goodpt
-                 if (aux_crse(i) .ge. levtol(levm)) then
+          rctcrse(1,i)  = goodpt
+          if (aux_crse(i) .ge. levtol(levm)) then
 c                    ## never set rctflg to good, since flag2refine may
 c                    ## have previously set it to bad
 c                    ## can only add bad pts in this routine
-                     rctcrse(1,i)  = badpt
-                 endif
-
- 22           continue
+              rctcrse(1,i)  = badpt
           endif
- 12   continue
+
+ 22   continue
 
 c
 c  print out intermediate flagged rctcrse (for debugging)

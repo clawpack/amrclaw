@@ -16,7 +16,6 @@ c
       dimension  rctflg(mibuff,mjbuff)
 
       dimension  aux_crse(mi2tot,mj2tot)
-      dimension  aux_temp(mi2tot,mj2tot)
       dimension  err_crse(nvar,mi2tot,mj2tot)
       logical mask_selecta(totnum_adjoints)
       dimension  auxfine(naux,mitot,mjtot)
@@ -47,7 +46,6 @@ c
       err2   = 0.0d0
       auxfine(innerprod_index,:,:) = 0.0d0
       aux_crse = 0.0d0
-      aux_temp = 0.0d0
 
 c     order  = dt*dble(2**(iorder+1) - 2)
       order  = dble(2**(iorder+1) - 2)
@@ -115,33 +113,30 @@ c         retaining directionality of the wave
       do 12 k = 1,totnum_adjoints
 c         ! Consider only snapshots that are within the desired time range
           if (mask_selecta(k)) then
+c             set innerproduct
+              call calculate_innerproduct(err_crse,k,nx/2,
+     .              ny/2,xleft,ybot,hx*2,hy*2,nvar,mbc,
+     .              aux_crse(nghost+1:mi2tot-nghost,
+     .                         nghost+1:mj2tot-nghost))
+          endif
+ 12   continue
 
-c             set innerproduct for fine grid
-              aux_temp(
-     .              nghost+1:mi2tot-nghost, nghost+1:mj2tot-nghost) =
-     .              calculate_innerproduct(err_crse,k,nx/2,
-     .              ny/2,xleft,ybot,hx*2,hy*2,nvar,mbc)
+      do 22  i  = nghost+1, mi2tot-nghost
+        do 32  j = nghost+1, mj2tot-nghost
+          i_val = i-nghost
+          j_val = j-nghost
+          errors(eptr(jg)+(i_val-1)*ny/2+j_val) = aux_crse(i,j)
 
-              do 22  i  = nghost+1, mi2tot-nghost
-                do 32  j = nghost+1, mj2tot-nghost
-                  aux_crse(i,j) = max(aux_crse(i,j),aux_temp(i,j))
-
-                  i_val = i-nghost
-                  j_val = j-nghost
-                  errors(eptr(jg)+(i_val-1)*ny/2+j_val) = aux_crse(i,j)
-
-                  rctcrse(1,i,j)  = goodpt
-                  if (aux_crse(i,j) .ge. levtol(levm)) then
+          rctcrse(1,i,j)  = goodpt
+          if (aux_crse(i,j) .ge. levtol(levm)) then
 c                    ## never set rctflg to good, since flag2refine may
 c                    ## have previously set it to bad
 c                    ## can only add bad pts in this routine
-                      rctcrse(1,i,j)  = badpt
-                  endif
-
- 32             continue
- 22           continue
+              rctcrse(1,i,j)  = badpt
           endif
- 12   continue
+
+32      continue
+22    continue
 c
 c  print out intermediate flagged rctcrse (for debugging)
 c
