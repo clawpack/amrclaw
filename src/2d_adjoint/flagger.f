@@ -31,17 +31,22 @@ c
       subroutine flagger(nvar,naux,lcheck,start_time)
 
       use amr_module
-      use adjoint_module, only: calculate_tol, eptr, errors
+      use adjoint_module,only:calculate_tol,eptr,errors,totnum_adjoints
+      use adjoint_module,only:adjoints, trange_start, trange_final
       implicit double precision (a-h,o-z)
 
       integer omp_get_thread_num, omp_get_max_threads
       integer mythread/0/, maxthreads/1/
-      integer listgrids(numgrids(lcheck)), locuse
+      integer listgrids(numgrids(lcheck)), locuse, r
+
+      logical :: mask_selecta(totnum_adjoints), adjoints_found
 
 c      call prepgrids(listgrids,numgrids(lcheck),lcheck)
       mbuff = max(nghost,ibuff+1)  
 c before parallel loop give grids the extra storage they need for error estimation
 
+c        allocating space for tracking error estimates
+c        (used at next regridding time to determine tolerance)
          if (flag_richardson) then
              allocate(errors(numcells(lcheck)/2))
              allocate(eptr(numgrids(lcheck)))
@@ -76,11 +81,13 @@ c            mptr = listgrids(jg)
 !$OMP PARALLEL DO PRIVATE(jg,mptr,nx,ny,mitot,mjtot,locnew,locaux),
 !$OMP&            PRIVATE(time,dx,dy,xleft,ybot,xlow,ylow,locbig),
 !$OMP&            PRIVATE(locold,mbuff,mibuff,mjbuff,locamrflags,i),
-!$OMP&            PRIVATE(locuse),
+!$OMP&            PRIVATE(locuse,mask_selecta,adjoints_found,r),
 !$OMP&            SHARED(numgrids,listgrids,lcheck,nghost,nvar,naux),
 !$OMP&            SHARED(levSt,listStart,listOfGrids),
 !$OMP&            SHARED(tolsp,alloc,node,rnode,hxposs,hyposs,ibuff),
-!$OMP&            SHARED(start_time,possk,flag_gradient,flag_richardson)
+!$OMP&            SHARED(start_time,possk,flag_gradient,flag_richardson),
+!$OMP&            SHARED(adjoints,totnum_adjoints),
+!$OMP&            SHARED(trange_start,trange_final)
 !$OMP&            DEFAULT(none),
 !$OMP&            SCHEDULE(DYNAMIC,1)
        do  jg = 1, numgrids(lcheck)
@@ -139,6 +146,41 @@ c            them in locnew
                 do 20 i = 1, mibuff*mjbuff  ! initialize
  20                alloc(locamrflags+i-1) = goodpt
 
+c       Pick adjoint snapshots to consider when flagging
+         mask_selecta = .false.
+         adjoints_found = .false.
+
+         do r=1,totnum_adjoints
+           if ((time+adjoints(r)%time) >= trange_start .and.
+     .        (time+adjoints(r)%time) <= trange_final) then
+               mask_selecta(r) = .true.
+               adjoints_found = .true.
+           endif
+         enddo
+
+         if(.not. adjoints_found) then
+             write(*,*) "Error: no adjoint snapshots ",
+     .        "found in time range."
+             write(*,*) "Consider increasing time rage of interest, ",
+     .        "or adding more snapshots."
+         endif
+
+         do r=1,totnum_adjoints-1
+           if((.not. mask_selecta(r)) .and.
+     .        (mask_selecta(r+1))) then
+               mask_selecta(r) = .true.
+               exit
+           endif
+         enddo
+
+         do r=totnum_adjoints,2,-1
+           if((.not. mask_selecta(r)) .and.
+     .        (mask_selecta(r-1))) then
+               mask_selecta(r) = .true.
+               exit
+           endif
+         enddo
+
          if (flag_gradient) then
 
 c     # call user-supplied routine to flag any points where 
@@ -150,11 +192,12 @@ c no longer getting locbig, using "real" solution array in locnew
      &                        xleft,ybot,dx,dy,time,lcheck,
      &                        tolsp,alloc(locuse),
      &                        alloc(locaux),alloc(locamrflags),
-     &                        goodpt,badpt)
+     &                        goodpt,badpt,mask_selecta)
              endif     
 c     
          if (flag_richardson) then
-              call errest(nvar,naux,lcheck,mptr,nx,ny,jg)
+              call errest(nvar,naux,lcheck,mptr,nx,ny,jg,
+     &                        mask_selecta)
          endif
 
        end do

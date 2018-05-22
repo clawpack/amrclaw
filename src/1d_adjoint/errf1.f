@@ -3,12 +3,12 @@ c --------------------------------------------------------------
 c
       subroutine errf1(rctfine,nvar,rctcrse,mptr,mi2tot,
      2                 mitot,rctflg,mibuff,auxfine,
-     2                 naux,nx,mbc,jg)
+     2                 naux,nx,mbc,jg,mask_selecta)
 
       use amr_module
       use innerprod_module, only : calculate_innerproduct
       use adjoint_module, only: innerprod_index,
-     .        totnum_adjoints, adjoints, trange_start, trange_final,
+     .        totnum_adjoints,
      .        levtol, eptr, errors
       implicit double precision (a-h,o-z)
 
@@ -19,8 +19,8 @@ c
       dimension  aux_crse(mi2tot)
       dimension  aux_temp(mi2tot)
       dimension  err_crse(nvar,mi2tot)
-      logical mask_selecta(totnum_adjoints), adjoints_found
       dimension  auxfine(naux,mitot)
+      logical mask_selecta(totnum_adjoints)
 
 c
 c
@@ -46,9 +46,7 @@ c
       errmax = 0.0d0
       err2   = 0.0d0
       err_crse = 0.0d0
-c      auxfine(innerprod_index,:) = 0.0d0
-      mask_selecta = .false.
-      adjoints_found = .false.
+      auxfine(innerprod_index,:) = 0.0d0
       aux_crse = 0.0d0
       aux_temp = 0.0d0
 
@@ -102,38 +100,6 @@ c             retaining directionality of the wave
 
         ifine = ifine + 2
  30   continue
-
-c     Loop over adjoint snapshots
-      do k=1,totnum_adjoints
-          if ((time+adjoints(k)%time) >= trange_start .and.
-     .        (time+adjoints(k)%time) <= trange_final) then
-              mask_selecta(k) = .true.
-              adjoints_found = .true.
-          endif
-      enddo
-
-      if(.not. adjoints_found) then
-          write(*,*) "Error: no adjoint snapshots ",
-     .        "found in time range."
-          write(*,*) "Consider increasing time rage of interest, ",
-     .        "or adding more snapshots."
-      endif
-
-      do k=1,totnum_adjoints-1
-          if((.not. mask_selecta(k)) .and.
-     .        (mask_selecta(k+1))) then
-              mask_selecta(k) = .true.
-              exit
-          endif
-      enddo
-
-      do k=totnum_adjoints,2,-1
-          if((.not. mask_selecta(k)) .and.
-     .        (mask_selecta(k-1))) then
-              mask_selecta(k) = .true.
-              exit
-          endif
-      enddo
 
       do 12 k = 1,totnum_adjoints
 c         ! Consider only snapshots that are within the desired time range
