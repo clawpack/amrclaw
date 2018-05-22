@@ -2,7 +2,7 @@ module innerprod_module
 
 contains
 
-    function calculate_innerproduct(t,q,r,mx_f,xlower_f,dx_f,meqn_f,mbc_f) result(innerprod)
+    subroutine calculate_innerproduct(t,q,r,mx_f,xlower_f,dx_f,meqn_f,mbc_f,innerprod)
 
         use adjoint_module
 
@@ -16,7 +16,7 @@ contains
         integer :: i, i1, i2, level, loc, z
         real(kind=8) :: dx_a, xlower_a, xupper_a, xupper_f, x1, x2
 
-        real(kind=8) :: innerprod(1-mbc_f:mx_f+mbc_f)
+        real(kind=8), intent(inout) :: innerprod(1-mbc_f:mx_f+mbc_f)
         real(kind=8) :: q_innerprod(1-mbc_f:mx_f+mbc_f)
         logical :: mask_forward(1-mbc_f:mx_f+mbc_f)
         real(kind=8) :: q_interp(adjoints(r)%meqn,1-mbc_f:mx_f+mbc_f)
@@ -25,7 +25,6 @@ contains
 
 
         xupper_f = xlower_f + mx_f*dx_f
-        innerprod = 0.0
 
         ! Loop over patches in adjoint solution
         do z = 1, adjoints(r)%ngrids
@@ -95,6 +94,6 @@ contains
             endif
         enddo
 
-    end function calculate_innerproduct
+    end subroutine calculate_innerproduct
 
 end module innerprod_module
