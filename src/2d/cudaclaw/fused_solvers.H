@@ -2,12 +2,12 @@
 #define __FUSED_SOLVERS_H__
 
 
-#include "common.h"
-#include "real.h"
-#include "params.h"
-#include "fused_solvers_headers.h"
-#include "cuda_helper.h"
-#include "reduce_Max.h"
+#include "common.H"
+#include "real.H"
+#include "params.H"
+#include "fused_solvers_headers.H"
+#include "cuda_helper.H"
+#include "reduce_Max.H"
 #include <cmath>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>

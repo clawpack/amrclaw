@@ -1,9 +1,9 @@
 #ifndef __PARAMS_H__
 #define __PARAMS_H__
 
-#include "real.h"
+#include "real.H"
 #include <stdio.h>
-#include "error.h"
+#include "error.H"
 
 #include <string>
 #include <cstring>

@@ -2,10 +2,10 @@
 #define __FUSED_RIEMANN_LIMITER_HEADERS_H__
 
 #define EPSILON (real)0.00000001f	// flying constant, however this is our epsilon
-#include "real.h"
-#include "common.h"
+#include "real.H"
+#include "common.H"
 #include <cmath>
-#include "assert.h"
+#include <cassert>
 
 using std::sqrt;
 
