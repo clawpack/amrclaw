@@ -2,6 +2,9 @@
 module cuda_module
 
     use cudafor, only: cuda_stream_kind, cudaEvent, dim3
+    use cudafor, only: cudaDeviceSetSharedMemConfig, &
+        cudaSharedMemBankSizeFourByte, &
+        cudaSharedMemBankSizeEightByte
     use amr_module, only: inunit, maxgr, &
         fflux_hh, fflux_hd, fflux_dd, &
         cflux_hh, cflux_hd, cflux_dd
@@ -103,6 +106,12 @@ contains
 
         cudaResult = cudaSetDevice(device_id)
         call check_cuda_error(cudaResult)
+        if (CLAW_REAL .eq. 8) then
+            cudaResult = cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte)
+        else 
+            cudaResult = cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeFourByte)
+        endif
+
         print *, 'Use the GPU with id: ',device_id
 
         ! Initialize memory pool
