@@ -1,6 +1,33 @@
 module parallel_advanc_module
     real(CLAW_REAL) :: dtcom,dxcom,dycom,tcom
     integer :: icom,jcom
+    interface
+#ifdef CUDA
+        ! TODO: this only works for float64 for now
+        subroutine stepgrid_cudaclaw(cellsX, cellsY, ghostCells, &
+            startX, endX, startY, endY, &
+            qNew, q, &
+            wavesX, wavesY, waveSpeedsX, waveSpeedsY, coefficients, &
+            max_u, max_v) &
+            bind(C,NAME='call_C_limited_riemann_update')
+
+            use iso_c_binding
+            integer(kind=c_int), value, intent(in) :: cellsX, cellsY, ghostCells
+            real(kind=c_double), value, intent(in) :: startX, endX, startY, endY
+
+            real(kind=c_double), device :: q(cellsX,cellsY,numStates)
+            real(kind=c_double), device :: qNew(cellsX,cellsY,numStates)
+            real(kind=c_double), device :: coefficients(cellsX,cellsY,numStates)
+
+            real(kind=c_double), device :: wavesX(cellsX-1,cellsY-2,numStates,numWaves)
+            real(kind=c_double), device :: wavesY(cellsX-2,cellsY-1,numStates,numWaves)
+            real(kind=c_double), device :: waveSpeedsX(cellsX-1,cellsY-2,numWaves)
+            real(kind=c_double), device :: waveSpeedsY(cellsX-2,cellsY-1,numWaves)
+            real(kind=c_double) :: max_u,max_v
+
+        end subroutine stepgrid_cudaclaw
+#endif
+    end interface
 contains
 !  :::::::::::::: PAR_ADVANC :::::::::::::::::::::::::::::::::::::::::::
 !  integrate this grid. grids are done in parallel.
@@ -693,5 +720,6 @@ contains
 
         return
     end subroutine stepgrid_dimsplit_soa
+
 #endif
 end module parallel_advanc_module

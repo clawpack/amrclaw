@@ -105,6 +105,7 @@ inline __device__ void setSharedSpeed(real* sharedData, int row, int col, int wa
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct acoustics_homo_2d_horizontal
 {
+        // u_left and u_right are empty and not used here
 	__device__ void operator() (real* q_left, real* q_right, real* u_left, real* u_right,			// input
 								int row, int col, int numStates, int numWaves,
 								real* wave, real* waveSpeeds)										// output
@@ -159,6 +160,31 @@ struct acoustics_horizontal
 		setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha2*z_r);
 		setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, alpha2);
 		setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, 0.0f);
+	}
+};
+struct acoustics_homo_2d_vertical
+{
+	__device__ void operator() (real* q_left, real* q_right, real* u_left, real* u_right,			// input
+								int row, int col, int numStates, int numWaves,
+								real* wave, real* waveSpeeds)										// output
+	{
+                assert(NUMCOEFF == 0); // this is the case for homogeneous acoustics
+		real c = sqrt(BULK/RHO);
+		real z = c*RHO;
+
+		setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, -c);
+		setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x,  c);
+		
+		real alpha1 = ( q_left[0] - q_right[0] + z*(q_right[2] - q_left[2])) / (2*z);	// ( -(pr-pl) + zr(vr-vl) )/ (zl+zr)
+		real alpha2 = ( q_right[0] - q_left[0] + z*(q_right[2] - q_left[2])) / (2*z);	// (  (pr-pl) + zl(vr-vl) )/ (zl+zr)
+		
+		setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, -alpha1*z);
+		setSharedWave(wave, row, col, 0, 1, numWaves, numStates, blockDim.y, blockDim.x, 0.0f);
+		setSharedWave(wave, row, col, 0, 2, numWaves, numStates, blockDim.y, blockDim.x, alpha1);
+		
+		setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha2*z);
+		setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, 0.0f);
+		setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, alpha2);
 	}
 };
 struct acoustics_vertical

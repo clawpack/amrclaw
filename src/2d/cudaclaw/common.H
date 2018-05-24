@@ -20,7 +20,7 @@
 // These are for 2d homogeneous acoustics
 #define NUMSTATES 3
 #define NUMWAVES 2
-#define NUMCOEFF 1
+#define NUMCOEFF 0
 #define BULK 4.0
 #define RHO 1.0
 

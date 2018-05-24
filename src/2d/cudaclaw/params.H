@@ -35,7 +35,6 @@ class pdeParam
         // real CFL_lower_bound;	// lower bound on the CFL to be used
 
         real dt;			// time step to be used in the computation
-        real dt_used;		// time step used in the ccompleted computation (without reverting), used to increment global simulation time
 
         real* coefficients;		// physical medium coefficients
 
@@ -46,17 +45,20 @@ class pdeParam
         real* wavesX;		// horizontal waves
         real* wavesY;		// vertical waves
 
-        // after calling reduceMax_simplified, waveSpeedsX[0] has the maximum u velocity on this grid,
+        // after calling reduceMax_simplified, waveSpeedsX[0] has the maximum u velocity on this grid, and
         // waveSpeedsY[0] has the maximum v velocity on this grid.
         real* waveSpeedsX;		// speed of horizontal waves
         real* waveSpeedsY;		// speed of vertical waves
 
         pdeParam(int cellsX, int cellsY, int ghostCells, int numStates, int numWaves, int numCoeff,
                 real startX, real endX, real startY, real endY,
-                real* q_, real* qNew_, real* wavesX_, real* wavesY_, real* waveSpeedsX_, real* waveSpeedsY_):
+                real* q_, real* qNew_, 
+                real* wavesX_, real* wavesY_, real* waveSpeedsX_, real* waveSpeedsY_,
+                real* coefficients_):
                 cellsX(cellsX), cellsY(cellsY), ghostCells(ghostCells), numStates(numStates), numWaves(numWaves), numCoeff(numCoeff),
                 startX(startX), endX(endX), startY(startY), endY(endY),
-                q(q_), qNew(qNew_), wavesX(wavesX_), wavesY(wavesY_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_)
+                q(q_), qNew(qNew_), wavesX(wavesX_), wavesY(wavesY_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_),
+                coefficients(coefficients_)
         {
 
             width = endX-startX;
@@ -67,10 +69,8 @@ class pdeParam
             second_order = true;
 
             desired_CFL = 0.90f;
-            // CFL_lower_bound = 0.9f;
+            dt = 0.001;
 
-            // real dt_cpu = 0.0f;//10.0f;
-            // real dt_used_cpu = 0.0f;
         }
 
         void setOrderOfAccuracy(int order)
