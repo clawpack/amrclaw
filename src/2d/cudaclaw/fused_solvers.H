@@ -113,6 +113,11 @@ inline __device__ void second_order_update_vertical(pdeParam &param, real* waves
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
 inline __device__ void first_second_order_update_horizontal(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, int row, int col, real dt, Limiter phi)
 {
+        // TODO: I need to check whether thiss is optimum
+        real F_tilde[numStates];
+        for (int k = 0; k < numStates; k++){
+            F_tilde[k] = (real)0.0;
+        }
 	#pragma unroll
 	for (int w = 0; w < numWaves; w++)
 	{
@@ -126,9 +131,8 @@ inline __device__ void first_second_order_update_horizontal(pdeParam &param, rea
 			for (int k = 0; k < numStates; k++)
 			{
 				real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
-				amdq[k] +=	waveSpeed * wave_state
-						+
-							-(real)0.5f*waveSpeed*(1+(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
+				amdq[k] += waveSpeed * wave_state;
+                                F_tilde[k] += -(real)0.5f*waveSpeed*(1+(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
 			}
 		}
 		else
@@ -139,16 +143,24 @@ inline __device__ void first_second_order_update_horizontal(pdeParam &param, rea
 			for (int k = 0; k < numStates; k++)
 			{
 				real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
-				apdq[k] +=	waveSpeed * wave_state
-						-
-							(real)0.5f*waveSpeed*(1-(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
+				apdq[k] += waveSpeed * wave_state;
+                                F_tilde[k] += (real)0.5f*waveSpeed*(1-(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
 			}
 		}
 	}
+        #pragma unroll
+        for (int k = 0; k < numStates; k++) {
+            amdq[k] += F_tilde[k];
+            apdq[k] -= F_tilde[k];
+        }
 }
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
 inline __device__ void first_second_order_update_vertical(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, int row, int col, real dt, Limiter phi)
 {
+        real F_tilde[numStates];
+        for (int k = 0; k < numStates; k++){
+            F_tilde[k] = (real)0.0;
+        }
 	#pragma unroll
 	for (int w = 0; w < numWaves; w++)
 	{
@@ -161,9 +173,8 @@ inline __device__ void first_second_order_update_vertical(pdeParam &param, real*
 			for (int k = 0; k < numStates; k++)
 			{
 				real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
-				amdq[k] +=	waveSpeed * wave_state
-						+
-							-(real)0.5f*waveSpeed*(1+(dt/param.dy)*waveSpeed)*limiting_factor*wave_state;
+                                F_tilde[k] += -(real)0.5f*waveSpeed*(1+(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
+				amdq[k] += waveSpeed * wave_state;
 			}
 		}
 		else
@@ -173,12 +184,17 @@ inline __device__ void first_second_order_update_vertical(pdeParam &param, real*
 			for (int k = 0; k < numStates; k++)
 			{
 				real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
-				apdq[k] +=	waveSpeed * wave_state
-						-
-							(real)0.5f*waveSpeed*(1-(dt/param.dy)*waveSpeed)*limiting_factor*wave_state;
+                                F_tilde[k] += (real)0.5f*waveSpeed*(1-(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
+				apdq[k] += waveSpeed * wave_state;
 			}
 		}
 	}
+
+	#pragma unroll
+        for (int k = 0; k < numStates; k++) {
+            amdq[k] += F_tilde[k];
+            apdq[k] -= F_tilde[k];
+        }
 }
 
 template <const int numStates, const int numWaves, const int numCoeff, const unsigned int blockSize, class Riemann, class Limiter>
@@ -441,7 +457,6 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
 	// Local Reduce over Wave Speeds
 	// Stage 1
 	// Bringing down the number of elements to compare to block size
-        // TODO: stopped here
 	int tid = threadIdx.x + threadIdx.y*HORIZONTAL_K_BLOCKSIZEX;
 	waveSpeedsX[tid] = fabs(waveSpeedsX[tid]);
 	#pragma unroll
@@ -580,6 +595,7 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
 #pragma unroll
         for (int k = 0; k < numStates; k++)
         {
+            // TODO: should be 0.0 for all cases like this
             amdq[k] = 0;
             apdq[k] = 0;
         }
@@ -902,11 +918,12 @@ extern "C" void call_C_limited_riemann_update(
         q, qNew, 
         wavesX, wavesY, waveSpeedsX, waveSpeedsY, coefficients); 
 
-    param.setOrderOfAccuracy(1);
+    // param.setOrderOfAccuracy(1);
+    param.setOrderOfAccuracy(2);
 
     acoustics_homo_2d_horizontal acoustic_h;
     acoustics_homo_2d_vertical acoustic_v;
-    limiter_MC phi;
+    limiter_VanLeer phi;
 
     limited_Riemann_Update(param, 
             acoustic_h, acoustic_v, 
