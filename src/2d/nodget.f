@@ -11,6 +11,8 @@ c
 c
       use amr_module
       implicit double precision (a-h,o-z)
+      !integer maxgrIncrement/50000/
+      integer maxgrIncrement/50/
 
 c
 c ::::::::::::::::: NODGET ::::::::::::::::::::::::::::::::::::;
@@ -28,7 +30,16 @@ c
           end do
           write(*,*)" Could need twice as many grids as on any given"
           write(*,*)" level if regridding/birecting"
-          stop
+!          stop
+!         new way gets more storage and continues
+          istatus = 1
+          call resize_nodes(maxgr + maxgrIncrement, istatus)
+          if (istatus > 0) then
+             write(*,102) maxgr,maxgrIncrement
+102          format(' unable to increase nodal space by ',i8,' grids',/,
+     .              'resize failed')
+             stop
+          endif
 c
 c  update pointers
 c
