@@ -88,7 +88,8 @@ contains
 
     subroutine set_gauges(restart, num_eqn, num_aux, fname)
 
-        use amr_module, only: maxgr
+        !!use amr_module, only: maxgr
+        use amr_module, only: maxgr2
         use utility_module, only: get_value_count
 
         implicit none
@@ -119,7 +120,8 @@ contains
             
             ! Initialize gauge source data
             allocate(mbestsrc(num_gauges), mbestorder(num_gauges))
-            allocate(mbestg1(maxgr), mbestg2(maxgr))
+            !allocate(mbestg1(maxgr), mbestg2(maxgr))
+            allocate(mbestg1(maxgr2), mbestg2(maxgr2))
             mbestsrc = 0
             
             ! Original gauge information
