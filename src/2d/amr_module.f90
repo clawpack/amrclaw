@@ -188,8 +188,10 @@ module amr_module
     ! note use of sentinel in listStart
     !integer :: listOfGrids(maxgr2),listStart(0:maxlv+1)
     integer :: listStart(0:maxlv+1)
-    integer,parameter :: bndListSize = 8*maxgr2
-    integer :: bndList(bndListSize,2)  ! guess size, average # nbors 4? manage as linked list
+    !integer,parameter :: bndListSize = 8*maxgr2 ! old way
+    !integer :: bndList(bndListSize,2)  ! guess size, average # nbors 4? manage as linked list
+    integer :: bndListSize
+    integer,allocatable, dimension(:,:) :: bndList  ! new way is allocatable 
 
     !real(kind=8) hxposs(maxlv), hyposs(maxlv),possk(maxlv),rnode(rsize, maxgr) 
     real(kind=8) hxposs(maxlv), hyposs(maxlv),possk(maxlv)
