@@ -41,7 +41,7 @@ subroutine resize_nodes(new_size,status)
     call move_alloc(new_node,node)
 
     !! need to rethread new space to be able to use it when new grids requested
-    do i = maxgr, new_size
+    do i = maxgr+1, new_size
        node(nextfree,i) = i+1
     end do
     ! reset last one to null
@@ -57,8 +57,8 @@ subroutine resize_nodes(new_size,status)
     call move_alloc(new_listOfGrids,listOfGrids)
 
     ! reset maxgr and next free node,  to continue
-    maxgr = new_size
     ndfree = maxgr + 1     
+    maxgr = new_size
     
     return
     
