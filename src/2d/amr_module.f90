@@ -187,7 +187,8 @@ module amr_module
 
 
     ! note use of sentinel in listStart
-    integer :: listOfGrids(maxgr2),listStart(0:maxlv+1)
+    !integer :: listOfGrids(maxgr2),listStart(0:maxlv+1)
+    integer :: listStart(0:maxlv+1)
     integer,parameter :: bndListSize = 8*maxgr2
     integer :: bndList(bndListSize,2)  ! guess size, average # nbors 4? manage as linked list
 
@@ -198,6 +199,7 @@ module amr_module
     integer   maxgr 
     real(kind=8), allocatable, dimension(:,:) :: rnode    ! new way, use allocatable, not pointer
     integer, allocatable, dimension(:,:) :: node
+    integer, allocatable, dimension(:) :: listOfGrids
 
 
     real(kind=8) tol, tolsp

@@ -15,18 +15,22 @@ subroutine init_nodes()
     
     maxgr = 50000   
     if (.not.allocated(rnode)) then      ! new way, use allocatable arrays, not pointers
-        write(*,*) "rsize ",rsize
         allocate(rnode(rsize,maxgr))
         print *, "rnode allocated..."
     else
         print *, "rnode already allocated!"
     endif
     if (.not.allocated(node)) then      ! new way, use allocatable arrays, not pointers
-        write(*,*) "nsize ", nsize
         allocate(node(nsize,maxgr))
         print *, "node allocated..."
     else
         print *, "rnode already allocated!"
+    endif
+    if (.not.allocated(listOfGrids)) then   ! include all vars whose size depends on maxgr
+        allocate(listOfGrids(maxgr))
+        print *, "listOfGrids allocated..."
+    else
+        print *, "listOfGrids already allocated!"
     endif
     
     

@@ -18,6 +18,7 @@ subroutine resize_nodes(new_size,status)
     
     real(kind=8), allocatable, target, dimension(:,:) :: new_rnode
     integer, allocatable, target, dimension(:,:) :: new_node
+    integer, allocatable, target, dimension(:) :: new_listOfGrids
     
     print *, "Expanding maximum number of grids from ", maxgr," to ", new_size
 
@@ -46,6 +47,14 @@ subroutine resize_nodes(new_size,status)
     ! reset last one to null
     node(nextfree, new_size) = null
 
+    ! next for listOfGrids
+    allocate(new_listOfGrids(new_size),STAT=status)
+    if (status > 0) then
+        return
+    endif
+    new_listOfGrids(1:maxgr) = listOfGrids     ! new way, use allocatable, not pointer       
+
+    call move_alloc(new_listOfGrids,listOfGrids)
 
     ! reset maxgr and next free node,  to continue
     maxgr = new_size
