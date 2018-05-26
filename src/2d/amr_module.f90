@@ -170,8 +170,7 @@ module amr_module
     integer, parameter :: iinfinity = 999999999
     integer, parameter :: horizontal = 1
     integer, parameter :: vertical = 2
-    !integer, parameter :: maxgr2 = 50000   ! changed to variable so can increase at runtime
-    integer, parameter :: maxgr2 = 50   ! changed to variable so can increase at runtime
+    integer, parameter :: maxgr2 = 50000   ! changed to variable so can increase at runtime
     integer, parameter :: maxlv = 10
 
     !> maximum number of clusters (grids) on each grid level

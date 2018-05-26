@@ -49,7 +49,6 @@ c     this is linear alg.
 c     call prepgrids(listgrids,numgrids(level),level)
 c
 
-      write(*,*)"in advance pt 1 level =  ", level
       call system_clock(clock_startBound,clock_rate)
       call cpu_time(cpu_startBound)
 
@@ -95,7 +94,6 @@ c save coarse level values if there is a finer level for wave fixup
             call saveqc(level+1,nvar,naux)
          endif
       endif
-      write(*,*)"in advance pt 2 level =  ", level
 c
       dtlevnew = rinfinity
       cfl_level = 0.d0    !# to keep track of max cfl seen on each level
@@ -122,9 +120,7 @@ c
          mitot  = nx + 2*nghost
          mjtot  = ny + 2*nghost
 c
-      write(*,*)"in advance pt 3 level =  ", level
           call par_advanc(mptr,mitot,mjtot,nvar,naux,dtnew)
-      write(*,*)"in advance pt 4 level =  ", level
 !$OMP CRITICAL (newdt)
           dtlevnew = dmin1(dtlevnew,dtnew)
 !$OMP END CRITICAL (newdt)    

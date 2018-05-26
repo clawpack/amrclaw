@@ -41,16 +41,19 @@ c
              stop
           endif
 c
-c  update pointers
+c  allocate next node, update pointers
 c
  10     nodget         = ndfree
+        write(*,*)" nodget pt 1, ndfree = ", ndfree
         ndfree         = node(nextfree,ndfree)
+        write(*,*)" nodget pt 2"
 c
 c  initialize new  block
 c
         do 20 i        = 1, nsize
            node(i,nodget) = 0
  20     continue
+        write(*,*)" nodget pt 3"
 c
         do 30 i         = 1, rsize
            rnode(i,nodget) = 0.0d0
@@ -74,6 +77,8 @@ c
       if (ndfree_bnd .ne. null) go to 10
           write(outunit,100) bndListSize
           write(*,100)       bndListSize
+          write(*,*) "maxgr = ", maxgr
+          write(*,*) "maxgr2 = ", maxgr2
 100       format(' out of bndry space - allowed ',i5,' bndry grids')
           ! calc average number of bndry nbors per grid
           nborTotal = 0

@@ -13,7 +13,8 @@ subroutine init_nodes()
     use amr_module
     implicit none
     
-    maxgr = 50000   
+    !maxgr = 50000   
+    maxgr = 50   
     if (.not.allocated(rnode)) then      ! new way, use allocatable arrays, not pointers
         write(*,*) "rsize ",rsize
         allocate(rnode(rsize,maxgr))
