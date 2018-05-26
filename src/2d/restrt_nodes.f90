@@ -32,6 +32,14 @@ subroutine restrt_nodes(isize)
         print *, "node storage already allocated!"
     endif
 
+    if (.not.allocated(listOfGrids)) then     ! allocatable nodal arrays now 
+        write(6,*)"allocating ",maxgr," -sized listOfGrids "
+        allocate(listOfGrids(maxgr))
+        print *, "listOfGrids allocated of size ",maxgr," at restart"
+    else
+        print *, "listOfGrids already allocated!"
+    endif
+
 end subroutine restrt_nodes
 
 
