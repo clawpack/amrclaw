@@ -170,7 +170,7 @@ module amr_module
     integer, parameter :: iinfinity = 999999999
     integer, parameter :: horizontal = 1
     integer, parameter :: vertical = 2
-    integer, parameter :: maxgr = 50000
+    integer, parameter :: maxgr2 = 50000   ! changed to variable so can increase at runtime
     integer, parameter :: maxlv = 10
 
     !> maximum number of clusters (grids) on each grid level
@@ -186,16 +186,22 @@ module amr_module
 
 
     ! note use of sentinel in listStart
-    integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
-    integer,parameter :: bndListSize = 8*maxgr
+    integer :: listOfGrids(maxgr2),listStart(0:maxlv+1)
+    integer,parameter :: bndListSize = 8*maxgr2
     integer :: bndList(bndListSize,2)  ! guess size, average # nbors 4? manage as linked list
 
-    real(kind=8) hxposs(maxlv), hyposs(maxlv),possk(maxlv),rnode(rsize, maxgr) 
+    !real(kind=8) hxposs(maxlv), hyposs(maxlv),possk(maxlv),rnode(rsize, maxgr) 
+    real(kind=8) hxposs(maxlv), hyposs(maxlv),possk(maxlv)
 
+    ! start of dynamic allocation for maxgr and associated arrays
+    integer   maxgr 
+    real(kind=8), allocatable, dimension(:,:) :: rnode    ! new way, use allocatable, not pointer
+    integer, allocatable, dimension(:,:) :: node
 
 
     real(kind=8) tol, tolsp
-    integer ibuff,  mstart, ndfree, ndfree_bnd, lfine, node(nsize, maxgr), &
+    !integer ibuff,  mstart, ndfree, ndfree_bnd, lfine, node(nsize, maxgr), &
+    integer ibuff,  mstart, ndfree, ndfree_bnd, lfine,  &
             icheck(maxlv),lstart(maxlv),newstl(maxlv), &
             listsp(maxlv),intratx(maxlv),intraty(maxlv), &
             kratio(maxlv), iregsz(maxlv),jregsz(maxlv), &

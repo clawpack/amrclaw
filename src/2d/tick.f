@@ -237,6 +237,7 @@ c
  90       continue
 
 
+          write(*,*)"calling advanc from tick"
           call advanc(level,nvar,dtlevnew,vtime,naux)
 
 c         # rjl modified 6/17/05 to print out *after* advanc and print cfl

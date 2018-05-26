@@ -18,7 +18,13 @@ c this initial code sets the domain - assumed rectangular
 c if it is too large, birect will chop it up into several rectangular
 c pieces
 c
+      write(*,*)"maxgr = ", maxgr
+      write(*,*)"rsize = ", rsize
+      write(*,*)"mstart = ", mstart
+      write(*,*)"cornxlo = ",cornxlo
+      write(*,*)"point 1 in domain  "
       rnode(cornxlo,mstart)   = xlower
+      write(*,*)"point 2 in domain  "
       rnode(cornylo,mstart)   = ylower
       rnode(cornyhi,mstart)   = yupper
       rnode(cornxhi,mstart)   = xupper
