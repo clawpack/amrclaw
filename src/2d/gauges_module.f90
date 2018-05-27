@@ -120,6 +120,7 @@ contains
             allocate(gauges(num_gauges))
             
             ! Initialize gauge source data
+            allocate(mbestsrc(num_gauges))
             mbestsrc = 0
             
             ! Original gauge information
