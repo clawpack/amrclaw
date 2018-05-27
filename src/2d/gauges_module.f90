@@ -274,6 +274,7 @@ contains
 ! # for debugging, initialize sources to 0 then check that all set
         mbestsrc = 0
 
+        if (.false.) then
         do lev = 1, lfine  
             mptr = lstart(lev)
             do
@@ -295,6 +296,36 @@ contains
           if (mbestsrc(i) .eq. 0) &
               print *, "ERROR in setting grid src for gauge data", i
         end do
+
+        else  !! reorder loop for better performance with O(10^5) grids
+        !! for each gauge find best source grid for its data
+        do 40 i = 1, num_gauges
+
+           do 30 lev = lfine, 1, -1
+              mptr = lstart(lev)
+ 20              if ((gauges(i)%x >= rnode(cornxlo,mptr)) .and. &
+                      (gauges(i)%x <= rnode(cornxhi,mptr)) .and. &  
+                      (gauges(i)%y >= rnode(cornylo,mptr)) .and. &
+                      (gauges(i)%y <= rnode(cornyhi,mptr)) ) then
+                      mbestsrc(i) = mptr
+                      !! best source found for this gauge, go to next one
+                      !! we know its the best because we started at finest level
+                      go to 40  ! on to next gauge 
+                 else 
+                    mptr = node(levelptr,mptr)
+                    if (mptr .ne. 0) then
+                       go to 20  ! try another grid
+                    else
+                       go to 30  ! try next coarser level grids
+                    endif
+                 end if
+ 30        continue 
+
+          if (mbestsrc(i) .eq. 0) &
+              print *, "ERROR in setting grid src for gauge data", i
+ 40     continue 
+
+        endif
 
         ! no need to sort anymore since just looping over all gauges in mbestsrc
         ! Sort the source arrays for easy testing during integration
