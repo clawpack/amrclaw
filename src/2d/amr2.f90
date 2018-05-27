@@ -484,9 +484,7 @@ program amr2
             rvoll(i) = 0.0d0
         enddo
         evol = 0.0d0
-        write(*,*)"before stst1 mstart ",mstart
         call stst1()
-        write(*,*)"after stst1 mstart ",mstart
 
 
         ! changed 4/24/09: store dxmin,dymin for setaux before
@@ -494,9 +492,7 @@ program amr2
         dxmin = hxposs(mxnest)
         dymin = hyposs(mxnest)
 
-        write(*,*)"before domain mstart ",mstart
         call domain(nvar,vtime,nx,ny,naux,t0)
-        write(*,*)"after domain mstart ",mstart
 
         ! Hold off on gauges until grids are set. 
         ! The fake call to advance at the very first timestep 
