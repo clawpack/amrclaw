@@ -522,6 +522,167 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
         param.waveSpeedsX[blockIdx.x + blockIdx.y*gridDim.x] =  waveSpeedsX[0];
 }
 
+template <const int numStates, const int numWaves, const unsigned int blockSize, class Riemann, class Limiter>
+__global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
+{
+    // Every threads gets a unique interface
+    // a thread at (row, col) treats the interface between cells
+    // (row,col)|(row,col+1)
+    //          /\
+    //		thread (row,col)
+    //
+    //  each block solves Riemann problems that is required for blockDim.x-3 columns of cells 
+    int col = threadIdx.x + blockIdx.x*blockDim.x - 3*blockIdx.x;
+    int row = threadIdx.y + blockIdx.y*blockDim.y;
+
+    real* wavesX		= &shared_elem[0];
+    real* waveSpeedsX	= &shared_elem[blockSize*numWaves*numStates];
+
+    real dt = param.dt;
+
+    real apdq[numStates];
+    real amdq[numStates];
+
+    real leftCell[numStates];	
+    real rightCell[numStates];  
+
+    real* leftCoeff = 0;
+    real* rightCoeff = 0;
+
+
+    // TODO: what is this if  condition doing?
+    if (blockIdx.x > gridDim.x-3 || blockIdx.y > gridDim.y-2)
+    {
+#pragma unroll
+        for (int i = 0; i < numWaves; i++)
+            setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, (real)0.0f);
+    }
+
+    bool grid_valid = row < param.cellsY && col < param.cellsX-1;
+
+    // Riemann solver
+    // if there are 512 cells (including ghost cells) in X, the last thread is mapped to cell (row,X-1) and will
+    // solve the Riemann problem between cell (row,X-1) and cell (row,X) 
+    if (grid_valid)	
+    {
+#pragma unroll
+        for (int i = 0; i < numStates; i++)
+        {
+            leftCell[i] = param.getElement_qNew(row,col,i);
+            rightCell[i] = param.getElement_qNew(row,col+1,i);
+        }
+        Riemann_solver_h(leftCell, rightCell,
+                leftCoeff, rightCoeff,
+                threadIdx.y, threadIdx.x,
+                numStates,
+                numWaves,
+                wavesX,
+                waveSpeedsX);
+    }
+
+    // idle the first and the last thread since we don't need to limit the first and the last wave in this block
+    grid_valid = grid_valid && ( 0 < threadIdx.x && threadIdx.x < HORIZONTAL_K_BLOCKSIZEX-1 );
+    if (grid_valid)
+    {
+#pragma unroll
+        for (int k = 0; k < numStates; k++)
+        {
+            amdq[k] = 0;
+            apdq[k] = 0;
+        }
+        if (!param.second_order)	// simple first order scheme
+        {
+            first_order_update<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY> (wavesX, waveSpeedsX, amdq, apdq, threadIdx.y, threadIdx.x);
+        }
+        else
+        {
+            first_second_order_update_horizontal<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY> 
+                (param, wavesX, waveSpeedsX, amdq, apdq, threadIdx.y, threadIdx.x, dt, phi);
+        }
+    }
+    __syncthreads();
+
+    // write the apdq to shared memory
+    // overwrite some entries used by wavesX in shared memory
+#pragma unroll
+    for(int k = 0; k < numStates; k++)
+    {
+        setSharedWave(wavesX, threadIdx.y, threadIdx.x, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, apdq[k]);
+    }
+
+    // Local Reduce over Wave Speeds
+    // Stage 1
+    // Bringing down the number of elements to compare to block size
+    int tid = threadIdx.x + threadIdx.y*HORIZONTAL_K_BLOCKSIZEX;
+    waveSpeedsX[tid] = fabs(waveSpeedsX[tid]);
+#pragma unroll
+    for (int i = 1; i < numWaves; i++)
+    {
+        // blockDim.x * blockDim.y is usally a multiple of 32, so there should be no bank conflicts.
+        waveSpeedsX[tid] = fmax(waveSpeedsX[tid], fabs(waveSpeedsX[tid + i*blockSize]));
+    }
+    __syncthreads();	// unmovable syncthreads
+
+    // Stage 2
+    // Reducing over block size elements
+    // use knowledge about your own block size:
+    // I am assuming blocks to be of size no more than 512 will be used for the horizontal direction
+    // There is a potential for a very subtle bug in the implementation below:
+    // if the thread block has size non poer of 2, then there would be 2 threads reading/writing
+    // from the same location, for example if the block size is 135, threads [0-67] will be active
+    // and thread 0 will operate on (0,67) and thread 67 will operate on (67, 135). This can cause
+    // an issue IF the SM somehow reads an unfinished write to the shared memory location. The
+    // read data would be junk and could potentially hinder the simulation, either by a crash, or
+    // behaving like a large number (behaving as a small number is no problem as this is a max reduce)
+    // which could slow down the simulation. In any case block size should be multiples of 32 at least,
+    // and never odd numbers. Also if the block size is between 32 and 64 warp reduce might access
+    // off limit data. Rule of thumb keep block sizes to pwoers of 2.
+    // At this stage there is no need to use fabs again, as all speeds were taken absolutely
+    if (HORIZONTAL_K_BLOCKSIZE > 64 )
+    {
+        if (tid < (HORIZONTAL_K_BLOCKSIZE+1)/2)
+            waveSpeedsX[tid] = fmax(waveSpeedsX[tid], waveSpeedsX[tid + HORIZONTAL_K_BLOCKSIZE/2]);
+        __syncthreads();
+    }
+    if (HORIZONTAL_K_BLOCKSIZE/2 > 64 )
+    {
+        if (tid < (HORIZONTAL_K_BLOCKSIZE+3)/4)
+            waveSpeedsX[tid] = fmax(waveSpeedsX[tid], waveSpeedsX[tid + HORIZONTAL_K_BLOCKSIZE/4]);
+        __syncthreads();
+    }
+    if (HORIZONTAL_K_BLOCKSIZE/4 > 64 )
+    {
+        if (tid < (HORIZONTAL_K_BLOCKSIZE+7)/8)
+            waveSpeedsX[tid] = fmax(waveSpeedsX[tid], waveSpeedsX[tid + HORIZONTAL_K_BLOCKSIZE/8]);
+        __syncthreads();
+    }
+    if (HORIZONTAL_K_BLOCKSIZE/8 > 64 )
+    {
+        if (tid < (HORIZONTAL_K_BLOCKSIZE+15)/16)
+            waveSpeedsX[tid] = fmax(waveSpeedsX[tid], waveSpeedsX[tid + HORIZONTAL_K_BLOCKSIZE/16]);
+        __syncthreads();
+    }
+    if (tid < 32)
+        warpReduce<blockSize>(waveSpeedsX, tid);
+
+
+    int lane_id = threadIdx.x%warpSize;
+    real apdq_k = 0.0;
+    #pragma unroll
+    for (int k = 0; k < numStates; k++)
+    {
+        apdq_k = __shfl_up_sync(FULL_MASK,amdq[k],1,warpSize);
+        if (grid_valid && threadIdx.x > 1) {
+            if (lane_id==0) 
+                apdq_k = getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX);
+            param.setElement_q(row, col, k, param.getElement_qNew(row, col, k) - dt/param.dx * (amdq[k] + apdq_k));
+        }
+    }
+
+    if (tid == 0)
+        param.waveSpeedsX[blockIdx.x + blockIdx.y*gridDim.x] =  waveSpeedsX[0];
+}
+
 
 template <const int numStates, const int numWaves, const int numCoeff, const unsigned int blockSize, class Riemann, class Limiter>
 __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
