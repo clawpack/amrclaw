@@ -85,8 +85,7 @@ module gauges_module
     type(gauge_type), allocatable :: gauges(:)
 
     ! Gauge source info
-    integer, allocatable, dimension(:) ::  mbestsrc, mbestorder, &
-                          igauge
+    integer, allocatable, dimension(:) ::  mbestsrc, igauge
 
 contains
 
@@ -121,7 +120,7 @@ contains
             allocate(gauges(num_gauges))
             
             ! Initialize gauge source data
-            allocate(mbestsrc(num_gauges), mbestorder(num_gauges))
+            allocate(mbestsrc(num_gauges))
             mbestsrc = 0
             
             ! Original gauge information
@@ -368,7 +367,7 @@ contains
         hy = hyposs(level)
 
         ! Main Gauge Loop ======================================================
-        do i = i, num_gauges
+        do i = 1, num_gauges
             if (mptr .ne. mbestsrc(i)) cycle 
             if (tgrid < gauges(i)%t_start .or. tgrid > gauges(i)%t_end) then
                cycle
@@ -451,6 +450,7 @@ contains
             end do
             
             gauges(i)%buffer_index = index + 1
+            write(*,*) " put stuff in gauge ",i," up to ",index
             if (gauges(i)%buffer_index > MAX_BUFFER) then
                 call print_gauges_and_reset_nextLoc(i)  
             endif
