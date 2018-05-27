@@ -274,30 +274,7 @@ contains
 ! # for debugging, initialize sources to 0 then check that all set
         mbestsrc = 0
 
-        if (.false.) then
-        do lev = 1, lfine  
-            mptr = lstart(lev)
-            do
-                do i = 1, num_gauges
-                    if ((gauges(i)%x >= rnode(cornxlo,mptr)) .and. &
-                        (gauges(i)%x <= rnode(cornxhi,mptr)) .and. &  
-                        (gauges(i)%y >= rnode(cornylo,mptr)) .and. &
-                        (gauges(i)%y <= rnode(cornyhi,mptr)) ) then
-                        mbestsrc(i) = mptr
-                    end if
-                end do
-                mptr = node(levelptr, mptr)
-                if (mptr == 0) exit
-            end do 
-        end do
-
-
-        do i = 1, num_gauges
-          if (mbestsrc(i) .eq. 0) &
-              print *, "ERROR in setting grid src for gauge data", i
-        end do
-
-        else  !! reorder loop for better performance with O(10^5) grids
+        !! reorder loop for better performance with O(10^5) grids
         !! for each gauge find best source grid for its data
         do 40 i = 1, num_gauges
 
@@ -325,25 +302,8 @@ contains
               print *, "ERROR in setting grid src for gauge data", i
  40     continue 
 
-        endif
-
-        ! no need to sort anymore since just looping over all gauges in mbestsrc
-        ! Sort the source arrays for easy testing during integration
-        !call qsorti(mbestorder,num_gauges,mbestsrc)
-
-!     After sorting,  
-!           mbestsrc(mbestorder(i)) = grid index to be used for gauge i
-!     and mbestsrc(mbestorder(i)) is non-decreasing as i=1,2,..., num_gauges
-
-!     write(6,*) '+++ mbestorder: ',mbestorder
-!     write(6,*) '+++ mbestsrc: ',mbestsrc
-
-!     Figure out the set of gauges that should be handled on each grid:  
-!     after loop below, grid k should handle gauges numbered
-!          mbestorder(i) for i = mbestg1(k), mbestg1(k)+1, ..., mbestg2(k)
-!!!  NO MORE - THIS FUNCTIONALITY CHANGED - EACH GRID LOOPS OVER
-!!!  mbestsrc array to see which gauges it owns.
-!     This will be used for looping in print_gauges subroutine.
+!!!  NO MORE qsort and mbestg arrays. 
+!!! Each grid now loops over mbestsrc array to see which gauges it owns.
 
     end subroutine setbestsrc
 
