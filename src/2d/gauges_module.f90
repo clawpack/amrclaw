@@ -481,7 +481,6 @@ contains
             end do
             
             gauges(i)%buffer_index = index + 1
-            write(*,*) " put stuff in gauge ",i," up to ",index
             if (gauges(i)%buffer_index > MAX_BUFFER) then
                 call print_gauges_and_reset_nextLoc(i)  
             endif
