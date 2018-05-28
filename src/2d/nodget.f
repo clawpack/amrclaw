@@ -11,8 +11,7 @@ c
 c
       use amr_module
       implicit double precision (a-h,o-z)
-      !integer maxgrIncrement/50000/
-      integer maxgrIncrement/50/
+      integer maxgrIncrement/10000/
 
 c
 c ::::::::::::::::: NODGET ::::::::::::::::::::::::::::::::::::;
