@@ -60,7 +60,10 @@ c
 c
 c     ###  dump the data
 c
-      write(chkunit) lenmax,lendim,memsize
+      !write(chkunit) lenmax,lendim,memsize   
+      ! new version has variable node size arrays, so need to output current size
+      ! so can read back in on restart
+      write(chkunit) lenmax,lendim,memsize,maxgr
       write(chkunit) (alloc(i),i=1,lendim)
       write(chkunit) hxposs,hyposs,possk,icheck
       write(chkunit) lfree,lenf

@@ -35,6 +35,10 @@
 !
 ! Note: Updated for Clawpack 5.4.x
 !  - Add gauge formatting capabilities
+!
+! Changed mjb, May, 2018 hackathon, to remove need for mbestg1 and mbestg2.
+! looked at since they depended on maxgr, which is now a variable, not constant.
+! also, algorithms didn't scale for O(10^5) grids, and O(100) gauges..
 
 module gauges_module
 
@@ -81,14 +85,12 @@ module gauges_module
     type(gauge_type), allocatable :: gauges(:)
 
     ! Gauge source info
-    integer, allocatable, dimension(:) ::  mbestsrc, mbestorder, &
-                          igauge, mbestg1, mbestg2
+    integer, allocatable, dimension(:) ::  mbestsrc, igauge
 
 contains
 
     subroutine set_gauges(restart, num_eqn, num_aux, fname)
 
-        use amr_module, only: maxgr
         use utility_module, only: get_value_count
 
         implicit none
@@ -118,8 +120,7 @@ contains
             allocate(gauges(num_gauges))
             
             ! Initialize gauge source data
-            allocate(mbestsrc(num_gauges), mbestorder(num_gauges))
-            allocate(mbestg1(maxgr), mbestg2(maxgr))
+            allocate(mbestsrc(num_gauges))
             mbestsrc = 0
             
             ! Original gauge information
@@ -273,67 +274,37 @@ contains
 ! # for debugging, initialize sources to 0 then check that all set
         mbestsrc = 0
 
-        do lev = 1, lfine  
-            mptr = lstart(lev)
-            do
-                do i = 1, num_gauges
-                    if ((gauges(i)%x >= rnode(cornxlo,mptr)) .and. &
-                        (gauges(i)%x <= rnode(cornxhi,mptr)) .and. &  
-                        (gauges(i)%y >= rnode(cornylo,mptr)) .and. &
-                        (gauges(i)%y <= rnode(cornyhi,mptr)) ) then
-                        mbestsrc(i) = mptr
-                    end if
-                end do
-                mptr = node(levelptr, mptr)
-                if (mptr == 0) exit
-            end do 
-        end do
+        !! reorder loop for better performance with O(10^5) grids
+        !! for each gauge find best source grid for its data
+        do 40 i = 1, num_gauges
 
+           do 30 lev = lfine, 1, -1
+              mptr = lstart(lev)
+ 20              if ((gauges(i)%x >= rnode(cornxlo,mptr)) .and. &
+                      (gauges(i)%x <= rnode(cornxhi,mptr)) .and. &  
+                      (gauges(i)%y >= rnode(cornylo,mptr)) .and. &
+                      (gauges(i)%y <= rnode(cornyhi,mptr)) ) then
+                      mbestsrc(i) = mptr
+                      !! best source found for this gauge, go to next one
+                      !! we know its the best because we started at finest level
+                      go to 40  ! on to next gauge 
+                 else 
+                    mptr = node(levelptr,mptr)
+                    if (mptr .ne. 0) then
+                       go to 20  ! try another grid
+                    else
+                       go to 30  ! try next coarser level grids
+                    endif
+                 end if
+ 30        continue 
 
-        do i = 1, num_gauges
           if (mbestsrc(i) .eq. 0) &
               print *, "ERROR in setting grid src for gauge data", i
-        end do
+ 40     continue 
 
-        ! Sort the source arrays for easy testing during integration
-        call qsorti(mbestorder,num_gauges,mbestsrc)
+!!!  NO MORE qsort and mbestg arrays. 
+!!! Each grid now loops over mbestsrc array to see which gauges it owns.
 
-!     After sorting,  
-!           mbestsrc(mbestorder(i)) = grid index to be used for gauge i
-!     and mbestsrc(mbestorder(i)) is non-decreasing as i=1,2,..., num_gauges
-
-!     write(6,*) '+++ mbestorder: ',mbestorder
-!     write(6,*) '+++ mbestsrc: ',mbestsrc
-
-!     Figure out the set of gauges that should be handled on each grid:  
-!     after loop below, grid k should handle gauges numbered
-!          mbestorder(i) for i = mbestg1(k), mbestg1(k)+1, ..., mbestg2(k)
-!     This will be used for looping in print_gauges subroutine.
-
-      ! initialize arrays to default indicating grids that contain no gauges:
-        mbestg1 = 0
-        mbestg2 = 0
-
-        k1 = 0
-        do i=1,num_gauges
-            ki = mbestsrc(mbestorder(i))
-            if (ki > k1) then
-                ! new grid number seen for first time in list
-                if (k1 > 0) then
-                    ! mark end of gauges seen by previous grid
-                    mbestg2(k1) = i-1
-!                     write(6,*) '+++ k1, mbestg2(k1): ',k1,mbestg2(k1)
-                endif
-                mbestg1(ki) = i
-!               write(6,*) '+++ ki, mbestg1(ki): ',ki,mbestg1(ki)
-            endif
-           k1 = ki
-        enddo
-        if (num_gauges > 0) then
-            ! finalize 
-            mbestg2(ki) = num_gauges
-!           write(6,*) '+++ ki, mbestg2(ki): ',ki,mbestg2(ki)
-        endif
     end subroutine setbestsrc
 
 !
@@ -373,18 +344,10 @@ contains
         ! Locals
         real(kind=8) :: var(maxvar + maxaux)
         real(kind=8) :: xcent, ycent, xoff, yoff, tgrid, hx, hy
-        integer :: i, j, i1, i2, iindex, jindex, n, ii, index, level, var_index
+        integer :: i, j, i1, i2, iindex, jindex, n, index, level, var_index
 
         ! No gauges to record, exit
         if (num_gauges == 0) then
-            return
-        endif
-
-        i1 = mbestg1(mptr)
-        i2 = mbestg2(mptr)
-
-        if (i1 == 0) then
-            ! no gauges to be handled by this grid
             return
         endif
 
@@ -395,34 +358,29 @@ contains
         hy = hyposs(level)
 
         ! Main Gauge Loop ======================================================
-        do i = i1, i2
-            ii = mbestorder(i)
-            if (mptr /= mbestsrc(ii)) then
-                print *, '*** should not happen... i, ii, mbestsrc(ii), mptr:'
-                print *, i, ii, mbestsrc(ii), mptr
-                stop
-            endif
-            if (tgrid < gauges(ii)%t_start .or. tgrid > gauges(ii)%t_end) then
+        do i = 1, num_gauges
+            if (mptr .ne. mbestsrc(i)) cycle 
+            if (tgrid < gauges(i)%t_start .or. tgrid > gauges(i)%t_end) then
                cycle
             endif
             ! Minimum increment
             ! TODO Maybe always allow last time output recording?
-            if (tgrid - gauges(ii)%last_time < gauges(ii)%min_time_increment) then
+            if (tgrid - gauges(i)%last_time < gauges(i)%min_time_increment) then
                 cycle
             end if
 
             ! Compute indexing and bilinear interpolant weights
             ! Note: changed 0.5 to  0.5d0 etc.
-            iindex =  int(.5d0 + (gauges(ii)%x - xlow) / hx)
-            jindex =  int(.5d0 + (gauges(ii)%y - ylow) / hy)
+            iindex =  int(.5d0 + (gauges(i)%x - xlow) / hx)
+            jindex =  int(.5d0 + (gauges(i)%y - ylow) / hy)
             if ((iindex < nghost .or. iindex > mitot-nghost) .or. &
                 (jindex < nghost .or. jindex > mjtot-nghost)) then
                     print *, "ERROR in output of Gauge Data "
             end if
             xcent  = xlow + (iindex - 0.5d0) * hx
             ycent  = ylow + (jindex - 0.5d0) * hy
-            xoff   = (gauges(ii)%x - xcent) / hx
-            yoff   = (gauges(ii)%y - ycent) / hy
+            xoff   = (gauges(i)%x - xcent) / hx
+            yoff   = (gauges(i)%y - ycent) / hy
 
             ! Gauge interpolation seems to work, so error test is commented out.
             ! For debugging, use the code below...
@@ -432,14 +390,14 @@ contains
             !if (xoff .lt. -1.d-4 .or. xoff .gt. 1.0001d0 .or. &
             !    yoff .lt. -1.d-4 .or. yoff .gt. 1.0001d0) then
             !   write(6,*) "*** print_gauges: Interpolation problem at gauge ",&
-            !               igauge(ii)
+            !               igauge(i)
             !   write(6,*) "    xoff,yoff: ", xoff,yoff
             !endif
 
             ! Bilinear interpolation
             var_index = 0
-            do n = 1, size(gauges(ii)%q_out_vars, 1)
-                if (gauges(ii)%q_out_vars(n)) then
+            do n = 1, size(gauges(i)%q_out_vars, 1)
+                if (gauges(i)%q_out_vars(n)) then
                     var_index = var_index + 1
                     var(var_index) = (1.d0 - xoff) * (1.d0 - yoff) * q(n, iindex, jindex) &
                                         + xoff * (1.d0 - yoff) * q(n, iindex + 1, jindex) &
@@ -448,9 +406,9 @@ contains
                 endif
             end do
 
-            if (allocated(gauges(ii)%aux_out_vars)) then
-                do n = 1, size(gauges(ii)%aux_out_vars, 1)
-                    if (gauges(ii)%aux_out_vars(n)) then
+            if (allocated(gauges(i)%aux_out_vars)) then
+                do n = 1, size(gauges(i)%aux_out_vars, 1)
+                    if (gauges(i)%aux_out_vars(n)) then
                         var_index = var_index + 1
                         var(var_index) = (1.d0 - xoff) * (1.d0 - yoff) * aux(n, iindex, jindex) &
                                             + xoff * (1.d0 - yoff) * aux(n, iindex + 1, jindex) &
@@ -461,33 +419,33 @@ contains
             end if
 
             ! Check to make sure we grabbed all the values
-            if (gauges(ii)%num_out_vars /= var_index) then
-                print *, gauges(ii)%num_out_vars, var_index
-                print *, gauges(ii)%q_out_vars
-                print *, gauges(ii)%aux_out_vars
+            if (gauges(i)%num_out_vars /= var_index) then
+                print *, gauges(i)%num_out_vars, var_index
+                print *, gauges(i)%q_out_vars
+                print *, gauges(i)%aux_out_vars
                 stop "Somehow we did not grab all the values we wanted..."
             end if
 
             ! Zero out tiny values to prevent underflow problems
-            do j = 1, gauges(ii)%num_out_vars
+            do j = 1, gauges(i)%num_out_vars
                 if (abs(var(j)) < 1d-90) var(j) = 0.d0
             end do
 
            ! save info for this time
-           index = gauges(ii)%buffer_index
+           index = gauges(i)%buffer_index
      
-            gauges(ii)%level(index) = level
-            gauges(ii)%data(1,index) = tgrid
-            do j = 1, gauges(ii)%num_out_vars
-                gauges(ii)%data(1 + j, index) = var(j)
+            gauges(i)%level(index) = level
+            gauges(i)%data(1,index) = tgrid
+            do j = 1, gauges(i)%num_out_vars
+                gauges(i)%data(1 + j, index) = var(j)
             end do
             
-            gauges(ii)%buffer_index = index + 1
-            if (gauges(ii)%buffer_index > MAX_BUFFER) then
-                call print_gauges_and_reset_nextLoc(ii)  
+            gauges(i)%buffer_index = index + 1
+            if (gauges(i)%buffer_index > MAX_BUFFER) then
+                call print_gauges_and_reset_nextLoc(i)  
             endif
 
-            gauges(ii)%last_time = tgrid
+            gauges(i)%last_time = tgrid
 
         end do ! End of gauge loop =============================================
 
