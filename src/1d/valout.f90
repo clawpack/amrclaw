@@ -10,8 +10,8 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     use amr_module, only: alloc, t0, output_aux_onlyonce, output_aux_components
     use amr_module, only: frame => matlabu, num_ghost => nghost, lstart
     use amr_module, only: hxposs, output_format, store1, storeaux
-    use amr_module, only: node, rnode, ndilo, ndihi, cornxlo
-    use amr_module, only: timeValout, timeValoutCPU, levelptr
+    use amr_module, only: node, rnode, ndilo, ndihi, cornxlo, mxnest, levelptr
+    use amr_module, only: timeValout, timeValoutCPU, tvoll, tvollCPU, rvoll
 
 #ifdef HDF5
     use hdf5
@@ -32,7 +32,9 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     character(len=10) :: file_name(5)
 
     integer :: clock_start, clock_finish, clock_rate
-    real(kind=8) cpu_start, cpu_finish
+    real(kind=8) :: cpu_start, cpu_finish, t_CPU_overall
+    character(len=256) :: timing_line, timing_substr
+    character(len=*), parameter :: timing_file_name = "timing.csv"
 
     character(len=*), parameter :: header_format =                             &
                                     "(i6,'                 grid_number',/," // &
@@ -46,6 +48,10 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                                            "i6,'                 naux'/,"   // &
                                            "i6,'                 ndim'/,"   // &
                                            "i6,'                 nghost'/,/)"
+    character(len=*), parameter :: timing_header_format =                      &
+                                                  "(' wall time (', i2,')," // &
+                                                  " CPU time (', i2,'), "   // &
+                                                  "cells updated (', i2,'),')"
     character(len=*), parameter :: console_format = &
              "('AMRCLAW: Frame ',i4,' output files done at time t = ', d13.6,/)"
 
@@ -244,6 +250,40 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     !        from q array when reading in pyclaw.io.binary
     write(out_unit, t_file_format) time, num_eqn, num_grids, num_aux, 1,    &
                                    num_ghost
+    close(out_unit)
+
+    ! ==========================================================================
+    ! Write out timing stats
+    ! Assume that this has been started some where
+    if (frame == 0) then
+        ! Write header out and continue
+        open(unit=out_unit, file=timing_file_name, form='formatted',         &
+             status='unknown', action='write')
+        ! Construct header string
+        timing_line = 'total_cpu_time,'
+        timing_substr = ""
+        do level=1, mxnest
+            write(timing_substr, timing_header_format) level, level, level
+            timing_line = trim(timing_line) // trim(timing_substr)
+        end do
+        write(out_unit, "(a)") timing_line
+    else
+        open(unit=out_unit, file=timing_file_name, form='formatted',         &
+             status='old', action='write', position='append')
+    end if
+    
+    timing_line = "(e16.6"
+    do level=1, mxnest
+        timing_substr = "', ', e16.6, ', ', e16.6, ', ', e16.6"
+        timing_line = trim(timing_line) // timing_substr
+    end do
+    timing_line = trim(timing_line) // ")"
+
+    call cpu_time(t_CPU_overall)
+    write(out_unit, timing_line) t_CPU_overall, &
+        (real(tvoll(i), kind=8) / real(clock_rate, kind=8), &
+         tvollCPU(i), rvoll(i), i=1,mxnest)
+    
     close(out_unit)
 
     ! ==========================================================================
