@@ -29,6 +29,9 @@ module adjoint_module
 
 contains
 
+! ========================================================================
+!  read_adjoint_data()
+! ========================================================================
     subroutine read_adjoint_data()
 
         implicit none
@@ -48,6 +51,7 @@ contains
         inquire(file=adjointfile, exist=fileExists)
         if (fileExists) then
 
+            print *, "Reading data file: adjoint.data"
             iunit = 16
             call opendatafile(iunit,adjointfile)
             read(iunit,*) adjoint_output
@@ -82,11 +86,15 @@ contains
             50 continue
 
         else
-            print *, 'Error, adjoint.data file does not exist.'
+            print *, 'Adjoint.data file does not exist.'
+            print *, 'If you are using the adjoint method, this is an error.'
         endif
 
     end subroutine read_adjoint_data
 
+! ========================================================================
+!  set_time_window(t1,t2)
+! ========================================================================
     subroutine set_time_window(t1, t2)
 
         implicit none
@@ -99,6 +107,9 @@ contains
 
     end subroutine set_time_window
 
+! ========================================================================
+!  calculate_tol(lcheck)
+! ========================================================================
     subroutine calculate_tol(lcheck)
 
         use amr_module
@@ -134,6 +145,131 @@ contains
         end do
 
     end subroutine calculate_tol
+
+! ========================================================================
+!  reload(adjfile, k)
+!  Note: This assumes that the binary output format was used
+! ========================================================================
+
+    subroutine reload(adjfile, k)
+
+        implicit double precision (a-h,o-z)
+
+        integer, intent(in) :: k
+        integer :: mptr, level, ladjfile
+        integer :: mitot, mjtot, i1, i2
+        integer :: i,j, ivar, z, loc
+        integer :: allocsize, new_size
+        character(len=*) :: adjfile
+        logical foundFile, initial
+
+        real(kind=8), allocatable, target, dimension(:) :: new_storage
+
+        iadd(ivar,i,j)  = adjoints(k)%loc(mptr) &
+            + ivar - 1 + adjoints(k)%meqn*((j-1)*mitot+i-1)
+
+        ! Initializing all levels to zero
+        adjoints(k)%gridlevel(:) = 0
+
+       ! Checking to see if fort.t file exists
+        ladjfile = len(trim(adjfile))
+        adjfile(ladjfile-4:ladjfile-4) = 't'
+        write(6,*) 'Attempting to reload data '
+        write(6,*) '  fort.t* file: ',trim(adjfile)
+        inquire(file=trim(adjfile),exist=foundFile)
+        if (.not. foundFile) then
+            write(*,*)" Did not find fort.t* file!"
+            stop
+        endif
+        open(9,file=trim(adjfile),status='old',form='formatted')
+        rewind 9
+
+        ! Reading from fort.t file
+        read(9, "(e18.8)") adjoints(k)%time
+        read(9, "(i6)") adjoints(k)%meqn
+        read(9, "(i6)") adjoints(k)%ngrids
+        read(9, "(i6)") adjoints(k)%naux
+        read(9, "(i6)") adjoints(k)%ndim
+        read(9, "(i6)") adjoints(k)%nghost
+
+        close(9)
+
+       ! Allocating memory for alloc array
+        allocsize = 4000000
+        allocate(adjoints(k)%alloc(allocsize))
+
+      ! Checking to see if fort.q file exists
+        adjfile(ladjfile-4:ladjfile-4) = 'q'
+        write(6,*) 'Attempting to reload data '
+        write(6,*) '  fort.q* file: ',trim(adjfile)
+        inquire(file=trim(adjfile),exist=foundFile)
+        if (.not. foundFile) then
+            write(*,*)" Did not find fort.q* file!"
+            stop
+        endif
+        open(10,file=trim(adjfile),status='old',form='formatted')
+        rewind 10
+
+       ! Checking to see if fort.b file exists
+        adjfile(ladjfile-4:ladjfile-4) = 'b'
+        write(6,*) 'Attempting to reload data '
+        write(6,*) '  fort.b* file: ',trim(adjfile)
+        inquire(file=trim(adjfile),exist=foundFile)
+        if (.not. foundFile) then
+            write(*,*)" Did not find fort.b* file!"
+            stop
+        endif
+        open(20,file=trim(adjfile),status='unknown',access='stream')
+        rewind 20
+
+       ! Reading from fort.q* file and fort.b* files
+        loc = 1
+        do z = 1, adjoints(k)%ngrids
+            read(10,"(i6)") mptr
+            adjoints(k)%gridpointer(z) = mptr
+
+            read(10,"(i6)") level
+            adjoints(k)%gridlevel(mptr) = level
+
+            read(10,"(i6)") adjoints(k)%ncellsx(mptr)
+            read(10,"(i6)") adjoints(k)%ncellsy(mptr)
+            read(10,"(e26.16)") adjoints(k)%xlowvals(mptr)
+            read(10,"(e26.16)") adjoints(k)%ylowvals(mptr)
+            read(10,"(e26.16)") adjoints(k)%hxposs(level)
+            read(10,"(e26.16)") adjoints(k)%hyposs(level)
+            read(10,*)
+
+            mitot = adjoints(k)%ncellsx(mptr) + 2*adjoints(k)%nghost
+            mjtot = adjoints(k)%ncellsy(mptr) + 2*adjoints(k)%nghost
+
+            adjoints(k)%loc(mptr) = loc
+            loc = loc + mitot*mjtot*adjoints(k)%meqn
+
+            ! Checking to see if the alloc array is large enough
+            ! to hold the new grid
+            ! If not, making the alloc array larger
+            if (allocsize .lt. loc) then
+                new_size = 2*allocsize
+                allocate(new_storage(new_size))
+
+                new_storage(1:allocsize) = adjoints(k)%alloc
+                call move_alloc(new_storage,adjoints(k)%alloc)
+                allocsize = new_size
+            endif
+
+            ! This is the bulk of the reading
+            i1 = iadd(1,1,1)
+            i2 = iadd(adjoints(k)%meqn,mitot,mjtot)
+            read(20) adjoints(k)%alloc(i1:i2)
+
+        enddo
+
+        close(10)
+        close(20)
+
+        adjoints(k)%lfine = maxval(adjoints(k)%gridlevel)
+
+    end subroutine reload
 
 
 end module adjoint_module
