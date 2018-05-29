@@ -39,8 +39,6 @@ c
       integer mythread/0/, maxthreads/1/
       integer listgrids(numgrids(lcheck)), locuse, r
 
-      logical :: mask_selecta(totnum_adjoints), adjoints_found
-
 c      call prepgrids(listgrids,numgrids(lcheck),lcheck)
       mbuff = max(nghost,ibuff+1)  
 c before parallel loop give grids the extra storage they need for error estimation
@@ -145,41 +143,6 @@ c            them in locnew
                 locamrflags = node(storeflags,mptr)
                 do 20 i = 1, mibuff*mjbuff  ! initialize
  20                alloc(locamrflags+i-1) = goodpt
-
-c       Pick adjoint snapshots to consider when flagging
-         mask_selecta = .false.
-         adjoints_found = .false.
-
-         do r=1,totnum_adjoints
-           if ((time+adjoints(r)%time) >= trange_start .and.
-     .        (time+adjoints(r)%time) <= trange_final) then
-               mask_selecta(r) = .true.
-               adjoints_found = .true.
-           endif
-         enddo
-
-         if(.not. adjoints_found) then
-             write(*,*) "Error: no adjoint snapshots ",
-     .        "found in time range."
-             write(*,*) "Consider increasing time rage of interest, ",
-     .        "or adding more snapshots."
-         endif
-
-         do r=1,totnum_adjoints-1
-           if((.not. mask_selecta(r)) .and.
-     .        (mask_selecta(r+1))) then
-               mask_selecta(r) = .true.
-               exit
-           endif
-         enddo
-
-         do r=totnum_adjoints,2,-1
-           if((.not. mask_selecta(r)) .and.
-     .        (mask_selecta(r-1))) then
-               mask_selecta(r) = .true.
-               exit
-           endif
-         enddo
 
          if (flag_gradient) then
 

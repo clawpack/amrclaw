@@ -44,14 +44,13 @@ contains
         real(kind=8) :: t1,t2
 
         ! Read adjoint specific information
-
-        adjoint_flagging = .true.
         levtol = 0.0d0
 
         inquire(file=adjointfile, exist=fileExists)
         if (fileExists) then
 
             print *, "Reading data file: adjoint.data"
+            adjoint_flagging = .true.
             iunit = 16
             call opendatafile(iunit,adjointfile)
             read(iunit,*) adjoint_output
@@ -88,6 +87,7 @@ contains
         else
             print *, 'Adjoint.data file does not exist.'
             print *, 'If you are using the adjoint method, this is an error.'
+            adjoint_flagging = .false.
         endif
 
     end subroutine read_adjoint_data
@@ -270,6 +270,57 @@ contains
         adjoints(k)%lfine = maxval(adjoints(k)%gridlevel)
 
     end subroutine reload
+
+! ========================================================================
+!  select_snapshots(time,mask_selecta)
+! ========================================================================
+    subroutine select_snapshots(time,mask_selecta)
+
+       implicit none
+
+       logical, intent(inout) :: mask_selecta(totnum_adjoints)
+       real(kind=8), intent(in) :: time
+
+!      Local variables
+       logical :: adjoints_found
+       integer :: r
+
+!       Pick adjoint snapshots to consider when flagging
+        mask_selecta = .false.
+        adjoints_found = .false.
+
+        do r=1,totnum_adjoints
+            if ((time+adjoints(r)%time) >= trange_start .and. &
+              (time+adjoints(r)%time) <= trange_final) then
+                mask_selecta(r) = .true.
+                adjoints_found = .true.
+            endif
+        enddo
+
+        if(.not. adjoints_found) then
+            write(*,*) "Error: no adjoint snapshots ", &
+                "found in time range."
+            write(*,*) "Consider increasing time rage of interest, ", &
+                "or adding more snapshots."
+        endif
+
+        do r=1,totnum_adjoints-1
+            if((.not. mask_selecta(r)) .and. &
+              (mask_selecta(r+1))) then
+                mask_selecta(r) = .true.
+                exit
+            endif
+        enddo
+
+        do r=totnum_adjoints,2,-1
+            if((.not. mask_selecta(r)) .and. &
+              (mask_selecta(r-1))) then
+                mask_selecta(r) = .true.
+                exit
+            endif
+        enddo
+
+    end subroutine select_snapshots
 
 
 end module adjoint_module

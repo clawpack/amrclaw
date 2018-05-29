@@ -18,7 +18,6 @@ MODULES += \
 
 # list of source files from ADJLIB library. 
 SOURCES += \
-  $(ADJLIB)/flag2refine2.f90 \
   $(ADJLIB)/valout.f \
   $(ADJLIB)/errf1.f \
   $(ADJLIB)/errest.f \
