@@ -14,7 +14,6 @@ include $(AMRLIB)/Makefile.amr_2d
 
 #list of common sources needed for adjoint code
 MODULES += \
-  $(ADJLIB)/innerprod_module.f90
 
 # list of source files from ADJLIB library. 
 SOURCES += \
@@ -22,5 +21,4 @@ SOURCES += \
   $(ADJLIB)/errf1.f \
   $(ADJLIB)/errest.f \
   $(ADJLIB)/setaux.f90 \
-  $(ADJLIB)/interp_adjoint.f \
   $(ADJLIB)/flagger.f \
