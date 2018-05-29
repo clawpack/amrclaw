@@ -18,7 +18,8 @@ C compare subprograms, usually in assembler language for a specific
 C mainframe platform at that time). But the following algorithm is
 C good, still one of the best available.
 
-C Modified by Brisa Davis, 2/5/2018 to sort reals rather than integers.
+C Modified from quick_sort1.f
+C by Brisa Davis, 2/5/2018 to sort reals rather than integers.
 
 
       SUBROUTINE QSORTR (ORD,N,A)
