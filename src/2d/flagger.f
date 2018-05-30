@@ -31,6 +31,9 @@ c
       subroutine flagger(nvar,naux,lcheck,start_time)
 
       use amr_module
+      use adjoint_module,only:calculate_tol,eptr,errors,totnum_adjoints
+      use adjoint_module,only:adjoints, trange_start, trange_final
+      use adjoint_module,only:adjoint_flagging
       implicit double precision (a-h,o-z)
 
       integer omp_get_thread_num, omp_get_max_threads
@@ -38,7 +41,19 @@ c
       integer listgrids(numgrids(lcheck)), locuse
 
 c      call prepgrids(listgrids,numgrids(lcheck),lcheck)
-      mbuff = max(nghost,ibuff+1)  
+      mbuff = max(nghost,ibuff+1)
+
+      if(adjoint_flagging) then
+c        allocating space for tracking error estimates
+c        (used at next regridding time to determine tolerance)
+         if (flag_richardson) then
+           allocate(errors(numcells(lcheck)/2))
+           allocate(eptr(numgrids(lcheck)))
+           errors = 0
+           eptr(1) = 0
+         endif
+      endif
+
 c before parallel loop give grids the extra storage they need for error estimation
          do  jg = 1, numgrids(lcheck)
 c            mptr = listgrids(jg)
@@ -51,7 +66,13 @@ c            mptr = listgrids(jg)
             if (flag_richardson) then
                locbig = igetsp(mitot*mjtot*nvar)
                node(tempptr,mptr) = locbig
-            else 
+
+               if(adjoint_flagging) then
+                 if (jg .ne. numgrids(lcheck)) then
+                   eptr(jg+1) = eptr(jg)+(nx/2)*(ny/2)
+                 endif
+               endif
+            else
                locbig = 0
             endif
             mibuff = nx + 2*mbuff       ! NOTE THIS NEW DIMENSIONING 
@@ -141,11 +162,23 @@ c no longer getting locbig, using "real" solution array in locnew
              endif     
 c     
          if (flag_richardson) then
-              call errest(nvar,naux,lcheck,mptr,nx,ny)
+              if(adjoint_flagging) then
+                  call errest(nvar,naux,lcheck,mptr,nx,ny,jg)
+              else
+                  call errest(nvar,naux,lcheck,mptr,nx,ny)
+              endif
          endif
 
        end do
 ! $OMP END PARALLEL DO
+
+       if(adjoint_flagging)then
+           if (flag_richardson) then
+               call calculate_tol(lcheck)
+               deallocate(errors)
+               deallocate(eptr)
+           endif
+       endif
 
        return
        end

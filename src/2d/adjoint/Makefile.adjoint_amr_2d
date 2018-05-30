@@ -1,23 +1,17 @@
 #get the directory of this makefile
 AMRLIB:=$(CLAW)/amrclaw/src/2d
-ADJLIB:=$(CLAW)/amrclaw/src/2d/adjoint
 
 # ---------------------------------
 # package sources for this program:
 # ---------------------------------
 
 AMRLIB:=$(CLAW)/amrclaw/src/2d
-#ADJLIB = $(CLAW)/amrclaw/src/2d/adjoint
-
 include $(AMRLIB)/Makefile.amr_2d
-#include $(ADJLIB)/Makefile.adjoint_amr_2d
 
 #list of common sources needed for adjoint code
 MODULES += \
 
 # list of source files from ADJLIB library. 
 SOURCES += \
-  $(ADJLIB)/valout.f \
   $(ADJLIB)/errf1.f \
   $(ADJLIB)/errest.f \
-  $(ADJLIB)/flagger.f \
