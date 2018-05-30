@@ -3,6 +3,7 @@
 # ---------------------------------
 
 AMRLIB:=$(CLAW)/amrclaw/src/2d
+ADJLIB:=$(CLAW)/amrclaw/src/2d/adjoint
 include $(AMRLIB)/Makefile.amr_2d
 
 #list of common sources needed for adjoint code
