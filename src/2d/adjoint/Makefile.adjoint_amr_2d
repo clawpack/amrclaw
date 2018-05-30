@@ -20,5 +20,4 @@ SOURCES += \
   $(ADJLIB)/valout.f \
   $(ADJLIB)/errf1.f \
   $(ADJLIB)/errest.f \
-  $(ADJLIB)/setaux.f90 \
   $(ADJLIB)/flagger.f \
