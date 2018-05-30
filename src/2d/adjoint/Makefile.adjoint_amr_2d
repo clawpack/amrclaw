@@ -1,6 +1,3 @@
-#get the directory of this makefile
-AMRLIB:=$(CLAW)/amrclaw/src/2d
-
 # ---------------------------------
 # package sources for this program:
 # ---------------------------------
