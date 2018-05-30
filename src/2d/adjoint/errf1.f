@@ -3,11 +3,12 @@ c --------------------------------------------------------------
 c
       subroutine errf1(rctfine,nvar,rctcrse,mptr,mi2tot,mj2tot,
      2                 mitot,mjtot,rctflg,mibuff,mjbuff,auxfine,
-     2                 naux,nx,ny,mbc,jg,mask_selecta)
+     2                 naux,nx,ny,mbc,jg)
       use amr_module
       use innerprod_module, only : calculate_innerproduct
       use adjoint_module, only: innerprod_index,
-     .        totnum_adjoints,levtol, eptr, errors
+     .        totnum_adjoints,levtol, eptr, errors,
+     .        adjoint_flagging,select_snapshots
       implicit double precision (a-h,o-z)
 
  
@@ -41,7 +42,11 @@ c
       hy    = hyposs(levm)
       dt    = possk(levm)
       numsp = 0
- 
+
+      if(adjoint_flagging) then
+          call select_snapshots(time,mask_selecta)
+      endif
+
       errmax = 0.0d0
       err2   = 0.0d0
       auxfine(innerprod_index,:,:) = 0.0d0

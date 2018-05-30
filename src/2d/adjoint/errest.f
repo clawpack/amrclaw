@@ -2,10 +2,9 @@ c
 c -------------------------------------------------------------
 c
       subroutine errest (nvar,naux,lcheck,mptr,nx,ny,
-     .                    jg,mask_selecta)
+     .                    jg)
 c
       use amr_module
-      use adjoint_module, only: totnum_adjoints
       implicit double precision (a-h,o-z)
 c
 c   ### changed to stack based storage 2/23/13 
@@ -14,8 +13,7 @@ c   ### stack space
      
       double precision valbgc(nvar,nx/2+2*nghost,ny/2+2*nghost)
       double precision auxbgc(naux,nx/2+2*nghost,ny/2+2*nghost)
-      logical mask_selecta(totnum_adjoints)
- 
+
 c :::::::::::::::::::::::::: ERREST :::::::::::::::::::::::::::::::::::
 c for this grid at level lcheck:
 c  estimate the error by taking a large (2h,2k) step based on the
@@ -59,8 +57,7 @@ c     ## by flag2refine so make sure not to overwrite
       mjbuff = ny + 2*mbuff 
       call errf1(alloc(locbig),nvar,valbgc,mptr,mi2tot,mj2tot,
      1           mitot,mjtot,alloc(locamrflags),mibuff,mjbuff,
-     1           alloc(locaux),naux,nx,ny,nghost,jg,
-     1           mask_selecta)
+     1           alloc(locaux),naux,nx,ny,nghost,jg)
 
 c
       return
