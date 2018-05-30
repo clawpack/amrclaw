@@ -25,6 +25,4 @@ subroutine setprob
     cc = dsqrt(bulk/rho)
     zz = rho*cc
 
-    call read_adjoint_data()    !# Read adjoint info and solution
-
 end subroutine setprob
