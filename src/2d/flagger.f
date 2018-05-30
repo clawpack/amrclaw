@@ -88,7 +88,8 @@ c            mptr = listgrids(jg)
 !$OMP&            SHARED(numgrids,listgrids,lcheck,nghost,nvar,naux),
 !$OMP&            SHARED(levSt,listStart,listOfGrids),
 !$OMP&            SHARED(tolsp,alloc,node,rnode,hxposs,hyposs,ibuff),
-!$OMP&            SHARED(start_time,possk,flag_gradient,flag_richardson)
+!$OMP&            SHARED(start_time,possk,flag_gradient,flag_richardson),
+!$OMP&            SHARED(adjoint_flagging)
 !$OMP&            DEFAULT(none),
 !$OMP&            SCHEDULE(DYNAMIC,1)
        do  jg = 1, numgrids(lcheck)

@@ -8,7 +8,7 @@ c
       use innerprod_module, only : calculate_innerproduct
       use adjoint_module, only: innerprod_index,
      .        totnum_adjoints,levtol, eptr, errors,
-     .        adjoint_flagging,select_snapshots
+     .        select_snapshots
       implicit double precision (a-h,o-z)
 
  
@@ -43,9 +43,7 @@ c
       dt    = possk(levm)
       numsp = 0
 
-      if(adjoint_flagging) then
-          call select_snapshots(time,mask_selecta)
-      endif
+      call select_snapshots(time,mask_selecta)
 
       errmax = 0.0d0
       err2   = 0.0d0
@@ -133,6 +131,7 @@ c             set innerproduct
           errors(eptr(jg)+(i_val-1)*ny/2+j_val) = aux_crse(i,j)
 
           rctcrse(1,i,j)  = goodpt
+
           if (aux_crse(i,j) .ge. levtol(levm)) then
 c                    ## never set rctflg to good, since flag2refine may
 c                    ## have previously set it to bad
