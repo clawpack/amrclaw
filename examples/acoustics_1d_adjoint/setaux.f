@@ -22,10 +22,15 @@ c
       common /comaux/ Zl, cl, Zr, cr
       double precision Zl, cl, Zr, cr
 
-      integer i,ii
+      integer i
       double precision xcell
 
       do i=1-mbc,mx+mbc
+
+         if (aux(1,i) .eq. NEEDS_TO_BE_SET) then
+            aux(innerprod_index,i) = 0.d0
+         endif
+
          xcell = xlower + (i-0.5d0)*dx
          if (xcell .lt. 0.0d0) then
             aux(1,i) = Zl
@@ -34,11 +39,6 @@ c
             aux(1,i) = Zr
             aux(2,i) = cr
          endif
-      enddo
-
-      ! Initialize innerproduct to zero.
-      do ii=1-mbc,mx+mbc
-          aux(innerprod_index,ii) = 0.d0
       enddo
 
       return

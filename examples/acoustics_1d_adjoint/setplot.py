@@ -104,7 +104,7 @@ def setplot(plotdata=None):
     
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='1d')
-    plotitem.plot_var = 2
+    plotitem.plot_var = plot_innerprod
     plotitem.amr_color = ['g','b','r']
     plotitem.amr_plotstyle = ['^-','s-','o-']
     plotitem.amr_data_show = [1,1,0]
@@ -153,4 +153,6 @@ def setplot(plotdata=None):
 
     return plotdata
 
+def plot_innerprod(current_data):
+    return current_data.aux[0,:]
     

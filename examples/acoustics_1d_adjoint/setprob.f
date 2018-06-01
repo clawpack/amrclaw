@@ -32,7 +32,5 @@ c     # Density and sound speed to left and right:
       read(7,*) cr
       Zr = rhor*cr
 
-      call read_adjoint_data()    !# Read adjoint info and solution
-
       return
       end
