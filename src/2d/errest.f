@@ -4,6 +4,7 @@ c
       subroutine errest (nvar,naux,lcheck,mptr,nx,ny)
 c
       use amr_module
+      use adjoint_module, only : adjoint_flagging, errf1a
       implicit double precision (a-h,o-z)
 c
 c   ### changed to stack based storage 2/23/13 
@@ -54,9 +55,16 @@ c     ## by flag2refine so make sure not to overwrite
       locamrflags = node(storeflags, mptr)    
       mbuff = max(nghost,ibuff+1)  
       mibuff = nx + 2*mbuff 
-      mjbuff = ny + 2*mbuff 
-      call errf1(alloc(locbig),nvar,valbgc,mptr,mi2tot,mj2tot,
+      mjbuff = ny + 2*mbuff
+      if (adjoint_flagging) then
+          call errf1a(alloc(locbig),nvar,valbgc,mptr,mi2tot,mj2tot,
+     1           mitot,mjtot,alloc(locamrflags),mibuff,mjbuff,
+     1           alloc(locaux),naux)
+      else
+          call errf1(alloc(locbig),nvar,valbgc,mptr,mi2tot,mj2tot,
      1           mitot,mjtot,alloc(locamrflags),mibuff,mjbuff)
+      endif
+
 
 c
       return
