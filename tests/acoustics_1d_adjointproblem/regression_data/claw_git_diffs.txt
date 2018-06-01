@@ -1,0 +1,3123 @@
+Clawpack git diffs...
+
+===========
+classic
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/classic
+
+diff --git a/examples/acoustics_1d_example1/setplot.py b/examples/acoustics_1d_example1/setplot.py
+index fabb9a1..d0812ab 100644
+--- a/examples/acoustics_1d_example1/setplot.py
++++ b/examples/acoustics_1d_example1/setplot.py
+@@ -23,6 +23,7 @@ def setplot(plotdata=None):
+         plotdata = ClawPlotData()
+ 
+     plotdata.clearfigures()  # clear any old figures,axes,items data
++    plotdata.format = 'binary'      # 'ascii', 'binary', 'netcdf'
+ 
+     # Figure for q[0]
+     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+diff --git a/examples/acoustics_1d_example1/setrun.py b/examples/acoustics_1d_example1/setrun.py
+index 0a5020a..882bd1f 100644
+--- a/examples/acoustics_1d_example1/setrun.py
++++ b/examples/acoustics_1d_example1/setrun.py
+@@ -122,7 +122,7 @@ def setrun(claw_pkg='classic'):
+         clawdata.output_t0 = True  # output at initial (or restart) time?
+         
+ 
+-    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
++    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+ 
+     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+     clawdata.output_aux_components = 'none'  # could be list
+diff --git a/examples/acoustics_1d_heterogeneous/setplot.py b/examples/acoustics_1d_heterogeneous/setplot.py
+index 2eac268..3ab848a 100644
+--- a/examples/acoustics_1d_heterogeneous/setplot.py
++++ b/examples/acoustics_1d_heterogeneous/setplot.py
+@@ -16,6 +16,7 @@ def setplot(plotdata=None):
+         plotdata = ClawPlotData()
+ 
+     plotdata.clearfigures()
++    plotdata.format = 'binary'
+ 
+     # Figures corresponding to Figure 9.5 of LeVeque, "Finite Volume
+     # Methods for Hyperbolic Problems," 2002 (though more of them)
+diff --git a/examples/acoustics_1d_heterogeneous/setrun.py b/examples/acoustics_1d_heterogeneous/setrun.py
+index de66fdf..0025eca 100644
+--- a/examples/acoustics_1d_heterogeneous/setrun.py
++++ b/examples/acoustics_1d_heterogeneous/setrun.py
+@@ -125,7 +125,7 @@ def setrun(claw_pkg='classic'):
+         clawdata.output_t0 = True  # output at initial (or restart) time?
+         
+ 
+-    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
++    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+ 
+     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+     clawdata.output_aux_components = 'none'  # could be list
+diff --git a/examples/advection_1d_example1/setplot.py b/examples/advection_1d_example1/setplot.py
+index 9c3e84c..29555fe 100644
+--- a/examples/advection_1d_example1/setplot.py
++++ b/examples/advection_1d_example1/setplot.py
+@@ -44,6 +44,7 @@ def setplot(plotdata=None):
+         plotdata = ClawPlotData()
+ 
+     plotdata.clearfigures()  # clear any old figures,axes,items data
++    plotdata.format = 'binary'
+ 
+     # Figure for q[0]
+     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+diff --git a/examples/advection_1d_example1/setrun.py b/examples/advection_1d_example1/setrun.py
+index d37602c..3ef39ab 100644
+--- a/examples/advection_1d_example1/setrun.py
++++ b/examples/advection_1d_example1/setrun.py
+@@ -121,7 +121,7 @@ def setrun(claw_pkg='classic'):
+         clawdata.output_t0 = True  # output at initial (or restart) time?
+         
+ 
+-    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
++    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+ 
+     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+     clawdata.output_aux_components = 'none'  # could be list
+
+
+===========
+amrclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/amrclaw
+
+diff --git a/examples/acoustics_1d_adjoint/Makefile b/examples/acoustics_1d_adjoint/Makefile
+index c270adc..69a7f27 100644
+--- a/examples/acoustics_1d_adjoint/Makefile
++++ b/examples/acoustics_1d_adjoint/Makefile
+@@ -25,14 +25,14 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
+ # Environment variable FC should be set to fortran compiler, e.g. gfortran
+ 
+ # Compiler flags can be specified here or set as an environment variable
+-FFLAGS ?=  
++FFLAGS ?=  -g -Wall -pedantic -fbounds-check -ffpe-trap=invalid,overflow,zero
+ 
+ # ---------------------------------
+ # package sources for this program:
+ # ---------------------------------
+ 
+-AMRLIB = $(CLAW)/amrclaw/src/1d_adjoint
+-include $(AMRLIB)/Makefile.adjoint_amr_1d
++AMRLIB = $(CLAW)/amrclaw/src/1d
++include $(AMRLIB)/Makefile.amr_1d
+ 
+ # ---------------------------------------
+ # package sources specifically to exclude
+diff --git a/examples/acoustics_1d_adjoint/adjoint/setrun.py b/examples/acoustics_1d_adjoint/adjoint/setrun.py
+index b5ffc76..e9babe9 100644
+--- a/examples/acoustics_1d_adjoint/adjoint/setrun.py
++++ b/examples/acoustics_1d_adjoint/adjoint/setrun.py
+@@ -189,7 +189,7 @@ def setrun(claw_pkg='amrclaw'):
+     #   4 or 'mc'       ==> MC limiter
+     clawdata.limiter = ['mc','mc']
+     
+-    clawdata.use_fwaves = False    # True ==> use f-wave version of algorithms
++    clawdata.use_fwaves = True    # True ==> use f-wave version of algorithms
+     
+     # Source terms splitting:
+     #   src_split == 0 or 'none'    ==> no source term (src routine never called)
+diff --git a/examples/acoustics_1d_adjoint/setaux.f b/examples/acoustics_1d_adjoint/setaux.f
+index 35af59c..5301706 100644
+--- a/examples/acoustics_1d_adjoint/setaux.f
++++ b/examples/acoustics_1d_adjoint/setaux.f
+@@ -22,10 +22,15 @@ c
+       common /comaux/ Zl, cl, Zr, cr
+       double precision Zl, cl, Zr, cr
+ 
+-      integer i,ii
++      integer i
+       double precision xcell
+ 
+       do i=1-mbc,mx+mbc
++
++         if (aux(1,i) .eq. NEEDS_TO_BE_SET) then
++            aux(innerprod_index,i) = 0.d0
++         endif
++
+          xcell = xlower + (i-0.5d0)*dx
+          if (xcell .lt. 0.0d0) then
+             aux(1,i) = Zl
+@@ -36,10 +41,5 @@ c
+          endif
+       enddo
+ 
+-      ! Initialize innerproduct to zero.
+-      do ii=1-mbc,mx+mbc
+-          aux(innerprod_index,ii) = 0.d0
+-      enddo
+-
+       return
+       end
+diff --git a/examples/acoustics_1d_adjoint/setplot.py b/examples/acoustics_1d_adjoint/setplot.py
+index 2a30f59..9ea5e35 100644
+--- a/examples/acoustics_1d_adjoint/setplot.py
++++ b/examples/acoustics_1d_adjoint/setplot.py
+@@ -104,7 +104,7 @@ def setplot(plotdata=None):
+     
+     # Set up for item on these axes:
+     plotitem = plotaxes.new_plotitem(plot_type='1d')
+-    plotitem.plot_var = 2
++    plotitem.plot_var = plot_innerprod
+     plotitem.amr_color = ['g','b','r']
+     plotitem.amr_plotstyle = ['^-','s-','o-']
+     plotitem.amr_data_show = [1,1,0]
+@@ -153,4 +153,6 @@ def setplot(plotdata=None):
+ 
+     return plotdata
+ 
++def plot_innerprod(current_data):
++    return current_data.aux[0,:]
+     
+diff --git a/examples/acoustics_1d_adjoint/setprob.f b/examples/acoustics_1d_adjoint/setprob.f
+index 198897a..ea1c335 100644
+--- a/examples/acoustics_1d_adjoint/setprob.f
++++ b/examples/acoustics_1d_adjoint/setprob.f
+@@ -32,7 +32,5 @@ c     # Density and sound speed to left and right:
+       read(7,*) cr
+       Zr = rhor*cr
+ 
+-      call read_adjoint_data()    !# Read adjoint info and solution
+-
+       return
+       end
+diff --git a/src/1d/Makefile.amr_1d b/src/1d/Makefile.amr_1d
+index 306a073..83928f9 100644
+--- a/src/1d/Makefile.amr_1d
++++ b/src/1d/Makefile.amr_1d
+@@ -29,7 +29,7 @@ COMMON_SOURCES += \
+   $(AMRLIB)/cleanup.f \
+   $(AMRLIB)/colate1.f \
+   $(AMRLIB)/bufnst1.f \
+-  $(AMRLIB)/flag2refine1.f90 \
++  $(AMRLIB)/flag2refine2.f90 \
+   $(AMRLIB)/flagregions1.f90 \
+   $(AMRLIB)/gfixup.f \
+   $(AMRLIB)/filval.f90 \
+diff --git a/src/1d/adjoint_module.f90 b/src/1d/adjoint_module.f90
+index 0a68630..8f18f7d 100644
+--- a/src/1d/adjoint_module.f90
++++ b/src/1d/adjoint_module.f90
+@@ -29,6 +29,7 @@ module adjoint_module
+     logical :: adjoint_flagging
+     real(kind=8), allocatable, dimension(:) :: errors
+     integer, allocatable, dimension(:) :: eptr
++    integer :: grid_num(maxgr)
+ 
+ contains
+ 
+@@ -158,8 +159,8 @@ contains
+       logical foundFile, initial
+ 
+       real(kind=8), allocatable, target, dimension(:) :: new_storage
+-      iadd(ivar,i)  = adjoints(k)%loc(mptr)
+-     .        + ivar - 1 + adjoints(k)%meqn*(i-1)
++      iadd(ivar,i)  = adjoints(k)%loc(mptr) &
++             + ivar - 1 + adjoints(k)%meqn*(i-1)
+ 
+       !Initializing all levels to zero
+       adjoints(k)%gridlevel(:) = 0
+@@ -320,7 +321,7 @@ contains
+ 
+         implicit none
+ 
+-        real(kind=8), intent(in) :: t, xlower_f, dx_f
++        real(kind=8), intent(in) :: xlower_f, dx_f
+         integer, intent(in) :: r, mx_f, meqn_f, mbc_f
+         real(kind=8), intent(in) :: q(meqn_f,1-mbc_f:mx_f+mbc_f)
+ 
+@@ -475,11 +476,9 @@ contains
+ !        of the inner product is never wanted, this could be simplified
+ !        and included into the AMRClaw errf1.f file.
+ ! ========================================================================
+-   subroutine errf1(rctfine,nvar,rctcrse,mptr,mi2tot,
+-     2                 mitot,rctflg,mibuff,auxfine,
+-     2                 naux)
++   subroutine errf1a(rctfine,nvar,rctcrse,mptr,mi2tot, &
++                      mitot,rctflg,mibuff,auxfine,naux)
+ 
+-      use amr_module
+       implicit double precision (a-h,o-z)
+  
+       dimension  rctfine(nvar,mitot)
+@@ -560,7 +559,7 @@ contains
+           if (mask_selecta(k)) then
+ 
+ !             set innerproduct
+-              call calculate_innerproduct(time,err_crse,k,nx/2, &
++              call calculate_innerproduct(err_crse,k,nx/2, &
+                    xleft,hx*2,nvar,nghost,aux_crse)
+           endif
+  12   continue
+diff --git a/src/1d/amr1.f90 b/src/1d/amr1.f90
+index 2a6f801..cd707e4 100644
+--- a/src/1d/amr1.f90
++++ b/src/1d/amr1.f90
+@@ -450,6 +450,7 @@ program amr1
+         ! Non-user data files
+         call set_regions()
+         call set_gauges(rest, nvar)
++        call read_adjoint_data()          ! Read adjoint solution
+ 
+         cflmax = 0.d0   ! otherwise use previously heckpointed val
+ 
+diff --git a/src/1d/flag2refine2.f90 b/src/1d/flag2refine2.f90
+index 19f2b0e..96fc091 100644
+--- a/src/1d/flag2refine2.f90
++++ b/src/1d/flag2refine2.f90
+@@ -50,7 +50,7 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
+     real(kind=8), intent(in) :: xlower,dx,t,tolsp
+     
+     real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc)
+-    real(kind=8), intent(in) :: aux(maux,1-mbc:mx+mbc)
++    real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc)
+     
+     ! Flagging
+     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff)
+diff --git a/src/1d/flagger.f b/src/1d/flagger.f
+index 883578e..e3d80cc 100644
+--- a/src/1d/flagger.f
++++ b/src/1d/flagger.f
+@@ -4,6 +4,8 @@ c
+       subroutine flagger(nvar,naux,lcheck,start_time)
+ 
+       use amr_module
++      use adjoint_module,only:calculate_tol,eptr,errors,totnum_adjoints,
++     1     adjoints,trange_start,trange_final,adjoint_flagging,grid_num
+       implicit double precision (a-h,o-z)
+ 
+       integer omp_get_thread_num, omp_get_max_threads
+diff --git a/src/1d/Makefile.amr_1d b/src/1d/Makefile.amr_1d
+index 5ea4777..306a073 100644
+--- a/src/1d/Makefile.amr_1d
++++ b/src/1d/Makefile.amr_1d
+@@ -6,6 +6,7 @@ COMMON_MODULES += \
+   $(AMRLIB)/amr_module.f90 \
+   $(AMRLIB)/gauges_module.f90 \
+   $(AMRLIB)/regions_module.f90 \
++  $(AMRLIB)/adjoint_module.f90 \
+ 
+ COMMON_SOURCES += \
+   $(AMRLIB)/qinit.f \
+@@ -79,6 +80,7 @@ COMMON_SOURCES += \
+   $(AMRLIB)/check.f \
+   $(AMRLIB)/restrt.f \
+   $(AMRLIB)/quick_sort1.f \
++  $(AMRLIB)/quick_sort_reals.f \
+   $(AMRLIB)/opendatafile.f \
+   $(AMRLIB)/drivesort.f \
+   $(AMRLIB)/flagcheck.f \
+diff --git a/src/1d/adjoint_module.f90 b/src/1d/adjoint_module.f90
+new file mode 100644
+index 0000000..0a68630
+--- /dev/null
++++ b/src/1d/adjoint_module.f90
+@@ -0,0 +1,598 @@
++! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
++! ::::::     Module to define and work with adjoint type
++! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
++
++module adjoint_module
++    use amr_module
++
++    type adjointData_type
++
++        real(kind=8), allocatable, dimension(:) :: alloc
++
++        real(kind=8) hxposs(maxlv)
++
++        integer meqn, ngrids, naux, ndim, nghost, lfine
++        real(kind=8) time, xlowvals(maxgr)
++        integer ncellsx(maxgr), loc(maxgr)
++        integer gridlevel(maxgr), gridpointer(maxgr)
++
++        ! variable for conservation checking
++        real(kind=8) tmass0
++
++    end type adjointData_type
++
++    type(adjointData_type), allocatable :: adjoints(:)
++    integer :: totnum_adjoints, &
++               counter, innerprod_index
++    real(kind=8) :: trange_start, trange_final, levtol(maxlv)
++    character(len=365), allocatable :: adj_files(:)
++    logical :: adjoint_flagging
++    real(kind=8), allocatable, dimension(:) :: errors
++    integer, allocatable, dimension(:) :: eptr
++
++contains
++
++! ========================================================================
++!  read_adjoint_data()
++! ========================================================================
++    subroutine read_adjoint_data()
++
++        implicit none
++
++        ! Function Arguments
++        character(len=*), parameter :: adjointfile = 'adjoint.data'
++        character(len=400) :: adjoint_output
++        logical :: fileExists
++        integer :: iunit, k
++        real(kind=8) :: t1,t2
++
++        adjoint_flagging = .true.
++        levtol = 0.0d0
++
++        inquire(file=adjointfile, exist=fileExists)
++        if (fileExists) then
++
++            iunit = 16
++            call opendatafile(iunit,adjointfile)
++            read(iunit,*) adjoint_output
++
++            ! time period of interest:
++            read(iunit,*) t1
++            read(iunit,*) t2
++
++            call set_time_window(t1, t2)
++
++            read(iunit,*) totnum_adjoints
++            read(iunit,*) innerprod_index
++            allocate(adj_files(totnum_adjoints))
++
++            do 20 k = 1, totnum_adjoints
++                read(iunit,*) adj_files(totnum_adjoints + 1 - k)
++            20  continue
++            close(iunit)
++
++            if (size(adj_files) <= 0) then
++                print *, 'Error: no adjoint output files found.'
++                stop
++            endif
++
++            ! Allocate space for the number of needed checkpoint files
++            allocate(adjoints(totnum_adjoints))
++
++            do 50 k = 1, totnum_adjoints
++                ! Load checkpoint files
++                call reload(adj_files(k),k)
++            50 continue
++
++        else
++            print *, 'Error: adjoint.data file does not exist.'
++        endif
++
++    end subroutine read_adjoint_data
++
++! ========================================================================
++!  set_time_window(t1,t2)
++! ========================================================================
++    subroutine set_time_window(t1, t2)
++
++        implicit none
++
++        ! Function Arguments
++        real(kind=8), intent(in) :: t1, t2
++
++        trange_final = t2
++        trange_start = t1
++
++    end subroutine set_time_window
++
++! ========================================================================
++!  calculate_tol(lcheck)
++! ========================================================================
++    subroutine calculate_tol(lcheck)
++
++       use amr_module
++       implicit none
++
++       ! Function Arguments
++       integer, intent(in) :: lcheck
++       real(kind=8) :: errtotal, cutoff
++       real(kind=8) :: dt, hx
++       integer :: celln, sorted(numcells(lcheck)/2)
++
++       dt = possk(lcheck)
++       hx = hxposs(lcheck)
++
++       ! Setting our goal for the maximum amount of error
++       ! for this level
++       cutoff = tol*(dt/hx)/(tfinal-t0)
++       cutoff = cutoff/mxnest
++
++       ! Sorting errors
++       call qsortr(sorted, numcells(lcheck)/2, errors)
++
++       errtotal = 0
++       do celln = 1, numcells(lcheck)/2
++           errtotal = errtotal + errors(sorted(celln))
++           if (errtotal .ge. cutoff) then
++               levtol(lcheck) = errors(sorted(celln))
++               EXIT
++           endif
++       end do
++
++    end subroutine calculate_tol
++
++! ========================================================================
++!  reload(adjfile, k)
++!  Note: This assumes that the binary output format was used
++! ========================================================================
++      subroutine reload(adjfile, k)
++
++      implicit double precision (a-h,o-z)
++
++      integer, intent(in) :: k
++      integer :: mptr, level, ladjfile
++      integer :: mitot, mjtot, i1, i2
++      integer :: i, ivar, z, loc
++      integer :: allocsize, new_size
++      character(len=*):: adjfile
++      logical foundFile, initial
++
++      real(kind=8), allocatable, target, dimension(:) :: new_storage
++      iadd(ivar,i)  = adjoints(k)%loc(mptr)
++     .        + ivar - 1 + adjoints(k)%meqn*(i-1)
++
++      !Initializing all levels to zero
++      adjoints(k)%gridlevel(:) = 0
++
++      ! Checking to see if fort.t file exists
++      ladjfile = len(trim(adjfile))
++      adjfile(ladjfile-4:ladjfile-4) = 't'
++      write(6,*) 'Attempting to reload data '
++      write(6,*) '  fort.t* file: ',trim(adjfile)
++      inquire(file=trim(adjfile),exist=foundFile)
++      if (.not. foundFile) then
++          write(*,*)" Did not find fort.t* file!"
++          stop
++      endif
++      open(9,file=trim(adjfile),status='old',form='formatted')
++      rewind 9
++
++      ! Reading from fort.t file
++      read(9, "(e18.8)") adjoints(k)%time
++      read(9, "(i6)") adjoints(k)%meqn
++      read(9, "(i6)") adjoints(k)%ngrids
++      read(9, "(i6)") adjoints(k)%naux
++      read(9, "(i6)") adjoints(k)%ndim
++      read(9, "(i6)") adjoints(k)%nghost
++
++      close(9)
++
++      ! Allocating memory for alloc array
++      allocsize = 4000000
++      allocate(adjoints(k)%alloc(allocsize))
++
++      ! Checking to see if fort.q file exists
++      adjfile(ladjfile-4:ladjfile-4) = 'q'
++      write(6,*) 'Attempting to reload data '
++      write(6,*) '  fort.q* file: ',trim(adjfile)
++      inquire(file=trim(adjfile),exist=foundFile)
++      if (.not. foundFile) then
++          write(*,*)" Did not find fort.q* file!"
++          stop
++      endif
++      open(10,file=trim(adjfile),status='old',form='formatted')
++      rewind 10
++
++      ! Checking to see if fort.b file exists
++      adjfile(ladjfile-4:ladjfile-4) = 'b'
++      write(6,*) 'Attempting to reload data '
++      write(6,*) '  fort.b* file: ',trim(adjfile)
++      inquire(file=trim(adjfile),exist=foundFile)
++      if (.not. foundFile) then
++          write(*,*)" Did not find fort.b* file!"
++          stop
++      endif
++      open(20,file=trim(adjfile),status='unknown',access='stream')
++      rewind 20
++
++      ! Reading from fort.q* file and fort.b* files
++      loc = 1
++      do z = 1, adjoints(k)%ngrids
++          read(10,"(i6)") mptr
++          adjoints(k)%gridpointer(z) = mptr
++
++          read(10,"(i6)") level
++          adjoints(k)%gridlevel(mptr) = level
++
++          read(10,"(i6)") adjoints(k)%ncellsx(mptr)
++          read(10,"(e26.16)") adjoints(k)%xlowvals(mptr)
++          read(10,"(e26.16)") adjoints(k)%hxposs(level)
++          read(10,*)
++
++          mitot = adjoints(k)%ncellsx(mptr) + 2*adjoints(k)%nghost
++
++          adjoints(k)%loc(mptr) = loc
++          loc = loc + mitot*adjoints(k)%meqn
++
++          ! Checking to see if the alloc array is large enough
++          ! to hold the new grid
++          ! If not, making the alloc array larger
++          if (allocsize .lt. loc) then
++              new_size = 2*allocsize
++              allocate(new_storage(new_size))
++
++              new_storage(1:allocsize) = adjoints(k)%alloc
++              call move_alloc(new_storage,adjoints(k)%alloc)
++              allocsize = new_size
++          endif
++
++          ! This is the bulk of the reading
++          i1 = iadd(1,1)
++          i2 = iadd(adjoints(k)%meqn,mitot)
++          read(20) adjoints(k)%alloc(i1:i2)
++
++      enddo
++
++      close(10)
++      close(20)
++
++      adjoints(k)%lfine = maxval(adjoints(k)%gridlevel)
++
++    end subroutine reload
++
++! ========================================================================
++!  select_snapshots(time,mask_selecta)
++! ========================================================================
++    subroutine select_snapshots(time,mask_selecta)
++
++       implicit none
++
++       logical, intent(inout) :: mask_selecta(totnum_adjoints)
++       real(kind=8), intent(in) :: time
++
++!      Local variables
++       logical :: adjoints_found
++       integer :: r
++
++!       Pick adjoint snapshots to consider when flagging
++        mask_selecta = .false.
++        adjoints_found = .false.
++
++        do r=1,totnum_adjoints
++            if ((time+adjoints(r)%time) >= trange_start .and. &
++              (time+adjoints(r)%time) <= trange_final) then
++                mask_selecta(r) = .true.
++                adjoints_found = .true.
++            endif
++        enddo
++
++        if(.not. adjoints_found) then
++            write(*,*) "Error: no adjoint snapshots ", &
++                "found in time range."
++            write(*,*) "Consider increasing time rage of interest, ", &
++                "or adding more snapshots."
++        endif
++
++        do r=1,totnum_adjoints-1
++            if((.not. mask_selecta(r)) .and. &
++              (mask_selecta(r+1))) then
++                mask_selecta(r) = .true.
++                exit
++            endif
++        enddo
++
++        do r=totnum_adjoints,2,-1
++            if((.not. mask_selecta(r)) .and. &
++              (mask_selecta(r-1))) then
++                mask_selecta(r) = .true.
++                exit
++            endif
++        enddo
++
++    end subroutine select_snapshots
++
++! ========================================================================
++!  Routine to calculate inner product
++! ========================================================================
++
++    subroutine calculate_innerproduct(q,r,mx_f,xlower_f, &
++                dx_f,meqn_f,mbc_f,innerprod)
++
++        implicit none
++
++        real(kind=8), intent(in) :: t, xlower_f, dx_f
++        integer, intent(in) :: r, mx_f, meqn_f, mbc_f
++        real(kind=8), intent(in) :: q(meqn_f,1-mbc_f:mx_f+mbc_f)
++
++        integer :: mx_a, mptr_a
++        integer :: i, i1, i2, level, loc, z
++        real(kind=8) :: dx_a, xlower_a, xupper_a, xupper_f, x1, x2
++
++        real(kind=8), intent(inout) :: innerprod(1-mbc_f:mx_f+mbc_f)
++        real(kind=8) :: q_innerprod(1-mbc_f:mx_f+mbc_f)
++        logical :: mask_forward(1-mbc_f:mx_f+mbc_f)
++        real(kind=8) :: q_interp(adjoints(r)%meqn,1-mbc_f:mx_f+mbc_f)
++
++        logical, allocatable :: mask_adjoint(:)
++
++
++        xupper_f = xlower_f + mx_f*dx_f
++
++        ! Loop over patches in adjoint solution
++        do z = 1, adjoints(r)%ngrids
++            mptr_a = adjoints(r)%gridpointer(z)
++            level = adjoints(r)%gridlevel(mptr_a)
++
++            ! Number of points in x (nx)
++            mx_a = adjoints(r)%ncellsx(mptr_a)
++
++            ! Finding x extreem values for grid
++            xlower_a = adjoints(r)%xlowvals(mptr_a)
++            dx_a = adjoints(r)%hxposs(level)
++            xupper_a = xlower_a + mx_a*dx_a
++
++            loc = adjoints(r)%loc(mptr_a)
++
++            ! Check if adjoint patch overlaps with forward patch
++            x1 = max(xlower_f,xlower_a)
++            x2 = min(xupper_f,xupper_a)
++
++            if (x1 > x2) then
++                ! Skipping interpolation if grids don't overlap
++                mask_forward = .false.
++                continue
++            else
++
++                allocate(mask_adjoint(1-adjoints(r)%nghost:mx_a+adjoints(r)%nghost))
++
++                ! Create a mask that is .true. only in part of patch intersecting forward patch:
++                i1 = max(int((x1 - xlower_a + 0.5d0*dx_a) / dx_a), 0)
++                i2 = min(int((x2 - xlower_a + 0.5d0*dx_a) / dx_a) + 1, mx_a+1)
++
++                forall (i=1-adjoints(r)%nghost:mx_a+adjoints(r)%nghost)
++                    mask_adjoint(i) = ((i >= i1) .and. (i <= i2))
++                end forall
++
++                ! Create a mask that is .true. only in part of forward patch intersecting patch:
++
++                i1 = max(int((x1 - xlower_f + 0.5d0*dx_f) / dx_f)+1, 0)
++                i2 = min(int((x2 - xlower_f + 0.5d0*dx_f) / dx_f), mx_f)
++
++                do i=1-mbc_f,mx_f+mbc_f
++                    mask_forward(i) = ((i >= i1) .and. (i <= i2))
++                enddo
++
++                ! Interpolate adjoint values to q_interp
++                ! Note that values in q_interp will only be set properly where 
++                ! mask_adjoint == .true.
++                call interp_adjoint( &
++                        adjoints(r)%meqn, r, q_interp, &
++                        xlower_a, dx_a, mx_a, xlower_f, dx_f, mx_f, &
++                        mask_adjoint, mptr_a, mask_forward, mbc_f)
++
++                q_innerprod = 0.d0
++                ! For each overlapping point, calculate inner product
++                forall(i = 1-mbc_f:mx_f+mbc_f, mask_forward(i))
++                    q_innerprod(i) = abs(dot_product(q(:,i),q_interp(:,i)))
++                end forall
++
++                do i=1-mbc_f,mx_f+mbc_f
++                    if (q_innerprod(i) > innerprod(i)) then
++                        innerprod(i) = q_innerprod(i)
++                    endif
++                enddo
++
++                deallocate(mask_adjoint)
++            endif
++        enddo
++
++    end subroutine calculate_innerproduct
++
++! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
++! :::::     Routine to interpolate adjoint to given an x point
++! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
++
++    subroutine interp_adjoint(nvar, r, q_interp, xlower_a, dx_a, &
++            mx_a, xlower_f, dx_f, mx_f, mask_adjoint, mptr_a, &
++            mask_forward, mbc_f)
++
++        implicit none
++
++        ! Function arguments
++        integer, intent(in) :: r, nvar, mx_a
++        logical, intent(in) :: mask_adjoint(1-adjoints(r)%nghost:mx_a+adjoints(r)%nghost)
++        real(kind=8), intent(in) :: xlower_a, xlower_f
++        integer, intent(in) :: mx_f, mptr_a, mbc_f
++        real(kind=8), intent(in) :: dx_f, dx_a
++        logical, intent(in) :: mask_forward(1-mbc_f:mx_f+mbc_f)
++
++        integer :: z,level, iz(1-mbc_f:mx_f+mbc_f), &
++                      ivar,i, iadd, iaddaux, loc
++        real(kind=8) :: q_interp(nvar,1-mbc_f:mx_f+mbc_f), denom
++        real(kind=8) :: x, xhigh_a,x_f
++        real(kind=8) :: dxz(1-mbc_f:mx_f+mbc_f), a
++
++        iadd(ivar,i)  = loc + ivar - 1 + adjoints(r)%meqn*(i-1)
++
++        q_interp = 0.0
++        xhigh_a  = xlower_a + mx_a*dx_a
++        loc    = adjoints(r)%loc(mptr_a)
++
++        do z=1-mbc_f,mx_f+mbc_f
++            x = xlower_f + (z - 0.5d0)*dx_f
++
++            iz(z) = int((x - xlower_a + 0.5d0*dx_a) / dx_a) + 1
++            dxz(z) = x - (xlower_a + (iz(z)-0.5d0)*dx_a)
++        enddo
++
++        do z = 1-mbc_f, mx_f+mbc_f
++            x = xlower_f + (z - 0.5d0)*dx_f
++
++            if (mask_forward(z)) then
++            ! Interpolate only if this cell is overlapping with grid
++                if (mask_adjoint(iz(z))) then
++
++                    do ivar=1,nvar
++                        a = (adjoints(r)%alloc(iadd(ivar,iz(z)+1)) &
++                            - adjoints(r)%alloc(iadd(ivar,iz(z)))) / dx_a
++                        q_interp(ivar,z) = &
++                            adjoints(r)%alloc(iadd(ivar,iz(z))) + a*dxz(z)
++                    enddo
++                endif
++            endif
++        enddo
++
++    end subroutine interp_adjoint
++
++! ========================================================================
++!  Routine to compute error in forward solution for the adjoint method
++!  Editted from errf1.f
++!  Differences:
++!   (i) Computes error for all of the terms in q
++!   (ii) Needs the aux array passed in, because the inner product is saved
++!        to the aux array (note, this changes the call sequence, which is
++!        why this is not included into the AMRClaw errf1.f file. If plotting
++!        of the inner product is never wanted, this could be simplified
++!        and included into the AMRClaw errf1.f file.
++! ========================================================================
++   subroutine errf1(rctfine,nvar,rctcrse,mptr,mi2tot,
++     2                 mitot,rctflg,mibuff,auxfine,
++     2                 naux)
++
++      use amr_module
++      implicit double precision (a-h,o-z)
++ 
++      dimension  rctfine(nvar,mitot)
++      dimension  rctcrse(nvar,mi2tot)
++      dimension  rctflg(mibuff)
++      dimension  aux_crse(mi2tot)
++      dimension  err_crse(nvar,mi2tot)
++      dimension  auxfine(naux,mitot)
++      logical mask_selecta(totnum_adjoints)
++
++!
++!
++! :::::::::::::::::::::: Modified from ERRF1 :::::::::::::::::::::::::
++!
++!  Richardson error estimator:  Used when flag_richardson is .true.
++!  Compare error estimates in rctfine, rctcrse,
++!  A point is flagged if the inner product between the
++!  error estimate and the adjoint solution is greater than tol
++!  later we check if its in a region where its allowed to be flagged
++!  or alternatively required.
++!
++! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
++!
++
++      time  = rnode(timemult, mptr)
++      xleft = rnode(cornxlo,mptr)
++      levm  = node(nestlevel, mptr)
++      hx    = hxposs(levm)
++      dt    = possk(levm)
++      numsp = 0
++      jg = grid_num(mptr)
++      nx = mitot - 2*nghost
++
++      call select_snapshots(time,mask_selecta)
++
++      errmax = 0.0d0
++      err2   = 0.0d0
++      err_crse = 0.0d0
++      auxfine(innerprod_index,:) = 0.0d0
++      aux_crse = 0.0d0
++
++      order  = dble(2**(iorder+1) - 2)
++!
++!     Calculating correct tol for this level
++!     nxnest is the maximum number of refinement levels, from amr_module
++!     --------------------
++      tol_exact = tol*dt/(tfinal-t0)
++      tol_exact = tol_exact/mxnest
++      tol_exact = tol_exact/(numcells(levm)*hx)
++
++      if (t0+possk(levm) .eq. time) levtol(levm) = tol_exact
++
++!
++! zero out the exterior locations so they don't affect err.est.
++!
++      ifine = nghost+1
++      do i  = nghost+1, mi2tot-nghost
++          do k = 1,nvar
++              xofi  = xleft + (dble(ifine) - .5d0)*hx
++              term1 = rctfine(k,ifine)
++              term2 = rctfine(k,ifine+1)
++!             # divide by (aval*order) for relative error
++              aval  = (term1+term2)/2.d0
++              est   =  dabs((aval-rctcrse(k,i))/ order)
++              if (est .gt. errmax) errmax = est
++              err2 = err2 + est*est
++
++              err_crse(k,i) = est
++!             retaining directionality of the wave
++              err_crse(k,i) = sign(est,rctcrse(k,i))
++          enddo
++
++        ifine = ifine + 2
++      enddo
++
++      do 12 k = 1,totnum_adjoints
++!         ! Consider only snapshots that are within the desired time range
++          if (mask_selecta(k)) then
++
++!             set innerproduct
++              call calculate_innerproduct(time,err_crse,k,nx/2, &
++                   xleft,hx*2,nvar,nghost,aux_crse)
++          endif
++ 12   continue
++
++      do i  = nghost+1, mi2tot-nghost
++          errors(eptr(jg)+i-nghost) = aux_crse(i)
++
++          rctcrse(1,i)  = goodpt
++          if (aux_crse(i) .ge. levtol(levm)) then
++!                    ## never set rctflg to good, since flag2refine may
++!                    ## have previously set it to bad
++!                    ## can only add bad pts in this routine
++              rctcrse(1,i)  = badpt
++          endif
++
++      enddo
++
++      ifine   = nghost+1
++      do i = nghost+1, mi2tot-nghost
++         auxfine(innerprod_index,ifine) = aux_crse(i)
++         auxfine(innerprod_index,ifine+1) = aux_crse(i)
++         if (rctcrse(1,i) .ne. goodpt) then
++!           ## never set rctflg to good, since flag2refine may
++!           ## have previously set it to bad
++!           ## can only add bad pts in this routine
++            rctflg(ifine)    = badpt
++            rctflg(ifine+1)  = badpt
++        endif
++        ifine   = ifine + 2
++      enddo
++
++    end subroutine errf1a
++
++
++end module adjoint_module
+diff --git a/src/1d/amr1.f90 b/src/1d/amr1.f90
+index 0f4d3f5..2a6f801 100644
+--- a/src/1d/amr1.f90
++++ b/src/1d/amr1.f90
+@@ -54,7 +54,7 @@
+ !
+ ! =========================================================================
+ !
+-!   Modified for 1d problem by Brisa Davis, 2016
++!   Modified from amr1.f90 for 1d problem by Brisa Davis, 2016
+ !
+ ! =========================================================================
+ program amr1
+@@ -95,8 +95,10 @@ program amr1
+ 
+     use amr_module, only: t0, tstart_thisrun
+ 
++    ! Data modules
+     use regions_module, only: set_regions
+     use gauges_module, only: set_gauges, num_gauges
++    use adjoint_module, only: read_adjoint_data
+ 
+     implicit none
+ 
+@@ -434,6 +436,7 @@ program amr1
+         ! Non-user data files
+         call set_regions()
+         call set_gauges(rest, nvar)
++        call read_adjoint_data()          ! Read adjoint solution
+ 
+     else
+ 
+diff --git a/src/1d/errest.f b/src/1d/errest.f
+index 014fcca..4015178 100644
+--- a/src/1d/errest.f
++++ b/src/1d/errest.f
+@@ -4,7 +4,7 @@ c
+       subroutine errest (nvar,naux,lcheck,mptr,nx)
+ c
+       use amr_module
+-
++      use adjoint_module, only : adjoint_flagging, errf1a
+       implicit double precision (a-h,o-z)
+ c
+ c   ### changed to stack based storage 2/23/13 
+@@ -54,8 +54,14 @@ c     ## by flag2refine so make sure not to overwrite
+       locamrflags = node(storeflags, mptr)    
+       mbuff = max(nghost,ibuff+1)  
+       mibuff = nx + 2*mbuff
+-      call errf1(alloc(locbig),nvar,valbgc,mptr,mi2tot,
++      if(adjoint_flagging) then
++          call errf1a(alloc(locbig),nvar,valbgc,mptr,mi2tot,
++     1           mitot,alloc(locamrflags),mibuff,
++     1           alloc(locaux),naux)
++      else
++          call errf1(alloc(locbig),nvar,valbgc,mptr,mi2tot,
+      1           mitot,alloc(locamrflags),mibuff)
++      endif
+ 
+ c
+       return
+diff --git a/src/1d/flag2refine1.f90 b/src/1d/flag2refine1.f90
+deleted file mode 100644
+index c606504..0000000
+--- a/src/1d/flag2refine1.f90
++++ /dev/null
+@@ -1,97 +0,0 @@
+-! ::::::::::::::::::::: flag2refine ::::::::::::::::::::::::::::::::::
+-!
+-! User routine to control flagging of points for refinement.
+-!
+-! Default version computes spatial difference dq in each direction and
+-! for each component of q and flags any point where this is greater than
+-! the tolerance tolsp.  This is consistent with what the routine errsp did in
+-! earlier versions of amrclaw (4.2 and before).
+-!
+-! This routine can be copied to an application directory and modified to
+-! implement some other desired refinement criterion.
+-!
+-! Points may also be flagged for refining based on a Richardson estimate
+-! of the error, obtained by comparing solutions on the current grid and a
+-! coarsened grid.  Points are flagged if the estimated error is larger than
+-! the parameter tol in amr2ez.data, provided flag_richardson is .true.,
+-! otherwise the coarsening and Richardson estimation is not performed!  
+-! Points are flagged via Richardson in a separate routine.
+-!
+-! Once points are flagged via this routine and/or Richardson, the subroutine
+-! flagregions is applied to check each point against the min_level and
+-! max_level of refinement specified in any "region" set by the user.
+-! So flags set here might be over-ruled by region constraints.
+-!
+-!    q   = grid values including ghost cells (bndry vals at specified
+-!          time have already been set, so can use ghost cell values too)
+-!
+-!  aux   = aux array on this grid patch
+-!
+-! amrflags  = array to be flagged with either the value
+-!             DONTFLAG (no refinement needed)  or
+-!             DOFLAG   (refinement desired)    
+-!
+-! tolsp = tolerance specified by user in input file amr1ez.data, used in default
+-!         version of this routine as a tolerance for spatial differences.
+-!
+-! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
+-                            tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
+-
+-    use regions_module
+-
+-    implicit none
+-
+-    ! Subroutine arguments
+-    integer, intent(in) :: mx,mbc,meqn,maux,level,mbuff
+-    real(kind=8), intent(in) :: xlower,dx,t,tolsp
+-    
+-    real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc)
+-    real(kind=8), intent(in) :: aux(maux,1-mbc:mx+mbc)
+-    
+-    ! Flagging
+-    real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff)
+-    real(kind=8), intent(in) :: DONTFLAG
+-    real(kind=8), intent(in) :: DOFLAG
+-    
+-    logical :: allowflag
+-    external allowflag
+-
+-    ! Locals
+-    integer :: i,m
+-    real(kind=8) :: x_c,x_low,x_hi
+-    real(kind=8) :: dqi(meqn), dq(meqn)
+-
+-    ! Initialize flags
+-    amrflags = DONTFLAG
+-    
+-    ! Loop over interior points on this grid
+-    ! (i) grid cell is [x_low,x_hi], cell center at (x_c)
+-    ! This information is not needed for the default flagging based on
+-    ! undivided differences, but might be needed in a user's version.
+-    ! Note that if you want to refine only in certain space-time regions,
+-    ! it may be easiest to use the "regions" feature.  The flags set here or
+-    ! in the Richardson error estimator are potentially modified by the
+-    ! min_level and max_level specified in any regions.
+-        
+-    x_loop: do i = 1,mx
+-        x_low = xlower + (i - 1) * dx
+-        x_c = xlower + (i - 0.5d0) * dx
+-        x_hi = xlower + i * dx
+-
+-        ! -----------------------------------------------------------------
+-            dq = 0.d0
+-            dqi = abs(q(:,i+1) - q(:,i-1))
+-            dq = max(dq,dqi)
+-
+-        ! default checks all components of undivided difference:
+-            do m=1,meqn
+-                if (dq(m) > tolsp) then
+-                    amrflags(i) = DOFLAG
+-                    cycle x_loop
+-                endif
+-            enddo
+-
+-    enddo x_loop
+-   
+-end subroutine flag2refine1
+diff --git a/src/1d/flag2refine2.f90 b/src/1d/flag2refine2.f90
+new file mode 100644
+index 0000000..19f2b0e
+--- /dev/null
++++ b/src/1d/flag2refine2.f90
+@@ -0,0 +1,128 @@
++! ::::::::::::::::::::: flag2refine ::::::::::::::::::::::::::::::::::
++!
++! User routine to control flagging of points for refinement.
++!
++! Default version computes spatial difference dq in each direction and
++! for each component of q and flags any point where this is greater than
++! the tolerance tolsp.  This is consistent with what the routine errsp did in
++! earlier versions of amrclaw (4.2 and before).
++!
++! This routine can be copied to an application directory and modified to
++! implement some other desired refinement criterion.
++!
++! Points may also be flagged for refining based on a Richardson estimate
++! of the error, obtained by comparing solutions on the current grid and a
++! coarsened grid.  Points are flagged if the estimated error is larger than
++! the parameter tol in amr2ez.data, provided flag_richardson is .true.,
++! otherwise the coarsening and Richardson estimation is not performed!  
++! Points are flagged via Richardson in a separate routine.
++!
++! Once points are flagged via this routine and/or Richardson, the subroutine
++! flagregions is applied to check each point against the min_level and
++! max_level of refinement specified in any "region" set by the user.
++! So flags set here might be over-ruled by region constraints.
++!
++!    q   = grid values including ghost cells (bndry vals at specified
++!          time have already been set, so can use ghost cell values too)
++!
++!  aux   = aux array on this grid patch
++!
++! amrflags  = array to be flagged with either the value
++!             DONTFLAG (no refinement needed)  or
++!             DOFLAG   (refinement desired)    
++!
++! tolsp = tolerance specified by user in input file amr1ez.data, used in default
++!         version of this routine as a tolerance for spatial differences.
++!
++! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
++subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
++                            tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
++
++    use regions_module
++    use adjoint_module, only: totnum_adjoints, innerprod_index, &
++                              adjoint_flagging,select_snapshots, &
++                              calculate_innerproduct
++
++    implicit none
++
++    ! Subroutine arguments
++    integer, intent(in) :: mx,mbc,meqn,maux,level,mbuff
++    real(kind=8), intent(in) :: xlower,dx,t,tolsp
++    
++    real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc)
++    real(kind=8), intent(in) :: aux(maux,1-mbc:mx+mbc)
++    
++    ! Flagging
++    real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff)
++    real(kind=8), intent(in) :: DONTFLAG
++    real(kind=8), intent(in) :: DOFLAG
++    
++    logical :: allowflag
++    external allowflag
++
++    ! Locals
++    integer :: i,m,r
++    real(kind=8) :: x_c,x_low,x_hi
++    real(kind=8) :: dqi(meqn), dq(meqn)
++
++    ! Adjoint method specific variables
++    logical mask_selecta(totnum_adjoints)
++
++    ! Initialize flags
++    amrflags = DONTFLAG
++
++    if(adjoint_flagging) then
++        aux(innerprod_index,:) = 0.0
++        call select_snapshots(t,mask_selecta)
++
++        ! Loop over adjoint snapshots
++        aloop: do r=1,totnum_adjoints
++
++            ! Consider only snapshots that are within the desired time range
++            if (mask_selecta(r)) then
++                ! Calculate inner product with current snapshot
++                call calculate_innerproduct(q,r,mx,xlower,dx,meqn,mbc, &
++                                           aux(innerprod_index,:))
++            endif
++
++        enddo aloop
++    endif
++    
++    ! Loop over interior points on this grid
++    ! (i) grid cell is [x_low,x_hi], cell center at (x_c)
++    ! This information is not needed for the default flagging based on
++    ! undivided differences, but might be needed in a user's version.
++    ! Note that if you want to refine only in certain space-time regions,
++    ! it may be easiest to use the "regions" feature.  The flags set here or
++    ! in the Richardson error estimator are potentially modified by the
++    ! min_level and max_level specified in any regions.
++        
++    x_loop: do i = 1,mx
++        x_low = xlower + (i - 1) * dx
++        x_c = xlower + (i - 0.5d0) * dx
++        x_hi = xlower + i * dx
++
++        ! -----------------------------------------------------------------
++
++            if(adjoint_flagging) then
++                if (aux(innerprod_index,i) > tolsp) then
++                    amrflags(i) = DOFLAG
++                    cycle x_loop
++                endif
++            else
++                dq = 0.d0
++                dqi = abs(q(:,i+1) - q(:,i-1))
++                dq = max(dq,dqi)
++
++                ! default checks all components of undivided difference:
++                do m=1,meqn
++                    if (dq(m) > tolsp) then
++                        amrflags(i) = DOFLAG
++                        cycle x_loop
++                    endif
++                enddo
++            endif
++
++    enddo x_loop
++   
++end subroutine flag2refine1
+diff --git a/src/1d/flagger.f b/src/1d/flagger.f
+index ca8e705..883578e 100644
+--- a/src/1d/flagger.f
++++ b/src/1d/flagger.f
+@@ -21,7 +21,20 @@ c
+ c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 
+ c      call prepgrids(listgrids,numgrids(lcheck),lcheck)
+-         mbuff = max(nghost,ibuff+1)  
++         mbuff = max(nghost,ibuff+1)
++
++
++      if(adjoint_flagging) then
++c        allocating space for tracking error estimates
++c        (used at next regridding time to determine tolerance)
++         if (flag_richardson) then
++           allocate(errors(numcells(lcheck)/2))
++           allocate(eptr(numgrids(lcheck)))
++           errors = 0
++           eptr(1) = 0
++         endif
++      endif
++
+ c before parallel loop give grids the extra storage they need for error estimation
+          do  jg = 1, numgrids(lcheck)
+ c            mptr = listgrids(jg)
+@@ -32,6 +45,13 @@ c            mptr = listgrids(jg)
+             if (flag_richardson) then
+                locbig = igetsp(mitot*nvar)
+                node(tempptr,mptr) = locbig
++
++               if(adjoint_flagging) then
++                 grid_num(mptr) = jg
++                 if (jg .ne. numgrids(lcheck)) then
++                   eptr(jg+1) = eptr(jg)+(nx/2)
++                 endif
++               endif
+             else 
+                locbig = 0
+             endif
+@@ -121,5 +141,13 @@ c
+        end do
+ ! $OMP END PARALLEL DO
+ 
++       if(adjoint_flagging)then
++           if (flag_richardson) then
++               call calculate_tol(lcheck)
++               deallocate(errors)
++               deallocate(eptr)
++           endif
++       endif
++
+        return
+        end
+diff --git a/src/1d/quick_sort_reals.f b/src/1d/quick_sort_reals.f
+new file mode 100644
+index 0000000..dfa4eb3
+--- /dev/null
++++ b/src/1d/quick_sort_reals.f
+@@ -0,0 +1,168 @@
++C From HDK@psuvm.psu.edu Thu Dec  8 15:27:16 MST 1994
++C 
++C The following was converted from Algol recursive to Fortran iterative
++C by a colleague at Penn State (a long time ago - Fortran 66, please
++C excuse the GoTo's). The following code also corrects a bug in the
++C Quicksort algorithm published in the ACM (see Algorithm 402, CACM,
++C Sept. 1970, pp 563-567; also you younger folks who weren't born at
++C that time might find interesting the history of the Quicksort
++C algorithm beginning with the original published in CACM, July 1961,
++C pp 321-322, Algorithm 64). Note that the following algorithm sorts
++C integer data; actual data is not moved but sort is affected by sorting
++C a companion index array (see leading comments). The data type being
++C sorted can be changed by changing one line; see comments after
++C declarations and subsequent one regarding comparisons(Fortran
++C 77 takes care of character comparisons of course, so that comment
++C is merely historical from the days when we had to write character
++C compare subprograms, usually in assembler language for a specific
++C mainframe platform at that time). But the following algorithm is
++C good, still one of the best available.
++
++C Modified by Brisa Davis, 1/26/2018 to sort reals rather than integers.
++
++
++      SUBROUTINE QSORTR (ORD,N,A)
++C
++C==============SORTS THE ARRAY A(I),I=1,2,...,N BY PUTTING THE
++C   ASCENDING ORDER VECTOR IN ORD.  THAT IS ASCENDING ORDERED A
++C   IS A(ORD(I)),I=1,2,...,N; DESCENDING ORDER A IS A(ORD(N-I+1)),
++C   I=1,2,...,N .  THIS SORT RUNS IN TIME PROPORTIONAL TO N LOG N .
++C
++C
++C     ACM QUICKSORT - ALGORITHM #402 - IMPLEMENTED IN FORTRAN 66 BY
++C                                 WILLIAM H. VERITY, WHV@PSUVM.PSU.EDU
++C                                 CENTER FOR ACADEMIC COMPUTING
++C                                 THE PENNSYLVANIA STATE UNIVERSITY
++C                                 UNIVERSITY PARK, PA.  16802
++C
++      IMPLICIT none
++C
++      integer :: N, ORD(N),NDEEP
++      integer :: P,Q,I,L,U,L1,U1,YP,IX,IZ,IP,IQ,POPLST(2,20)
++      real(kind=8) :: A(N)
++      real(kind=8) :: X,XX,Z,ZZ,Y
++C
++C
++C
++      NDEEP=0
++      U1=N
++      L1=1
++      DO 1  I=1,N
++    1 ORD(I)=I
++    2 IF (U1.LE.L1) RETURN
++C
++    3 L=L1
++      U=U1
++C
++C PART
++C
++    4 P=L
++      Q=U
++C     FOR CHARACTER SORTS, THE FOLLOWING 3 STATEMENTS WOULD BECOME
++C     X = ORD(P)
++C     Z = ORD(Q)
++C     IF (A(X) .LE. A(Z)) GO TO 2
++C
++C     WHERE "CLE" IS A LOGICAL FUNCTION WHICH RETURNS "TRUE" IF THE
++C     FIRST ARGUMENT IS LESS THAN OR EQUAL TO THE SECOND, BASED ON "LEN"
++C     CHARACTERS.
++C
++      X=A(ORD(P))
++      Z=A(ORD(Q))
++      IF (X.LE.Z) GO TO 5
++      Y=X
++      X=Z
++      Z=Y
++      YP=ORD(P)
++      ORD(P)=ORD(Q)
++      ORD(Q)=YP
++    5 IF (U-L.LE.1) GO TO 15
++      XX=X
++      IX=P
++      ZZ=Z
++      IZ=Q
++C
++C LEFT
++C
++    6 P=P+1
++      IF (P.GE.Q) GO TO 7
++      X=A(ORD(P))
++      IF (X.GE.XX) GO TO 8
++      GO TO 6
++    7 P=Q-1
++      GO TO 13
++C
++C RIGHT
++C
++    8 Q=Q-1
++      IF (Q.LE.P) GO TO 9
++      Z=A(ORD(Q))
++      IF (Z.LE.ZZ) GO TO 10
++      GO TO 8
++    9 Q=P
++      P=P-1
++      Z=X
++      X=A(ORD(P))
++C
++C DIST
++C
++   10 IF (X.LE.Z) GO TO 11
++      Y=X
++      X=Z
++      Z=Y
++      IP=ORD(P)
++      ORD(P)=ORD(Q)
++      ORD(Q)=IP
++   11 IF (X.LE.XX) GO TO 12
++      XX=X
++      IX=P
++   12 IF (Z.GE.ZZ) GO TO 6
++      ZZ=Z
++      IZ=Q
++      GO TO 6
++C
++C OUT
++C
++   13 CONTINUE
++      IF (.NOT.(P.NE.IX.AND.X.NE.XX)) GO TO 14
++      IP=ORD(P)
++      ORD(P)=ORD(IX)
++      ORD(IX)=IP
++   14 CONTINUE
++      IF (.NOT.(Q.NE.IZ.AND.Z.NE.ZZ)) GO TO 15
++      IQ=ORD(Q)
++      ORD(Q)=ORD(IZ)
++      ORD(IZ)=IQ
++   15 CONTINUE
++      IF (U-Q.LE.P-L) GO TO 16
++      L1=L
++      U1=P-1
++      L=Q+1
++      GO TO 17
++   16 U1=U
++      L1=Q+1
++      U=P-1
++   17 CONTINUE
++      IF (U1.LE.L1) GO TO 18
++C
++C START RECURSIVE CALL
++C
++      NDEEP=NDEEP+1
++      POPLST(1,NDEEP)=U
++      POPLST(2,NDEEP)=L
++      GO TO 3
++   18 IF (U.GT.L) GO TO 4
++C
++C POP BACK UP IN THE RECURSION LIST
++C
++      IF (NDEEP.EQ.0) GO TO 2
++      U=POPLST(1,NDEEP)
++      L=POPLST(2,NDEEP)
++      NDEEP=NDEEP-1
++      GO TO 18
++C
++C END SORT
++C END QSORT
++C
++      write(*,*) "Finished quicksort"
++      END
+diff --git a/src/1d/setaux.f90 b/src/1d/setaux.f90
+index 86d9abd..3344e49 100644
+--- a/src/1d/setaux.f90
++++ b/src/1d/setaux.f90
+@@ -13,4 +13,16 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
+     real(kind=8), intent(in) :: xlower,dx
+     real(kind=8), intent(out) ::  aux(maux,1-mbc:mx+mbc)
+ 
++    integer :: ii
++
++    if(adjoint_flagging) then
++        ! If a new grid has been created, but hadn't been flagged
++        ! set innerproduct to zero.
++        do ii=1-mbc,mx+mbc
++            if (aux(1,ii) .eq. NEEDS_TO_BE_SET) then
++                aux(innerprod_index,ii) = 0.d0
++            endif
++        enddo
++    endif
++
+ end subroutine setaux
+diff --git a/src/1d_adjoint/Makefile.adjoint_amr_1d b/src/1d_adjoint/Makefile.adjoint_amr_1d
+deleted file mode 100644
+index b5895ee..0000000
+--- a/src/1d_adjoint/Makefile.adjoint_amr_1d
++++ /dev/null
+@@ -1,114 +0,0 @@
+-#get the directory of this makefile
+-AMRLIB:=$(CLAW)/amrclaw/src/1d
+-ADJLIB:=$(CLAW)/amrclaw/src/1d_adjoint
+-
+-#list of common sources for amr 1d codes
+-COMMON_MODULES += \
+-  $(AMRLIB)/amr_module.f90 \
+-  $(AMRLIB)/gauges_module.f90 \
+-  $(AMRLIB)/regions_module.f90 
+-
+-#list of common sources needed for adjoint code
+-COMMON_MODULES += \
+-  $(ADJLIB)/adjoint_module.f90 \
+-  $(ADJLIB)/innerprod_module.f90
+-
+-COMMON_SOURCES += \
+-  $(AMRLIB)/qinit.f \
+-  $(AMRLIB)/amr1.f90 \
+-  $(AMRLIB)/bc1amr.f \
+-  $(AMRLIB)/b4step1.f90 \
+-  $(AMRLIB)/qad.f \
+-  $(AMRLIB)/src1.f90 \
+-  $(AMRLIB)/src1d.f90 \
+-  $(AMRLIB)/advanc.f \
+-  $(AMRLIB)/bound.f90 \
+-  $(AMRLIB)/stepgrid.f \
+-  $(AMRLIB)/fixcapaq.f \
+-  $(AMRLIB)/estdt.f \
+-  $(AMRLIB)/igetsp.f \
+-  $(AMRLIB)/reclam.f \
+-  $(AMRLIB)/birect.f \
+-  $(AMRLIB)/cleanup.f \
+-  $(AMRLIB)/colate1.f \
+-  $(AMRLIB)/bufnst1.f \
+-  $(AMRLIB)/flagregions1.f90 \
+-  $(AMRLIB)/gfixup.f \
+-  $(AMRLIB)/filval.f90 \
+-  $(AMRLIB)/filpatch.f90 \
+-  $(AMRLIB)/prefilp.f90 \
+-  $(AMRLIB)/flglvl1.f \
+-  $(AMRLIB)/fluxad.f \
+-  $(AMRLIB)/fluxsv.f \
+-  $(AMRLIB)/ginit.f \
+-  $(AMRLIB)/grdfit1.f \
+-  $(AMRLIB)/intfil.f \
+-  $(AMRLIB)/moment.f \
+-  $(AMRLIB)/nestck1.f \
+-  $(AMRLIB)/prepf.f \
+-  $(AMRLIB)/prepc.f \
+-  $(AMRLIB)/projec1.f \
+-  $(AMRLIB)/signs.f \
+-  $(AMRLIB)/findcut.f \
+-  $(AMRLIB)/smartbis.f \
+-  $(AMRLIB)/putnod.f \
+-  $(AMRLIB)/putsp.f \
+-  $(AMRLIB)/regrid.f \
+-  $(AMRLIB)/setgrd.f \
+-  $(AMRLIB)/setuse.f \
+-  $(AMRLIB)/stst1.f \
+-  $(AMRLIB)/tick.f \
+-  $(AMRLIB)/trimbd.f90 \
+-  $(AMRLIB)/update.f \
+-  $(AMRLIB)/nodget.f \
+-  $(AMRLIB)/upbnd.f  \
+-  $(AMRLIB)/outval.f \
+-  $(AMRLIB)/outmsh.f \
+-  $(AMRLIB)/outtre.f \
+-  $(AMRLIB)/domain.f  \
+-  $(AMRLIB)/shiftset.f \
+-  $(AMRLIB)/conck.f \
+-  $(AMRLIB)/intcopy.f \
+-  $(AMRLIB)/preintcopy.f \
+-  $(AMRLIB)/icall.f \
+-  $(AMRLIB)/preicall.f \
+-  $(AMRLIB)/step1.f90 \
+-  $(AMRLIB)/flux1.f \
+-  $(AMRLIB)/inlinelimiter.f \
+-  $(AMRLIB)/cstore.f \
+-  $(AMRLIB)/saveqc.f \
+-  $(AMRLIB)/check.f \
+-  $(AMRLIB)/restrt.f \
+-  $(AMRLIB)/quick_sort1.f \
+-  $(AMRLIB)/opendatafile.f \
+-  $(AMRLIB)/drivesort.f \
+-  $(AMRLIB)/flagcheck.f \
+-  $(AMRLIB)/setdomflags.f \
+-  $(AMRLIB)/setIndices.f \
+-  $(AMRLIB)/setPhysBndryFlags.f \
+-  $(AMRLIB)/coarseGridFlagSet.f \
+-  $(AMRLIB)/griddomcopy.f \
+-  $(AMRLIB)/griddomshrink.f \
+-  $(AMRLIB)/griddomup.f \
+-  $(AMRLIB)/baseCheck.f \
+-  $(AMRLIB)/init_alloc.f90 \
+-  $(AMRLIB)/restrt_alloc.f90 \
+-  $(AMRLIB)/resize_alloc.f90 \
+-  $(AMRLIB)/auxcoarsen.f \
+-  $(AMRLIB)/coarsen.f \
+-  $(AMRLIB)/copysol.f \
+-  $(AMRLIB)/prepregstep.f \
+-  $(AMRLIB)/prepbigstep.f \
+-
+-# list of source files from ADJLIB library. 
+-COMMON_SOURCES += \
+-  $(AMRLIB)/setprob.f \
+-  $(ADJLIB)/flag2refine1.f90 \
+-  $(ADJLIB)/valout.f \
+-  $(ADJLIB)/errf1.f \
+-  $(ADJLIB)/errest.f \
+-  $(ADJLIB)/setaux.f90 \
+-  $(ADJLIB)/reload.f \
+-  $(ADJLIB)/interp_adjoint.f90 \
+-  $(ADJLIB)/flagger.f \
+-  $(ADJLIB)/quick_sort.f \
+diff --git a/src/1d_adjoint/adjoint_module.f90 b/src/1d_adjoint/adjoint_module.f90
+deleted file mode 100644
+index 539c6b1..0000000
+--- a/src/1d_adjoint/adjoint_module.f90
++++ /dev/null
+@@ -1,135 +0,0 @@
+-! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-! ::::::     Module to define and work with adjoint type
+-! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-
+-module adjoint_module
+-    use amr_module
+-
+-    type adjointData_type
+-
+-        real(kind=8), allocatable, dimension(:) :: alloc
+-
+-        real(kind=8) hxposs(maxlv)
+-
+-        integer meqn, ngrids, naux, ndim, nghost, lfine
+-        real(kind=8) time, xlowvals(maxgr)
+-        integer ncellsx(maxgr), loc(maxgr)
+-        integer gridlevel(maxgr), gridpointer(maxgr)
+-
+-        ! variable for conservation checking
+-        real(kind=8) tmass0
+-
+-    end type adjointData_type
+-
+-    type(adjointData_type), allocatable :: adjoints(:)
+-    integer :: totnum_adjoints, &
+-               counter, innerprod_index
+-    real(kind=8) :: trange_start, trange_final, levtol(maxlv)
+-    character(len=365), allocatable :: adj_files(:)
+-    logical :: adjoint_flagging
+-    real(kind=8), allocatable, dimension(:) :: errors
+-    integer, allocatable, dimension(:) :: eptr
+-
+-contains
+-
+-    subroutine read_adjoint_data()
+-
+-        implicit none
+-
+-        ! Function Arguments
+-        character(len=*), parameter :: adjointfile = 'adjoint.data'
+-        character(len=400) :: adjoint_output
+-        logical :: fileExists
+-        integer :: iunit, k
+-        real(kind=8) :: t1,t2
+-
+-        adjoint_flagging = .true.
+-        levtol = 0.0d0
+-
+-        inquire(file=adjointfile, exist=fileExists)
+-        if (fileExists) then
+-
+-            iunit = 16
+-            call opendatafile(iunit,adjointfile)
+-            read(iunit,*) adjoint_output
+-
+-            ! time period of interest:
+-            read(iunit,*) t1
+-            read(iunit,*) t2
+-
+-            call set_time_window(t1, t2)
+-
+-            read(iunit,*) totnum_adjoints
+-            read(iunit,*) innerprod_index
+-            allocate(adj_files(totnum_adjoints))
+-
+-            do 20 k = 1, totnum_adjoints
+-                read(iunit,*) adj_files(totnum_adjoints + 1 - k)
+-            20  continue
+-            close(iunit)
+-
+-            if (size(adj_files) <= 0) then
+-                print *, 'Error: no adjoint output files found.'
+-                stop
+-            endif
+-
+-            ! Allocate space for the number of needed checkpoint files
+-            allocate(adjoints(totnum_adjoints))
+-
+-            do 50 k = 1, totnum_adjoints
+-                ! Load checkpoint files
+-                call reload(adj_files(k),k)
+-            50 continue
+-
+-        else
+-            print *, 'Error: adjoint.data file does not exist.'
+-        endif
+-
+-    end subroutine read_adjoint_data
+-
+-    subroutine set_time_window(t1, t2)
+-
+-        implicit none
+-
+-        ! Function Arguments
+-        real(kind=8), intent(in) :: t1, t2
+-
+-        trange_final = t2
+-        trange_start = t1
+-
+-    end subroutine set_time_window
+-
+-    subroutine calculate_tol(lcheck)
+-
+-       use amr_module
+-       implicit none
+-
+-       ! Function Arguments
+-       integer, intent(in) :: lcheck
+-       real(kind=8) :: errtotal, cutoff
+-       real(kind=8) :: dt, hx
+-       integer :: celln, sorted(numcells(lcheck)/2)
+-
+-       dt = possk(lcheck)
+-       hx = hxposs(lcheck)
+-
+-       ! Setting our goal for the maximum amount of error
+-       ! for this level
+-       cutoff = tol*(dt/hx)/(tfinal-t0)
+-       cutoff = cutoff/mxnest
+-
+-       ! Sorting errors
+-       call qsortr(sorted, numcells(lcheck)/2, errors)
+-
+-       errtotal = 0
+-       do celln = 1, numcells(lcheck)/2
+-           errtotal = errtotal + errors(sorted(celln))
+-           if (errtotal .ge. cutoff) then
+-               levtol(lcheck) = errors(sorted(celln))
+-               EXIT
+-           endif
+-       end do
+-
+-    end subroutine calculate_tol
+-
+-end module adjoint_module
+diff --git a/src/1d_adjoint/errest.f b/src/1d_adjoint/errest.f
+deleted file mode 100644
+index 52e2d21..0000000
+--- a/src/1d_adjoint/errest.f
++++ /dev/null
+@@ -1,65 +0,0 @@
+-c
+-c -------------------------------------------------------------
+-c
+-      subroutine errest (nvar,naux,lcheck,mptr,nx,
+-     .                    jg,mask_selecta)
+-c
+-      use amr_module
+-      use adjoint_module, only: totnum_adjoints
+-      implicit double precision (a-h,o-z)
+-c
+-c   ### changed to stack based storage 2/23/13 
+-c   ### and broken into smaller routines to minimize 
+-c   ### stack space
+-
+-      integer, intent(in) :: nvar,naux,lcheck,nx,jg
+-     
+-      double precision valbgc(nvar,nx/2+2*nghost)
+-      double precision auxbgc(naux,nx/2+2*nghost)
+-      logical mask_selecta(totnum_adjoints)
+- 
+-c :::::::::::::::::::::::::: ERREST :::::::::::::::::::::::::::::::::::
+-c for this grid at level lcheck:
+-c  estimate the error by taking a large (2h,2k) step based on the
+-c  values in the old storage loc., then take one regular (and for
+-c  now wasted) step based on the new info.   compare using an
+-c  error relation for a pth order  accurate integration formula.
+-c  flag error plane as either bad (needs refinement), or good.
+-c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-c
+-       mitot  = nx + 2*nghost
+-       locnew = node(store1,mptr)
+-       locold = node(store2,mptr)
+-       locaux = node(storeaux,mptr)
+-       mi2tot = nx/2  + 2*nghost
+-c
+-c     prepare double the stencil size worth of boundary values,
+-c            then coarsen them for the giant step integration.
+-       midub = nx+4*nghost
+-c
+-       call prepbigstep(nvar,naux,lcheck,mptr,nx,midub,
+-     .                    valbgc,auxbgc,mi2tot)
+-
+-c
+-c  the one giant step based on old values is done. now take
+-c  one regular step based on new values. 
+-c  boundary values already in locbig, (see subr. flagger)
+-c
+-      locbig = node(tempptr,mptr)
+-      locaux = node(storeaux,mptr)
+-      call prepregstep(nvar,naux,lcheck,mptr,nx,mitot,
+-     .                 alloc(locbig),alloc(locaux))
+-c
+-c     ## locamrflags allocated in flagger. may previously have been used 
+-c     ## by flag2refine so make sure not to overwrite
+-      locamrflags = node(storeflags, mptr)    
+-      mbuff = max(nghost,ibuff+1)  
+-      mibuff = nx + 2*mbuff
+-      call errf1(alloc(locbig),nvar,valbgc,mptr,mi2tot,
+-     1           mitot,alloc(locamrflags),mibuff,
+-     1           alloc(locaux),naux,nx,nghost,jg,
+-     1           mask_selecta)
+-
+-c
+-      return
+-      end
+diff --git a/src/1d_adjoint/errf1.f b/src/1d_adjoint/errf1.f
+deleted file mode 100644
+index 93ac7e8..0000000
+--- a/src/1d_adjoint/errf1.f
++++ /dev/null
+@@ -1,166 +0,0 @@
+-c
+-c --------------------------------------------------------------
+-c
+-      subroutine errf1(rctfine,nvar,rctcrse,mptr,mi2tot,
+-     2                 mitot,rctflg,mibuff,auxfine,
+-     2                 naux,nx,mbc,jg,mask_selecta)
+-
+-      use amr_module
+-      use innerprod_module, only : calculate_innerproduct
+-      use adjoint_module, only: innerprod_index,
+-     .        totnum_adjoints,
+-     .        levtol, eptr, errors
+-      implicit double precision (a-h,o-z)
+-
+- 
+-      dimension  rctfine(nvar,mitot)
+-      dimension  rctcrse(nvar,mi2tot)
+-      dimension  rctflg(mibuff)
+-      dimension  aux_crse(mi2tot)
+-      dimension  err_crse(nvar,mi2tot)
+-      dimension  auxfine(naux,mitot)
+-      logical mask_selecta(totnum_adjoints)
+-
+-c
+-c
+-c ::::::::::::::::::::::::::::: ERRF1 ::::::::::::::::::::::::::::::::
+-c
+-c  Richardson error estimator:  Used when flag_richardson is .true.
+-c  Compare error estimates in rctfine, rctcrse, 
+-c  A point is flagged if the error estimate is greater than tol
+-c  later we check if its in a region where its allowed to be flagged
+-c  or alternatively required.
+-c
+-c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-c
+-
+-c
+-      time  = rnode(timemult, mptr)
+-      xleft = rnode(cornxlo,mptr)
+-      levm  = node(nestlevel, mptr)
+-      hx    = hxposs(levm)
+-      dt    = possk(levm)
+-      numsp = 0
+- 
+-      errmax = 0.0d0
+-      err2   = 0.0d0
+-      err_crse = 0.0d0
+-      auxfine(innerprod_index,:) = 0.0d0
+-      aux_crse = 0.0d0
+-
+-c     order  = dt*dble(2**(iorder+1) - 2)
+-      order  = dble(2**(iorder+1) - 2)
+-c
+-c     Calculating correct tol for this level
+-c     nxnest is the maximum number of refinement levels, from amr_module
+-c     --------------------
+-      tol_exact = tol*dt/(tfinal-t0)
+-      tol_exact = tol_exact/mxnest
+-      tol_exact = tol_exact/(numcells(levm)*hx)
+-
+-      if (t0+possk(levm) .eq. time) levtol(levm) = tol_exact
+-c
+-      if (.not. (edebug)) go to 20
+-         write(outunit,107) mptr
+- 107     format(//,' coarsened grid values for grid ',i4)
+-         write(outunit,101) (rctcrse(1,i),
+-     .                          i = nghost+1, mi2tot-nghost)
+-         write(outunit,108) mptr
+- 108     format(//, ' fine grid values for grid ',i4)
+-         write(outunit,101) (rctfine(1,i),i=nghost+1,mitot-nghost)
+-101      format(' ',40e11.3)
+-c
+-c zero out the exterior locations so they don't affect err.est.
+-c
+- 20   continue
+-      ifine = nghost+1
+-c
+-      do 30  i  = nghost+1, mi2tot-nghost
+-          do 40 k = 1,nvar
+-              xofi  = xleft + (dble(ifine) - .5d0)*hx
+-              term1 = rctfine(k,ifine)
+-              term2 = rctfine(k,ifine+1)
+-c             # divide by (aval*order) for relative error
+-              aval  = (term1+term2)/2.d0
+-              est   =  dabs((aval-rctcrse(k,i))/ order)
+-              if (est .gt. errmax) errmax = est
+-              err2 = err2 + est*est
+-c             write(outunit,102) i,j,est,rctcrse(1,i,j)
+- 102          format(' i,est ',2i5,2e15.7)
+-c             write(outunit,104) term1,term2,term3,term4
+- 104          format('   ',4e15.7)
+-c             rctcrse(2,i,j) = est
+-c
+-              err_crse(k,i) = est
+-c             retaining directionality of the wave
+-              err_crse(k,i) = sign(est,rctcrse(k,i))
+- 40       continue
+-
+-        ifine = ifine + 2
+- 30   continue
+-
+-      do 12 k = 1,totnum_adjoints
+-c         ! Consider only snapshots that are within the desired time range
+-          if (mask_selecta(k)) then
+-
+-c             set innerproduct
+-              call calculate_innerproduct(time,err_crse,k,nx/2,
+-     .              xleft,hx*2,nvar,mbc,aux_crse)
+-          endif
+- 12   continue
+-
+-      do 22  i  = nghost+1, mi2tot-nghost
+-          errors(eptr(jg)+i-nghost) = aux_crse(i)
+-
+-          rctcrse(1,i)  = goodpt
+-          if (aux_crse(i) .ge. levtol(levm)) then
+-c                    ## never set rctflg to good, since flag2refine may
+-c                    ## have previously set it to bad
+-c                    ## can only add bad pts in this routine
+-              rctcrse(1,i)  = badpt
+-          endif
+-
+- 22   continue
+-
+-c
+-c  print out intermediate flagged rctcrse (for debugging)
+-c
+-      if (eprint) then
+-         err2 = dsqrt(err2/dble((mi2tot-2*nghost)))
+-         write(outunit,103) mptr, levm, time,errmax, err2
+- 103     format(' grid ',i4,' level ',i4,' time ',e12.5,
+-     .          ' max. error = ',e15.7,' err2 = ',e15.7)
+-         if (edebug) then
+-           write(outunit,*) ' flagged points on coarsened grid ',
+-     .                      '(no ghost cells) for grid ',mptr
+-           write(outunit,106) (nint(rctcrse(1,i)),
+-     .                            i=nghost+1,mi2tot-nghost)
+-106           format(1h ,80i1)
+-         endif
+-      endif
+-c
+-      ifine   = nghost+1
+-      do 60 i = nghost+1, mi2tot-nghost
+-         auxfine(innerprod_index,ifine) = aux_crse(i)
+-         auxfine(innerprod_index,ifine+1) = aux_crse(i)
+-         if (rctcrse(1,i) .eq. goodpt) go to 55
+-c           ## never set rctflg to good, since flag2refine may
+-c           ## have previously set it to bad
+-c           ## can only add bad pts in this routine
+-            rctflg(ifine)    = badpt
+-            rctflg(ifine+1)  = badpt
+- 55       ifine   = ifine + 2
+- 60     continue
+-c
+-
+-      if (eprint) then
+-         write(outunit,118)
+- 118     format(' on fine grid (no ghost cells) flagged points are')
+-         if (edebug) then
+-           write(outunit,106)
+-     &      (nint(rctflg(i)),i=nghost+1,mitot-nghost)
+-        endif
+-      endif
+-
+-      return
+-      end
+diff --git a/src/1d_adjoint/flag2refine1.f90 b/src/1d_adjoint/flag2refine1.f90
+deleted file mode 100644
+index ef3ba70..0000000
+--- a/src/1d_adjoint/flag2refine1.f90
++++ /dev/null
+@@ -1,89 +0,0 @@
+-! ::::::::::::::::::::: flag2refine ::::::::::::::::::::::::::::::::::
+-!
+-! Modified flag2refine file to use adjoint-flagging.
+-!
+-! Default version computes spatial difference dq in each direction and
+-! for each component of q and flags any point where this is greater than
+-! the tolerance tolsp.  This is consistent with what the routine errsp did in
+-! earlier versions of amrclaw (4.2 and before).
+-!
+-! This routine can be copied to an application directory and modified to
+-! implement some other desired refinement criterion.
+-!
+-! Points may also be flagged for refining based on a Richardson estimate
+-! of the error, obtained by comparing solutions on the current grid and a
+-! coarsened grid.  Points are flagged if the estimated error is larger than
+-! the parameter tol in amr2ez.data, provided flag_richardson is .true.,
+-! otherwise the coarsening and Richardson estimation is not performed!  
+-! Points are flagged via Richardson in a separate routine.
+-!
+-! Once points are flagged via this routine and/or Richardson, the subroutine
+-! flagregions is applied to check each point against the min_level and
+-! max_level of refinement specified in any "region" set by the user.
+-! So flags set here might be over-ruled by region constraints.
+-!
+-!    q   = grid values including ghost cells (bndry vals at specified
+-!          time have already been set, so can use ghost cell values too)
+-!
+-!  aux   = aux array on this grid patch
+-!
+-! amrflags  = array to be flagged with either the value
+-!             DONTFLAG (no refinement needed)  or
+-!             DOFLAG   (refinement desired)    
+-!
+-! tolsp = tolerance specified by user in input file amr2ez.data, used in default
+-!         version of this routine as a tolerance for spatial differences.
+-!
+-! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-
+-subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
+-                        tolsp,q,aux,amrflags,DONTFLAG,DOFLAG,mask_selecta)
+-
+-    use innerprod_module, only: calculate_innerproduct
+-    use adjoint_module, only: totnum_adjoints, innerprod_index
+-    use regions_module
+-
+-    implicit none
+-
+-    ! Subroutine arguments
+-    integer, intent(in) :: mx,mbc,meqn,maux,level,mbuff
+-    real(kind=8), intent(in) :: xlower,dx,t,tolsp
+-    
+-    real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc)
+-    real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc)
+-    
+-    ! Flagging
+-    real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff)
+-    real(kind=8), intent(in) :: DONTFLAG
+-    real(kind=8), intent(in) :: DOFLAG
+-
+-    logical :: allowflag
+-    external allowflag
+-    logical mask_selecta(totnum_adjoints)
+-
+-    ! Locals
+-    integer :: i, r
+-
+-    ! Initialize flags
+-    amrflags = DONTFLAG
+-    aux(innerprod_index,:) = 0.0
+-
+-    aloop: do r=1,totnum_adjoints
+-
+-        ! Consider only snapshots that are within the desired time range
+-        if (mask_selecta(r)) then
+-            ! Calculate inner product with current snapshot
+-            call calculate_innerproduct(t,q,r,mx,xlower,dx,meqn,mbc, &
+-                                           aux(innerprod_index,:))
+-        endif
+-    enddo aloop
+-
+-    ! Flag locations that need refining
+-    x_loop: do i = 1-mbc,mx+mbc
+-        if (aux(innerprod_index,i) > tolsp) then
+-            amrflags(i) = DOFLAG
+-            cycle x_loop
+-        endif
+-    enddo x_loop
+-
+-end subroutine flag2refine1
+diff --git a/src/1d_adjoint/flagger.f b/src/1d_adjoint/flagger.f
+deleted file mode 100644
+index 7185cbb..0000000
+--- a/src/1d_adjoint/flagger.f
++++ /dev/null
+@@ -1,187 +0,0 @@
+-c
+-c -----------------------------------------------------------
+-c
+-      subroutine flagger(nvar,naux,lcheck,start_time)
+-
+-      use amr_module
+-      use adjoint_module,only:calculate_tol,eptr,errors,totnum_adjoints
+-      use adjoint_module,only:adjoints, trange_start, trange_final
+-      implicit double precision (a-h,o-z)
+-
+-      integer omp_get_thread_num, omp_get_max_threads
+-      integer mythread/0/, maxthreads/1/
+-      integer listgrids(numgrids(lcheck)), locuse, r
+-
+-      logical :: mask_selecta(totnum_adjoints), adjoints_found
+-
+-c ::::::::::::::::::::: FLAGGER :::::::::::::::::::::::::
+-c
+-c flagger = set up for and call two routines that flag using
+-c    (a) spatial gradients, or other user-specified criteria
+-c    (b) richardson error estimates
+-c
+-c the two approaches share an array with boundary ghost values 
+-c
+-c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+-
+-c      call prepgrids(listgrids,numgrids(lcheck),lcheck)
+-         mbuff = max(nghost,ibuff+1)  
+-c before parallel loop give grids the extra storage they need for error estimation
+-
+-c        allocating space for tracking error estimates
+-c        (used at next regridding time to determine tolerance)
+-         if (flag_richardson) then
+-             allocate(errors(numcells(lcheck)/2))
+-             allocate(eptr(numgrids(lcheck)))
+-             errors = 0
+-             eptr(1) = 0
+-         endif
+-
+-         do  jg = 1, numgrids(lcheck)
+-c            mptr = listgrids(jg)
+-            levSt  = listStart(lcheck)
+-            mptr   = listOfgrids(levSt+jg-1)
+-            nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+-            mitot  = nx + 2*nghost
+-            if (flag_richardson) then
+-               locbig = igetsp(mitot*nvar)
+-               node(tempptr,mptr) = locbig
+-
+-               if (jg .ne. numgrids(lcheck)) then
+-                   eptr(jg+1) = eptr(jg)+(nx/2)
+-               endif
+-            else 
+-               locbig = 0
+-            endif
+-            mibuff = nx + 2*mbuff       ! NOTE THIS NEW DIMENSIONING TO ALLOW ROOM FOR BUFFERING IN PLACE
+-            locamrflags = igetsp(mibuff)
+-            node(storeflags,mptr) = locamrflags
+-          end do
+-
+-!$OMP PARALLEL DO PRIVATE(jg,mptr,nx,mitot,locnew,locaux),
+-!$OMP&            PRIVATE(time,dx,xleft,xlow,locbig),
+-!$OMP&            PRIVATE(locold,mbuff,mibuff,locamrflags,i),
+-!$OMP&            PRIVATE(locuse,mask_selecta,adjoints_found,r),
+-!$OMP&            SHARED(numgrids,listgrids,lcheck,nghost,nvar,naux),
+-!$OMP&            SHARED(levSt,listStart,listOfGrids),
+-!$OMP&            SHARED(tolsp,alloc,node,rnode,hxposs,ibuff),
+-!$OMP&            SHARED(start_time,possk,flag_gradient,flag_richardson),
+-!$OMP&            SHARED(adjoints,totnum_adjoints),
+-!$OMP&            SHARED(trange_start,trange_final),
+-!$OMP&            DEFAULT(none),
+-!$OMP&            SCHEDULE(DYNAMIC,1)
+-       do  jg = 1, numgrids(lcheck)
+-c          mptr = listgrids(jg)
+-          levSt  = listStart(lcheck)
+-          mptr   = listOfGrids(levSt+jg-1)
+-          nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+-          mitot  = nx + 2*nghost
+-          locnew = node(store1,mptr)
+-          locaux = node(storeaux,mptr)
+-          time   = rnode(timemult,mptr)
+-          dx     = hxposs(lcheck)
+-          xleft  = rnode(cornxlo,mptr)
+-          xlow   = xleft - nghost*dx
+-c
+-          locbig =  node(tempptr,mptr)
+-c         # straight copy into scratch array so don't mess up latest soln.
+-
+-c         ## at later times want to use newest soln for spatial error flagging
+-c         ## at initial time want to use initial conditions (so retain symmetry for example)
+-         if (start_time+possk(lcheck) .ne. time) then !exact equality test-relying on ieee arith repeatability
+-c            do in other order in case user messes up locbig in flag2refine, already have
+-c            them in locnew
+-             call bound(time,nvar,nghost,alloc(locnew),mitot,mptr,
+-     1                  alloc(locaux),naux)
+-             locuse = locnew ! flag based on newest vals
+-             if (flag_richardson) then
+-               do 10 i = 1, mitot*nvar
+- 10             alloc(locbig+i-1) = alloc(locnew+i-1)
+-             endif
+-
+-         else   ! boundary values already in locold
+-             locold = node(store2,mptr)
+-             locuse = locold ! flag based on old vals at initial time
+-             ! put back this way to agree with nosetests
+-             if (flag_richardson) then
+-               do 11 i = 1, mitot*nvar
+- 11              alloc(locbig+i-1) = alloc(locold+i-1)
+-             endif
+-         endif
+-
+-!        # need at least as big as nghost to fit ghost cells. if ibuff is bigger make
+-!        # the flagged array bigger so can buffer in place
+-         mbuff = max(nghost,ibuff+1)  
+-         mibuff = nx + 2*mbuff       ! NOTE THIS NEW DIMENSIONING TO ALLOW ROOM FOR BUFFERING IN PLACE
+-
+-!              ##  locamrflags used for flag storage. flag2refine flags directly into it.
+-!              ## richardson flags added to it. Then colate finished the job
+-                locamrflags = node(storeflags,mptr)
+-                do 20 i = 1, mibuff  ! initialize
+- 20                alloc(locamrflags+i-1) = goodpt
+-
+-c       Pick adjoint snapshots to consider when flagging
+-         mask_selecta = .false.
+-         adjoints_found = .false.
+-
+-         do r=1,totnum_adjoints
+-           if ((time+adjoints(r)%time) >= trange_start .and.
+-     .        (time+adjoints(r)%time) <= trange_final) then
+-               mask_selecta(r) = .true.
+-               adjoints_found = .true.
+-           endif
+-         enddo
+-
+-         if(.not. adjoints_found) then
+-             write(*,*) "Error: no adjoint snapshots ",
+-     .        "found in time range."
+-             write(*,*) "Consider increasing time rage of interest, ",
+-     .        "or adding more snapshots."
+-         endif
+-
+-         do r=1,totnum_adjoints-1
+-           if((.not. mask_selecta(r)) .and.
+-     .        (mask_selecta(r+1))) then
+-               mask_selecta(r) = .true.
+-               exit
+-           endif
+-         enddo
+-
+-         do r=totnum_adjoints,2,-1
+-           if((.not. mask_selecta(r)) .and.
+-     .        (mask_selecta(r-1))) then
+-               mask_selecta(r) = .true.
+-               exit
+-           endif
+-         enddo
+-
+-         if (flag_gradient) then
+-
+-c     # call user-supplied routine to flag any points where
+-c     # refinement is desired based on user's criterion.
+-c     # Default version compares spatial gradient to tolsp.
+-
+-c no longer getting locbig, using "real" solution array in locnew
+-            call flag2refine1(nx,nghost,mbuff,nvar,naux,
+-     &                        xleft,dx,time,lcheck,
+-     &                        tolsp,alloc(locuse),
+-     &                        alloc(locaux),alloc(locamrflags),
+-     &                        goodpt,badpt,mask_selecta)
+-             endif     
+-c     
+-         if (flag_richardson) then
+-              call errest(nvar,naux,lcheck,mptr,nx,jg,
+-     &                        mask_selecta)
+-         endif
+-
+-       end do
+-! $OMP END PARALLEL DO
+-
+-       if (flag_richardson) then
+-           call calculate_tol(lcheck)
+-           deallocate(errors)
+-           deallocate(eptr)
+-       endif
+-
+-       return
+-       end
+diff --git a/src/1d_adjoint/innerprod_module.f90 b/src/1d_adjoint/innerprod_module.f90
+deleted file mode 100644
+index 7dab15f..0000000
+--- a/src/1d_adjoint/innerprod_module.f90
++++ /dev/null
+@@ -1,99 +0,0 @@
+-module innerprod_module
+-
+-contains
+-
+-    subroutine calculate_innerproduct(t,q,r,mx_f,xlower_f,dx_f,meqn_f,mbc_f,innerprod)
+-
+-        use adjoint_module
+-
+-        implicit none
+-
+-        real(kind=8), intent(in) :: t, xlower_f, dx_f
+-        integer, intent(in) :: r, mx_f, meqn_f, mbc_f
+-        real(kind=8), intent(in) :: q(meqn_f,1-mbc_f:mx_f+mbc_f)
+-
+-        integer :: mx_a, mptr_a
+-        integer :: i, i1, i2, level, loc, z
+-        real(kind=8) :: dx_a, xlower_a, xupper_a, xupper_f, x1, x2
+-
+-        real(kind=8), intent(inout) :: innerprod(1-mbc_f:mx_f+mbc_f)
+-        real(kind=8) :: q_innerprod(1-mbc_f:mx_f+mbc_f)
+-        logical :: mask_forward(1-mbc_f:mx_f+mbc_f)
+-        real(kind=8) :: q_interp(adjoints(r)%meqn,1-mbc_f:mx_f+mbc_f)
+-
+-        logical, allocatable :: mask_adjoint(:)
+-
+-
+-        xupper_f = xlower_f + mx_f*dx_f
+-
+-        ! Loop over patches in adjoint solution
+-        do z = 1, adjoints(r)%ngrids
+-            mptr_a = adjoints(r)%gridpointer(z)
+-            level = adjoints(r)%gridlevel(mptr_a)
+-
+-            ! Number of points in x (nx)
+-            mx_a = adjoints(r)%ncellsx(mptr_a)
+-
+-            ! Finding x extreem values for grid
+-            xlower_a = adjoints(r)%xlowvals(mptr_a)
+-            dx_a = adjoints(r)%hxposs(level)
+-            xupper_a = xlower_a + mx_a*dx_a
+-
+-            loc = adjoints(r)%loc(mptr_a)
+-
+-            ! Check if adjoint patch overlaps with forward patch
+-            x1 = max(xlower_f,xlower_a)
+-            x2 = min(xupper_f,xupper_a)
+-
+-            if (x1 > x2) then
+-                ! Skipping interpolation if grids don't overlap
+-                mask_forward = .false.
+-                continue
+-            else
+-
+-                allocate(mask_adjoint(1-adjoints(r)%nghost:mx_a+adjoints(r)%nghost))
+-
+-                ! Create a mask that is .true. only in part of patch intersecting forward patch:
+-                i1 = max(int((x1 - xlower_a + 0.5d0*dx_a) / dx_a), 0)
+-                i2 = min(int((x2 - xlower_a + 0.5d0*dx_a) / dx_a) + 1, mx_a+1)
+-
+-                forall (i=1-adjoints(r)%nghost:mx_a+adjoints(r)%nghost)
+-                    mask_adjoint(i) = ((i >= i1) .and. (i <= i2))
+-                end forall
+-
+-                ! Create a mask that is .true. only in part of forward patch intersecting patch:
+-
+-                i1 = max(int((x1 - xlower_f + 0.5d0*dx_f) / dx_f)+1, 0)
+-                i2 = min(int((x2 - xlower_f + 0.5d0*dx_f) / dx_f), mx_f)
+-
+-                do i=1-mbc_f,mx_f+mbc_f
+-                    mask_forward(i) = ((i >= i1) .and. (i <= i2))
+-                enddo
+-
+-                ! Interpolate adjoint values to q_interp
+-                ! Note that values in q_interp will only be set properly where 
+-                ! mask_adjoint == .true.
+-                call interp_adjoint( &
+-                        adjoints(r)%meqn, r, q_interp, &
+-                        xlower_a, dx_a, mx_a, xlower_f, dx_f, mx_f, &
+-                        mask_adjoint, mptr_a, mask_forward, mbc_f)
+-
+-                q_innerprod = 0.d0
+-                ! For each overlapping point, calculate inner product
+-                forall(i = 1-mbc_f:mx_f+mbc_f, mask_forward(i))
+-                    q_innerprod(i) = abs(dot_product(q(:,i),q_interp(:,i)))
+-                end forall
+-
+-                do i=1-mbc_f,mx_f+mbc_f
+-                    if (q_innerprod(i) > innerprod(i)) then
+-                        innerprod(i) = q_innerprod(i)
+-                    endif
+-                enddo
+-
+-                deallocate(mask_adjoint)
+-            endif
+-        enddo
+-
+-    end subroutine calculate_innerproduct
+-
+-end module innerprod_module
+diff --git a/src/1d_adjoint/interp_adjoint.f90 b/src/1d_adjoint/interp_adjoint.f90
+deleted file mode 100644
+index 64a9640..0000000
+--- a/src/1d_adjoint/interp_adjoint.f90
++++ /dev/null
+@@ -1,57 +0,0 @@
+-! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-! :::::     Routine to interpolate adjoint to given x,y point
+-! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-
+-subroutine interp_adjoint(nvar, r, q_interp, xlower_a, dx_a, &
+-            mx_a, xlower_f, dx_f, mx_f, mask_adjoint, mptr_a, &
+-            mask_forward, mbc_f)
+-
+-        use adjoint_module, only: adjoints
+-
+-        implicit none
+-
+-        ! Function arguments
+-        integer, intent(in) :: r, nvar, mx_a
+-        logical, intent(in) :: mask_adjoint(1-adjoints(r)%nghost:mx_a+adjoints(r)%nghost)
+-        real(kind=8), intent(in) :: xlower_a, xlower_f
+-        integer, intent(in) :: mx_f, mptr_a, mbc_f
+-        real(kind=8), intent(in) :: dx_f, dx_a
+-        logical, intent(in) :: mask_forward(1-mbc_f:mx_f+mbc_f)
+-
+-        integer :: z,level, iz(1-mbc_f:mx_f+mbc_f), &
+-                      ivar,i, iadd, iaddaux, loc
+-        real(kind=8) :: q_interp(nvar,1-mbc_f:mx_f+mbc_f), denom
+-        real(kind=8) :: x, xhigh_a,x_f
+-        real(kind=8) :: dxz(1-mbc_f:mx_f+mbc_f), a
+-
+-        iadd(ivar,i)  = loc + ivar - 1 + adjoints(r)%meqn*(i-1)
+-
+-        q_interp = 0.0
+-        xhigh_a  = xlower_a + mx_a*dx_a
+-        loc    = adjoints(r)%loc(mptr_a)
+-
+-        do z=1-mbc_f,mx_f+mbc_f
+-            x = xlower_f + (z - 0.5d0)*dx_f
+-
+-            iz(z) = int((x - xlower_a + 0.5d0*dx_a) / dx_a) + 1
+-            dxz(z) = x - (xlower_a + (iz(z)-0.5d0)*dx_a)
+-        enddo
+-
+-        do z = 1-mbc_f, mx_f+mbc_f
+-            x = xlower_f + (z - 0.5d0)*dx_f
+-
+-            if (mask_forward(z)) then
+-            ! Interpolate only if this cell is overlapping with grid
+-                if (mask_adjoint(iz(z))) then
+-
+-                    do ivar=1,nvar
+-                        a = (adjoints(r)%alloc(iadd(ivar,iz(z)+1)) &
+-                            - adjoints(r)%alloc(iadd(ivar,iz(z)))) / dx_a
+-                        q_interp(ivar,z) = &
+-                            adjoints(r)%alloc(iadd(ivar,iz(z))) + a*dxz(z)
+-                    enddo
+-                endif
+-            endif
+-        enddo
+-
+-      end subroutine interp_adjoint
+diff --git a/src/1d_adjoint/quick_sort.f b/src/1d_adjoint/quick_sort.f
+deleted file mode 100644
+index dfa4eb3..0000000
+--- a/src/1d_adjoint/quick_sort.f
++++ /dev/null
+@@ -1,168 +0,0 @@
+-C From HDK@psuvm.psu.edu Thu Dec  8 15:27:16 MST 1994
+-C 
+-C The following was converted from Algol recursive to Fortran iterative
+-C by a colleague at Penn State (a long time ago - Fortran 66, please
+-C excuse the GoTo's). The following code also corrects a bug in the
+-C Quicksort algorithm published in the ACM (see Algorithm 402, CACM,
+-C Sept. 1970, pp 563-567; also you younger folks who weren't born at
+-C that time might find interesting the history of the Quicksort
+-C algorithm beginning with the original published in CACM, July 1961,
+-C pp 321-322, Algorithm 64). Note that the following algorithm sorts
+-C integer data; actual data is not moved but sort is affected by sorting
+-C a companion index array (see leading comments). The data type being
+-C sorted can be changed by changing one line; see comments after
+-C declarations and subsequent one regarding comparisons(Fortran
+-C 77 takes care of character comparisons of course, so that comment
+-C is merely historical from the days when we had to write character
+-C compare subprograms, usually in assembler language for a specific
+-C mainframe platform at that time). But the following algorithm is
+-C good, still one of the best available.
+-
+-C Modified by Brisa Davis, 1/26/2018 to sort reals rather than integers.
+-
+-
+-      SUBROUTINE QSORTR (ORD,N,A)
+-C
+-C==============SORTS THE ARRAY A(I),I=1,2,...,N BY PUTTING THE
+-C   ASCENDING ORDER VECTOR IN ORD.  THAT IS ASCENDING ORDERED A
+-C   IS A(ORD(I)),I=1,2,...,N; DESCENDING ORDER A IS A(ORD(N-I+1)),
+-C   I=1,2,...,N .  THIS SORT RUNS IN TIME PROPORTIONAL TO N LOG N .
+-C
+-C
+-C     ACM QUICKSORT - ALGORITHM #402 - IMPLEMENTED IN FORTRAN 66 BY
+-C                                 WILLIAM H. VERITY, WHV@PSUVM.PSU.EDU
+-C                                 CENTER FOR ACADEMIC COMPUTING
+-C                                 THE PENNSYLVANIA STATE UNIVERSITY
+-C                                 UNIVERSITY PARK, PA.  16802
+-C
+-      IMPLICIT none
+-C
+-      integer :: N, ORD(N),NDEEP
+-      integer :: P,Q,I,L,U,L1,U1,YP,IX,IZ,IP,IQ,POPLST(2,20)
+-      real(kind=8) :: A(N)
+-      real(kind=8) :: X,XX,Z,ZZ,Y
+-C
+-C
+-C
+-      NDEEP=0
+-      U1=N
+-      L1=1
+-      DO 1  I=1,N
+-    1 ORD(I)=I
+-    2 IF (U1.LE.L1) RETURN
+-C
+-    3 L=L1
+-      U=U1
+-C
+-C PART
+-C
+-    4 P=L
+-      Q=U
+-C     FOR CHARACTER SORTS, THE FOLLOWING 3 STATEMENTS WOULD BECOME
+-C     X = ORD(P)
+-C     Z = ORD(Q)
+-C     IF (A(X) .LE. A(Z)) GO TO 2
+-C
+-C     WHERE "CLE" IS A LOGICAL FUNCTION WHICH RETURNS "TRUE" IF THE
+-C     FIRST ARGUMENT IS LESS THAN OR EQUAL TO THE SECOND, BASED ON "LEN"
+-C     CHARACTERS.
+-C
+-      X=A(ORD(P))
+-      Z=A(ORD(Q))
+-      IF (X.LE.Z) GO TO 5
+-      Y=X
+-      X=Z
+-      Z=Y
+-      YP=ORD(P)
+-      ORD(P)=ORD(Q)
+-      ORD(Q)=YP
+-    5 IF (U-L.LE.1) GO TO 15
+-      XX=X
+-      IX=P
+-      ZZ=Z
+-      IZ=Q
+-C
+-C LEFT
+-C
+-    6 P=P+1
+-      IF (P.GE.Q) GO TO 7
+-      X=A(ORD(P))
+-      IF (X.GE.XX) GO TO 8
+-      GO TO 6
+-    7 P=Q-1
+-      GO TO 13
+-C
+-C RIGHT
+-C
+-    8 Q=Q-1
+-      IF (Q.LE.P) GO TO 9
+-      Z=A(ORD(Q))
+-      IF (Z.LE.ZZ) GO TO 10
+-      GO TO 8
+-    9 Q=P
+-      P=P-1
+-      Z=X
+-      X=A(ORD(P))
+-C
+-C DIST
+-C
+-   10 IF (X.LE.Z) GO TO 11
+-      Y=X
+-      X=Z
+-      Z=Y
+-      IP=ORD(P)
+-      ORD(P)=ORD(Q)
+-      ORD(Q)=IP
+-   11 IF (X.LE.XX) GO TO 12
+-      XX=X
+-      IX=P
+-   12 IF (Z.GE.ZZ) GO TO 6
+-      ZZ=Z
+-      IZ=Q
+-      GO TO 6
+-C
+-C OUT
+-C
+-   13 CONTINUE
+-      IF (.NOT.(P.NE.IX.AND.X.NE.XX)) GO TO 14
+-      IP=ORD(P)
+-      ORD(P)=ORD(IX)
+-      ORD(IX)=IP
+-   14 CONTINUE
+-      IF (.NOT.(Q.NE.IZ.AND.Z.NE.ZZ)) GO TO 15
+-      IQ=ORD(Q)
+-      ORD(Q)=ORD(IZ)
+-      ORD(IZ)=IQ
+-   15 CONTINUE
+-      IF (U-Q.LE.P-L) GO TO 16
+-      L1=L
+-      U1=P-1
+-      L=Q+1
+-      GO TO 17
+-   16 U1=U
+-      L1=Q+1
+-      U=P-1
+-   17 CONTINUE
+-      IF (U1.LE.L1) GO TO 18
+-C
+-C START RECURSIVE CALL
+-C
+-      NDEEP=NDEEP+1
+-      POPLST(1,NDEEP)=U
+-      POPLST(2,NDEEP)=L
+-      GO TO 3
+-   18 IF (U.GT.L) GO TO 4
+-C
+-C POP BACK UP IN THE RECURSION LIST
+-C
+-      IF (NDEEP.EQ.0) GO TO 2
+-      U=POPLST(1,NDEEP)
+-      L=POPLST(2,NDEEP)
+-      NDEEP=NDEEP-1
+-      GO TO 18
+-C
+-C END SORT
+-C END QSORT
+-C
+-      write(*,*) "Finished quicksort"
+-      END
+diff --git a/src/1d_adjoint/reload.f b/src/1d_adjoint/reload.f
+deleted file mode 100644
+index 7bedc8a..0000000
+--- a/src/1d_adjoint/reload.f
++++ /dev/null
+@@ -1,126 +0,0 @@
+-c :::::::::::::::::::::::::::: RELOAD ::::::::::::::::::::::::::::::::
+-c read back in the check point files written by subr. check.
+-c
+-c Modified version of restrt that only loads old data
+-c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-c
+-c ---------------------------------------------------------
+-c
+-      subroutine reload(adjfile, k)
+-c
+-      use adjoint_module
+-
+-      implicit double precision (a-h,o-z)
+-
+-      integer, intent(in) :: k
+-      integer :: mptr, level, ladjfile
+-      integer :: mitot, mjtot, i1, i2
+-      integer :: i, ivar, z, loc
+-      integer :: allocsize, new_size
+-      character(len=*):: adjfile
+-      logical foundFile, initial
+-
+-      real(kind=8), allocatable, target, dimension(:) :: new_storage
+-      iadd(ivar,i)  = adjoints(k)%loc(mptr)
+-     .        + ivar - 1 + adjoints(k)%meqn*(i-1)
+-
+-c     Initializing all levels to zero
+-      adjoints(k)%gridlevel(:) = 0
+-
+-c     ! Checking to see if fort.t file exists
+-      ladjfile = len(trim(adjfile))
+-      adjfile(ladjfile-4:ladjfile-4) = 't'
+-      write(6,*) 'Attempting to reload data '
+-      write(6,*) '  fort.t* file: ',trim(adjfile)
+-      inquire(file=trim(adjfile),exist=foundFile)
+-      if (.not. foundFile) then
+-          write(*,*)" Did not find fort.t* file!"
+-          stop
+-      endif
+-      open(9,file=trim(adjfile),status='old',form='formatted')
+-      rewind 9
+-
+-c     ! Reading from fort.t file
+-      read(9, "(e18.8)") adjoints(k)%time
+-      read(9, "(i6)") adjoints(k)%meqn
+-      read(9, "(i6)") adjoints(k)%ngrids
+-      read(9, "(i6)") adjoints(k)%naux
+-      read(9, "(i6)") adjoints(k)%ndim
+-      read(9, "(i6)") adjoints(k)%nghost
+-
+-      close(9)
+-
+-c     ! Allocating memory for alloc array
+-      allocsize = 4000000
+-      allocate(adjoints(k)%alloc(allocsize))
+-
+-c     ! Checking to see if fort.q file exists
+-      adjfile(ladjfile-4:ladjfile-4) = 'q'
+-      write(6,*) 'Attempting to reload data '
+-      write(6,*) '  fort.q* file: ',trim(adjfile)
+-      inquire(file=trim(adjfile),exist=foundFile)
+-      if (.not. foundFile) then
+-          write(*,*)" Did not find fort.q* file!"
+-          stop
+-      endif
+-      open(10,file=trim(adjfile),status='old',form='formatted')
+-      rewind 10
+-
+-c     ! Checking to see if fort.b file exists
+-      adjfile(ladjfile-4:ladjfile-4) = 'b'
+-      write(6,*) 'Attempting to reload data '
+-      write(6,*) '  fort.b* file: ',trim(adjfile)
+-      inquire(file=trim(adjfile),exist=foundFile)
+-      if (.not. foundFile) then
+-          write(*,*)" Did not find fort.b* file!"
+-          stop
+-      endif
+-      open(20,file=trim(adjfile),status='unknown',access='stream')
+-      rewind 20
+-
+-c     ! Reading from fort.q* file and fort.b* files
+-      loc = 1
+-      do z = 1, adjoints(k)%ngrids
+-          read(10,"(i6)") mptr
+-          adjoints(k)%gridpointer(z) = mptr
+-
+-          read(10,"(i6)") level
+-          adjoints(k)%gridlevel(mptr) = level
+-
+-          read(10,"(i6)") adjoints(k)%ncellsx(mptr)
+-          read(10,"(e26.16)") adjoints(k)%xlowvals(mptr)
+-          read(10,"(e26.16)") adjoints(k)%hxposs(level)
+-          read(10,*)
+-
+-          mitot = adjoints(k)%ncellsx(mptr) + 2*adjoints(k)%nghost
+-
+-          adjoints(k)%loc(mptr) = loc
+-          loc = loc + mitot*adjoints(k)%meqn
+-
+-c         Checking to see if the alloc array is large enough
+-c         to hold the new grid
+-c         If not, making the alloc array larger
+-          if (allocsize .lt. loc) then
+-              new_size = 2*allocsize
+-              allocate(new_storage(new_size))
+-
+-              new_storage(1:allocsize) = adjoints(k)%alloc
+-              call move_alloc(new_storage,adjoints(k)%alloc)
+-              allocsize = new_size
+-          endif
+-
+-c       ! This is the bulk of the reading
+-          i1 = iadd(1,1)
+-          i2 = iadd(adjoints(k)%meqn,mitot)
+-          read(20) adjoints(k)%alloc(i1:i2)
+-
+-      enddo
+-
+-      close(10)
+-      close(20)
+-
+-      adjoints(k)%lfine = maxval(adjoints(k)%gridlevel)
+-
+-      return
+-      end
+-
+diff --git a/src/1d_adjoint/setaux.f90 b/src/1d_adjoint/setaux.f90
+deleted file mode 100644
+index 0d24060..0000000
+--- a/src/1d_adjoint/setaux.f90
++++ /dev/null
+@@ -1,28 +0,0 @@
+-subroutine setaux(mbc,mx,xlower,dx,maux,aux)
+-
+-    ! Called at start of computation before calling qinit, and
+-    ! when AMR is used, also called every time a new grid patch is created.
+-    ! Use to set auxiliary arrays aux(1:maux, 1-mbc:mx+mbc, 1-mbc:my+mbc).
+-    ! Note that ghost cell values may need to be set if the aux arrays
+-    ! are used by the Riemann solver(s).
+-    !
+-    ! This default version does nothing.
+-
+-    use adjoint_module, only: innerprod_index
+-    use amr_module, only: NEEDS_TO_BE_SET
+-
+-    implicit none
+-
+-    integer, intent(in) :: mbc,mx,maux
+-    real(kind=8), intent(in) :: xlower,dx
+-    real(kind=8), intent(out) ::  aux(maux,1-mbc:mx+mbc)
+-    integer :: ii,iint
+-
+-    ! If a new grid has been created, but hadn't been flagged
+-    ! set innerproduct to zero.
+-    do ii=1-mbc,mx+mbc
+-        if(aux(1,ii) .eq. NEEDS_TO_BE_SET) then
+-            aux(innerprod_index,ii) = 0.d0
+-        endif
+-    enddo
+-end subroutine setaux
+diff --git a/src/1d_adjoint/setprob.f90 b/src/1d_adjoint/setprob.f90
+deleted file mode 100644
+index 781d228..0000000
+--- a/src/1d_adjoint/setprob.f90
++++ /dev/null
+@@ -1,9 +0,0 @@
+-subroutine setprob()
+-
+-    use adjoint_module, only: read_adjoint_data
+-
+-    implicit none
+-
+-    call read_adjoint_data()    !# Read adjoint solution
+-
+-end subroutine setprob
+diff --git a/src/1d_adjoint/valout.f b/src/1d_adjoint/valout.f
+deleted file mode 100644
+index e0a15e5..0000000
+--- a/src/1d_adjoint/valout.f
++++ /dev/null
+@@ -1,236 +0,0 @@
+-c
+-c -----------------------------------------------------
+-c
+-      subroutine valout (lst, lend, time, nvar, naux)
+-c
+-      use amr_module
+-      use adjoint_module, only: innerprod_index
+-      implicit double precision (a-h,o-z)
+-      character*10  fname1, fname2, fname3, fname4, fname5
+-
+-c     # Output the results for a general system of conservation laws
+-c     # in 1 dimensions
+-c
+-c     # Write the results to the file fort.q<iframe>
+-c     # Use format required by matlab script  plotclaw2.m or Python tools
+-c
+-c     # set outaux = .true. to also output the aux arrays to fort.a<iframe>
+-
+-      logical outaux
+-      integer output_aux_num 
+-      integer clock_start, clock_finish, clock_rate
+-      real(kind=8) cpu_start, cpu_finish, innerprod
+-
+-c      iadd(i,j,ivar) = loc + i - 1 + mitot*((ivar-1)*mjtot+j-1)
+-c      iaddaux(i,j,ivar) = locaux + i - 1 + mitot*((ivar-1)*mjtot+j-1)
+-      iadd(ivar,i)  = loc + ivar - 1 + nvar*(i-1)
+-      iaddaux(iaux,i) = locaux + iaux-1 + naux*(i-1)
+-c
+-
+-      call system_clock(clock_start,clock_rate)
+-      call cpu_time(cpu_start)
+-
+-c     # how many aux components requested?
+-      output_aux_num = 0
+-      do i=1,naux
+-          output_aux_num = output_aux_num + output_aux_components(i)
+-      enddo
+-                
+-c     # Currently outputs all aux components if any are requested!
+-      outaux = ((output_aux_num > 0) .and. 
+-     .         ((.not. output_aux_onlyonce) .or. (time==t0)))
+-
+-c     open(unit=77,file='fort.b',status='unknown',access='stream')
+-
+-
+-c     ### Python graphics output
+-c
+-
+-c        ###  make the file names and open output files
+-         fname1 = 'fort.qxxxx'
+-         fname2 = 'fort.txxxx'
+-         fname3 = 'fort.axxxx'
+-         fname4 = 'fort.bxxxx'
+-         matunit1 = 50
+-         matunit2 = 60
+-         matunit3 = 70
+-         matunit4 = 71
+-         nstp     = matlabu
+-         do 55 ipos = 10, 7, -1
+-            idigit = mod(nstp,10)
+-            fname1(ipos:ipos) = char(ichar('0') + idigit)
+-            fname2(ipos:ipos) = char(ichar('0') + idigit)
+-            fname3(ipos:ipos) = char(ichar('0') + idigit)
+-            fname4(ipos:ipos) = char(ichar('0') + idigit)
+-            nstp = nstp / 10
+- 55      continue
+-
+-         open(unit=matunit1,file=fname1,status='unknown',
+-     .       form='formatted')
+-
+-         if (output_format == 3) then
+-c            # binary output          
+-             open(unit=matunit4,file=fname4,status='unknown',
+-     &               access='stream')
+-             endif
+-
+-         level = lst
+-         ngrids = 0
+-c65      if (level .gt. lfine) go to 90
+- 65      if (level .gt. lend) go to 90
+-            mptr = lstart(level)
+- 70         if (mptr .eq. 0) go to 80
+-              ngrids  = ngrids + 1
+-              nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
+-              loc     = node(store1, mptr)
+-              locaux  = node(storeaux,mptr)
+-              mitot   = nx + 2*nghost
+-
+-              write(matunit1,1003) mptr, level, nx
+- 1003 format(i6,'                 grid_number',/,
+-     &       i6,'                 AMR_level',/,
+-     &       i6,'                 mx')
+-
+-
+-              xlow = rnode(cornxlo,mptr)
+-              write(matunit1,1004)
+-     &              xlow,hxposs(level)
+- 1004 format(e26.16,'    xlow', /,
+-     &       e26.16,'    dx', /)
+-
+-
+-        if (output_format == 1) then
+-                do i = nghost+1, mitot-nghost
+-                   do ivar=1,nvar
+-                      if (abs(alloc(iadd(ivar,i))) < 1d-90) then
+-                         alloc(iadd(ivar,i)) = 0.d0
+-                      endif
+-                   enddo
+-
+-                   ! Adding innerproduct
+-                   if
+-     &             (abs(alloc(iaddaux(innerprod_index,i))) < 1d-90) then
+-                       alloc(iaddaux(innerprod_index,i)) = 0.d0
+-                   endif
+-                   innerprod = alloc(iaddaux(innerprod_index,i))
+-
+-                   write(matunit1,109)
+-     &                (alloc(iadd(ivar,i)), ivar=1,nvar),innerprod
+-                enddo
+-                write(matunit1,*) ' '
+-  109        format(50e26.16)
+-         endif
+-
+-         if (output_format == 3) then
+-c            # binary output          
+-             i1 = iadd(1,1)
+-             i2 = iadd(nvar,mitot)
+-
+-             ! Adding innerproduct
+-             innerprod = alloc(iaddaux(innerprod_index,i))
+-
+-c            # NOTE: we are writing out ghost cell data also, unlike ascii
+-             write(matunit4) alloc(i1:i2),innerprod
+-             endif
+-
+-            mptr = node(levelptr, mptr)
+-            go to 70
+- 80      level = level + 1
+-         go to 65
+-
+- 90     continue
+-
+-c       -------------------
+-c       # output aux arrays
+-c       -------------------
+-
+-        if (outaux) then
+-c     # output aux array to fort.aXXXX
+-
+-           level = lst
+- 165       if (level .gt. lfine) go to 190
+-           mptr = lstart(level)
+- 170       if (mptr .eq. 0) go to 180
+-           nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
+-           locaux  = node(storeaux,mptr)
+-           mitot   = nx + 2*nghost
+-
+-
+-           if (output_format == 1) then
+-              open(unit=matunit3,file=fname3,status='unknown',
+-     .             form='formatted')
+-                 write(matunit3,1003) mptr, level, nx
+-              xlow = rnode(cornxlo,mptr)
+-                 write(matunit3,1004)
+-     &                xlow,hxposs(level)
+-
+-                 do i = nghost+1, mitot-nghost
+-                    do ivar=1,naux
+-                       if (abs(alloc(iaddaux(ivar,i))) .lt. 1d-90)
+-     &                      alloc(iaddaux(ivar,i)) = 0.d0
+-                    enddo
+-                    write(matunit3,109) (alloc(iaddaux(ivar,i)),
+-     &                   ivar=1,naux)
+-                 enddo
+-                 write(matunit3,*) ' '
+-           endif
+-           
+-           if (output_format == 3) then
+-c     # binary output          
+-              open(unit=matunit3,file=fname3,status='unknown',
+-     &             access='stream')
+-              i1 = iaddaux(1,1)
+-              i2 = iaddaux(naux,mitot)
+-c     # NOTE: we are writing out ghost cell data also, unlike ascii
+-              write(matunit3) alloc(i1:i2)
+-           endif
+-
+-
+-           mptr = node(levelptr, mptr)
+-           go to 170
+- 180       level = level + 1
+-           go to 165
+-
+- 190       continue
+-           close(unit=matunit3)
+-        endif                   !# end outputting aux array
+-
+-
+-c     --------------
+-c     # fort.t file:
+-c     --------------
+-
+-      open(unit=matunit2,file=fname2,status='unknown',
+-     .       form='formatted')
+-          ndim = 1
+-
+-c     # NOTE: we need to print out nghost too in order to strip
+-c     #       ghost cells from q when reading in pyclaw.io.binary
+-      write(matunit2,1000) time,nvar+1,ngrids,naux,ndim,nghost
+- 1000 format(e18.8,'    time', /,
+-     &       i6,'                 meqn'/,
+-     &       i6,'                 ngrids'/,
+-     &       i6,'                 naux'/,
+-     &       i6,'                 ndim'/,
+-     &       i6,'                 nghost'/,/)
+-c
+-
+-      write(6,601) matlabu,time
+-  601 format('AMRCLAW: Frame ',i4,
+-     &       ' output files done at time t = ', d12.6,/)
+-
+-      matlabu = matlabu + 1
+-
+-      close(unit=matunit1)
+-      close(unit=matunit2)
+-      if (output_format == 3) then
+-          close(unit=matunit4)
+-      endif
+-
+-      call system_clock(clock_finish,clock_rate)
+-      call cpu_time(cpu_finish)
+-      timeValout = timeValout + clock_finish - clock_start
+-      timeValoutCPU = timeValoutCPU + cpu_finish - cpu_start
+-
+-      return
+-      end
+diff --git a/src/2d/flagger.f b/src/2d/flagger.f
+index 2d6723b..71b30d8 100644
+--- a/src/2d/flagger.f
++++ b/src/2d/flagger.f
+@@ -31,9 +31,8 @@ c
+       subroutine flagger(nvar,naux,lcheck,start_time)
+ 
+       use amr_module
+-      use adjoint_module,only:calculate_tol,eptr,errors,totnum_adjoints
+-      use adjoint_module,only:adjoints, trange_start, trange_final
+-      use adjoint_module,only:adjoint_flagging,grid_num
++      use adjoint_module,only:calculate_tol,eptr,errors,totnum_adjoints,
++     1      adjoints,trange_start,trange_final,adjoint_flagging,grid_num
+       implicit double precision (a-h,o-z)
+ 
+       integer omp_get_thread_num, omp_get_max_threads
+diff --git a/src/2d/setaux.f90 b/src/2d/setaux.f90
+index 979f56a..6468d6e 100644
+--- a/src/2d/setaux.f90
++++ b/src/2d/setaux.f90
+@@ -6,7 +6,7 @@ subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,maux,aux)
+     ! Note that ghost cell values may need to be set if the aux arrays
+     ! are used by the Riemann solver(s).
+     !
+-    ! This default version does nothing.
++    ! This default version does nothing, unless using adjoint-flagging.
+ 
+     use amr_module, only : NEEDS_TO_BE_SET
+     use adjoint_module, only : adjoint_flagging,innerprod_index
+
+
+===========
+clawutil
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/clawutil
+
+
+
+===========
+pyclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/pyclaw
+
+
+
+===========
+visclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/visclaw
+
+
+
+===========
+riemann
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/riemann
+
+
+
+===========
+geoclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/geoclaw
+
+diff --git a/examples/tsunami/chile2010_adjoint/Makefile b/examples/tsunami/chile2010_adjoint/Makefile
+index f4db33a..184a65e 100644
+--- a/examples/tsunami/chile2010_adjoint/Makefile
++++ b/examples/tsunami/chile2010_adjoint/Makefile
+@@ -31,8 +31,10 @@ FFLAGS = -O2 -fopenmp
+ # package sources for this program:
+ # ---------------------------------
+ 
++ADJLIB:=$(CLAW)/amrclaw/src/2d_adjoint
++GEOLIB:=$(CLAW)/geoclaw/src/2d/shallow
+ ADJGEOLIB:=$(CLAW)/geoclaw/src/2d_adjoint
+-include $(ADJGEOLIB)/Makefile.adjoint_geoclaw
++include $(GEOLIB)/Makefile.geoclaw
+ 
+ # ---------------------------------------
+ # package sources specifically to exclude
+@@ -49,8 +51,20 @@ EXCLUDE_SOURCES = \
+ # ----------------------------------------
+ 
+ MODULES = \
++  $(ADJLIB)/adjoint_module.f90 \
++  $(ADJGEOLIB)/innerprod_module.f90 \
+ 
+ SOURCES = \
++  $(ADJLIB)/setprob.f90 \
++  $(ADJLIB)/quick_sort.f \
++  $(ADJLIB)/flagger.f \
++  $(ADJGEOLIB)/flag2refine2.f90 \
++  $(ADJGEOLIB)/errf1.f \
++  $(ADJGEOLIB)/interp_adjoint.f \
++  $(ADJGEOLIB)/valout.f \
++  $(ADJGEOLIB)/setaux.f90 \
++  $(ADJGEOLIB)/reload.f \
++  $(ADJGEOLIB)/errest.f \
+   $(CLAW)/riemann/src/rpn2_geoclaw.f \
+   $(CLAW)/riemann/src/rpt2_geoclaw.f \
+   $(CLAW)/riemann/src/geoclaw_riemann_utils.f \
