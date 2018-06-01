@@ -13,4 +13,16 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     real(kind=8), intent(in) :: xlower,dx
     real(kind=8), intent(out) ::  aux(maux,1-mbc:mx+mbc)
 
+    integer :: ii
+
+    if(adjoint_flagging) then
+        ! If a new grid has been created, but hadn't been flagged
+        ! set innerproduct to zero.
+        do ii=1-mbc,mx+mbc
+            if (aux(1,ii) .eq. NEEDS_TO_BE_SET) then
+                aux(innerprod_index,ii) = 0.d0
+            endif
+        enddo
+    endif
+
 end subroutine setaux
