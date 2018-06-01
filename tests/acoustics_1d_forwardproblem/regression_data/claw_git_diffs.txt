@@ -1,0 +1,190 @@
+Clawpack git diffs...
+
+===========
+classic
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/classic
+
+diff --git a/examples/acoustics_1d_example1/setplot.py b/examples/acoustics_1d_example1/setplot.py
+index fabb9a1..d0812ab 100644
+--- a/examples/acoustics_1d_example1/setplot.py
++++ b/examples/acoustics_1d_example1/setplot.py
+@@ -23,6 +23,7 @@ def setplot(plotdata=None):
+         plotdata = ClawPlotData()
+ 
+     plotdata.clearfigures()  # clear any old figures,axes,items data
++    plotdata.format = 'binary'      # 'ascii', 'binary', 'netcdf'
+ 
+     # Figure for q[0]
+     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+diff --git a/examples/acoustics_1d_example1/setrun.py b/examples/acoustics_1d_example1/setrun.py
+index 0a5020a..882bd1f 100644
+--- a/examples/acoustics_1d_example1/setrun.py
++++ b/examples/acoustics_1d_example1/setrun.py
+@@ -122,7 +122,7 @@ def setrun(claw_pkg='classic'):
+         clawdata.output_t0 = True  # output at initial (or restart) time?
+         
+ 
+-    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
++    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+ 
+     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+     clawdata.output_aux_components = 'none'  # could be list
+diff --git a/examples/acoustics_1d_heterogeneous/setplot.py b/examples/acoustics_1d_heterogeneous/setplot.py
+index 2eac268..3ab848a 100644
+--- a/examples/acoustics_1d_heterogeneous/setplot.py
++++ b/examples/acoustics_1d_heterogeneous/setplot.py
+@@ -16,6 +16,7 @@ def setplot(plotdata=None):
+         plotdata = ClawPlotData()
+ 
+     plotdata.clearfigures()
++    plotdata.format = 'binary'
+ 
+     # Figures corresponding to Figure 9.5 of LeVeque, "Finite Volume
+     # Methods for Hyperbolic Problems," 2002 (though more of them)
+diff --git a/examples/acoustics_1d_heterogeneous/setrun.py b/examples/acoustics_1d_heterogeneous/setrun.py
+index de66fdf..0025eca 100644
+--- a/examples/acoustics_1d_heterogeneous/setrun.py
++++ b/examples/acoustics_1d_heterogeneous/setrun.py
+@@ -125,7 +125,7 @@ def setrun(claw_pkg='classic'):
+         clawdata.output_t0 = True  # output at initial (or restart) time?
+         
+ 
+-    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
++    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+ 
+     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+     clawdata.output_aux_components = 'none'  # could be list
+diff --git a/examples/advection_1d_example1/setplot.py b/examples/advection_1d_example1/setplot.py
+index 9c3e84c..29555fe 100644
+--- a/examples/advection_1d_example1/setplot.py
++++ b/examples/advection_1d_example1/setplot.py
+@@ -44,6 +44,7 @@ def setplot(plotdata=None):
+         plotdata = ClawPlotData()
+ 
+     plotdata.clearfigures()  # clear any old figures,axes,items data
++    plotdata.format = 'binary'
+ 
+     # Figure for q[0]
+     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+diff --git a/examples/advection_1d_example1/setrun.py b/examples/advection_1d_example1/setrun.py
+index d37602c..3ef39ab 100644
+--- a/examples/advection_1d_example1/setrun.py
++++ b/examples/advection_1d_example1/setrun.py
+@@ -121,7 +121,7 @@ def setrun(claw_pkg='classic'):
+         clawdata.output_t0 = True  # output at initial (or restart) time?
+         
+ 
+-    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
++    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+ 
+     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+     clawdata.output_aux_components = 'none'  # could be list
+
+
+===========
+amrclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/amrclaw
+
+diff --git a/tests/acoustics_2d_adjointprob/README.rst b/tests/acoustics_2d_adjointprob/README.rst
+index fff6355..9524f57 100644
+--- a/tests/acoustics_2d_adjointprob/README.rst
++++ b/tests/acoustics_2d_adjointprob/README.rst
+@@ -1,11 +1,11 @@
+ 
+-.. _amrclaw_tests_acoustics_2d_adjoint/adjoint:
++.. _amrclaw_tests_acoustics_2d_adjointproblem:
+ 
+ Two-dimensional acoustics adjoint problem
+ ===========================================
+ 
+ Quick regression test version:  regression_tests.py
+ 
+-* Runs up to time t=6.0.
++* Runs up to time t=0.5.
+ * Checks sum of t values and q values at three different gauges.
+   Tests pass if these agree with specified values in regression_tests.py.
+diff --git a/tests/acoustics_2d_forwardprob/README.rst b/tests/acoustics_2d_forwardprob/README.rst
+index ae8d017..514fcf1 100644
+--- a/tests/acoustics_2d_forwardprob/README.rst
++++ b/tests/acoustics_2d_forwardprob/README.rst
+@@ -1,5 +1,5 @@
+ 
+-.. _amrclaw_tests_advection_2d_square:
++.. _amrclaw_tests_acoustics_2d_forwardproblem:
+ 
+ Two-dimensional acoustics adjoint-flagging forward problem 
+ ===========================================================
+
+
+===========
+clawutil
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/clawutil
+
+
+
+===========
+pyclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/pyclaw
+
+
+
+===========
+visclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/visclaw
+
+
+
+===========
+riemann
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/riemann
+
+
+
+===========
+geoclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/geoclaw
+
+diff --git a/examples/tsunami/chile2010_adjoint/Makefile b/examples/tsunami/chile2010_adjoint/Makefile
+index f4db33a..184a65e 100644
+--- a/examples/tsunami/chile2010_adjoint/Makefile
++++ b/examples/tsunami/chile2010_adjoint/Makefile
+@@ -31,8 +31,10 @@ FFLAGS = -O2 -fopenmp
+ # package sources for this program:
+ # ---------------------------------
+ 
++ADJLIB:=$(CLAW)/amrclaw/src/2d_adjoint
++GEOLIB:=$(CLAW)/geoclaw/src/2d/shallow
+ ADJGEOLIB:=$(CLAW)/geoclaw/src/2d_adjoint
+-include $(ADJGEOLIB)/Makefile.adjoint_geoclaw
++include $(GEOLIB)/Makefile.geoclaw
+ 
+ # ---------------------------------------
+ # package sources specifically to exclude
+@@ -49,8 +51,20 @@ EXCLUDE_SOURCES = \
+ # ----------------------------------------
+ 
+ MODULES = \
++  $(ADJLIB)/adjoint_module.f90 \
++  $(ADJGEOLIB)/innerprod_module.f90 \
+ 
+ SOURCES = \
++  $(ADJLIB)/setprob.f90 \
++  $(ADJLIB)/quick_sort.f \
++  $(ADJLIB)/flagger.f \
++  $(ADJGEOLIB)/flag2refine2.f90 \
++  $(ADJGEOLIB)/errf1.f \
++  $(ADJGEOLIB)/interp_adjoint.f \
++  $(ADJGEOLIB)/valout.f \
++  $(ADJGEOLIB)/setaux.f90 \
++  $(ADJGEOLIB)/reload.f \
++  $(ADJGEOLIB)/errest.f \
+   $(CLAW)/riemann/src/rpn2_geoclaw.f \
+   $(CLAW)/riemann/src/rpt2_geoclaw.f \
+   $(CLAW)/riemann/src/geoclaw_riemann_utils.f \
