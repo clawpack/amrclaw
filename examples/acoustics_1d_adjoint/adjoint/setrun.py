@@ -189,7 +189,7 @@ def setrun(claw_pkg='amrclaw'):
     #   4 or 'mc'       ==> MC limiter
     clawdata.limiter = ['mc','mc']
     
-    clawdata.use_fwaves = False    # True ==> use f-wave version of algorithms
+    clawdata.use_fwaves = True    # True ==> use f-wave version of algorithms
     
     # Source terms splitting:
     #   src_split == 0 or 'none'    ==> no source term (src routine never called)
