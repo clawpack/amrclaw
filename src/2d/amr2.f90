@@ -715,6 +715,11 @@ program amr2
       write(*,"('      Times for restart runs are cumulative')")
       write(outunit,"('      Times for restart runs are cumulative')")
     endif
+
+    write(*, "('Note: timings are also recorded for each output step')")
+    write(*, "('      in the file timing.csv.')")
+    write(outunit, "('Note: timings are also recorded for each output step')")
+    write(outunit, "('      in the file timing.csv.')")
     
     
     !end of timing data
