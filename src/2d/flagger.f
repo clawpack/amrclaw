@@ -33,7 +33,7 @@ c
       use amr_module
       use adjoint_module,only:calculate_tol,eptr,errors,totnum_adjoints
       use adjoint_module,only:adjoints, trange_start, trange_final
-      use adjoint_module,only:adjoint_flagging
+      use adjoint_module,only:adjoint_flagging,grid_num
       implicit double precision (a-h,o-z)
 
       integer omp_get_thread_num, omp_get_max_threads
@@ -68,6 +68,7 @@ c            mptr = listgrids(jg)
                node(tempptr,mptr) = locbig
 
                if(adjoint_flagging) then
+                 grid_num(mptr) = jg
                  if (jg .ne. numgrids(lcheck)) then
                    eptr(jg+1) = eptr(jg)+(nx/2)*(ny/2)
                  endif
@@ -163,11 +164,7 @@ c no longer getting locbig, using "real" solution array in locnew
              endif     
 c     
          if (flag_richardson) then
-              if(adjoint_flagging) then
-                  call errest(nvar,naux,lcheck,mptr,nx,ny,jg)
-              else
-                  call errest(nvar,naux,lcheck,mptr,nx,ny)
-              endif
+            call errest(nvar,naux,lcheck,mptr,nx,ny)
          endif
 
        end do
