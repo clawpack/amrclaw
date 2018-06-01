@@ -1,5 +1,5 @@
 
-.. _amrclaw_tests_advection_2d_square:
+.. _amrclaw_tests_acoustics_2d_forwardproblem:
 
 Two-dimensional acoustics adjoint-flagging forward problem 
 ===========================================================
