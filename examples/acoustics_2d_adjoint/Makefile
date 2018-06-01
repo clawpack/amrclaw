@@ -31,8 +31,8 @@ FFLAGS ?=
 # package sources for this program:
 # ---------------------------------
 
-ADJLIB = $(CLAW)/amrclaw/src/2d/adjoint
-include $(ADJLIB)/Makefile.adjoint_amr_2d
+AMRLIB = $(CLAW)/amrclaw/src/2d
+include $(AMRLIB)/Makefile.amr_2d
 
 # ---------------------------------------
 # package sources specifically to exclude
