@@ -6,7 +6,7 @@ subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,maux,aux)
     ! Note that ghost cell values may need to be set if the aux arrays
     ! are used by the Riemann solver(s).
     !
-    ! This default version does nothing.
+    ! This default version does nothing, unless using adjoint-flagging.
 
     use amr_module, only : NEEDS_TO_BE_SET
     use adjoint_module, only : adjoint_flagging,innerprod_index

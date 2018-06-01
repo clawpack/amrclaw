@@ -31,9 +31,8 @@ c
       subroutine flagger(nvar,naux,lcheck,start_time)
 
       use amr_module
-      use adjoint_module,only:calculate_tol,eptr,errors,totnum_adjoints
-      use adjoint_module,only:adjoints, trange_start, trange_final
-      use adjoint_module,only:adjoint_flagging,grid_num
+      use adjoint_module,only:calculate_tol,eptr,errors,totnum_adjoints,
+     1      adjoints,trange_start,trange_final,adjoint_flagging,grid_num
       implicit double precision (a-h,o-z)
 
       integer omp_get_thread_num, omp_get_max_threads
