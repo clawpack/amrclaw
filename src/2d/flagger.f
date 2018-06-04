@@ -50,6 +50,9 @@ c        (used at next regridding time to determine tolerance)
            allocate(eptr(numgrids(lcheck)))
            errors = 0
            eptr(1) = 0
+
+         ! new version has variable node size arrays, so need to use current size
+         allocate(grid_num(maxgr))
          endif
       endif
 
@@ -174,6 +177,7 @@ c
                call calculate_tol(lcheck)
                deallocate(errors)
                deallocate(eptr)
+               deallocate(grid_num)
            endif
        endif
 

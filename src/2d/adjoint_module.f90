@@ -12,9 +12,10 @@ module adjoint_module
         real(kind=8) hxposs(maxlv),hyposs(maxlv)
 
         integer meqn, ngrids, naux, ndim, nghost, lfine
-        real(kind=8) time, xlowvals(maxgr), ylowvals(maxgr)
-        integer ncellsx(maxgr), ncellsy(maxgr), loc(maxgr)
-        integer gridlevel(maxgr), gridpointer(maxgr)
+        real(kind=8) time
+        real(kind=8),allocatable,dimension(:) :: xlowvals,ylowvals
+        integer, allocatable, dimension(:) :: ncellsx,ncellsy,loc, &
+                gridlevel,gridpointer
 
     end type adjointData_type
 
@@ -26,7 +27,7 @@ module adjoint_module
     logical :: adjoint_flagging
     real(kind=8), allocatable, dimension(:) :: errors
     integer, allocatable, dimension(:) :: eptr
-    integer :: grid_num(maxgr)
+    integer, allocatable, dimension(:) :: grid_num
 
 contains
 
@@ -50,7 +51,6 @@ contains
         inquire(file=adjointfile, exist=fileExists)
         if (fileExists) then
 
-            print *, "Reading data file: adjoint.data"
             adjoint_flagging = .true.
             iunit = 16
             call opendatafile(iunit,adjointfile)
@@ -76,11 +76,11 @@ contains
                 stop
             endif
 
-            ! Allocate space for the number of needed checkpoint files
+            ! Allocate space for the number of needed binary output files
             allocate(adjoints(totnum_adjoints))
 
             do 50 k = 1, totnum_adjoints
-                ! Load checkpoint files
+                ! Load binary output files
                 call reload(adj_files(k),k)
 
             50 continue
@@ -157,7 +157,7 @@ contains
         implicit double precision (a-h,o-z)
 
         integer, intent(in) :: k
-        integer :: mptr, level, ladjfile
+        integer :: mptr, level, ladjfile, mptr_notused
         integer :: mitot, mjtot, i1, i2
         integer :: i,j, ivar, z, loc
         integer :: allocsize, new_size
@@ -168,9 +168,6 @@ contains
 
         iadd(ivar,i,j)  = adjoints(k)%loc(mptr) &
             + ivar - 1 + adjoints(k)%meqn*((j-1)*mitot+i-1)
-
-        ! Initializing all levels to zero
-        adjoints(k)%gridlevel(:) = 0
 
        ! Checking to see if fort.t file exists
         ladjfile = len(trim(adjfile))
@@ -223,11 +220,24 @@ contains
         open(20,file=trim(adjfile),status='unknown',access='stream')
         rewind 20
 
+       ! Allocating size for grid information arrays
+       allocate(adjoints(k)%xlowvals(adjoints(k)%ngrids))
+       allocate(adjoints(k)%ylowvals(adjoints(k)%ngrids))
+       allocate(adjoints(k)%ncellsx(adjoints(k)%ngrids))
+       allocate(adjoints(k)%ncellsy(adjoints(k)%ngrids))
+       allocate(adjoints(k)%loc(adjoints(k)%ngrids))
+       allocate(adjoints(k)%gridlevel(adjoints(k)%ngrids))
+       allocate(adjoints(k)%gridpointer(adjoints(k)%ngrids))
+
+       ! Initializing all levels to zero
+       adjoints(k)%gridlevel(:) = 0
+
        ! Reading from fort.q* file and fort.b* files
         loc = 1
         do z = 1, adjoints(k)%ngrids
-            read(10,"(i6)") mptr
-            adjoints(k)%gridpointer(z) = mptr
+            read(10,"(i6)") mptr_notused
+            adjoints(k)%gridpointer(z) = z
+            mptr = z
 
             read(10,"(i6)") level
             adjoints(k)%gridlevel(mptr) = level
