@@ -7,7 +7,10 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     ! are used by the Riemann solver(s).
     !
     ! This default version does nothing. 
- 
+
+    use amr_module, only : NEEDS_TO_BE_SET
+    use adjoint_module, only : adjoint_flagging,innerprod_index
+
     implicit none
     integer, intent(in) :: mbc,mx,maux
     real(kind=8), intent(in) :: xlower,dx
