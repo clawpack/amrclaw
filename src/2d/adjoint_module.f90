@@ -183,12 +183,12 @@ contains
         rewind 9
 
         ! Reading from fort.t file
-        read(9, "(e18.8)") adjoints(k)%time
-        read(9, "(i6)") adjoints(k)%meqn
-        read(9, "(i6)") adjoints(k)%ngrids
-        read(9, "(i6)") adjoints(k)%naux
-        read(9, "(i6)") adjoints(k)%ndim
-        read(9, "(i6)") adjoints(k)%nghost
+        read(9, *) adjoints(k)%time
+        read(9, *) adjoints(k)%meqn
+        read(9, *) adjoints(k)%ngrids
+        read(9, *) adjoints(k)%naux
+        read(9, *) adjoints(k)%ndim
+        read(9, *) adjoints(k)%nghost
 
         close(9)
 
@@ -235,19 +235,19 @@ contains
        ! Reading from fort.q* file and fort.b* files
         loc = 1
         do z = 1, adjoints(k)%ngrids
-            read(10,"(i6)") mptr_notused
+            read(10,*) mptr_notused
             adjoints(k)%gridpointer(z) = z
             mptr = z
 
-            read(10,"(i6)") level
+            read(10,*) level
             adjoints(k)%gridlevel(mptr) = level
 
-            read(10,"(i6)") adjoints(k)%ncellsx(mptr)
-            read(10,"(i6)") adjoints(k)%ncellsy(mptr)
-            read(10,"(e26.16)") adjoints(k)%xlowvals(mptr)
-            read(10,"(e26.16)") adjoints(k)%ylowvals(mptr)
-            read(10,"(e26.16)") adjoints(k)%hxposs(level)
-            read(10,"(e26.16)") adjoints(k)%hyposs(level)
+            read(10,*) adjoints(k)%ncellsx(mptr)
+            read(10,*) adjoints(k)%ncellsy(mptr)
+            read(10,*) adjoints(k)%xlowvals(mptr)
+            read(10,*) adjoints(k)%ylowvals(mptr)
+            read(10,*) adjoints(k)%hxposs(level)
+            read(10,*) adjoints(k)%hyposs(level)
             read(10,*)
 
             mitot = adjoints(k)%ncellsx(mptr) + 2*adjoints(k)%nghost
