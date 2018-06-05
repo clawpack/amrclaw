@@ -55,8 +55,8 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
 
     use regions_module
     use adjoint_module, only: totnum_adjoints,innerprod_index, &
-                              adjoint_flagging,select_snapshots, &
-                              calculate_innerproduct
+                              adjoint_flagging,select_snapshots
+    use adjointsup_module, only: calculate_innerproduct
 
     implicit none
 

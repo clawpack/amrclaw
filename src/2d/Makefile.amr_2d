@@ -7,7 +7,8 @@ COMMON_MODULES += \
   $(AMRLIB)/amr_module.f90 \
   $(AMRLIB)/gauges_module.f90 \
   $(AMRLIB)/regions_module.f90 \
-  $(AMRLIB)/adjoint_module.f90 
+  $(AMRLIB)/adjoint_module.f90 \
+  $(AMRLIB)/adjointsup_module.f90 
 
 COMMON_SOURCES += \
   $(AMRLIB)/qinit.f \

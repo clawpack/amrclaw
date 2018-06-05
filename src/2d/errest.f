@@ -4,7 +4,8 @@ c
       subroutine errest (nvar,naux,lcheck,mptr,nx,ny)
 c
       use amr_module
-      use adjoint_module, only : adjoint_flagging, errf1a
+      use adjoint_module, only : adjoint_flagging
+      use adjointsup_module, only: errf1a
       implicit double precision (a-h,o-z)
 c
 c   ### changed to stack based storage 2/23/13 
