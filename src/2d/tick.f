@@ -15,7 +15,7 @@ c     include  "call.i"
       logical    rest, dump_final
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
       integer   clock_start, clock_finish, clock_rate
-      integer   tick_clock_start, tick_clock_finish, tick_clock_rate  
+      integer   tick_clock_finish, tick_clock_rate  
 
 
 c
