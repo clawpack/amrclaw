@@ -12,6 +12,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     use amr_module, only: hxposs, output_format, store1, storeaux
     use amr_module, only: node, rnode, ndilo, ndihi, cornxlo, mxnest, levelptr
     use amr_module, only: timeValout, timeValoutCPU, tvoll, tvollCPU, rvoll
+    use amr_module, only: timeTick, tick_clock_start, t0
 
 #ifdef HDF5
     use hdf5
@@ -31,8 +32,10 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     logical :: out_aux
     character(len=10) :: file_name(5)
 
+    ! Timing
     integer :: clock_start, clock_finish, clock_rate
-    real(kind=8) :: cpu_start, cpu_finish, t_CPU_overall
+    integer    tick_clock_finish, tick_clock_rate, timeTick_int
+    real(kind=8) :: cpu_start, cpu_finish, t_CPU_overall, timeTick_overall
     character(len=256) :: timing_line, timing_substr
     character(len=*), parameter :: timing_file_name = "timing.csv"
 
@@ -260,7 +263,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
         open(unit=out_unit, file=timing_file_name, form='formatted',         &
              status='unknown', action='write')
         ! Construct header string
-        timing_line = 'total_cpu_time,'
+        timing_line = 'output_time,total_wall_time,total_cpu_time,'
         timing_substr = ""
         do level=1, mxnest
             write(timing_substr, timing_header_format) level, level, level
@@ -272,15 +275,25 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
              status='old', action='write', position='append')
     end if
     
-    timing_line = "(e16.6"
+    timing_line = "(e16.6, ', ', e16.6, ', ', e16.6,"
     do level=1, mxnest
         timing_substr = "', ', e16.6, ', ', e16.6, ', ', e16.6"
         timing_line = trim(timing_line) // timing_substr
     end do
     timing_line = trim(timing_line) // ")"
 
-    call cpu_time(t_CPU_overall)
-    write(out_unit, timing_line) t_CPU_overall, &
+    if (time == t0) then
+        t_CPU_overall = 0.d0
+        timeTick_overall = 0.d0
+      else
+        call cpu_time(t_CPU_overall)
+        call system_clock(tick_clock_finish,tick_clock_rate)
+        ! not including timeTick since not yet set up for restarting
+        timeTick_int = tick_clock_finish - tick_clock_start
+        timeTick_overall = real(timeTick_int, kind=8)/real(tick_clock_rate,kind=8)
+      endif
+
+    write(out_unit, timing_line) time, timeTick_overall, t_CPU_overall, &
         (real(tvoll(i), kind=8) / real(clock_rate, kind=8), &
          tvollCPU(i), rvoll(i), i=1,mxnest)
     

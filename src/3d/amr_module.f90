@@ -132,6 +132,7 @@ module amr_module
     integer lentot,lenmax,lendim
     integer timeRegridding, timeValout
     integer timeBound, timeStepgrid, timeSetaux
+    integer :: timeTick, tick_clock_start
     real(kind=8) tvollCPU(maxlv)
     real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU,timeSetauxCPU
     real(kind=8) timeValoutCPU

@@ -120,7 +120,7 @@ module amr_module
     integer :: timeRegridding, timeUpdating, timeValout
     integer :: timeFlglvl,timeGrdfit2,timeGrdfit3,timeGrdfitAll
     integer :: timeSetaux,timeFilval,timeBound,timeStepgrid,timeFilvalTot
-    integer :: timeFlagger, timeBufnst
+    integer :: timeFlagger, timeBufnst, timeTick, tick_clock_start
     real(kind=8) tvollCPU(maxlv)
     real(kind=8) timeBoundCPU,timeStepgridCPU,timeSetauxCPU,timeRegriddingCPU
     real(kind=8) timeValoutCPU
