@@ -29,7 +29,7 @@ c
               mptr = node(levelptr, mptr)
           go to 20
  30       continue
-          write(outunit,2),numgrids(level), level,
+          write(outunit,2) numgrids(level), level,
      &                     iregst(level), jregst(level), kregst(level),
      2                     iregend(level),jregend(level),kregend(level)
  2        format(/,i5," grids at level ",i5," go from ",3i9," to",3i9,/)
