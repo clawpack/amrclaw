@@ -134,7 +134,7 @@ module amr_module
     integer timeBound, timeStepgrid, timeSetaux
     integer :: timeTick, tick_clock_start
     real(kind=8) tvollCPU(maxlv)
-    real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU,timeSetauxCPU
+    real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU
     real(kind=8) timeValoutCPU
 
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

@@ -48,7 +48,6 @@ c
 c
  4    lcheck = lbase + 1
 
-      time = rnode(timemult, lstart(lbase))
  5    if (lcheck .gt. mxnest) go to 99
           hx = hxposs(lcheck)
           hy = hyposs(lcheck)
@@ -127,6 +126,7 @@ c          # "interior" of coarser patch to fill fine grid.
            xr = rnode(cornxhi,mptr)
            yb = rnode(cornylo,mptr)
            yt = rnode(cornyhi,mptr)
+           time = rnode(timemult, mptr)
            ilo    = node(ndilo, mptr)
            ihi    = node(ndihi, mptr)
            jlo    = node(ndjlo, mptr)

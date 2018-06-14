@@ -85,7 +85,6 @@ program amr3
     use amr_module, only: timeRegridding,timeRegriddingCPU
     use amr_module, only: timeBound,timeStepgrid
     use amr_module, only: timeBoundCPU,timeStepgridCPU
-    use amr_module, only: timeSetaux,timeSetauxCPU
     use amr_module, only: timeValout,timeValoutCPU
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
