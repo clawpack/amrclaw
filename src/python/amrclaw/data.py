@@ -86,7 +86,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         self.data_write('refinement_ratios_t')
         self.data_write()  # writes blank line
 
-        if len(self.aux_type) != self._clawdata.num_aux:
+        if len(self.aux_type) < self._clawdata.num_aux:
             raise ValueError("*** length of aux_type array should be " +\
                   "same as num_aux = %i" % self._clawdata.num_aux)
         if self._clawdata.num_aux > 0:
