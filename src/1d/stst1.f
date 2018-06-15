@@ -63,19 +63,8 @@ c
 c after kcheck integrations of parent grid, move its refinements.
 c finest level grid never needs to have its finer subgrids moved.
 c
-      timeFlagger = 0.
-      timeBufnst = 0.
-      timeStepgrid = 0.
-      timeBound = 0.
-      timeGrdfitAll = 0.
-      timeFlglvl   = 0.
-      timeFlglvlTot   = 0.
-      timeGrdfit2   = 0.
-      timeSetaux    = 0.
-      timeFilval    = 0.
-      timeRegridding = 0.
-      timeUpdating   = 0.
-      timeValout     = 0.
+      call initTimers()   ! used to be done here, but needs to be called from restarting too when stst1 not called
+
       do 60 i   = 1, maxlv
          tvoll(i) = 0.d0
          iregridcount(i) = 0
@@ -94,6 +83,34 @@ c
       go to 70
  80   continue
 
+
+      return
+      end
+c
+c -------------------------------------------------------------------------
+c
+      subroutine initTimers()
+
+      use amr_module
+      !implicit double precision (a-h,o-z)
+
+      timeBufnst         = 0
+      timeStepgrid       = 0
+      timeStepgridCPU    = 0.d0
+      timeBound          = 0
+      timeBoundCPU       = 0.d0
+      timeGrdfitAll      = 0
+      timeFlagger        = 0
+      timeFlglvl         = 0
+      timeFlglvlTot      = 0
+      timeGrdfit2        = 0
+      timeRegridding     = 0
+      timeRegriddingCPU  = 0.d0
+      timeTick           = 0
+      timeTickCPU        = 0.d0
+      timeUpdating       = 0
+      timeValout         = 0
+      timeValoutCPU      = 0.d0
 
       return
       end
