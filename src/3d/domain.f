@@ -89,7 +89,7 @@ c
          dz   = hzposs(1)
  60           mitot = node(ndihi,mptr)-node(ndilo,mptr) + 1 + 2*nghost
               mjtot = node(ndjhi,mptr)-node(ndjlo,mptr) + 1 + 2*nghost
-         mktot = node(ndkhi,mptr)-node(ndklo,mptr) + 1 + 2*nghost
+              mktot = node(ndkhi,mptr)-node(ndklo,mptr) + 1 + 2*nghost
               locaux = node(storeaux,mptr)
 c 4/1/02 : Added cfl to call to estdt, so that we dont need call.i in estdt
           call estdt(alloc(node(store1,mptr)),mitot,mjtot,mktot,

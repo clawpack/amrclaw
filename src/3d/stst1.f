@@ -21,6 +21,11 @@ c    to avoid boundary cases.
 c ::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::::::
 c
       ndfree = 1
+
+      !! now rnode and node are allocatable to allow resizing
+      call init_nodes()
+
+      ! node space allocated, now thread it
       do 10 i   = 1, maxgr
          node(nextfree,i) = i+1
  10   continue
