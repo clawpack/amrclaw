@@ -78,6 +78,13 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     ! Output timing
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
+    
+    ! Handle special case of using 2D AMR to do 1D AMR
+    if (num_cells(2) > 1) then
+        num_dim = 2
+    else
+        num_dim = 1
+    end if
 
     ! Count how many aux components requested
     output_aux_num = 0
@@ -350,13 +357,6 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     ! ==========================================================================
     ! Write fort.t file
     open(unit=out_unit, file=file_name(2), status='unknown', form='formatted')
-
-    ! Handle special case of using 2D AMR to do 1D AMR
-    if (num_cells(2) > 1) then
-        num_dim = 2
-    else
-        num_dim = 1
-    end if
 
     ! Note:  We need to print out num_ghost too in order to strip ghost cells
     !        from q array when reading in pyclaw.io.binary
