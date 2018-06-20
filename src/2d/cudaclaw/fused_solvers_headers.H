@@ -129,6 +129,33 @@ struct acoustics_homo_2d_horizontal
 		setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, 0.0f);
 	}
 };
+struct acoustics_homo_2d_horizontal_warp
+{
+    // u_left and u_right are empty and not used here
+    __device__ void operator() (real* q_left, real* q_right, real* u_left, real* u_right,
+            int row, int col, int numStates, int numWaves,
+            real* wave, real* waveSpeeds, real* apdq, real* amdq)
+    {
+        assert(NUMCOEFF == 0); // this is the case for homogeneous acoustics
+        real c = sqrt(BULK/RHO);
+        real z = c*RHO;
+
+        setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, -c);
+        setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x,  c);
+
+        real alpha1 = ( q_left[0] - q_right[0] + z*(q_right[1] - q_left[1])) / (2*z);
+        real alpha2 = ( q_right[0] - q_left[0] + z*(q_right[1] - q_left[1])) / (2*z);
+
+        amdq[0] = (-alpha1*z)*(-c);
+        amdq[1] = alpha1*(-c);
+        amdq[2] = 0.0;
+
+        apdq[0] = alpha2*z*c;
+        apdq[1] = alpha2*c;
+        apdq[2] = 0.0;
+
+    }
+};
 struct acoustics_horizontal
 {
 	__device__ void operator() (real* q_left, real* q_right, real* u_left, real* u_right,			// input

@@ -1,0 +1,1 @@
+/usr/local/cuda-9.1/bin/nvcc -ccbin g++ -std=c++11 -m64  -x cu -c fused_solvers.cpp

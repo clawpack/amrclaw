@@ -578,29 +578,12 @@ __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_s
                 numStates,
                 numWaves,
                 wavesX,
-                waveSpeedsX);
+                waveSpeedsX,
+                apdq,amdq);
     }
 
     // idle the first and the last thread since we don't need to limit the first and the last wave in this block
     grid_valid = grid_valid && ( 0 < threadIdx.x && threadIdx.x < HORIZONTAL_K_BLOCKSIZEX-1 );
-    if (grid_valid)
-    {
-#pragma unroll
-        for (int k = 0; k < numStates; k++)
-        {
-            amdq[k] = 0;
-            apdq[k] = 0;
-        }
-        if (!param.second_order)	// simple first order scheme
-        {
-            first_order_update<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY> (wavesX, waveSpeedsX, amdq, apdq, threadIdx.y, threadIdx.x);
-        }
-        else
-        {
-            first_second_order_update_horizontal<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY> 
-                (param, wavesX, waveSpeedsX, amdq, apdq, threadIdx.y, threadIdx.x, dt, phi);
-        }
-    }
     __syncthreads();
 
     // write the apdq to shared memory
@@ -1083,8 +1066,8 @@ extern "C" void call_C_limited_riemann_update(
     param.setOrderOfAccuracy(1);
     // param.setOrderOfAccuracy(2);
 
-    // acoustics_homo_2d_horizontal_dq acoustic_h;
-    acoustics_homo_2d_horizontal acoustic_h;
+    // acoustics_homo_2d_horizontal acoustic_h;
+    acoustics_homo_2d_horizontal_warp acoustic_h;
     acoustics_homo_2d_vertical acoustic_v;
     limiter_VanLeer phi;
 
