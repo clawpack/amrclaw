@@ -395,12 +395,12 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
 
 
     // TODO: what is this if  condition doing?
-    if (blockIdx.x > gridDim.x-3 || blockIdx.y > gridDim.y-2)
-    {
-#pragma unroll
-        for (int i = 0; i < numWaves; i++)
-            setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, (real)0.0f);
-    }
+    // if (blockIdx.x > gridDim.x-3 || blockIdx.y > gridDim.y-2)
+    // {
+    //     #pragma unroll
+    //     for (int i = 0; i < numWaves; i++)
+    //         setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, (real)0.0f);
+    // }
 
     bool grid_valid = row < param.cellsY && col < param.cellsX-1;
 
@@ -522,6 +522,7 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
         param.waveSpeedsX[blockIdx.x + blockIdx.y*gridDim.x] =  waveSpeedsX[0];
 }
 
+// Riemann_horizontal_kernel using shuffle instruction within a warp
 template <const int numStates, const int numWaves, const unsigned int blockSize, class Riemann, class Limiter>
 __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 {
@@ -551,12 +552,12 @@ __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_s
 
 
     // TODO: what is this if  condition doing?
-    if (blockIdx.x > gridDim.x-3 || blockIdx.y > gridDim.y-2)
-    {
-#pragma unroll
-        for (int i = 0; i < numWaves; i++)
-            setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, (real)0.0f);
-    }
+    // if (blockIdx.x > gridDim.x-3 || blockIdx.y > gridDim.y-2)
+    // {
+    //     #pragma unroll
+    //     for (int i = 0; i < numWaves; i++)
+    //         setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, (real)0.0f);
+    // }
 
     bool grid_valid = row < param.cellsY && col < param.cellsX-1;
 
@@ -671,7 +672,7 @@ __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_s
     #pragma unroll
     for (int k = 0; k < numStates; k++)
     {
-        apdq_k = __shfl_up_sync(FULL_MASK,amdq[k],1,warpSize);
+        apdq_k = __shfl_up_sync(FULL_MASK,apdq[k],1,warpSize);
         if (grid_valid && threadIdx.x > 1) {
             if (lane_id==0) 
                 apdq_k = getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX);
@@ -991,7 +992,8 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimBlock_hR(blockDim_XR, blockDim_YR);
         int shared_mem_size = HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY*NUMWAVES*(NUMSTATES+1)*sizeof(real);
 
-        Riemann_horizontal_kernel<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
+        // Riemann_horizontal_kernel<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
+        Riemann_horizontal_kernel_warp<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
         CHKERR();
 
         // REDUCTION
