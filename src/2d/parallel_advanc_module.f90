@@ -8,11 +8,12 @@ module parallel_advanc_module
             startX, endX, startY, endY, &
             qNew, q, &
             wavesX, wavesY, waveSpeedsX, waveSpeedsY, coefficients, &
-            max_u, max_v, stream) &
+            ngrids, id, cfls_d, stream) &
             bind(C,NAME='call_C_limited_riemann_update')
 
             use iso_c_binding
-            integer(kind=c_int), value, intent(in) :: cellsX, cellsY, ghostCells
+            integer(kind=c_int), value, intent(in) :: cellsX, cellsY, ghostCells, &
+                id, ngrids
             real(kind=c_double), value, intent(in) :: startX, endX, startY, endY
 
             ! cuda_stream_kind is defined as INT_PTR_KIND() in cudafor module
@@ -26,7 +27,7 @@ module parallel_advanc_module
             real(kind=c_double), device :: wavesY(cellsX-2,cellsY-1,numStates,numWaves)
             real(kind=c_double), device :: waveSpeedsX(cellsX-1,cellsY-2,numWaves)
             real(kind=c_double), device :: waveSpeedsY(cellsX-2,cellsY-1,numWaves)
-            real(kind=c_double) :: max_u,max_v
+            real(kind=c_double), device :: cfls_d(SPACEDIM,ngrids)
 
         end subroutine stepgrid_cudaclaw
 #endif
@@ -481,7 +482,7 @@ contains
         integer, intent(in) :: id, ngrids
         real(CLAW_REAL) ::  xlow, ylow
         real(CLAW_REAL), intent(in) :: dt,dx,dy
-        real(CLAW_REAL), intent(out) :: cfls(ngrids,SPACEDIM)
+        real(CLAW_REAL), intent(out) :: cfls(SPACEDIM,ngrids)
         ! These are all in SoA format
         real(CLAW_REAL) ::   q(mitot,mjtot,nvar)
         real(CLAW_REAL) ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)
@@ -623,7 +624,7 @@ contains
         integer, intent(in) :: id, ngrids
         real(CLAW_REAL) ::  xlow, ylow
         real(CLAW_REAL), intent(in) :: dt,dx,dy
-        real(CLAW_REAL), intent(out) :: cfls(ngrids,SPACEDIM)
+        real(CLAW_REAL), intent(out) :: cfls(SPACEDIM,ngrids)
         ! These are all in SoA format
         real(CLAW_REAL) ::   q(mitot,mjtot,nvar)
         real(CLAW_REAL) ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)

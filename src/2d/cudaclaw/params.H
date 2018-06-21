@@ -45,20 +45,26 @@ class pdeParam
         real* wavesX;		// horizontal waves
         real* wavesY;		// vertical waves
 
+        // Each entry in waveSpeedsX stores maximum u-velocity in one CUDA block. So the size
+        // of waveSpeedsX should be number of CUDA blocks for this AMR grid patch
+        // The same rule applies to waveSpeedsY
         // after calling reduceMax_simplified, waveSpeedsX[0] has the maximum u velocity on this grid, and
         // waveSpeedsY[0] has the maximum v velocity on this grid.
         real* waveSpeedsX;		// speed of horizontal waves
         real* waveSpeedsY;		// speed of vertical waves
 
+        real* cfl_grid; // an array of size 1xSPACEDIM, storing cfl number in current grid patch in all directions
+
         pdeParam(int cellsX, int cellsY, int ghostCells, int numStates, int numWaves, int numCoeff,
                 real startX, real endX, real startY, real endY,
                 real* q_, real* qNew_, 
                 real* wavesX_, real* wavesY_, real* waveSpeedsX_, real* waveSpeedsY_,
-                real* coefficients_):
+                real* coefficients_,
+                real* cfl_grid_):
                 cellsX(cellsX), cellsY(cellsY), ghostCells(ghostCells), numStates(numStates), numWaves(numWaves), numCoeff(numCoeff),
                 startX(startX), endX(endX), startY(startY), endY(endY),
                 q(q_), qNew(qNew_), wavesX(wavesX_), wavesY(wavesY_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_),
-                coefficients(coefficients_)
+                coefficients(coefficients_), cfl_grid(cfl_grid_)
         {
 
             width = endX-startX;

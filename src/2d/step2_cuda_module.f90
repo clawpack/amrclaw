@@ -46,7 +46,7 @@ contains
         integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
         integer, intent(in) :: id, ngrids, mptr
         real(CLAW_REAL), intent(in) :: dx,dy,dt
-        real(CLAW_REAL), intent(inout) :: cfls(ngrids,SPACEDIM)
+        real(CLAW_REAL), intent(inout) :: cfls(SPACEDIM,ngrids)
 
         real(CLAW_REAL), intent(in)    ::  q(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
         real(CLAW_REAL), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
@@ -228,7 +228,7 @@ contains
         integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
         integer, intent(in) :: id, ngrids, mptr
         real(CLAW_REAL), intent(in) :: dx,dy,dt
-        real(CLAW_REAL), intent(inout) :: cfls(ngrids,SPACEDIM)
+        real(CLAW_REAL), intent(inout) :: cfls(SPACEDIM,ngrids)
 
         real(CLAW_REAL), intent(in)    ::  q(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)
         real(CLAW_REAL), intent(inout) :: fm(1-mbc:mx+mbc, 1-mbc:my+mbc, meqn)

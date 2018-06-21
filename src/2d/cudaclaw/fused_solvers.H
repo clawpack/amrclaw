@@ -990,7 +990,8 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
 
         dim3 dimGrid1(gridDim_X1);
         dim3 dimBlock1(blockDim_X);
-        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR);
+        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR,
+                param.dx, param.dt, &(param.cfl_grid[0]) );
         CHKERR();
     }
     {
@@ -1018,7 +1019,8 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimGrid2(gridDim_X2);
         dim3 dimBlock2(blockDim_X);
 
-        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR);
+        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR,
+                param.dy, param.dt, &(param.cfl_grid[1]) );
         CHKERR();
     }
     // {
@@ -1051,10 +1053,13 @@ extern "C" void call_C_limited_riemann_update(
         real* q, real* qNew, 
         real* wavesX, real* wavesY, real* waveSpeedsX, real* waveSpeedsY,
         real* coefficients,
-        real* max_u, real* max_v, cudaStream_t stream) {
+        int ngrids, int id, real* cfls,
+        cudaStream_t stream) {
 
     // actually qNew holds the input old solution
     // q will have the solution at n+1 after calling this function
+    
+    real* cfl_grid = cfls+(id-1)*SPACEDIM;
 
     // This is a wrapper for limited_Riemann_Update, called from fortran
     // It also sets up para
@@ -1062,7 +1067,8 @@ extern "C" void call_C_limited_riemann_update(
             NEQNS, NWAVES, NUMCOEFF,
             startX, endX, startY, endY,
             q, qNew, 
-            wavesX, wavesY, waveSpeedsX, waveSpeedsY, coefficients); 
+            wavesX, wavesY, waveSpeedsX, waveSpeedsY, coefficients, 
+            cfl_grid); 
 
     param.setOrderOfAccuracy(1);
     // param.setOrderOfAccuracy(2);
@@ -1076,11 +1082,6 @@ extern "C" void call_C_limited_riemann_update(
             acoustic_h, acoustic_v, 
             phi,stream);
 
-    cudaError_t err;
-    err = cudaMemcpy(max_u, param.waveSpeedsX, sizeof(real), cudaMemcpyDeviceToHost);
-    CHKERRQ(err);
-    err = cudaMemcpy(max_v, param.waveSpeedsY, sizeof(real), cudaMemcpyDeviceToHost);
-    CHKERRQ(err);
 
 }
 

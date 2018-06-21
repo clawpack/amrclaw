@@ -24,7 +24,9 @@ __device__ void warpReduce(volatile real *sdata, unsigned int tid) {
 // Then reduce over all elements in shared memory
 // return the first element in shared to the global input's first place
 template <unsigned int blockSize>
-__global__ void reduceMax_simplified(real *globalWaves, int size)
+__global__ void reduceMax_simplified(real *globalWaves, int size, 
+        // for computing CFL number in place
+        real dx = 0.0, real dt = 0.0, real* result = NULL)
 {
 	// size holds the exact number of wave speeds there are to be max reduced
 	extern __shared__ real sharedWaveSpeeds[];	// This will be as big as the block size
@@ -61,7 +63,7 @@ __global__ void reduceMax_simplified(real *globalWaves, int size)
 	__syncthreads();
 
 	// ASSUMING BLOCK SIZES CAN BE ONLY 1024, 512, 256, 128, 64, OR 32, ... 1
-	// At this stage we are sure that whatever is in the shared memory was already taken absolutely
+	// At this stage we are sure that WHATEVER IS IN THE SHARED MEMORY WAS ALREADY TAKEN ABSOLUTELY
 	// that is why we do not need to invoke the fabs function again.
 	if (blockSize >= 1024)
 	{ 
@@ -91,6 +93,9 @@ __global__ void reduceMax_simplified(real *globalWaves, int size)
 		warpReduce<blockSize>(sharedWaveSpeeds, tid);
 	if (tid == 0)
 		globalWaves[blockIdx.x] = sharedWaveSpeeds[0];
+
+        if (result)
+            *result = sharedWaveSpeeds[0]*dt/dx;
 }
 
 #endif

@@ -58,7 +58,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     type(grid_type), allocatable, device :: grids_d(:)
     integer :: max_lenbc
 
-    real(CLAW_REAL) :: max_u, max_v
 
 #endif
 
@@ -200,8 +199,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
     !$OMP SINGLE
-    call cpu_allocate_pinned(cfls,1,numgrids(level),1,2)
-    call gpu_allocate(cfls_d,device_id,1,numgrids(level),1,SPACEDIM)
+    call cpu_allocate_pinned(cfls,1,SPACEDIM,1,numgrids(level))
+    call gpu_allocate(cfls_d,device_id,1,SPACEDIM,1,numgrids(level))
 
     ! TODO: merge this with something else
     cfls_d = 0.d0
@@ -331,7 +330,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             xlow, xlow+hx*mitot, ylow, ylow+hy*mjtot, &
             grid_data_d_new(mptr)%ptr, grid_data_d(mptr)%ptr, &
             wave_x_d(mptr)%ptr, wave_y_d(mptr)%ptr, sx_d(mptr)%ptr, sy_d(mptr)%ptr, aux_d(mptr)%ptr, &
-            max_u, max_v, get_cuda_stream(id,device_id)) 
+            numgrids(level), id, cfls_d, &
+            get_cuda_stream(id,device_id)) 
 
         cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d_new(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
 
@@ -606,7 +606,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !$OMP MASTER
     cudaResult = cudaMemcpy(cfls, cfls_d, numgrids(level)*2)
     do j = 1,numgrids(level)
-        cfl_local = max(cfls(j,1),cfls(j,2))
+        cfl_local = max(cfls(1,j),cfls(2,j))
         if (cfl_local .gt. cflv1) then
             write(*,810) cfl_local
             write(outunit,810) cfl_local, cflv1
