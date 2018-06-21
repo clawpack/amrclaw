@@ -58,7 +58,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     type(grid_type), allocatable, device :: grids_d(:)
     integer :: max_lenbc
 
-    real(CLAW_REAL), dimension(:,:,:), pointer, contiguous, device :: grid_data_d_new, coefficients_d
     real(CLAW_REAL) :: max_u, max_v
 
 #endif
@@ -202,7 +201,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     !$OMP SINGLE
     call cpu_allocate_pinned(cfls,1,numgrids(level),1,2)
-    call gpu_allocate(cfls_d,device_id,1,numgrids(level),1,2)
+    call gpu_allocate(cfls_d,device_id,1,numgrids(level),1,SPACEDIM)
 
     ! TODO: merge this with something else
     cfls_d = 0.d0
@@ -263,6 +262,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call cpu_timer_start(timer_memory)
 #endif
         call gpu_allocate(grid_data_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        call gpu_allocate(grid_data_d_new(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        call gpu_allocate(aux_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         call gpu_allocate(fms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         call gpu_allocate(fps_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         call gpu_allocate(gms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
@@ -277,8 +278,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
         ! copy q to GPU
         !$OMP CRITICAL(launch)
-        ! cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
-        cudaResult = cudaMemcpy(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice)
+        cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
+        ! cudaResult = cudaMemcpy(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice)
         
         if (associated(fflux_hh(mptr)%ptr)) then
             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
@@ -301,6 +302,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                    delt,mptr,max1d,cc,zz)
         endif
 
+
 !         if (dimensional_split .eq. 0) then
 ! !           # Unsplit method
 !             call stepgrid_soa( &
@@ -320,32 +322,21 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !         else 
 ! !           # should never get here due to check in amr2
 !             write(6,*) '*** Strang splitting not supported'
-!             stop
 !         endif
-! 
 !         cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
-! ! 
 
 
 ! test the new cudaclaw function here
-        call gpu_allocate(grid_data_d_new,device_id,1,mitot,1,mjtot,1,nvar)
-        call gpu_allocate(coefficients_d,device_id,1,mitot,1,mjtot,1,nvar)
-
         call stepgrid_cudaclaw(mitot,mjtot,nghost, &
             xlow, xlow+hx*mitot, ylow, ylow+hy*mjtot, &
-            grid_data_d_new, grid_data_d(mptr)%ptr, &
-            wave_x_d(mptr)%ptr, wave_y_d(mptr)%ptr, sx_d(mptr)%ptr, sy_d(mptr)%ptr, coefficients_d, &
+            grid_data_d_new(mptr)%ptr, grid_data_d(mptr)%ptr, &
+            wave_x_d(mptr)%ptr, wave_y_d(mptr)%ptr, sx_d(mptr)%ptr, sy_d(mptr)%ptr, aux_d(mptr)%ptr, &
             max_u, max_v)
         ! , get_cuda_stream(id,device_id)) 
 
-        ! cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d_new, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
-        cudaResult = cudaMemcpy(grid_data(mptr)%ptr, grid_data_d_new, nvar*mitot*mjtot, cudaMemcpyDeviceToHost)
-        ! do i = 1,mitot
-        !     do j = 1,mjtot
-        !         print *, grid_data(mptr)%ptr(i,j,1)
-        !     enddo
-        ! enddo
-        ! print *,"Done calling stepgrid_cudaclaw."
+        ! cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d_new(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpy(grid_data(mptr)%ptr, grid_data_d_new(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost)
+
 
         !$OMP END CRITICAL(launch)
 
@@ -530,6 +521,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call cpu_deallocate_pinned(grid_data(mptr)%ptr)
 
         call gpu_deallocate(grid_data_d(mptr)%ptr,device_id)
+        call gpu_deallocate(grid_data_d_new(mptr)%ptr,device_id)
+        call gpu_deallocate(aux_d(mptr)%ptr,device_id)
         call gpu_deallocate(fms_d(mptr)%ptr,device_id)
         call gpu_deallocate(fps_d(mptr)%ptr,device_id)
         call gpu_deallocate(gms_d(mptr)%ptr,device_id)
@@ -539,8 +532,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call gpu_deallocate(wave_x_d(mptr)%ptr,device_id)
         call gpu_deallocate(wave_y_d(mptr)%ptr,device_id)
 
-        call gpu_deallocate(grid_data_d_new,device_id)
-        call gpu_deallocate(coefficients_d,device_id)
     enddo
     !$OMP END DO
 #ifdef PROFILE

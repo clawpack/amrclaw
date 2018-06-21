@@ -179,8 +179,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.order = 2
     
     # Use dimensional splitting?
-    # clawdata.dimensional_split = 'unsplit'
-    clawdata.dimensional_split = 'godunov'
+    clawdata.dimensional_split = 'unsplit'
+    # clawdata.dimensional_split = 'godunov'
     
     # For unsplit method, transverse_waves can be 
     #  0 or 'none'      ==> donor cell (only normal solver used)
@@ -322,7 +322,6 @@ def setrun(claw_pkg='amrclaw'):
     # which gpu you would like to use
     # must between 0 and num_of_total_gpus-1
     gpudata.which_gpu = 0
-
 
     # ---------------
     # Regions:

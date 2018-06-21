@@ -478,7 +478,7 @@ contains
         integer, intent(in) :: id, ngrids
         real(CLAW_REAL) ::  xlow, ylow
         real(CLAW_REAL), intent(in) :: dt,dx,dy
-        real(CLAW_REAL), intent(out) :: cfls(ngrids,2)
+        real(CLAW_REAL), intent(out) :: cfls(ngrids,SPACEDIM)
         ! These are all in SoA format
         real(CLAW_REAL) ::   q(mitot,mjtot,nvar)
         real(CLAW_REAL) ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)
@@ -620,7 +620,7 @@ contains
         integer, intent(in) :: id, ngrids
         real(CLAW_REAL) ::  xlow, ylow
         real(CLAW_REAL), intent(in) :: dt,dx,dy
-        real(CLAW_REAL), intent(out) :: cfls(ngrids,2)
+        real(CLAW_REAL), intent(out) :: cfls(ngrids,SPACEDIM)
         ! These are all in SoA format
         real(CLAW_REAL) ::   q(mitot,mjtot,nvar)
         real(CLAW_REAL) ::  fp(mitot,mjtot,nvar),gp(mitot,mjtot,nvar)

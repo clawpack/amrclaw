@@ -975,8 +975,8 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimBlock_hR(blockDim_XR, blockDim_YR);
         int shared_mem_size = HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY*NUMWAVES*(NUMSTATES+1)*sizeof(real);
 
-        // Riemann_horizontal_kernel<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
-        Riemann_horizontal_kernel_warp<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
+        Riemann_horizontal_kernel<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
+        // Riemann_horizontal_kernel_warp<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
         CHKERR();
 
         // REDUCTION
@@ -1066,8 +1066,8 @@ extern "C" void call_C_limited_riemann_update(
     param.setOrderOfAccuracy(1);
     // param.setOrderOfAccuracy(2);
 
-    // acoustics_homo_2d_horizontal acoustic_h;
-    acoustics_homo_2d_horizontal_warp acoustic_h;
+    // acoustics_homo_2d_horizontal_warp acoustic_h;
+    acoustics_homo_2d_horizontal acoustic_h;
     acoustics_homo_2d_vertical acoustic_v;
     limiter_VanLeer phi;
 
