@@ -962,7 +962,8 @@ template <class Riemann_h, class Riemann_v, class Limiter>
 int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         Riemann_h Riemann_pointwise_solver_h,	//
         Riemann_v Riemann_pointwise_solver_v,	//
-        Limiter limiter_phi
+        Limiter limiter_phi,
+        cudaStream_t stream
         )
 {
     {
@@ -975,7 +976,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimBlock_hR(blockDim_XR, blockDim_YR);
         int shared_mem_size = HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY*NUMWAVES*(NUMSTATES+1)*sizeof(real);
 
-        Riemann_horizontal_kernel<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
+        Riemann_horizontal_kernel<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size,stream>>>(param, Riemann_pointwise_solver_h, limiter_phi);
         // Riemann_horizontal_kernel_warp<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
         CHKERR();
 
@@ -989,7 +990,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
 
         dim3 dimGrid1(gridDim_X1);
         dim3 dimBlock1(blockDim_X);
-        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR);
+        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR);
         CHKERR();
     }
     {
@@ -1002,7 +1003,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimBlock_vR(blockDim_XR, blockDim_YR);
         int shared_mem_size = VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY*NUMWAVES*(NUMSTATES+1)*sizeof(real);
 
-        Riemann_vertical_kernel<NUMSTATES, NUMWAVES, VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY, Riemann_v, Limiter><<<dimGrid_vR, dimBlock_vR,shared_mem_size>>>(param, Riemann_pointwise_solver_v, limiter_phi);
+        Riemann_vertical_kernel<NUMSTATES, NUMWAVES, VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY, Riemann_v, Limiter><<<dimGrid_vR, dimBlock_vR,shared_mem_size,stream>>>(param, Riemann_pointwise_solver_v, limiter_phi);
         CHKERR();
 
 
@@ -1017,7 +1018,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimGrid2(gridDim_X2);
         dim3 dimBlock2(blockDim_X);
 
-        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR);
+        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR);
         CHKERR();
     }
     // {
@@ -1050,7 +1051,7 @@ extern "C" void call_C_limited_riemann_update(
         real* q, real* qNew, 
         real* wavesX, real* wavesY, real* waveSpeedsX, real* waveSpeedsY,
         real* coefficients,
-        real* max_u, real* max_v) {
+        real* max_u, real* max_v, cudaStream_t stream) {
 
     // actually qNew holds the input old solution
     // q will have the solution at n+1 after calling this function
@@ -1073,7 +1074,7 @@ extern "C" void call_C_limited_riemann_update(
 
     limited_Riemann_Update(param, 
             acoustic_h, acoustic_v, 
-            phi);
+            phi,stream);
 
     cudaError_t err;
     err = cudaMemcpy(max_u, param.waveSpeedsX, sizeof(real), cudaMemcpyDeviceToHost);

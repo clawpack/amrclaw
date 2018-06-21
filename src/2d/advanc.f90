@@ -331,11 +331,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             xlow, xlow+hx*mitot, ylow, ylow+hy*mjtot, &
             grid_data_d_new(mptr)%ptr, grid_data_d(mptr)%ptr, &
             wave_x_d(mptr)%ptr, wave_y_d(mptr)%ptr, sx_d(mptr)%ptr, sy_d(mptr)%ptr, aux_d(mptr)%ptr, &
-            max_u, max_v)
-        ! , get_cuda_stream(id,device_id)) 
+            max_u, max_v, get_cuda_stream(id,device_id)) 
 
-        ! cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d_new(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
-        cudaResult = cudaMemcpy(grid_data(mptr)%ptr, grid_data_d_new(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost)
+        cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d_new(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
 
 
         !$OMP END CRITICAL(launch)

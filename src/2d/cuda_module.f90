@@ -13,7 +13,7 @@ module cuda_module
     implicit none
     save
 
-    integer, parameter :: max_cuda_streams = 20
+    integer, parameter :: max_cuda_streams = 30
     integer, parameter :: max_num_devices = 16
     ! Note that CUDA enumerates devices starting from 0
     integer(kind=cuda_stream_kind) :: cuda_streams(max_cuda_streams, 0:max_num_devices-1)

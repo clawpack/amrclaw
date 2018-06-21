@@ -8,12 +8,15 @@ module parallel_advanc_module
             startX, endX, startY, endY, &
             qNew, q, &
             wavesX, wavesY, waveSpeedsX, waveSpeedsY, coefficients, &
-            max_u, max_v) &
+            max_u, max_v, stream) &
             bind(C,NAME='call_C_limited_riemann_update')
 
             use iso_c_binding
             integer(kind=c_int), value, intent(in) :: cellsX, cellsY, ghostCells
             real(kind=c_double), value, intent(in) :: startX, endX, startY, endY
+
+            ! cuda_stream_kind is defined as INT_PTR_KIND() in cudafor module
+            integer(kind=INT_PTR_KIND()), value, intent(in) :: stream
 
             real(kind=c_double), device :: q(cellsX,cellsY,numStates)
             real(kind=c_double), device :: qNew(cellsX,cellsY,numStates)
