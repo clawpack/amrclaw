@@ -11,7 +11,7 @@ extern "C" {
     void  clawpack_mempool_free_pinned (void* p);
     void* clawpack_mempool_alloc_gpu (size_t n, int dev_id);
     void  clawpack_mempool_free_gpu (void* p, int dev_id);
-    // void* clawpack_mempool_alloc_gpu_hold (size_t n, int tag, int dev_id);
+    void* clawpack_mempool_alloc_gpu_hold (size_t n, int dev_id, int tag);
     int get_num_devices_used(); 
     int which_device_used(); 
 #endif
@@ -20,8 +20,8 @@ extern "C" {
     void  clawpack_array_init_snan (double* p, size_t nelems);
 }
 #ifdef CUDA
-    // void  clawpack_mempool_release_gpu (int tag, int dev_id);
-    // void  CUDART_CB cudaCallback_release_gpu(cudaStream_t event, cudaError_t status, void *data);
+    void  clawpack_mempool_release_gpu (int tag, int dev_id);
+    void  CUDART_CB cudaCallback_release_gpu(cudaStream_t event, cudaError_t status, void *data);
 #endif
 
 

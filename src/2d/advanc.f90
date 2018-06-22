@@ -58,7 +58,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     type(grid_type), allocatable, device :: grids_d(:)
     integer :: max_lenbc
 
-
+    integer :: id_list(numgrids(level))
 #endif
 
     !     maxgr is maximum number of grids  many things are
@@ -75,6 +75,13 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !                  adjusting fluxes for flux conservation step later
     ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     !
+
+#ifdef CUDA
+    ! for cuda callback functions
+    do j = 1,numgrids(level)
+        id_list(j) = j
+    enddo
+#endif
 
 #ifdef PROFILE
     call take_cpu_timer("advanc", timer_advanc)
@@ -331,7 +338,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             grid_data_d_new(mptr)%ptr, grid_data_d(mptr)%ptr, &
             aux_d(mptr)%ptr, &
             cfls_d, numgrids(level), &
-            id, device_id) 
+            id_list(id), device_id) 
 
         cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d_new(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
 

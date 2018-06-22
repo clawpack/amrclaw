@@ -4,6 +4,7 @@
 #include "real.H"
 #include "error.H"
 #include "clawpack_mempool.H"
+#include "clawpack_device.H"
 
 #include <stdio.h>
 #include <string>
@@ -56,7 +57,8 @@ class pdeParam
 
         real* cfl_grid; // an array of size 1xSPACEDIM, storing cfl number in current grid patch in all directions
 
-        int dev_id; // ID of the device on which storage are allocated
+        const int dev_id; // ID of the device on which storage are allocated
+        const int * const id_ptr; // address of local id of this grid
 
         pdeParam(int cellsX, int cellsY, int ghostCells, int numStates, int numWaves, int numCoeff,
                 real startX, real endX, real startY, real endY,
@@ -64,11 +66,11 @@ class pdeParam
                 real* q_, real* qNew_, 
                 real* waveSpeedsX_, real* waveSpeedsY_,
                 real* coefficients_,
-                real* cfl_grid_, int dev_id_):
+                real* cfl_grid_, const int * const id_ptr_, int dev_id_):
                 cellsX(cellsX), cellsY(cellsY), ghostCells(ghostCells), numStates(numStates), numWaves(numWaves), numCoeff(numCoeff),
                 startX(startX), endX(endX), startY(startY), endY(endY), dt(dt_),
                 q(q_), qNew(qNew_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_),
-                coefficients(coefficients_), cfl_grid(cfl_grid_), dev_id(dev_id_)
+                coefficients(coefficients_), cfl_grid(cfl_grid_), id_ptr(id_ptr_), dev_id(dev_id_)
         {
 
             width = endX-startX;
@@ -167,11 +169,11 @@ class pdeParam
         }
 
         inline void alloc_waveSpeedsX(size_t sz) {
-            waveSpeedsX = (real*) clawpack_mempool_alloc_gpu(sz, this->dev_id);
+            waveSpeedsX = (real*) clawpack_mempool_alloc_gpu_hold(sz, this->dev_id, *(this->id_ptr));
         }
 
         inline void alloc_waveSpeedsY(size_t sz) {
-            waveSpeedsY = (real*) clawpack_mempool_alloc_gpu(sz, this->dev_id);
+            waveSpeedsY = (real*) clawpack_mempool_alloc_gpu_hold(sz, this->dev_id, *(this->id_ptr));
         }
 
 
@@ -181,6 +183,15 @@ class pdeParam
 
         inline void free_waveSpeedsY() {
             clawpack_mempool_free_gpu(this->waveSpeedsY, this->dev_id);
+        }
+
+        // add cuda callback function to free memory allocated and managed by this pdeParam object
+        // The memory will be free after all CUDA events in the stream before this function call are finished
+        inline void register_allocated_memory() {
+            // printf("register tag: %d.\n",*(this->id_ptr));
+            cudaStream_t stream;
+            get_cuda_stream(*(this->id_ptr), this->dev_id, &stream);
+            cudaStreamAddCallback(stream, cudaCallback_release_gpu, (void*) this->id_ptr, 0);
         }
 
 };

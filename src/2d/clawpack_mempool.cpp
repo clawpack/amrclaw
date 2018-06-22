@@ -69,9 +69,9 @@ void clawpack_mempool_init()
 // #endif
 // 	{
 // 	    size_t N = 1024*1024*sizeof(double);
-// 	    void *p = amrex_mempool_alloc(N);
+// 	    void *p = clawpack_mempool_alloc(N);
 // 	    memset(p, 0, N);
-// 	    amrex_mempool_free(p);
+// 	    clawpack_mempool_free(p);
 // 	}
 
 
@@ -121,7 +121,7 @@ void clawpack_mempool_finalize()
 }
 
 /*
-void* amrex_mempool_alloc (size_t nbytes)
+void* clawpack_mempool_alloc (size_t nbytes)
 {
   void* pt;
 #ifdef _OPENMP
@@ -135,7 +135,7 @@ void* amrex_mempool_alloc (size_t nbytes)
 }
 
 
-void amrex_mempool_free (void* p) 
+void clawpack_mempool_free (void* p) 
 {
 #ifdef _OPENMP
   int tid = omp_get_thread_num();
@@ -172,14 +172,12 @@ void clawpack_mempool_free_gpu (void* p, int device_id)
     device_memory_pool[device_id]->free_device(p, device_id);
 }
 
-/*
-void* amrex_mempool_alloc_gpu_hold (size_t nbytes, int tag, int device_id)
+void* clawpack_mempool_alloc_gpu_hold (size_t nbytes, int device_id, int tag)
 {
 
-    BL_ASSERT(device_id >= 0);
-    return device_memory_pool[device_id]->alloc_device(nbytes, tag, device_id);
+    assert(device_id >= 0);
+    return device_memory_pool[device_id]->alloc_device(nbytes, device_id, tag);
 }
-*/
 
 #endif
 
@@ -202,7 +200,7 @@ void clawpack_array_init_snan (double* p, size_t nelems)
 }
 
 /*
-void amrex_mempool_get_stats (int& mp_min, int& mp_max, int& mp_tot) // min, max & tot in MB
+void clawpack_mempool_get_stats (int& mp_min, int& mp_max, int& mp_tot) // min, max & tot in MB
 {
   size_t hsu_min=std::numeric_limits<size_t>::max();
   size_t hsu_max=0;
@@ -228,18 +226,18 @@ void amrex_mempool_get_stats (int& mp_min, int& mp_max, int& mp_tot) // min, max
  * Below are C functions, not Fortran
  */
 
-// #ifdef CUDA
-// void CUDART_CB cudaCallback_release_gpu(cudaStream_t event, cudaError_t status, void *data){
-//     checkCudaErrors(status);
-//     // TODO add device_id
-//     int* tag = (int*) data;
-//     amrex_mempool_release_gpu(*tag, 0);
-// }
-// 
-// void amrex_mempool_release_gpu (int tag, int device_id) 
-// {
-//     // free all GPU memories associated with tag
-//     BL_ASSERT(device_id >= 0);
-//     device_memory_pool[device_id]->free_device_tag(tag, device_id);
-// }
-// #endif
+#ifdef CUDA
+void CUDART_CB cudaCallback_release_gpu(cudaStream_t event, cudaError_t status, void *data){
+    checkCudaErrors(status);
+    // TODO add device_id
+    int* tag = (int*) data;
+    clawpack_mempool_release_gpu(*tag, 0);
+}
+
+void clawpack_mempool_release_gpu (int tag, int device_id) 
+{
+    // free all GPU memories associated with tag
+    assert(device_id >= 0);
+    device_memory_pool[device_id]->free_device_tag(tag, device_id);
+}
+#endif

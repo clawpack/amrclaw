@@ -143,7 +143,7 @@ GPUMemoryManager::alloc_device (size_t nbytes, int dev_id)
 }
 
 void* 
-GPUMemoryManager::alloc_device (size_t nbytes, int tag, int dev_id)
+GPUMemoryManager::alloc_device (size_t nbytes, int dev_id, int tag)
 {
     void* vp = alloc_device(nbytes, dev_id);
 

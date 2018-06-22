@@ -13,7 +13,12 @@ module parallel_advanc_module
 
             use iso_c_binding
             integer(kind=c_int), value, intent(in) :: cellsX, cellsY, ghostCells, &
-                id, ngrids, dev_id
+                ngrids, dev_id
+
+            ! Note that we passed the address of id to C functions since 
+            ! we need this address in the CUDA callback function
+            integer(kind=c_int), intent(in) :: id
+
             real(kind=c_double), value, intent(in) :: startX, endX, startY, endY, dt
 
             real(kind=c_double), device :: q(cellsX,cellsY,numStates)

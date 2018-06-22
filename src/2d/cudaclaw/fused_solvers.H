@@ -998,7 +998,6 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR,
                 param.dx, param.dt, &(param.cfl_grid[0]) );
         CHKERR();
-
     }
     {
         // RIEMANN, FLUCTUATIONS and UPDATE
@@ -1031,6 +1030,9 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
                 param.dy, param.dt, &(param.cfl_grid[1]) );
         CHKERR();
     }
+    // Let the memory manager free memory allocated by param later 
+    // when the memory is not needed by GPU
+    param.register_allocated_memory();
     // {
     //     timeStepAdjust_simple<<<1,1>>>(param);
     //     CHKERR();
@@ -1062,11 +1064,12 @@ extern "C" void call_C_limited_riemann_update(
         real* q, real* qNew, 
         real* coefficients,
         real* cfls, const int ngrids, 
-        const int id, const int dev_id) {
+        const int * const id_ptr, const int dev_id) {
 
     // actually qNew holds the input old solution
     // q will have the solution at n+1 after calling this function
     
+    int id = *id_ptr;
     real* cfl_grid = cfls+(id-1)*SPACEDIM;
 
     cudaStream_t stream;
@@ -1080,7 +1083,7 @@ extern "C" void call_C_limited_riemann_update(
             startX, endX, startY, endY, dt,
             q, qNew, 
             NULL, NULL, coefficients, 
-            cfl_grid,dev_id); 
+            cfl_grid, id_ptr, dev_id); 
 
     param.setOrderOfAccuracy(1);
     // param.setOrderOfAccuracy(2);
