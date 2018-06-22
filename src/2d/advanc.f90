@@ -330,8 +330,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             xlow, xlow+hx*mitot, ylow, ylow+hy*mjtot, delt, &
             grid_data_d_new(mptr)%ptr, grid_data_d(mptr)%ptr, &
             aux_d(mptr)%ptr, &
-            numgrids(level), id, cfls_d, &
-            device_id, get_cuda_stream(id,device_id)) 
+            cfls_d, numgrids(level), &
+            id, device_id) 
 
         cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d_new(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
 

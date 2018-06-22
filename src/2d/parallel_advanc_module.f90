@@ -8,16 +8,13 @@ module parallel_advanc_module
             startX, endX, startY, endY, dt, &
             qNew, q, &
             coefficients, &
-            ngrids, id, cfls_d, dev_id, stream) &
+            cfls_d, ngrids, id, dev_id) &
             bind(C,NAME='call_C_limited_riemann_update')
 
             use iso_c_binding
             integer(kind=c_int), value, intent(in) :: cellsX, cellsY, ghostCells, &
                 id, ngrids, dev_id
             real(kind=c_double), value, intent(in) :: startX, endX, startY, endY, dt
-
-            ! cuda_stream_kind is defined as INT_PTR_KIND() in cudafor module
-            integer(kind=INT_PTR_KIND()), value, intent(in) :: stream
 
             real(kind=c_double), device :: q(cellsX,cellsY,numStates)
             real(kind=c_double), device :: qNew(cellsX,cellsY,numStates)

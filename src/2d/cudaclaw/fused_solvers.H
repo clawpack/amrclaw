@@ -8,6 +8,8 @@
 #include "fused_solvers_headers.H"
 #include "cuda_helper.H"
 #include "reduce_Max.H"
+#include "clawpack_device.H"
+
 #include <assert.h>
 #include <cmath>
 #include <cuda_runtime.h>
@@ -1059,13 +1061,17 @@ extern "C" void call_C_limited_riemann_update(
         const real dt,
         real* q, real* qNew, 
         real* coefficients,
-        const int ngrids, const int id, real* cfls,
-        const int dev_id, const cudaStream_t stream) {
+        real* cfls, const int ngrids, 
+        const int id, const int dev_id) {
 
     // actually qNew holds the input old solution
     // q will have the solution at n+1 after calling this function
     
     real* cfl_grid = cfls+(id-1)*SPACEDIM;
+
+    cudaStream_t stream;
+
+    get_cuda_stream(id, dev_id, &stream);
 
     // This is a wrapper for limited_Riemann_Update, called from fortran
     // It also sets up para

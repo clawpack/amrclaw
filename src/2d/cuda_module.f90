@@ -53,6 +53,11 @@ module cuda_module
         module procedure compute_kernel_size_r2
     end interface compute_kernel_size
 
+    interface get_cuda_stream
+	module procedure get_cuda_stream_in_fortran
+	module procedure get_cuda_stream_in_c
+    end interface get_cuda_stream
+
 contains
 
     subroutine initialize_cuda() 
@@ -151,7 +156,7 @@ contains
     end function stream_from_index
 
     ! return a cuda stream based on an index and device id
-    function get_cuda_stream(idx, dev_id) result(s)
+    function get_cuda_stream_in_fortran(idx, dev_id) result(s)
 
         implicit none
 
@@ -160,7 +165,16 @@ contains
 
         s = cuda_streams(stream_from_index(idx), dev_id)
 
-    end function get_cuda_stream
+    end function get_cuda_stream_in_fortran
+
+
+    subroutine get_cuda_stream_in_c(idx, dev_id, stream) bind(c, name='get_cuda_stream')
+        implicit none
+        integer, value, intent(in) :: idx, dev_id
+        integer(kind=cuda_stream_kind),intent(out) :: stream
+
+        stream = get_cuda_stream_in_fortran(idx,dev_id)
+    end subroutine get_cuda_stream_in_c
 
     subroutine threads_and_blocks(lo, hi, numBlocks, numThreads)
 	use cudafor, only: dim3
