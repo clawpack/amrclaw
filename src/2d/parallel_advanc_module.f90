@@ -5,16 +5,16 @@ module parallel_advanc_module
 #ifdef CUDA
         ! TODO: this only works for float64 for now
         subroutine stepgrid_cudaclaw(cellsX, cellsY, ghostCells, &
-            startX, endX, startY, endY, &
+            startX, endX, startY, endY, dt, &
             qNew, q, &
-            wavesX, wavesY, waveSpeedsX, waveSpeedsY, coefficients, &
-            ngrids, id, cfls_d, stream) &
+            coefficients, &
+            ngrids, id, cfls_d, dev_id, stream) &
             bind(C,NAME='call_C_limited_riemann_update')
 
             use iso_c_binding
             integer(kind=c_int), value, intent(in) :: cellsX, cellsY, ghostCells, &
-                id, ngrids
-            real(kind=c_double), value, intent(in) :: startX, endX, startY, endY
+                id, ngrids, dev_id
+            real(kind=c_double), value, intent(in) :: startX, endX, startY, endY, dt
 
             ! cuda_stream_kind is defined as INT_PTR_KIND() in cudafor module
             integer(kind=INT_PTR_KIND()), value, intent(in) :: stream
@@ -23,10 +23,6 @@ module parallel_advanc_module
             real(kind=c_double), device :: qNew(cellsX,cellsY,numStates)
             real(kind=c_double), device :: coefficients(cellsX,cellsY,numStates)
 
-            real(kind=c_double), device :: wavesX(cellsX-1,cellsY-2,numStates,numWaves)
-            real(kind=c_double), device :: wavesY(cellsX-2,cellsY-1,numStates,numWaves)
-            real(kind=c_double), device :: waveSpeedsX(cellsX-1,cellsY-2,numWaves)
-            real(kind=c_double), device :: waveSpeedsY(cellsX-2,cellsY-1,numWaves)
             real(kind=c_double), device :: cfls_d(SPACEDIM,ngrids)
 
         end subroutine stepgrid_cudaclaw

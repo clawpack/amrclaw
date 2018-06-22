@@ -2,9 +2,10 @@
 #define __PARAMS_H__
 
 #include "real.H"
-#include <stdio.h>
 #include "error.H"
+#include "clawpack_mempool.H"
 
+#include <stdio.h>
 #include <string>
 #include <cstring>
 
@@ -31,7 +32,7 @@ class pdeParam
         const real startY;		// physical domain's starting y in cartesian coordinates
         const real endY;		// physical domain's ending y in cartesian coordinates
 
-        real desired_CFL;		// a CFL number which determines the next time step length (dt)
+        // real desired_CFL;		// a CFL number which determines the next time step length (dt)
         // real CFL_lower_bound;	// lower bound on the CFL to be used
 
         real dt;			// time step to be used in the computation
@@ -42,8 +43,8 @@ class pdeParam
         real* q;			// data, cells' states
         real* qNew;		       	// intermediate update holder
 
-        real* wavesX;		// horizontal waves
-        real* wavesY;		// vertical waves
+        // real* wavesX;		// horizontal waves
+        // real* wavesY;		// vertical waves
 
         // Each entry in waveSpeedsX stores maximum u-velocity in one CUDA block. So the size
         // of waveSpeedsX should be number of CUDA blocks for this AMR grid patch
@@ -55,16 +56,19 @@ class pdeParam
 
         real* cfl_grid; // an array of size 1xSPACEDIM, storing cfl number in current grid patch in all directions
 
+        int dev_id; // ID of the device on which storage are allocated
+
         pdeParam(int cellsX, int cellsY, int ghostCells, int numStates, int numWaves, int numCoeff,
                 real startX, real endX, real startY, real endY,
+                real dt_,
                 real* q_, real* qNew_, 
-                real* wavesX_, real* wavesY_, real* waveSpeedsX_, real* waveSpeedsY_,
+                real* waveSpeedsX_, real* waveSpeedsY_,
                 real* coefficients_,
-                real* cfl_grid_):
+                real* cfl_grid_, int dev_id_):
                 cellsX(cellsX), cellsY(cellsY), ghostCells(ghostCells), numStates(numStates), numWaves(numWaves), numCoeff(numCoeff),
-                startX(startX), endX(endX), startY(startY), endY(endY),
-                q(q_), qNew(qNew_), wavesX(wavesX_), wavesY(wavesY_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_),
-                coefficients(coefficients_), cfl_grid(cfl_grid_)
+                startX(startX), endX(endX), startY(startY), endY(endY), dt(dt_),
+                q(q_), qNew(qNew_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_),
+                coefficients(coefficients_), cfl_grid(cfl_grid_), dev_id(dev_id_)
         {
 
             width = endX-startX;
@@ -74,10 +78,18 @@ class pdeParam
 
             second_order = true;
 
-            desired_CFL = 0.90f;
-            dt = 0.001;
+            // desired_CFL = 0.90f;
+            // dt = 0.001;
 
         }
+
+        // copy constructor
+        pdeParam (const pdeParam&) = default;
+
+        // assignment constructor
+        pdeParam& operator=(const pdeParam& other) = delete;
+
+        ~pdeParam() {}
 
         void setOrderOfAccuracy(int order)
         {
@@ -152,6 +164,23 @@ class pdeParam
         inline __device__ void setElement_coeff(int row, int column, int coeff, real setValue)
         {
             coefficients[getIndex_coeff(row, column, coeff)] = setValue;
+        }
+
+        inline void alloc_waveSpeedsX(size_t sz) {
+            waveSpeedsX = (real*) clawpack_mempool_alloc_gpu(sz, this->dev_id);
+        }
+
+        inline void alloc_waveSpeedsY(size_t sz) {
+            waveSpeedsY = (real*) clawpack_mempool_alloc_gpu(sz, this->dev_id);
+        }
+
+
+        inline void free_waveSpeedsX() {
+            clawpack_mempool_free_gpu(this->waveSpeedsX, this->dev_id);
+        }
+
+        inline void free_waveSpeedsY() {
+            clawpack_mempool_free_gpu(this->waveSpeedsY, this->dev_id);
         }
 
 };

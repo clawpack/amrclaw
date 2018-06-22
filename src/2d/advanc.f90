@@ -327,11 +327,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 ! test the new cudaclaw function here
         call stepgrid_cudaclaw(mitot,mjtot,nghost, &
-            xlow, xlow+hx*mitot, ylow, ylow+hy*mjtot, &
+            xlow, xlow+hx*mitot, ylow, ylow+hy*mjtot, delt, &
             grid_data_d_new(mptr)%ptr, grid_data_d(mptr)%ptr, &
-            wave_x_d(mptr)%ptr, wave_y_d(mptr)%ptr, sx_d(mptr)%ptr, sy_d(mptr)%ptr, aux_d(mptr)%ptr, &
+            aux_d(mptr)%ptr, &
             numgrids(level), id, cfls_d, &
-            get_cuda_stream(id,device_id)) 
+            device_id, get_cuda_stream(id,device_id)) 
 
         cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d_new(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
 
