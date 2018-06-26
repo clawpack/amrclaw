@@ -1070,12 +1070,11 @@ extern "C" void call_C_limited_riemann_update(
         real* q, real* qNew, 
         real* coefficients,
         real* cfls, const int ngrids, 
-        const int * const id_ptr, const int dev_id) {
+        const int id, const int dev_id) {
 
     // actually qNew holds the input old solution
     // q will have the solution at n+1 after calling this function
     
-    int id = *id_ptr;
     real* cfl_grid = cfls+(id-1)*SPACEDIM;
 
     cudaStream_t stream;
@@ -1089,7 +1088,7 @@ extern "C" void call_C_limited_riemann_update(
             startX, endX, startY, endY, dt,
             q, qNew, 
             NULL, NULL, coefficients, 
-            cfl_grid, id_ptr, dev_id); 
+            cfl_grid, id, dev_id); 
 
     param.setOrderOfAccuracy(1);
     // param.setOrderOfAccuracy(2);

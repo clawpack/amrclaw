@@ -4,6 +4,7 @@
 #include <cuda_runtime_api.h>
 #include <string>
 #include <cstdlib>
+#include <iostream>
 
 // CUDA Runtime error messages
 static const char *_cudaGetErrorEnum(cudaError_t error)

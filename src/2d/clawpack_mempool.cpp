@@ -227,13 +227,6 @@ void clawpack_mempool_get_stats (int& mp_min, int& mp_max, int& mp_tot) // min, 
  */
 
 #ifdef CUDA
-void CUDART_CB cudaCallback_release_gpu(cudaStream_t event, cudaError_t status, void *data){
-    checkCudaErrors(status);
-    // TODO add device_id
-    int* tag = (int*) data;
-    clawpack_mempool_release_gpu(*tag, 0);
-}
-
 void clawpack_mempool_release_gpu (int tag, int device_id) 
 {
     // free all GPU memories associated with tag

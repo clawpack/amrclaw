@@ -21,7 +21,6 @@ extern "C" {
 }
 #ifdef CUDA
     void  clawpack_mempool_release_gpu (int tag, int dev_id);
-    void  CUDART_CB cudaCallback_release_gpu(cudaStream_t event, cudaError_t status, void *data);
 #endif
 
 

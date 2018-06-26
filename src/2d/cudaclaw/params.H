@@ -5,12 +5,13 @@
 #include "error.H"
 #include "clawpack_mempool.H"
 #include "clawpack_device.H"
+#include "clawpack_CUDA_helper.H"
 
 #include <stdio.h>
 #include <string>
 #include <cstring>
 
-// using namespace std;
+
 
 class pdeParam
 {
@@ -32,9 +33,6 @@ class pdeParam
         const real endX;		// physical domain's ending x in cartesian coordinates
         const real startY;		// physical domain's starting y in cartesian coordinates
         const real endY;		// physical domain's ending y in cartesian coordinates
-
-        // real desired_CFL;		// a CFL number which determines the next time step length (dt)
-        // real CFL_lower_bound;	// lower bound on the CFL to be used
 
         real dt;			// time step to be used in the computation
 
@@ -58,7 +56,14 @@ class pdeParam
         real* cfl_grid; // an array of size 1xSPACEDIM, storing cfl number in current grid patch in all directions
 
         const int dev_id; // ID of the device on which storage are allocated
-        const int * const id_ptr; // address of local id of this grid
+        const int id; // local id of this grid
+
+        class TagAndDev 
+        {
+            public:
+                int tag;
+                int dev_id;
+        };
 
         pdeParam(int cellsX, int cellsY, int numGhostCells, int numStates, int numWaves, int numCoeff,
                 real startX, real endX, real startY, real endY,
@@ -66,11 +71,11 @@ class pdeParam
                 real* q_, real* qNew_, 
                 real* waveSpeedsX_, real* waveSpeedsY_,
                 real* coefficients_,
-                real* cfl_grid_, const int * const id_ptr_, int dev_id_):
+                real* cfl_grid_, const int id_, int dev_id_):
                 cellsX(cellsX), cellsY(cellsY), numGhostCells(numGhostCells), numStates(numStates), numWaves(numWaves), numCoeff(numCoeff),
                 startX(startX), endX(endX), startY(startY), endY(endY), dt(dt_),
                 q(q_), qNew(qNew_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_),
-                coefficients(coefficients_), cfl_grid(cfl_grid_), id_ptr(id_ptr_), dev_id(dev_id_)
+                coefficients(coefficients_), cfl_grid(cfl_grid_), id(id_), dev_id(dev_id_)
         {
 
             width = endX-startX;
@@ -80,7 +85,6 @@ class pdeParam
 
             second_order = true;
 
-            // desired_CFL = 0.90f;
             // dt = 0.001;
 
         }
@@ -93,6 +97,14 @@ class pdeParam
 
         ~pdeParam() {}
 
+        void static CUDART_CB cudaCallback_release_gpu(cudaStream_t event, cudaError_t status, void *data) {
+            checkCudaErrors(status);
+            TagAndDev* td = static_cast<TagAndDev*>(data);
+            clawpack_mempool_release_gpu(td->tag, td->dev_id);
+            delete td;
+        }
+
+
         void setOrderOfAccuracy(int order)
         {
             if(order == 2)
@@ -100,16 +112,6 @@ class pdeParam
             else
                 second_order = false;
         }
-
-        //    void setDesiredCFL(real desired_CFL)
-        //	{
-        //	    this->desired_CFL = desired_CFL;
-        //	}
-        //
-        // void setLowerBoundCFL(real lower_bound_CFL)
-        // {
-        //     CFL_lower_bound = lower_bound_CFL;
-        // }
 
 
         // GETTER AND SETTER FUNCTIONS
@@ -169,11 +171,11 @@ class pdeParam
         }
 
         inline void alloc_waveSpeedsX(size_t sz) {
-            waveSpeedsX = (real*) clawpack_mempool_alloc_gpu_hold(sz, this->dev_id, *(this->id_ptr));
+            waveSpeedsX = (real*) clawpack_mempool_alloc_gpu_hold(sz, this->dev_id, this->id);
         }
 
         inline void alloc_waveSpeedsY(size_t sz) {
-            waveSpeedsY = (real*) clawpack_mempool_alloc_gpu_hold(sz, this->dev_id, *(this->id_ptr));
+            waveSpeedsY = (real*) clawpack_mempool_alloc_gpu_hold(sz, this->dev_id, this->id);
         }
 
 
@@ -188,10 +190,13 @@ class pdeParam
         // add cuda callback function to free memory allocated and managed by this pdeParam object
         // The memory will be free after all CUDA events in the stream before this function call are finished
         inline void register_allocated_memory() {
-            // printf("register tag: %d.\n",*(this->id_ptr));
             cudaStream_t stream;
-            get_cuda_stream(*(this->id_ptr), this->dev_id, &stream);
-            cudaStreamAddCallback(stream, cudaCallback_release_gpu, (void*) this->id_ptr, 0);
+            get_cuda_stream(this->id, this->dev_id, &stream);
+
+            TagAndDev* td = new TagAndDev();
+            td->tag = this->id;
+            td->dev_id = this->dev_id;
+            cudaStreamAddCallback(stream, pdeParam::cudaCallback_release_gpu, (void*) td, 0);
         }
 
 };
