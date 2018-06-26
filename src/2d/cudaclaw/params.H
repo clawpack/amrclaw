@@ -1,12 +1,15 @@
 #ifndef __PARAMS_H__
 #define __PARAMS_H__
 
+#ifdef CUDA
+
 #include "real.H"
 #include "error.H"
 #include "clawpack_mempool.H"
 #include "clawpack_device.H"
 #include "clawpack_CUDA_helper.H"
 
+#include <cuda_runtime.h>
 #include <stdio.h>
 #include <string>
 #include <cstring>
@@ -200,5 +203,7 @@ class pdeParam
         }
 
 };
+
+#endif
 
 #endif

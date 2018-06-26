@@ -1,6 +1,10 @@
 #ifndef CLAWPACK_MEMPOOL_H
 #define CLAWPACK_MEMPOOL_H
 
+#include <cstddef>
+
+using std::size_t;
+
 extern "C" {
     void clawpack_mempool_init ();
     void clawpack_mempool_finalize();
