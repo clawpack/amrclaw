@@ -22,8 +22,6 @@
 
 #include "clawpack_mempool.H"
 
-// static vector<std::unique_ptr<CArena> > the_memory_pool;
-
 #ifdef CUDA
 // Each GPUMemoryManager manages memory in one GPU
 // device_memory_pool[i] manages memory in GPU i
@@ -52,29 +50,6 @@ void clawpack_mempool_init()
         if (local_verbose)
             std::cout << "clawpack_mempool_init() called" << std::endl;
 	initialized = true;
-
- 
-// CPU memory pool
-// #ifdef _OPENMP
-// 	int nthreads = omp_get_max_threads();
-// #else
-// 	int nthreads = 1;
-// #endif
-// 	the_memory_pool.resize(nthreads);
-// 	for (int i=0; i<nthreads; ++i) {
-// 	    the_memory_pool[i].reset(new CArena);
-// 	}
-// #ifdef _OPENMP
-// #pragma omp parallel
-// #endif
-// 	{
-// 	    size_t N = 1024*1024*sizeof(double);
-// 	    void *p = clawpack_mempool_alloc(N);
-// 	    memset(p, 0, N);
-// 	    clawpack_mempool_free(p);
-// 	}
-
-
 
 #ifdef CUDA
         int num_devices = get_num_devices_used();

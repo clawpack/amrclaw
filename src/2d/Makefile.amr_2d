@@ -159,7 +159,8 @@ CPP_HEADERS += \
   $(AMRLIB)/cudaclaw/cuda_helper.H \
   $(AMRLIB)/cudaclaw/params.H \
   $(AMRLIB)/cudaclaw/real.H \
-  $(AMRLIB)/cudaclaw/reduce_Max.H
+  $(AMRLIB)/cudaclaw/reduce_Max.H \
+  $(AMRLIB)/cudaclaw/sharedMemory.H
 endif
 
 endif

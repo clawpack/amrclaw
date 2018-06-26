@@ -9,6 +9,7 @@
 #include "cuda_helper.H"
 #include "reduce_Max.H"
 #include "clawpack_device.H"
+#include "sharedMemory.H"
 
 #include <assert.h>
 #include <cmath>
@@ -19,8 +20,6 @@
 #include <math_functions.h>
 #include <cstdio>
 
-
-extern __shared__ real shared_elem[];
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY>
 inline __device__ void first_order_update(real* waves, real* waveSpeeds, real* amdq, real* apdq, int row, int col)
@@ -214,8 +213,9 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
 	int col = threadIdx.x + blockIdx.x*blockDim.x - 3*blockIdx.x;
 	int row = threadIdx.y + blockIdx.y*blockDim.y;
 
-	real* wavesX		= &shared_elem[0];
-	real* waveSpeedsX	= &shared_elem[blockSize*numWaves*numStates];
+        SharedMemory<real> smem;
+        real* wavesX = smem.getPointer();
+        real* waveSpeedsX = smem.getPointer(blockSize*numWaves*numStates);
 
 	real dt = param.dt;
 
@@ -381,8 +381,9 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
     int col = threadIdx.x + blockIdx.x*blockDim.x - 3*blockIdx.x;
     int row = threadIdx.y + blockIdx.y*blockDim.y;
 
-    real* wavesX		= &shared_elem[0];
-    real* waveSpeedsX	= &shared_elem[blockSize*numWaves*numStates];
+    SharedMemory<real> smem;
+    real* wavesX = smem.getPointer();
+    real* waveSpeedsX = smem.getPointer(blockSize*numWaves*numStates);
 
     real dt = param.dt;
 
@@ -542,8 +543,9 @@ __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_s
     int col = threadIdx.x + blockIdx.x*blockDim.x - 3*blockIdx.x;
     int row = threadIdx.y + blockIdx.y*blockDim.y;
 
-    real* wavesX		= &shared_elem[0];
-    real* waveSpeedsX	= &shared_elem[blockSize*numWaves*numStates];
+    SharedMemory<real> smem;
+    real* wavesX = smem.getPointer();
+    real* waveSpeedsX = smem.getPointer(blockSize*numWaves*numStates);
 
     real dt = param.dt;
 
@@ -690,8 +692,9 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
     real apdq[numStates];
     real amdq[numStates];
 
-    real* wavesY		= &shared_elem[0];
-    real* waveSpeedsY	= &shared_elem[blockSize*numWaves*numStates];
+    SharedMemory<real> smem;
+    real* wavesY = smem.getPointer();
+    real* waveSpeedsY = smem.getPointer(blockSize*numWaves*numStates);
 
     real upCell[numStates];		
     real downCell[numStates];	
@@ -839,8 +842,9 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
     real apdq[numStates];
     real amdq[numStates];
 
-    real* wavesY		= &shared_elem[0];
-    real* waveSpeedsY	= &shared_elem[blockSize*numWaves*numStates];
+    SharedMemory<real> smem;
+    real* wavesY = smem.getPointer();
+    real* waveSpeedsY = smem.getPointer(blockSize*numWaves*numStates);
 
     real upCell[numStates];		
     real downCell[numStates];	
