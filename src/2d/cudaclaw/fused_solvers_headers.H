@@ -69,12 +69,12 @@ inline __device__ void setSharedWave(real* sharedData, int row, int col, int wav
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 inline __device__ int getIndex_SharedSpeed(int row, int col, int wave, int numWaves, int blockHeight, int blockWidth)
 {
-        // TODO: this arranging is weird?
-	return (row*numWaves*blockWidth + wave*blockWidth + col);		// seems like the best
+	// return (row*numWaves*blockWidth + wave*blockWidth + col);		// seems like the best
+        //
 	//return ( row*blockWidth*numWaves + col*numWaves + wave);
 	//return (col*numWaves*blockHeight + wave*blockHeight + row);
 	//return (col*blockHeight*numWaves + row*numWaves + wave);
-	//return (wave*blockHeight*blockWidth + row*blockWidth + col);
+	return (wave*blockHeight*blockWidth + row*blockWidth + col);
 	//return (wave*blockWidth*blockHeight + col*blockHeight + row);
 }
 inline __device__ real &getSharedSpeed(real* sharedData, int row, int col, int wave, int numWaves, int blockHeight, int blockWidth)

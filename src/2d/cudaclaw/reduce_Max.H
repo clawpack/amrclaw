@@ -91,11 +91,11 @@ __global__ void reduceMax_simplified(real *globalWaves, int size,
 	}
 	if (tid < 32)
 		warpReduce<blockSize>(sharedWaveSpeeds, tid);
-	if (tid == 0)
+	if (tid == 0) {
 		globalWaves[blockIdx.x] = sharedWaveSpeeds[0];
-
-        if (result)
-            *result = sharedWaveSpeeds[0]*dt/dx;
+            if (result)
+                *result = sharedWaveSpeeds[0]*dt/dx;
+        }
 }
 
 #endif

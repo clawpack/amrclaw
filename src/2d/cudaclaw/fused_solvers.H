@@ -396,19 +396,22 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
     real* rightCoeff = 0;
 
 
-    // TODO: what is this if  condition doing?
-    // if (blockIdx.x > gridDim.x-3 || blockIdx.y > gridDim.y-2)
-    // {
-    //     #pragma unroll
-    //     for (int i = 0; i < numWaves; i++)
-    //         setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, (real)0.0f);
-    // }
+    // Parts of the CUDA block might be mapped to outside of grid patch. 
+    // So we need to set waveSpeedsX that corresponds to those parts to 0.0
+    // These 0.0's are automatically ignored when we do max reduction later
+    if (blockIdx.x == gridDim.x-1 || blockIdx.y == gridDim.y-1) // last block in either direction
+    {
+        #pragma unroll
+        for (int i = 0; i < numWaves; i++)
+            setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, 0.0);
+    }
 
     bool grid_valid = row < param.cellsY && col < param.cellsX-1;
 
     // Riemann solver
-    // if there are 512 cells (including ghost cells) in X, the last thread is mapped to cell (row,X-1) and will
-    // solve the Riemann problem between cell (row,X-1) and cell (row,X) 
+    // Let's say the cells in X direction are indexed from 0 to cellsX-1 (including ghost cells). 
+    // The last thread is mapped to the second last cell, cell (row,cellsX-2), and will
+    // solve the Riemann problem between cell (row,cellsX-2) and cell (row,cellsX-1) 
     if (grid_valid)	
     {
 #pragma unroll
@@ -464,6 +467,7 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
 #pragma unroll
     for (int i = 1; i < numWaves; i++)
     {
+        // TODO: call getSharedSpeed to do this?
         // blockDim.x * blockDim.y is usally a multiple of 32, so there should be no bank conflicts.
         waveSpeedsX[tid] = fmax(waveSpeedsX[tid], fabs(waveSpeedsX[tid + i*blockSize]));
     }
@@ -844,9 +848,9 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
     real* upCoeff = 0;
     real* downCoeff = 0;
 
-    if (blockIdx.x > gridDim.x-2 || blockIdx.y > gridDim.y-3)
+    if (blockIdx.x == gridDim.x-1 || blockIdx.y == gridDim.y-1)
     {
-#pragma unroll
+        #pragma unroll
         for (int i = 0; i < numWaves; i++)
             setSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, (real)0.0f);
     }
@@ -972,7 +976,8 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         // RIEMANN, FLUCTUATIONS and UPDATES
         const unsigned int blockDim_XR = HORIZONTAL_K_BLOCKSIZEX;
         const unsigned int blockDim_YR = HORIZONTAL_K_BLOCKSIZEY;
-        unsigned int gridDim_XR = (param.cellsX + (blockDim_XR-3-1)) / (blockDim_XR-3);
+        const unsigned int nCellsPerBlock = blockDim_XR-3; // each CUDA block will update this many cells in X direction
+        unsigned int gridDim_XR = (param.cellsX - 2*param.numGhostCells + nCellsPerBlock-1) / nCellsPerBlock;
         unsigned int gridDim_YR = (param.cellsY + (blockDim_YR-1)) / (blockDim_YR);
         dim3 dimGrid_hR(gridDim_XR, gridDim_YR);
         dim3 dimBlock_hR(blockDim_XR, blockDim_YR);
@@ -1003,8 +1008,9 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         // RIEMANN, FLUCTUATIONS and UPDATE
         const unsigned int blockDim_XR = VERTICAL_K_BLOCKSIZEX;
         const unsigned int blockDim_YR = VERTICAL_K_BLOCKSIZEY;
+        const unsigned int nCellsPerBlock = blockDim_YR-3; // each CUDA block will update this many cells in Y direction
         unsigned int gridDim_XR = (param.cellsX + (blockDim_XR-1)) / (blockDim_XR);
-        unsigned int gridDim_YR = (param.cellsY + (blockDim_YR-3-1)) / (blockDim_YR-3);
+        unsigned int gridDim_YR = (param.cellsY - 2*param.numGhostCells + nCellsPerBlock-1) / nCellsPerBlock;
         dim3 dimGrid_vR(gridDim_XR, gridDim_YR);
         dim3 dimBlock_vR(blockDim_XR, blockDim_YR);
         int shared_mem_size = VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY*NUMWAVES*(NUMSTATES+1)*sizeof(real);
