@@ -25,7 +25,7 @@ c  ::::::::::::::::::::::: PROJEC2 ::::::::::::::::::::::::::::::
 !!
 !! However, note that these cells are flagged with **badpro** parameter
 !! defined in [amr_module](@ref amr_module.f90)
-!! (not **badpt** as in [flagregions()](@ref flagregions2.f90) and
+!! (not **DOFLAG** as in [flagregions()](@ref flagregions2.f90) and
 !! [flag2refine2()](@ref flag2refine2.f90)).
 !!
 !! **input**: 
@@ -111,7 +111,7 @@ c
          ! has intersection
          do 60 j = jxlo, jxhi
          do 60 i = ixlo, ixhi
-            if (rectflags(i,j) .eq. goodpt) then
+            if (rectflags(i,j) .le. DONTFLAG) then
                rectflags(i,j) = badpro
                numpro      = numpro + 1
                if (pprint) write(outunit,101) i,j,mkid
@@ -153,7 +153,7 @@ c        see if intersects base grid. wrap coords for periodicity
          do jx = jxlo, jxhi
          do ix = ixlo, ixhi
 c           project flagged point in intersected regions
-            if (rectflags(ix,jx) .eq. goodpt) then
+            if (rectflags(ix,jx) .le. DONTFLAG) then
                rectflags(ix,jx) = badpro   ! i,j already coarse grid indices
                numpro      = numpro + 1
                if (pprint) write(outunit,101) ix,jx,mkid
@@ -175,7 +175,7 @@ c  DID NOT MODIFY THIS SPHEREDOM BLOCK WHEN FIXING OTHER BUGS. NEED TO LOOK AT I
              iwrap2 = iregsz(level) - istc - 1
 c             do 61 i = iwrap1+1, iwrap2+1
              do 61 i = iwrap1, iwrap2  !changing this WITHOUT CHECKING, AS ABOVE. STILL NEED TO CHECK***
-                if (rectflags(i,1) .eq. goodpt) then
+                if (rectflags(i,1) .le. DONTFLAG) then
                   rectflags(i,1) = badpro  ! only need to flag 1 wrapped buffer cell
                   numpro      = numpro + 1
                   if (pprint) write(outunit,101) i,1,mkid
@@ -188,7 +188,7 @@ c             do 61 i = iwrap1+1, iwrap2+1
              iwrap2 = iregsz(level) - istc - 1
 c             do 62 i = iwrap1+1, iwrap2+1
              do 62 i = iwrap1, iwrap2 !CHANGING W/O CHECKING 
-                if (rectflags(i,jsize-1) .eq. goodpt) then
+                if (rectflags(i,jsize-1) .le. DONTFLAG) then
                   rectflags(i,jsize-1) = badpro  ! only need to flag 1 wrapped buffer cell
                   numpro            = numpro + 1
                   if (pprint) write(outunit,101) i,j,mkid

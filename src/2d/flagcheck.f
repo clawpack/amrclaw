@@ -26,7 +26,7 @@ c
 
       do 10 j = jmin, jmax
       do 10 i = imin, imax
-        if (rectflags(i,j) .eq. goodpt) go to 10
+        if (rectflags(i,j) .le. DONTFLAG) go to 10
         if (iflags(i,j) .ne. 1) then  !point not nested. turn off
              rectflags(i,j) = 0.
              if (nprint) then

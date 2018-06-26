@@ -24,8 +24,8 @@ c
 
       do 10 j = nghost+1, mjtot-nghost
       do 10 i = nghost+1, mitot-nghost
-         if (rctold(1,i,j) .ne. goodpt) then
-           rectflags(i,j) = badpt
+         if (rctold(1,i,j) .gt. DONTFLAG) then
+           rectflags(i,j) = DOFLAG
          endif
  10   continue
 c

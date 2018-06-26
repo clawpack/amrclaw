@@ -51,9 +51,10 @@
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
-                            tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
+                            tolsp,q,aux,amrflags)
 
     use regions_module
+    use amr_module, only : DOFLAG, UNSET
 
     implicit none
 
@@ -66,8 +67,6 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
-    real(kind=8), intent(in) :: DONTFLAG
-    real(kind=8), intent(in) :: DOFLAG
     
     logical :: allowflag
     external allowflag
@@ -77,16 +76,17 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     real(kind=8) :: x_c,y_c,x_low,y_low,x_hi,y_hi
     real(kind=8) :: dqi(meqn), dqj(meqn), dq(meqn)
 
-    ! Initialize flags
-    amrflags = DONTFLAG
+    ! Don't initialize flags, since they were already 
+    ! flagged by flagregions2
+    ! amrflags = DONTFLAG
     
     ! Loop over interior points on this grid
     ! (i,j) grid cell is [x_low,x_hi] x [y_low,y_hi], cell center at (x_c,y_c)
     ! This information is not needed for the default flagging based on
     ! undivided differences, but might be needed in a user's version.
     ! Note that if you want to refine only in certain space-time regions,
-    ! it may be easiest to use the "regions" feature.  The flags set here or
-    ! in the Richardson error estimator are potentially modified by the
+    ! it may be easiest to use the "regions" feature. The flags set here or
+    ! in the Richardson error estimator are modifing the flags set by
     ! min_level and max_level specified in any regions.
 
     y_loop: do j=1,my
@@ -100,6 +100,10 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
             x_hi = xlower + i * dx
 
             ! -----------------------------------------------------------------
+            ! Only check undivided differences if flag hasn't been set yet. 
+            ! If flag == DONTFLAG then refinement is forbidden by a region, 
+            ! if flag == DOFLAG checking is not needed
+            if(amrflags(i,j) == UNSET) then
                 dq = 0.d0
                 dqi = abs(q(:,i+1,j) - q(:,i-1,j))
                 dqj = abs(q(:,i,j+1) - q(:,i,j-1))
@@ -112,6 +116,7 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
                         cycle x_loop
                     endif
                 enddo
+            endif
 
         enddo x_loop
     enddo y_loop

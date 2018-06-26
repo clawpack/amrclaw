@@ -35,7 +35,8 @@ c
 
 
 c     flag arrays- based on either spatial gradients (and/or user defined 
-c                  criteria),  or Richardson error estimation
+c                  criteria),  or Richardson error estimation,
+c                  or user-defined regions
     
       call system_clock(clock_start,clock_rate)
       call flagger(nvar,naux,lcheck,start_time)

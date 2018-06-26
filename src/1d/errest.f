@@ -47,7 +47,7 @@ c
      .                 alloc(locbig),alloc(locaux))
 c
 c     ## locamrflags allocated in flagger. may previously have been used 
-c     ## by flag2refine so make sure not to overwrite
+c     ## by flagregions1 or flag2refine so make sure not to overwrite
       locamrflags = node(storeflags, mptr)    
       mbuff = max(nghost,ibuff+1)  
       mibuff = nx + 2*mbuff
