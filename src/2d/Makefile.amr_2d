@@ -150,11 +150,11 @@ CPP_HEADERS += \
 ifeq ($(USE_CUDA), TRUE)
 CPP_SOURCES += \
   $(AMRLIB)/clawpack_GPUMemoryManager.cpp \
-  $(AMRLIB)/cudaclaw/fused_solvers.cu \
+  $(AMRLIB)/cudaclaw/advance.cu \
   $(AMRLIB)/cudaclaw/params.cu
 CPP_HEADERS += \
   $(AMRLIB)/clawpack_GPUMemoryManager.H \
-  $(AMRLIB)/cudaclaw/fused_solvers.H \
+  $(AMRLIB)/cudaclaw/advance.H \
   $(AMRLIB)/cudaclaw/common.H \
   $(AMRLIB)/cudaclaw/cuda_helper.H \
   $(AMRLIB)/cudaclaw/params.H \

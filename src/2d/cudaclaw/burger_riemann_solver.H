@@ -26,31 +26,33 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct Burger_horizontal
 {
-	inline __device__ void operator() (	real* q_left, real* q_right, real* u_left, real* u_right,			// input
-										int row, int col, int numStates, int numWaves,
-										real* wave, real* waveSpeeds)										// output
-	{
-		real theta = u_left[0];
-		real a = 0.5f*cos(theta);
-		
-		setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, q_right[0] - q_left[0]);
-		
-		setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, a*(q_left[0] + q_right[0]));
-	}
+    inline __device__ 
+    void operator() (	real* q_left, real* q_right, real* u_left, real* u_right,			// input
+            int row, int col, int numStates, int numWaves,
+            real* wave, real* waveSpeeds)										// output
+    {
+        real theta = u_left[0];
+        real a = 0.5f*cos(theta);
+
+        setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, q_right[0] - q_left[0]);
+
+        setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, a*(q_left[0] + q_right[0]));
+    }
 };
 struct Burger_vertical
 {
-	inline __device__ void operator() (	real* q_left, real* q_right, real* u_left, real* u_right,			// input
-										int row, int col, int numStates, int numWaves,
-										real* wave, real* waveSpeeds)										// output
-	{
-		real theta = u_left[0];
-		real a = 0.5f*sin(theta);
-		
-		setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, a*(q_left[0] + q_right[0]));
-		
-		setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, q_right[0] - q_left[0]);
-	}
+    inline __device__ 
+    void operator() (	real* q_left, real* q_right, real* u_left, real* u_right,			// input
+            int row, int col, int numStates, int numWaves,
+            real* wave, real* waveSpeeds)										// output
+    {
+        real theta = u_left[0];
+        real a = 0.5f*sin(theta);
+
+        setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, a*(q_left[0] + q_right[0]));
+
+        setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, q_right[0] - q_left[0]);
+    }
 };
 
 #endif
