@@ -160,7 +160,10 @@ CPP_HEADERS += \
   $(AMRLIB)/cudaclaw/params.H \
   $(AMRLIB)/cudaclaw/real.H \
   $(AMRLIB)/cudaclaw/reduce_Max.H \
-  $(AMRLIB)/cudaclaw/sharedMemory.H
+  $(AMRLIB)/cudaclaw/sharedMemory.H \
+  $(AMRLIB)/cudaclaw/acoustics_riemann_solver.H \
+  $(AMRLIB)/cudaclaw/shallow_water_riemann_solver.H \
+  $(AMRLIB)/cudaclaw/burger_riemann_solver.H
 endif
 
 endif

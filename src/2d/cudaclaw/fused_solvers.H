@@ -11,6 +11,7 @@
 #include "clawpack_device.H"
 #include "sharedMemory.H"
 #include "staticArray.H"
+#include "acoustics_riemann_solver.H"
 
 #include <assert.h>
 #include <cmath>
@@ -29,7 +30,7 @@ inline __device__ void first_order_update(real* waves, real* waveSpeeds, real* a
 	for (int w = 0; w < numWaves; w++)
 	{
 		real waveSpeed =  getSharedSpeed(waveSpeeds, row, col, w, numWaves, blockSizeY, blockSizeX);
-		if (waveSpeed < (real)0.0f)
+		if (waveSpeed < claw_zero)
 		{
 			#pragma unroll
 			for (int k = 0; k < numStates; k++)
@@ -59,7 +60,7 @@ inline __device__ void second_order_update_horizontal(pdeParam &param, real* wav
 	{
 		real waveSpeed =  getSharedSpeed(waveSpeeds, row, col, w, numWaves, blockSizeY, blockSizeX);
 
-		if (waveSpeed < (real)0.0f)
+		if (waveSpeed < claw_zero)
 		{
 			real limiting_factor = limiting_shared_h_l<numStates, numWaves, blockSizeX, blockSizeY, Limiter>(phi, waves, row, col, w);
 
@@ -91,7 +92,7 @@ inline __device__ void second_order_update_vertical(pdeParam &param, real* waves
 	{
 		real waveSpeed =  getSharedSpeed(waveSpeeds, row, col, w, numWaves, blockSizeY, blockSizeX);
 
-		if (waveSpeed < (real)0.0f)
+		if (waveSpeed < claw_zero)
 		{
 			real limiting_factor = limiting_shared_v_d<numStates, numWaves, blockSizeX, blockSizeY>(phi, waves, row, col, w);
 			#pragma unroll
@@ -117,17 +118,16 @@ inline __device__ void second_order_update_vertical(pdeParam &param, real* waves
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
 inline __device__ void first_second_order_update_horizontal(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, int row, int col, real dt, Limiter phi)
 {
-        // TODO: I need to check whether thiss is optimum
         real F_tilde[numStates];
         for (int k = 0; k < numStates; k++){
-            F_tilde[k] = (real)0.0;
+            F_tilde[k] = claw_zero;
         }
 	#pragma unroll
 	for (int w = 0; w < numWaves; w++)
 	{
 		real waveSpeed =  getSharedSpeed(waveSpeeds, row, col, w, numWaves, blockSizeY, blockSizeX);
 
-		if (waveSpeed < (real)0.0f)
+		if (waveSpeed < claw_zero)
 		{
 			real limiting_factor = limiting_shared_h_l<numStates, numWaves, blockSizeX, blockSizeY>(phi, waves, row, col, w);
 
@@ -163,14 +163,14 @@ inline __device__ void first_second_order_update_vertical(pdeParam &param, real*
 {
         real F_tilde[numStates];
         for (int k = 0; k < numStates; k++){
-            F_tilde[k] = (real)0.0;
+            F_tilde[k] = claw_zero;
         }
 	#pragma unroll
 	for (int w = 0; w < numWaves; w++)
 	{
 		real waveSpeed =  getSharedSpeed(waveSpeeds, row, col, w, numWaves, blockSizeY, blockSizeX);
 
-		if (waveSpeed < (real)0.0f)
+		if (waveSpeed < claw_zero)
 		{
 			real limiting_factor = limiting_shared_v_d<numStates, numWaves, blockSizeX, blockSizeY>(phi, waves, row, col, w);
 			#pragma unroll
@@ -237,7 +237,7 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
     {
         #pragma unroll
         for (int i = 0; i < numWaves; i++)
-            setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, 0.0);
+            setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, claw_zero);
     }
 
     bool grid_valid = row < param.cellsY && col < param.cellsX-1;
@@ -400,13 +400,12 @@ __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_s
     real* rightCoeff = 0;
 
 
-    // TODO: what is this if  condition doing?
-    // if (blockIdx.x > gridDim.x-3 || blockIdx.y > gridDim.y-2)
-    // {
-    //     #pragma unroll
-    //     for (int i = 0; i < numWaves; i++)
-    //         setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, (real)0.0f);
-    // }
+    if (blockIdx.x == gridDim.x-1 || blockIdx.y == gridDim.y-1) // last block in either direction
+    {
+        #pragma unroll
+        for (int i = 0; i < numWaves; i++)
+            setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, claw_zero);
+    }
 
     bool grid_valid = row < param.cellsY && col < param.cellsX-1;
 
@@ -500,7 +499,7 @@ __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_s
 
 
     int lane_id = threadIdx.x%warpSize;
-    real apdq_k = 0.0;
+    real apdq_k = claw_zero;
     #pragma unroll
     for (int k = 0; k < numStates; k++)
     {
@@ -547,7 +546,7 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
     {
         #pragma unroll
         for (int i = 0; i < numWaves; i++)
-            setSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, (real)0.0f);
+            setSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, claw_zero);
     }
 
     bool grid_valid = row < param.cellsY-1 && col < param.cellsX;
@@ -589,8 +588,8 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
 #pragma unroll
         for (int k = 0; k < numStates; k++)
         {
-            amdq[k] = 0.0;
-            apdq[k] = 0.0;
+            amdq[k] = claw_zero;
+            apdq[k] = claw_zero;
         }
         if (!param.second_order)
         {

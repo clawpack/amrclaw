@@ -26,7 +26,7 @@ __device__ void warpReduce(volatile real *sdata, unsigned int tid) {
 template <unsigned int blockSize>
 __global__ void reduceMax_simplified(real *globalWaves, int size, 
         // for computing CFL number in place
-        real dx = 0.0, real dt = 0.0, real* result = NULL)
+        real dx = claw_zero, real dt = claw_zero, real* result = NULL)
 {
 	// size holds the exact number of wave speeds there are to be max reduced
 	extern __shared__ real sharedWaveSpeeds[];	// This will be as big as the block size
@@ -58,7 +58,7 @@ __global__ void reduceMax_simplified(real *globalWaves, int size,
 		if (tid < size)
 			sharedWaveSpeeds[tid] = globalWaves[tid];
 		else
-			sharedWaveSpeeds[tid] = (real)0.0f;
+			sharedWaveSpeeds[tid] = claw_zero;
 	}
 	__syncthreads();
 

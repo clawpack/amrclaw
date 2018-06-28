@@ -3,7 +3,6 @@ module parallel_advanc_module
     integer :: icom,jcom
     interface
 #ifdef CUDA
-        ! TODO: this only works for float64 for now
         subroutine stepgrid_cudaclaw(cellsX, cellsY, ghostCells, &
             startX, endX, startY, endY, dt, &
             qNew, q, &
@@ -15,13 +14,19 @@ module parallel_advanc_module
             integer(kind=c_int), value, intent(in) :: cellsX, cellsY, ghostCells, &
                 ngrids, id, dev_id
 
-            real(kind=c_double), value, intent(in) :: startX, endX, startY, endY, dt
-
-            real(kind=c_double), device :: q(cellsX,cellsY,numStates)
-            real(kind=c_double), device :: qNew(cellsX,cellsY,numStates)
-            real(kind=c_double), device :: coefficients(cellsX,cellsY,numStates)
-
-            real(kind=c_double), device :: cfls_d(SPACEDIM,ngrids)
+            #if (CLAW_REAL == 8)
+                real(kind=c_double), value, intent(in) :: startX, endX, startY, endY, dt
+                real(kind=c_double), device :: q(cellsX,cellsY,numStates)
+                real(kind=c_double), device :: qNew(cellsX,cellsY,numStates)
+                real(kind=c_double), device :: coefficients(cellsX,cellsY,numStates)
+                real(kind=c_double), device :: cfls_d(SPACEDIM,ngrids)
+            #else
+                real(kind=c_float), value, intent(in) :: startX, endX, startY, endY, dt
+                real(kind=c_float), device :: q(cellsX,cellsY,numStates)
+                real(kind=c_float), device :: qNew(cellsX,cellsY,numStates)
+                real(kind=c_float), device :: coefficients(cellsX,cellsY,numStates)
+                real(kind=c_float), device :: cfls_d(SPACEDIM,ngrids)
+            #endif
 
         end subroutine stepgrid_cudaclaw
 #endif

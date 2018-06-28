@@ -88,8 +88,6 @@ class pdeParam
 
             second_order = true;
 
-            // dt = 0.001;
-
         }
 
         // copy constructor
