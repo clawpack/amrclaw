@@ -10,6 +10,7 @@
 #include "reduce_Max.H"
 #include "clawpack_device.H"
 #include "sharedMemory.H"
+#include "staticArray.H"
 
 #include <assert.h>
 #include <cmath>
@@ -200,175 +201,7 @@ inline __device__ void first_second_order_update_vertical(pdeParam &param, real*
         }
 }
 
-template <const int numStates, const int numWaves, const int numCoeff, const unsigned int blockSize, class Riemann, class Limiter>
-__global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
-{
-	// Every threads gets a unique interface
-	// a thread at (row, col) treats the interface between cells
-	// (row,col)|(row,col+1)
-	//          /\
-	//		thread (row,col)
-        //
-        //  each block solves Riemann problems that is required for blockDim.x-3 columns of cells 
-	int col = threadIdx.x + blockIdx.x*blockDim.x - 3*blockIdx.x;
-	int row = threadIdx.y + blockIdx.y*blockDim.y;
-
-        SharedMemory<real> smem;
-        real* wavesX = smem.getPointer();
-        real* waveSpeedsX = smem.getPointer(blockSize*numWaves*numStates);
-
-	real dt = param.dt;
-
-	real apdq[numStates];
-	real amdq[numStates];
-
-	real leftCell[numStates];	
-	real rightCell[numStates];  
-
-        real leftCoeff[numCoeff];
-        real rightCoeff[numCoeff];
-
-
-        // TODO: what is this if  condition doing?
-	if (blockIdx.x > gridDim.x-3 || blockIdx.y > gridDim.y-2)
-	{
-		#pragma unroll
-		for (int i = 0; i < numWaves; i++)
-			setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, (real)0.0f);
-	}
-
-	bool grid_valid = row < param.cellsY && col < param.cellsX-1;
-
-	// Riemann solver
-        // if there are 512 cells (including ghost cells) in X, the last thread is mapped to cell (row,X-1) and will
-        // solve the Riemann problem between cell (row,X-1) and cell (row,X) 
-	if (grid_valid)	
-	{
-		#pragma unroll
-		for (int i = 0; i < numStates; i++)
-		{
-			leftCell[i] = param.getElement_qNew(row,col,i);
-			rightCell[i] = param.getElement_qNew(row,col+1,i);
-		}
-                if (numCoeff > 0) {
-                    #pragma unroll
-                    for (int i = 0; i < numCoeff; i++)
-                    {
-                            leftCoeff[i] = param.getElement_coeff(row,col,i);
-                            rightCoeff[i] = param.getElement_coeff(row,col+1,i);
-                    }
-                }
-		Riemann_solver_h(	leftCell,			// input comes from global memory
-							rightCell,			//
-							leftCoeff,			//
-							rightCoeff,			//
-							threadIdx.y,		//
-							threadIdx.x,		//
-							numStates,			//
-							numWaves,			//
-							wavesX,				//
-							waveSpeedsX);
-	}
-
-        // idle the first and the last thread since we don't need to limit the first and the last wave in this block
-	grid_valid = grid_valid && ( 0 < threadIdx.x && threadIdx.x < HORIZONTAL_K_BLOCKSIZEX-1 );
-	if (grid_valid)
-        {
-#pragma unroll
-            for (int k = 0; k < numStates; k++)
-            {
-                amdq[k] = 0;
-                apdq[k] = 0;
-            }
-            if (!param.second_order)	// simple first order scheme
-            {
-                first_order_update<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY> (wavesX, waveSpeedsX, amdq, apdq, threadIdx.y, threadIdx.x);
-            }
-            else
-            {
-                first_second_order_update_horizontal<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY> 
-                    (param, wavesX, waveSpeedsX, amdq, apdq, threadIdx.y, threadIdx.x, dt, phi);
-            }
-        }
-        __syncthreads();
-
-	// write the apdq to shared memory
-	#pragma unroll
-	for(int k = 0; k < numStates; k++)
-	{
-            setSharedWave(wavesX, threadIdx.y, threadIdx.x, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, apdq[k]);
-	}
-
-	// Local Reduce over Wave Speeds
-	// Stage 1
-	// Bringing down the number of elements to compare to block size
-	int tid = threadIdx.x + threadIdx.y*HORIZONTAL_K_BLOCKSIZEX;
-	waveSpeedsX[tid] = fabs(waveSpeedsX[tid]);
-	#pragma unroll
-	for (int i = 1; i < numWaves; i++)
-	{
-		// blockDim.x * blockDim.y is usally a multiple of 32, so there should be no bank conflicts.
-		waveSpeedsX[tid] = fmax(waveSpeedsX[tid], fabs(waveSpeedsX[tid + i*blockSize]));
-	}
-	__syncthreads();	// unmovable syncthreads
-
-	// Stage 2
-	// Reducing over block size elements
-	// use knowledge about your own block size:
-	// I am assuming blocks to be of size no more than 512 will be used for the horizontal direction
-	// There is a potential for a very subtle bug in the implementation below:
-	// if the thread block has size non poer of 2, then there would be 2 threads reading/writing
-	// from the same location, for example if the block size is 135, threads [0-67] will be active
-	// and thread 0 will operate on (0,67) and thread 67 will operate on (67, 135). This can cause
-	// an issue IF the SM somehow reads an unfinished write to the shared memory location. The
-	// read data would be junk and could potentially hinder the simulation, either by a crash, or
-	// behaving like a large number (behaving as a small number is no problem as this is a max reduce)
-	// which could slow down the simulation. In any case block size should be multiples of 32 at least,
-	// and never odd numbers. Also if the block size is between 32 and 64 warp reduce might access
-	// off limit data. Rule of thumb keep block sizes to pwoers of 2.
-	// At this stage there is no need to use fabs again, as all speeds were taken absolutely
-	if (HORIZONTAL_K_BLOCKSIZE > 64 )
-	{
-		if (tid < (HORIZONTAL_K_BLOCKSIZE+1)/2)
-			waveSpeedsX[tid] = fmax(waveSpeedsX[tid], waveSpeedsX[tid + HORIZONTAL_K_BLOCKSIZE/2]);
-		__syncthreads();
-	}
-	if (HORIZONTAL_K_BLOCKSIZE/2 > 64 )
-	{
-		if (tid < (HORIZONTAL_K_BLOCKSIZE+3)/4)
-			waveSpeedsX[tid] = fmax(waveSpeedsX[tid], waveSpeedsX[tid + HORIZONTAL_K_BLOCKSIZE/4]);
-		__syncthreads();
-	}
-	if (HORIZONTAL_K_BLOCKSIZE/4 > 64 )
-	{
-		if (tid < (HORIZONTAL_K_BLOCKSIZE+7)/8)
-			waveSpeedsX[tid] = fmax(waveSpeedsX[tid], waveSpeedsX[tid + HORIZONTAL_K_BLOCKSIZE/8]);
-		__syncthreads();
-	}
-	if (HORIZONTAL_K_BLOCKSIZE/8 > 64 )
-	{
-		if (tid < (HORIZONTAL_K_BLOCKSIZE+15)/16)
-			waveSpeedsX[tid] = fmax(waveSpeedsX[tid], waveSpeedsX[tid + HORIZONTAL_K_BLOCKSIZE/16]);
-		__syncthreads();
-	}
-	if (tid < 32)
-		warpReduce<blockSize>(waveSpeedsX, tid);
-
-	if (grid_valid && threadIdx.x > 1)
-	{
-		#pragma unroll
-		for (int k = 0; k < numStates; k++)
-		{
-			param.setElement_q(row, col, k, param.getElement_qNew(row, col, k) - dt/param.dx * (amdq[k] + getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX)));
-		}
-	}
-
-	if (tid == 0)
-		param.waveSpeedsX[blockIdx.x + blockIdx.y*gridDim.x] =  waveSpeedsX[0];
-}
-
-// This is a overloaded version of Riemann_horizontal_kernel for the case NUMCOEFF = 0
-template <const int numStates, const int numWaves, const unsigned int blockSize, class Riemann, class Limiter>
+template <const unsigned int numStates, const unsigned int numWaves, const unsigned int numCoeff, const unsigned int blockSize, class Riemann, class Limiter>
 __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 {
     // Every threads gets a unique interface
@@ -393,8 +226,8 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
     real leftCell[numStates];	
     real rightCell[numStates];  
 
-    real* leftCoeff = 0;
-    real* rightCoeff = 0;
+    staticArrayReal<numCoeff> leftCoeff;
+    staticArrayReal<numCoeff> rightCoeff;
 
 
     // Parts of the CUDA block might be mapped to outside of grid patch. 
@@ -420,6 +253,14 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
         {
             leftCell[i] = param.getElement_qNew(row,col,i);
             rightCell[i] = param.getElement_qNew(row,col+1,i);
+        }
+        if (numCoeff > 0) {
+            #pragma unroll
+            for (int i = 0; i < numCoeff; i++)
+            {
+                    leftCoeff[i] = param.getElement_coeff(row,col,i);
+                    rightCoeff[i] = param.getElement_coeff(row,col+1,i);
+            }
         }
         Riemann_solver_h(leftCell, rightCell,
                 leftCoeff, rightCoeff,
@@ -676,7 +517,7 @@ __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_s
 }
 
 
-template <const int numStates, const int numWaves, const int numCoeff, const unsigned int blockSize, class Riemann, class Limiter>
+template <const unsigned int numStates, const unsigned int numWaves, const unsigned int numCoeff, const unsigned int blockSize, class Riemann, class Limiter>
 __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
 {
     // Every threads gets a unique interface
@@ -699,158 +540,8 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
     real upCell[numStates];		
     real downCell[numStates];	
 
-    real upCoeff[numCoeff];
-    real downCoeff[numCoeff];
-
-    if (blockIdx.x > gridDim.x-2 || blockIdx.y > gridDim.y-3)
-    {
-#pragma unroll
-        for (int i = 0; i < numWaves; i++)
-            setSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, (real)0.0f);
-    }
-
-    bool grid_valid = row < param.cellsY-1 && col < param.cellsX;
-
-    // Riemann solver
-    if (grid_valid)	// if there are 512 cells in Y 511 threads are in use
-    {
-#pragma unroll
-        for (int i = 0; i < numStates; i++)
-        {
-            //downCell[i] = param.getElement_qNew(row,col,i);	// use original data
-            //upCell[i] = param.getElement_qNew(row+1,col,i);
-            downCell[i] = param.getElement_q(row,col,i);	// use intermediate data
-            upCell[i] = param.getElement_q(row+1,col,i);
-        }
-#pragma unroll
-        for (int i = 0; i < numCoeff; i++)
-        {
-            downCoeff[i] = param.getElement_coeff(row,col,i);
-            upCoeff[i] = param.getElement_coeff(row+1,col,i);
-        }
-        Riemann_solver_v(	downCell,			// input comes from global memory
-                upCell,				//
-                downCoeff,			//
-                upCoeff,			//
-                threadIdx.y,		//
-                threadIdx.x,		//
-                numStates,			//
-                numWaves,			//
-                wavesY,				// output to shared memory
-                waveSpeedsY);		//
-
-    }
-
-    grid_valid = ( 0 < threadIdx.y && threadIdx.y < VERTICAL_K_BLOCKSIZEY-1 ) && grid_valid;
-
-    if (grid_valid)
-    {
-#pragma unroll
-        for (int k = 0; k < numStates; k++)
-        {
-            // TODO: should be 0.0 for all cases like this
-            amdq[k] = 0;
-            apdq[k] = 0;
-        }
-        if (!param.second_order)
-        {
-            first_order_update<numStates, numWaves, VERTICAL_K_BLOCKSIZEX, VERTICAL_K_BLOCKSIZEY>(wavesY, waveSpeedsY, amdq, apdq, threadIdx.y, threadIdx.x);
-        }
-        else	// simple first order scheme
-        {
-            first_second_order_update_vertical<numStates, numWaves, VERTICAL_K_BLOCKSIZEX, VERTICAL_K_BLOCKSIZEY>(param, wavesY, waveSpeedsY, amdq, apdq, threadIdx.y, threadIdx.x, dt, phi);
-        }
-    }
-    __syncthreads();
-
-    // write the apdq to shared memory
-#pragma unroll
-    for(int k = 0; k < numStates; k++)
-    {
-        setSharedWave(wavesY, threadIdx.y, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, apdq[k]);
-    }
-
-    // Local Reduce over Wave Speeds
-    // Stage 1
-    // Bringing down the number of elements to compare to block size
-    int tid = threadIdx.x + threadIdx.y*VERTICAL_K_BLOCKSIZEX;
-    // See horizontal version for comments
-    waveSpeedsY[tid] = fabs(waveSpeedsY[tid]);
-#pragma unroll
-    for (int i = 1; i < numWaves; i++)
-    {
-        // blockDim.x * blockDim.y is usally a multiple of 32, so there should be no bank conflicts.
-        waveSpeedsY[tid] = fmax(waveSpeedsY[tid], fabs(waveSpeedsY[tid + i*blockSize]));
-    }
-    __syncthreads();
-
-    if (VERTICAL_K_BLOCKSIZE > 64)
-    {
-        if (tid < (VERTICAL_K_BLOCKSIZE+1)/2)
-            waveSpeedsY[tid] = fmax(waveSpeedsY[tid], waveSpeedsY[tid + VERTICAL_K_BLOCKSIZE/2]);
-        __syncthreads();
-    }
-    if (VERTICAL_K_BLOCKSIZE/2 > 64)
-    {
-        if (tid < (VERTICAL_K_BLOCKSIZE+3)/4)
-            waveSpeedsY[tid] = fmax(waveSpeedsY[tid], waveSpeedsY[tid + VERTICAL_K_BLOCKSIZE/4]);
-        __syncthreads();
-    }
-    if (VERTICAL_K_BLOCKSIZE/4 > 64)
-    {
-        if (tid < (VERTICAL_K_BLOCKSIZE+7)/8)
-            waveSpeedsY[tid] = fmax(waveSpeedsY[tid], waveSpeedsY[tid + VERTICAL_K_BLOCKSIZE/8]);
-        __syncthreads();
-    }
-    if (VERTICAL_K_BLOCKSIZE/8 > 64)
-    {
-        if (tid < (VERTICAL_K_BLOCKSIZE+15)/16)
-            waveSpeedsY[tid] = fmax(waveSpeedsY[tid], waveSpeedsY[tid + VERTICAL_K_BLOCKSIZE/16]);
-        __syncthreads();
-    }
-    if (tid < 32)
-        warpReduce<blockSize>(waveSpeedsY, tid);
-
-
-    if (grid_valid && threadIdx.y > 1)
-    {
-#pragma unroll
-        for (int k = 0; k < numStates; k++)
-        {
-            param.setElement_q(row, col, k, param.getElement_q(row, col, k) - dt/param.dy * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX)));
-        }
-    }
-
-    if (tid == 0)
-        param.waveSpeedsY[blockIdx.x + blockIdx.y*gridDim.x] =  waveSpeedsY[0];
-}
-
-// This is a overloaded version of Riemann_vertical_kernel for the case NUMCOEFF = 0
-template <const int numStates, const int numWaves, const unsigned int blockSize, class Riemann, class Limiter>
-__global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
-{
-    // Every threads gets a unique interface
-    // a thread at (row, col) treats the interface between cells
-    // (row+1,col)
-    // -----------  << thread (row,col)
-    // (row  ,col)
-    int col = threadIdx.x + blockIdx.x*blockDim.x;
-    int row = threadIdx.y + blockIdx.y*blockDim.y - 3*blockIdx.y;
-
-    real dt = param.dt;
-
-    real apdq[numStates];
-    real amdq[numStates];
-
-    SharedMemory<real> smem;
-    real* wavesY = smem.getPointer();
-    real* waveSpeedsY = smem.getPointer(blockSize*numWaves*numStates);
-
-    real upCell[numStates];		
-    real downCell[numStates];	
-
-    real* upCoeff = 0;
-    real* downCoeff = 0;
+    staticArrayReal<numCoeff> upCoeff;
+    staticArrayReal<numCoeff> downCoeff;
 
     if (blockIdx.x == gridDim.x-1 || blockIdx.y == gridDim.y-1)
     {
@@ -864,13 +555,19 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
     // Riemann solver
     if (grid_valid)	// if there are 512 cells in Y 511 threads are in use
     {
-#pragma unroll
+        #pragma unroll
         for (int i = 0; i < numStates; i++)
         {
-            //downCell[i] = param.getElement_qNew(row,col,i);	// use original data
-            //upCell[i] = param.getElement_qNew(row+1,col,i);
             downCell[i] = param.getElement_q(row,col,i);	// use intermediate data
             upCell[i] = param.getElement_q(row+1,col,i);
+        }
+        if (numCoeff > 0) {
+            #pragma unroll
+            for (int i = 0; i < numCoeff; i++)
+            {
+                downCoeff[i] = param.getElement_coeff(row,col,i);
+                upCoeff[i] = param.getElement_coeff(row+1,col,i);
+            }
         }
         Riemann_solver_v(	downCell,			// input comes from global memory
                 upCell,				//
@@ -892,8 +589,8 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
 #pragma unroll
         for (int k = 0; k < numStates; k++)
         {
-            amdq[k] = 0;
-            apdq[k] = 0;
+            amdq[k] = 0.0;
+            apdq[k] = 0.0;
         }
         if (!param.second_order)
         {
@@ -957,7 +654,7 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
 
     if (grid_valid && threadIdx.y > 1)
     {
-#pragma unroll
+        #pragma unroll
         for (int k = 0; k < numStates; k++)
         {
             param.setElement_q(row, col, k, param.getElement_q(row, col, k) - dt/param.dy * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX)));
@@ -990,7 +687,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         // allocate param.waveSpeedsX here
         param.alloc_waveSpeedsX(dimGrid_hR.x * dimGrid_hR.y);
 
-        Riemann_horizontal_kernel<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size,stream>>>(param, Riemann_pointwise_solver_h, limiter_phi);
+        Riemann_horizontal_kernel<NUMSTATES, NUMWAVES, NUMCOEFF, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size,stream>>>(param, Riemann_pointwise_solver_h, limiter_phi);
         // Riemann_horizontal_kernel_warp<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
         CHKERR();
 
@@ -1021,7 +718,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
 
         // allocate param.waveSpeedsY here
         param.alloc_waveSpeedsY(dimGrid_vR.x * dimGrid_vR.y);
-        Riemann_vertical_kernel<NUMSTATES, NUMWAVES, VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY, Riemann_v, Limiter><<<dimGrid_vR, dimBlock_vR,shared_mem_size,stream>>>(param, Riemann_pointwise_solver_v, limiter_phi);
+        Riemann_vertical_kernel<NUMSTATES, NUMWAVES, NUMCOEFF, VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY, Riemann_v, Limiter><<<dimGrid_vR, dimBlock_vR,shared_mem_size,stream>>>(param, Riemann_pointwise_solver_v, limiter_phi);
         CHKERR();
 
 
@@ -1094,8 +791,8 @@ extern "C" void call_C_limited_riemann_update(
             NULL, NULL, coefficients, 
             cfl_grid, id, dev_id); 
 
-    param.setOrderOfAccuracy(1);
-    // param.setOrderOfAccuracy(2);
+    // param.setOrderOfAccuracy(1);
+    param.setOrderOfAccuracy(2);
 
     // acoustics_homo_2d_horizontal_warp acoustic_h;
     acoustics_homo_2d_horizontal acoustic_h;

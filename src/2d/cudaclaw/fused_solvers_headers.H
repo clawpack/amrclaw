@@ -4,6 +4,7 @@
 #define EPSILON (real)0.00000001f	// flying constant, however this is our epsilon
 #include "real.H"
 #include "common.H"
+#include "staticArray.H"
 #include <cmath>
 #include <cassert>
 
@@ -106,9 +107,11 @@ inline __device__ void setSharedSpeed(real* sharedData, int row, int col, int wa
 struct acoustics_homo_2d_horizontal
 {
         // u_left and u_right are empty and not used here
-	__device__ void operator() (real* q_left, real* q_right, real* u_left, real* u_right,			// input
-								int row, int col, int numStates, int numWaves,
-								real* wave, real* waveSpeeds)										// output
+        template <const size_t N>
+        __device__ void operator() (real* q_left, real* q_right, 
+                staticArrayReal<N>& u_left, staticArrayReal<N>& u_right,
+                int row, int col, int numStates, int numWaves,
+                real* wave, real* waveSpeeds)										// output
 	{
                 assert(NUMCOEFF == 0); // this is the case for homogeneous acoustics
 		real c = sqrt(BULK/RHO);
@@ -191,9 +194,11 @@ struct acoustics_horizontal
 };
 struct acoustics_homo_2d_vertical
 {
-	__device__ void operator() (real* q_left, real* q_right, real* u_left, real* u_right,			// input
-								int row, int col, int numStates, int numWaves,
-								real* wave, real* waveSpeeds)										// output
+        template<const size_t N>
+        __device__ void operator() (real* q_left, real* q_right, 
+                staticArrayReal<N>& u_left, staticArrayReal<N>& u_right,
+                int row, int col, int numStates, int numWaves,
+                real* wave, real* waveSpeeds)										// output
 	{
                 assert(NUMCOEFF == 0); // this is the case for homogeneous acoustics
 		real c = sqrt(BULK/RHO);
