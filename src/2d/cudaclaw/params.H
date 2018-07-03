@@ -171,11 +171,13 @@ class pdeParam
             coefficients[getIndex_coeff(row, column, coeff)] = setValue;
         }
 
-        inline void alloc_waveSpeedsX(size_t sz) {
+        inline void alloc_waveSpeedsX(size_t nWords) {
+            size_t sz = nWords*sizeof(real);
             waveSpeedsX = (real*) clawpack_mempool_alloc_gpu_hold(sz, this->dev_id, this->id);
         }
 
-        inline void alloc_waveSpeedsY(size_t sz) {
+        inline void alloc_waveSpeedsY(size_t nWords) {
+            size_t sz = nWords*sizeof(real);
             waveSpeedsY = (real*) clawpack_mempool_alloc_gpu_hold(sz, this->dev_id, this->id);
         }
 
