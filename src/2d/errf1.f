@@ -67,6 +67,10 @@ c
 c Only check errors if flag hasn't been set yet.
 c If flag == DONTFLAG then refinement is forbidden by a region,
 c if flag == DOFLAG checking is not needed
+
+c Note: here rctcrse is being used as a temporary flag
+c the fine grid amrflags array is stored in rctflg, and will be
+c updated based on rctcrse at the end of this routine
           if(rctflg(ifine,jfine) == UNSET
      .         .or. rctflg(ifine+1,jfine) == UNSET
      .         .or. rctflg(ifine,jfine+1) == UNSET
