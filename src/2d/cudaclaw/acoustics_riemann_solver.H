@@ -55,22 +55,6 @@ struct acoustics_homo_2d_horizontal
         setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha2*z);
         setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, alpha2);
         setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
-
-        // if (verbose) 
-        // {
-        //     for (int w = 0; w < numWaves; ++w)
-        //     {
-        //         for (int k = 0; k < numStates; ++k) 
-        //         {
-        //             real main_wave = getSharedWave(wave, row, col, w, k, numWaves, numStates, blockDim.y, blockDim.x);
-        //             if (isnan(main_wave)) {
-        //                 printf("find NaN in sharedWave in horizontal riemann solver. col=%d, row=%d, w=%d, k=%d, main_wave=%f. \n", 
-        //                         col, row, w, k, main_wave
-        //                         );
-        //             }
-        //         }
-        //     }
-        // }
     }
 };
 struct acoustics_homo_2d_horizontal_warp
@@ -158,22 +142,6 @@ struct acoustics_homo_2d_vertical
         setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha2*z);
         setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
         setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, alpha2);
-
-        // if (verbose) 
-        // {
-        //     for (int w = 0; w < numWaves; ++w)
-        //     {
-        //         for (int k = 0; k < numStates; ++k) 
-        //         {
-        //             real main_wave = getSharedWave(wave, row, col, w, k, numWaves, numStates, blockDim.y, blockDim.x);
-        //             if (isnan(main_wave)) {
-        //                 printf("find NaN in sharedWave in vertical riemann solver. col=%d, row=%d, w=%d, k=%d, main_wave=%f. \n", 
-        //                         col, row, w, k, main_wave
-        //                         );
-        //             }
-        //         }
-        //     }
-        // }
     }
 };
 struct acoustics_vertical

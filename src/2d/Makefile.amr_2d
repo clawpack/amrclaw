@@ -126,6 +126,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/griddomshrink.f \
   $(AMRLIB)/griddomup.f \
   $(AMRLIB)/baseCheck.f \
+  $(AMRLIB)/check4nans.f90 \
   $(AMRLIB)/init_alloc.f90 \
   $(AMRLIB)/restrt_alloc.f90 \
   $(AMRLIB)/resize_alloc.f90

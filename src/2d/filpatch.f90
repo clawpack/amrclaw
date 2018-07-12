@@ -59,7 +59,7 @@
 !! \param ihi global *i* index of right-most cell of this patch 
 !! \param jlo global *j* index of lower-most cell of this patch 
 !! \param jhi global *j* index of upper-most cell of this patch 
-!! \param patchOnly This is 1) false if this is a first level call to filrecur() and won't set bounday cells outside domain; 2) true
+!! \param patchOnly This is 1) false if this is a first level call to filrecur() and won't set boundary cells outside domain; 2) true
 !!if this is a second or higher level (recursive) call to filrecur() and will call bc2amr() to get values for cells outside domain
 !!(these cells are only for interpolation to fill cells in first level call to filrecur()
 !! \param msrc index of the grid 
