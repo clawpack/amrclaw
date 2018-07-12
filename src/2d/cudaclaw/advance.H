@@ -13,7 +13,6 @@
 #include "staticArray.H"
 #include "acoustics_riemann_solver.H"
 
-#include <assert.h>
 #include <cmath>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
@@ -24,7 +23,7 @@
 
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY>
-inline __device__ void first_order_update(real* waves, real* waveSpeeds, real* amdq, real* apdq, int row, int col)
+inline __device__ void first_order_update(real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col)
 {
 #pragma unroll
     for (int w = 0; w < numWaves; w++)
@@ -117,7 +116,7 @@ inline __device__ void second_order_update_vertical(pdeParam &param, real* waves
 }
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
-inline __device__ void first_second_order_update_horizontal(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, int row, int col, real dt, Limiter phi)
+inline __device__ void first_second_order_update_horizontal(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
 {
     real F_tilde[numStates];
     for (int k = 0; k < numStates; k++){
@@ -137,8 +136,15 @@ inline __device__ void first_second_order_update_horizontal(pdeParam &param, rea
             {
                 real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
                 amdq[k] += waveSpeed * wave_state;
-                F_tilde[k] += -(real)0.5f*waveSpeed*(1+(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
+                F_tilde[k] += -(real)0.5f*waveSpeed*(1+(param.dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
             }
+//             if (verbose) {
+//                 if (isnan(limiting_factor)) {
+//                     printf("find NaN in limiting_factor. waveSpeed < 0. grid=%d. col=%d, row=%d in h kernel.\n", 
+//                             param.id, col, row
+//                             );
+//                 }
+//             }
         }
         else
         {
@@ -149,19 +155,40 @@ inline __device__ void first_second_order_update_horizontal(pdeParam &param, rea
             {
                 real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
                 apdq[k] += waveSpeed * wave_state;
-                F_tilde[k] += (real)0.5f*waveSpeed*(1-(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
+                F_tilde[k] += (real)0.5f*waveSpeed*(1-(param.dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
             }
+//             if (verbose) {
+//                 if (isnan(limiting_factor)) {
+//                     printf("find NaN in limiting_factor. waveSpeed < 0. grid=%d. col=%d, row=%d in h kernel.\n", 
+//                             param.id, col, row
+//                             );
+//                 }
+//             }
         }
     }
+
+
 #pragma unroll
     for (int k = 0; k < numStates; k++) {
+        // if (verbose) {
+        //     if (isnan(amdq[k]) || isnan(apdq[k])) {
+        //         printf("find NaN in asdq before limiting. grid=%d. col=%d, row=%d, k=%d in h kernel. amdq=%f. apdq=%f.\n", 
+        //                 param.id, col, row, k, amdq[k], apdq[k]
+        //                 );
+        //     }
+        //     if (isnan(F_tilde[k])) {
+        //         printf("find NaN in F_tilde. grid=%d. col=%d, row=%d, k=%d in h kernel. F_tilde=%f.\n", 
+        //                 param.id, col, row, k, F_tilde[k]
+        //                 );
+        //     }
+        // }
         amdq[k] += F_tilde[k];
         apdq[k] -= F_tilde[k];
     }
 }
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
-inline __device__ void first_second_order_update_vertical(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, int row, int col, real dt, Limiter phi)
+inline __device__ void first_second_order_update_vertical(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
 {
     real F_tilde[numStates];
     for (int k = 0; k < numStates; k++){
@@ -174,13 +201,20 @@ inline __device__ void first_second_order_update_vertical(pdeParam &param, real*
 
         if (waveSpeed < claw_zero)
         {
-            real limiting_factor = limiting_shared_v_d<numStates, numWaves, blockSizeX, blockSizeY>(phi, waves, row, col, w);
+            real limiting_factor = limiting_shared_v_d<numStates, numWaves, blockSizeX, blockSizeY>(param, phi, waves, row, col, w);
 #pragma unroll
             for (int k = 0; k < numStates; k++)
             {
                 real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
-                F_tilde[k] += -(real)0.5f*waveSpeed*(1+(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
+                F_tilde[k] += -(real)0.5f*waveSpeed*(1+(param.dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
                 amdq[k] += waveSpeed * wave_state;
+            }
+            if (verbose) {
+                if (isnan(limiting_factor)) {
+                    printf("find NaN in limiting_factor. waveSpeed < 0. grid=%d, blockIdx.x=%d, blockIdx.y=%d, row=%d, col=%d, in v kernel.\n", 
+                            param.id, blockIdx.x, blockIdx.y, row, col
+                            );
+                }
             }
         }
         else
@@ -190,14 +224,33 @@ inline __device__ void first_second_order_update_vertical(pdeParam &param, real*
             for (int k = 0; k < numStates; k++)
             {
                 real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
-                F_tilde[k] += (real)0.5f*waveSpeed*(1-(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
+                F_tilde[k] += (real)0.5f*waveSpeed*(1-(param.dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
                 apdq[k] += waveSpeed * wave_state;
+            }
+            if (verbose) {
+                if (isnan(limiting_factor)) {
+                    printf("find NaN in limiting_factor. waveSpeed > 0. grid=%d, blockIdx.x=%d, blockIdx.y=%d, row=%d, col=%d, in v kernel.\n", 
+                            param.id, blockIdx.x, blockIdx.y, row, col
+                            );
+                }
             }
         }
     }
 
 #pragma unroll
     for (int k = 0; k < numStates; k++) {
+//         if (verbose) {
+//             if (isnan(amdq[k]) || isnan(apdq[k])) {
+//                 printf("find NaN in asdq before limiting. grid=%d. col=%d, row=%d, k=%d in v kernel. amdq=%f. apdq=%f.\n", 
+//                         param.id, col, row, k, amdq[k], apdq[k]
+//                         );
+//             }
+//             if (isnan(F_tilde[k])) {
+//                 printf("find NaN in F_tilde. grid=%d. col=%d, row=%d, k=%d in v kernel. F_tilde=%f.\n", 
+//                         param.id, col, row, k, F_tilde[k]
+//                         );
+//             }
+//         }
         amdq[k] += F_tilde[k];
         apdq[k] -= F_tilde[k];
     }
@@ -272,9 +325,13 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
                 wavesX,
                 waveSpeedsX);
     }
+    __syncthreads();
 
     // idle the first and the last thread since we don't need to limit the first and the last wave in this block
-    grid_valid = grid_valid && ( 0 < threadIdx.x && threadIdx.x < HORIZONTAL_K_BLOCKSIZEX-1 );
+    // should also handle the edge case:  idle the last effective thread in the last block in x direction
+    grid_valid = grid_valid && 
+        (0 < threadIdx.x && threadIdx.x < (HORIZONTAL_K_BLOCKSIZEX-1) && col < (param.cellsX-2));
+
     if (grid_valid)
     {
 #pragma unroll
@@ -285,12 +342,32 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
         }
         if (!param.second_order)	// simple first order scheme
         {
-            first_order_update<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY> (wavesX, waveSpeedsX, amdq, apdq, threadIdx.y, threadIdx.x);
+            first_order_update<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY>
+                (wavesX, waveSpeedsX, amdq, apdq, threadIdx.y, threadIdx.x);
         }
         else
         {
+            // if (verbose) 
+            // {
+            //     int row = threadIdx.y;
+            //     int col = threadIdx.x;
+            //     for (int w = 0; w < numWaves; ++w)
+            //     {
+            //         for (int k = 0; k < numStates; ++k) 
+            //         {
+            //             real main_wave = getSharedWave(wavesX, row, col, w, k, numWaves, numStates, blockDim.y, blockDim.x);
+            //             real left_wave  = getSharedWave(wavesX, row, col-1, w, k, numWaves, numStates, blockDim.y, blockDim.x);
+            //             real right_wave  = getSharedWave(wavesX, row, col+1, w, k, numWaves, numStates, blockDim.y, blockDim.x);
+            //             if (isnan(main_wave) || isnan(left_wave) || isnan(right_wave)) {
+            //                 printf("find NaN in sharedWave before calling update h. row=%d, col=%d, w=%d, k=%d, main_wave=%f, left_wave=%f, right_wave=%f. \n", 
+            //                         row, col, w, k, main_wave, left_wave, right_wave
+            //                         );
+            //             }
+            //         }
+            //     }
+            // }
             first_second_order_update_horizontal<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY> 
-                (param, wavesX, waveSpeedsX, amdq, apdq, threadIdx.y, threadIdx.x, dt, phi);
+                (param, wavesX, waveSpeedsX, amdq, apdq, threadIdx.y, threadIdx.x, phi);
         }
     }
     __syncthreads();
@@ -359,13 +436,26 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
     if (tid < 32)
         warpReduce<blockSize>(waveSpeedsX, tid);
 
+    // if (grid_valid && threadIdx.x > 1 && col < (param.cellsX-2))
     if (grid_valid && threadIdx.x > 1)
     {
 #pragma unroll
         for (int k = 0; k < numStates; k++)
         {
-            param.setElement_q(row, col, k, param.getElement_qNew(row, col, k) - dt/param.dx * (amdq[k] + getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX)));
+            real qq = param.getElement_qNew(row, col, k) - dt/param.dx * (amdq[k] + getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX));
+            param.setElement_q(row, col, k, qq);
+            if (verbose) {
+                if (isnan(qq)) {
+                    printf("find NaN. grid=%d. nx=%d, ny=%d, blockIdx.x=%d, blockIdx.y=%d, row=%d, col=%d, k=%d in h kernel. amdq=%f. apdq=%f.\n", 
+                            param.id, param.cellsX, param.cellsY, blockIdx.x, blockIdx.y,
+                            row, col, k, amdq[k],
+                            getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX)
+                            );
+                }
+            }
         }
+        if (threadIdx.x <= 1 || threadIdx.x >= (blockDim.x-1) || col >= (param.cellsX-1))
+            printf("Error in horizontal kernel.");
     }
 
     if (tid == 0)
@@ -554,7 +644,7 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
     bool grid_valid = row < param.cellsY-1 && col < param.cellsX;
 
     // Riemann solver
-    if (grid_valid)	// if there are 512 cells in Y 511 threads are in use
+    if (grid_valid)
     {
 #pragma unroll
         for (int i = 0; i < numStates; i++)
@@ -582,8 +672,12 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
                 waveSpeedsY);		//
 
     }
+    __syncthreads();
 
-    grid_valid = ( 0 < threadIdx.y && threadIdx.y < VERTICAL_K_BLOCKSIZEY-1 ) && grid_valid;
+    // idle the first and the last thread since we don't need to limit the first and the last wave in this block
+    // should also handle the edge case:  idle the last effective thread in the last block in y direction
+    grid_valid = grid_valid && ( 0 < threadIdx.y && threadIdx.y < VERTICAL_K_BLOCKSIZEY-1 ) 
+        && (row < (param.cellsY-2));
 
     if (grid_valid)
     {
@@ -599,7 +693,26 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
         }
         else	// simple first order scheme
         {
-            first_second_order_update_vertical<numStates, numWaves, VERTICAL_K_BLOCKSIZEX, VERTICAL_K_BLOCKSIZEY>(param, wavesY, waveSpeedsY, amdq, apdq, threadIdx.y, threadIdx.x, dt, phi);
+//             if (verbose) 
+//             {
+//                 int row = threadIdx.y;
+//                 int col = threadIdx.x;
+//                 for (int w = 0; w < numWaves; ++w)
+//                 {
+//                     for (int k = 0; k < numStates; ++k) 
+//                     {
+//                         real main_wave = getSharedWave(wavesY, row,   col, w, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX);
+//                         real aux_wave  = getSharedWave(wavesY, row+1, col, w, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX);
+//                         if (isnan(main_wave) || isnan(aux_wave)) {
+//                             printf("find NaN in sharedWave before calling update v. col=%d, row=%d, w=%d, k=%d, main_wave=%f, aux_wave=%f. \n", 
+//                                     col, row, w, k, main_wave, aux_wave
+//                                     );
+//                         }
+//                     }
+//                 }
+//             }
+            first_second_order_update_vertical<numStates, numWaves, VERTICAL_K_BLOCKSIZEX, VERTICAL_K_BLOCKSIZEY>
+                (param, wavesY, waveSpeedsY, amdq, apdq, threadIdx.y, threadIdx.x, phi);
         }
     }
     __syncthreads();
@@ -653,13 +766,27 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
         warpReduce<blockSize>(waveSpeedsY, tid);
 
 
+    // if (grid_valid && threadIdx.y > 1 && row < (param.cellsY-2))
     if (grid_valid && threadIdx.y > 1)
     {
 #pragma unroll
         for (int k = 0; k < numStates; k++)
         {
-            param.setElement_q(row, col, k, param.getElement_q(row, col, k) - dt/param.dy * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX)));
+            real qq = param.getElement_q(row, col, k) - dt/param.dy * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX));
+            param.setElement_qNew(row, col, k, qq);
+            if (verbose) {
+                if (isnan(qq)) {
+                    printf("find NaN. grid=%d. nx=%d, ny=%d, blockIdx.x=%d, blockIdx.y=%d, row=%d, col=%d, k=%d in v kernel. amdq=%f. apdq=%f.\n", 
+                            param.id, param.cellsX, param.cellsY, blockIdx.x, blockIdx.y,
+                            row, col, k, amdq[k],
+                            getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX)
+                            );
+                }
+            }
         }
+
+        if (threadIdx.y <= 1 || threadIdx.y >= (blockDim.y-1) || row >= (param.cellsY-1))
+            printf("Error in vertical kernel.");
     }
 
     if (tid == 0)
@@ -774,8 +901,8 @@ extern "C" void call_C_limited_riemann_update(
         real* cfls, const int ngrids, 
         const int id, const int dev_id) {
 
-    // actually qNew holds the input old solution
-    // q will have the solution at n+1 after calling this function
+    // actually qNew holds the input old solution as well as new output solution
+    // q is just temporary storage for intermediate solution between x-sweep and y-sweep
 
     real* cfl_grid = cfls+(id-1)*SPACEDIM;
 
@@ -792,7 +919,6 @@ extern "C" void call_C_limited_riemann_update(
             NULL, NULL, coefficients, 
             cfl_grid, id, dev_id); 
 
-    // param.setOrderOfAccuracy(1);
     param.setOrderOfAccuracy(2);
 
     // acoustics_homo_2d_horizontal_warp acoustic_h;

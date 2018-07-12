@@ -9,6 +9,7 @@
 #include "clawpack_device.H"
 #include "clawpack_CUDA_helper.H"
 
+#include <assert.h>
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include <string>
@@ -80,6 +81,9 @@ class pdeParam
                 q(q_), qNew(qNew_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_),
                 coefficients(coefficients_), cfl_grid(cfl_grid_), id(id_), dev_id(dev_id_)
         {
+
+            assert( (cellsX-2*numGhostCells) > 0 );
+            assert( (cellsY-2*numGhostCells) > 0 );
 
             width = endX-startX;
             height = endY-startY;
@@ -179,15 +183,6 @@ class pdeParam
         inline void alloc_waveSpeedsY(size_t nWords) {
             size_t sz = nWords*sizeof(real);
             waveSpeedsY = (real*) clawpack_mempool_alloc_gpu_hold(sz, this->dev_id, this->id);
-        }
-
-
-        inline void free_waveSpeedsX() {
-            clawpack_mempool_free_gpu(this->waveSpeedsX, this->dev_id);
-        }
-
-        inline void free_waveSpeedsY() {
-            clawpack_mempool_free_gpu(this->waveSpeedsY, this->dev_id);
         }
 
         // add cuda callback function to free memory allocated and managed by this pdeParam object

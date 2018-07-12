@@ -188,8 +188,8 @@ protected:
     //! overwrite align_size for GPU memory performance
     static const unsigned int align_size = 256;
     // How many memory in total we allow the GPUMemoryManager to allocate
-    // static const size_t max_heap_size = (size_t) 1024 * 1024 * 1024 * 5.25;
     static const size_t max_heap_size = (size_t) 1024 * 1024 * 1024 * 5.2;
+    // static const size_t max_heap_size = (size_t) 1024 * 1024 * 1024 * 12;
 
     // which GPU's memory does this GPUMemoryManager manage
     int device_id;

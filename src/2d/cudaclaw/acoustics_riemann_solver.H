@@ -33,10 +33,10 @@ struct acoustics_homo_2d_horizontal
 {
     // u_left and u_right are empty and not used here
     template <const size_t N>
-    __device__ void operator() (real* q_left, real* q_right, 
-            staticArrayReal<N>& u_left, staticArrayReal<N>& u_right,
-            int row, int col, int numStates, int numWaves,
-            real* wave, real* waveSpeeds)										// output
+    __device__ void operator() (const real* const q_left, const real* const q_right, 
+            const staticArrayReal<N>& u_left, const staticArrayReal<N>& u_right,
+            const int row, const int col, const int numStates, const int numWaves,
+            real* const wave, real* const waveSpeeds)										// output
     {
         assert(NUMCOEFF == 0); // this is the case for homogeneous acoustics
         real c = sqrt(bulk/rho);
@@ -55,6 +55,22 @@ struct acoustics_homo_2d_horizontal
         setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha2*z);
         setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, alpha2);
         setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
+
+        // if (verbose) 
+        // {
+        //     for (int w = 0; w < numWaves; ++w)
+        //     {
+        //         for (int k = 0; k < numStates; ++k) 
+        //         {
+        //             real main_wave = getSharedWave(wave, row, col, w, k, numWaves, numStates, blockDim.y, blockDim.x);
+        //             if (isnan(main_wave)) {
+        //                 printf("find NaN in sharedWave in horizontal riemann solver. col=%d, row=%d, w=%d, k=%d, main_wave=%f. \n", 
+        //                         col, row, w, k, main_wave
+        //                         );
+        //             }
+        //         }
+        //     }
+        // }
     }
 };
 struct acoustics_homo_2d_horizontal_warp
@@ -120,10 +136,10 @@ struct acoustics_horizontal
 struct acoustics_homo_2d_vertical
 {
     template<const size_t N>
-    __device__ void operator() (real* q_left, real* q_right, 
-            staticArrayReal<N>& u_left, staticArrayReal<N>& u_right,
-            int row, int col, int numStates, int numWaves,
-            real* wave, real* waveSpeeds)										// output
+    __device__ void operator() (const real* const q_left, const real* const q_right, 
+            const staticArrayReal<N>& u_left, const staticArrayReal<N>& u_right,
+            const int row, const int col, const int numStates, const int numWaves,
+            real* const wave, real* const waveSpeeds)										// output
     {
         assert(NUMCOEFF == 0); // this is the case for homogeneous acoustics
         real c = sqrt(bulk/rho);
@@ -132,8 +148,8 @@ struct acoustics_homo_2d_vertical
         setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, -c);
         setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x,  c);
 
-        real alpha1 = ( q_left[0] - q_right[0] + z*(q_right[2] - q_left[2])) / (2*z);	// ( -(pr-pl) + zr(vr-vl) )/ (zl+zr)
-        real alpha2 = ( q_right[0] - q_left[0] + z*(q_right[2] - q_left[2])) / (2*z);	// (  (pr-pl) + zl(vr-vl) )/ (zl+zr)
+        real alpha1 = ( q_left[0] - q_right[0] + z*(q_right[2] - q_left[2])) / (2*z);
+        real alpha2 = ( q_right[0] - q_left[0] + z*(q_right[2] - q_left[2])) / (2*z);
 
         setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, -alpha1*z);
         setSharedWave(wave, row, col, 0, 1, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
@@ -142,6 +158,22 @@ struct acoustics_homo_2d_vertical
         setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha2*z);
         setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
         setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, alpha2);
+
+        // if (verbose) 
+        // {
+        //     for (int w = 0; w < numWaves; ++w)
+        //     {
+        //         for (int k = 0; k < numStates; ++k) 
+        //         {
+        //             real main_wave = getSharedWave(wave, row, col, w, k, numWaves, numStates, blockDim.y, blockDim.x);
+        //             if (isnan(main_wave)) {
+        //                 printf("find NaN in sharedWave in vertical riemann solver. col=%d, row=%d, w=%d, k=%d, main_wave=%f. \n", 
+        //                         col, row, w, k, main_wave
+        //                         );
+        //             }
+        //         }
+        //     }
+        // }
     }
 };
 struct acoustics_vertical

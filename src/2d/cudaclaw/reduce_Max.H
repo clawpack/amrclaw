@@ -1,6 +1,8 @@
 #ifndef __REDUCE_MAX_H__
 #define __REDUCE_MAX_H__
 
+#include "real.H"
+#include <assert.h>
 #include <sm_20_atomic_functions.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,6 +40,7 @@ reduceMax_simplified(real *globalWaves, int size,
     // then go block size by block size take the max of the elements
     if ( size > blockSize )
     {
+        assert(globalWaves[tid] >= claw_zero);
         sharedWaveSpeeds[tid] = globalWaves[tid];
 
         int i = tid;
@@ -51,14 +54,18 @@ reduceMax_simplified(real *globalWaves, int size,
             // in fact the whole reduced waves would fit in shared memory/L1 for medium sized problems
             // L2 has 768KB of memory, for a 1024*1024 grid we have about 16K elements to reduce
             // We do not need to take fabs as it is done in the local reduction stage
+            assert(globalWaves[i+blockSize] >= claw_zero);
             sharedWaveSpeeds[tid] = fmax(sharedWaveSpeeds[tid], globalWaves[i+blockSize]);
             i += blockSize;
         }
     }
     else
     {
-        if (tid < size)
+        if (tid < size) 
+        {
+            assert(globalWaves[tid] >= claw_zero);
             sharedWaveSpeeds[tid] = globalWaves[tid];
+        }
         else
             sharedWaveSpeeds[tid] = claw_zero;
     }

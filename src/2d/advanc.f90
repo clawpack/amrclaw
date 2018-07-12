@@ -277,6 +277,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ! copy q to GPU
         !$OMP CRITICAL(launch)
         cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync(grid_data_d_new(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToDevice, get_cuda_stream(id,device_id))
         ! cudaResult = cudaMemcpy(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice)
         
         if (associated(fflux_hh(mptr)%ptr)) then
@@ -332,7 +333,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             cfls_d, numgrids(level), &
             id, device_id) 
 
-        cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d_new(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
 
 
         !$OMP END CRITICAL(launch)
@@ -565,8 +566,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_stop(timer_fluxsv_fluxad)
 #endif
 
-
-
 #else
     !$OMP DO SCHEDULE (DYNAMIC,1)
     do j = 1, numgrids(level)
@@ -644,7 +643,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid      
     !$OMP END MASTER 
 
-    !$OMP END PARALLEL 
+!$OMP END PARALLEL 
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_advanc)

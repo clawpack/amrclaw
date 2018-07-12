@@ -5,7 +5,7 @@ module parallel_advanc_module
 #ifdef CUDA
         subroutine stepgrid_cudaclaw(cellsX, cellsY, ghostCells, &
             startX, endX, startY, endY, dt, &
-            qNew, q, &
+            q, qNew, &
             coefficients, &
             cfls_d, ngrids, id, dev_id) &
             bind(C,NAME='call_C_limited_riemann_update')

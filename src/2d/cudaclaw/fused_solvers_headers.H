@@ -7,8 +7,13 @@
 #include <cmath>
 #include <cassert>
 
+#define epsilon 0.00000001
+
 using std::sqrt;
-constexpr real epsilon = 0.00000001;
+
+// constexpr real epsilon = 0.00000001;
+
+// constexpr real epsilon = std::numeric_limits<double>::min(); // The lowest positive double value
 
 // The Waves and Wave Speeds lie in the shared memory.
 // The concern at this stage is not coalescing and alignment (not as it would be in global)
@@ -60,7 +65,7 @@ int getIndex_SharedWave(int row, int col, int wave, int state, int numWaves, int
 }
 
 inline __device__ 
-real &getSharedWave(real* sharedData, int row, int col, int wave, int state, int numWaves, int numStates, int blockHeight, int blockWidth)
+real &getSharedWave(real* sharedData, const int row, const int col, const int wave, const int state, const int numWaves, const int numStates, const int blockHeight, const int blockWidth)
 {
     return sharedData[getIndex_SharedWave(row, col, wave, state, numWaves, numStates, blockHeight, blockWidth)];
 }
@@ -85,7 +90,7 @@ int getIndex_SharedSpeed(int row, int col, int wave, int numWaves, int blockHeig
     //return (wave*blockWidth*blockHeight + col*blockHeight + row);
 }
 inline __device__ 
-real &getSharedSpeed(real* sharedData, int row, int col, int wave, int numWaves, int blockHeight, int blockWidth)
+real &getSharedSpeed(real* sharedData, const int row, const int col, const int wave, const int numWaves, const int blockHeight, const int blockWidth)
 {
     return sharedData[getIndex_SharedSpeed(row, col, wave, numWaves, blockHeight, blockWidth)];
 }
@@ -116,6 +121,20 @@ __device__ real limiting_shared_h_l (Limiter phi, real* waves, int row, int col,
         aux_wave_dot_main_wave += aux_wave*main_wave;
     }
 
+    for (int i = 0; i < numStates; i++)
+    {
+        main_wave = getSharedWave(waves, row,   col, waveNum, i, numWaves, numStates, blockSizeY, blockSizeX);
+        aux_wave  = getSharedWave(waves, row, col+1, waveNum, i, numWaves, numStates, blockSizeY, blockSizeX);
+        // if (verbose) 
+        // {
+        //     if (isnan(main_wave) || isnan(aux_wave)) {
+        //         printf("find NaN in sharedWave in limiter_h_l. col=%d, row=%d, iStates=%d, main_wave=%f, aux_wave=%f. \n", 
+        //                 col, row, i, main_wave, aux_wave
+        //                 );
+        //     }
+        // }
+    }
+
     if (main_wave_norm_square < epsilon)
         return (real)1.0f;
     return phi(aux_wave_dot_main_wave/main_wave_norm_square);
@@ -136,6 +155,20 @@ __device__ real limiting_shared_h_r (Limiter phi, real* waves, int row, int col,
 
         main_wave_norm_square += main_wave*main_wave;
         aux_wave_dot_main_wave += aux_wave*main_wave;
+    }
+
+    for (int i = 0; i < numStates; i++)
+    {
+        main_wave = getSharedWave(waves, row,   col, waveNum, i, numWaves, numStates, blockSizeY, blockSizeX);
+        aux_wave  = getSharedWave(waves, row, col-1, waveNum, i, numWaves, numStates, blockSizeY, blockSizeX);
+        // if (verbose) 
+        // {
+        //     if (isnan(main_wave) || isnan(aux_wave)) {
+        //         printf("find NaN in sharedWave in limiter_h_r. col=%d, row=%d, iStates=%d, main_wave=%f, aux_wave=%f. \n", 
+        //                 col, row, i, main_wave, aux_wave
+        //                 );
+        //     }
+        // }
     }
 
     if (main_wave_norm_square < epsilon)
@@ -160,19 +193,40 @@ __device__ real limiting_shared_v_u (Limiter phi, real* waves, int row, int col,
         aux_wave_dot_main_wave += aux_wave*main_wave;
     }
 
+    for (int i = 0; i < numStates; i++)
+    {
+        main_wave = getSharedWave(waves, row,   col, waveNum, i, numWaves, numStates, blockSizeY, blockSizeX);
+        aux_wave  = getSharedWave(waves, row-1, col, waveNum, i, numWaves, numStates, blockSizeY, blockSizeX);
+        // if (verbose)
+        // {
+        //     if (isnan(main_wave) || isnan(aux_wave)) {
+        //         printf("find NaN in sharedWave in limiter_v_u. col=%d, row=%d, iStates=%d, main_wave=%f, aux_wave=%f. \n", 
+        //                 col, row, i, main_wave, aux_wave
+        //                 );
+        //     }
+        // }
+    }
+
     if (main_wave_norm_square < epsilon)
         return (real)1.0f;
     return phi(aux_wave_dot_main_wave/main_wave_norm_square);
 }
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
-__device__ real limiting_shared_v_d (Limiter phi, real* waves, int row, int col, int waveNum)
+__device__ real limiting_shared_v_d (pdeParam& param, Limiter phi, real* waves, int row, int col, int waveNum)
 {
     real main_wave = getSharedWave(waves, row,   col, waveNum, 0, numWaves, numStates, blockSizeY, blockSizeX);
     real aux_wave  = getSharedWave(waves, row+1, col, waveNum, 0, numWaves, numStates, blockSizeY, blockSizeX);
     real main_wave_norm_square = main_wave*main_wave;
     real aux_wave_dot_main_wave = aux_wave*main_wave;
-#pragma unroll
+
+    if (isnan(main_wave) || isnan(aux_wave)) {
+        printf("find NaN in SharedWave in limiter_v_d. grid=%d, row=%d, col=%d, main_wave=%f, aux_wave=%f.\n", 
+                param.id, row, col, main_wave, aux_wave
+              );
+    }
+
+    #pragma unroll
     for (int i = 1; i < numStates; i++)
     {
         main_wave = getSharedWave(waves, row,   col, waveNum, i, numWaves, numStates, blockSizeY, blockSizeX);
@@ -180,11 +234,24 @@ __device__ real limiting_shared_v_d (Limiter phi, real* waves, int row, int col,
 
         main_wave_norm_square += main_wave*main_wave;
         aux_wave_dot_main_wave += aux_wave*main_wave;
+
+        if (isnan(main_wave) || isnan(aux_wave)) {
+            printf("find NaN in SharedWave in limiter_v_d. grid=%d, row=%d, col=%d, main_wave=%f, aux_wave=%f.\n", 
+                    param.id, row, col, main_wave, aux_wave
+                  );
+        }
     }
 
     if (main_wave_norm_square < epsilon)
         return (real)1.0f;
-    return phi(aux_wave_dot_main_wave/main_wave_norm_square);
+    real result = phi(aux_wave_dot_main_wave/main_wave_norm_square);
+
+    if (isnan(result)) {
+        printf("find NaN in limiting_shared_v_d. grid=%d, row=%d, col=%d, numerator=%f, denominator=%f.\n", 
+                param.id, row, col, aux_wave_dot_main_wave, main_wave_norm_square
+              );
+    }
+    return result;
 }
 ////////////////////////////////////////////////////////////////////
 
