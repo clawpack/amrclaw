@@ -367,12 +367,23 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
 
     if (grid_valid && threadIdx.x > 1)
     {
-#pragma unroll
+        #pragma unroll
         for (int k = 0; k < numStates; k++)
         {
             param.setElement_q(row, col, k, 
                 param.getElement_qNew(row, col, k) - dt/param.dx * (amdq[k] + getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX))
                     );
+        }
+    }
+    else // copy the remaining cells (ghost cells) to qNew, which is required by the vertical kernel
+    {
+        if (col < 2 || (col > param.cellsX-3 && col < param.cellsX) )
+        {
+            #pragma unroll
+            for (int k = 0; k < numStates; k++)
+            {
+                param.setElement_q(row, col, k, param.getElement_qNew(row, col, k));
+            }
         }
     }
 
@@ -381,6 +392,7 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
 }
 
 // Riemann_horizontal_kernel using shuffle instruction within a warp
+// Only 1st order
 template <const int numStates, const int numWaves, const unsigned int blockSize, class Riemann, class Limiter>
 __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 {
@@ -441,7 +453,7 @@ __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_s
     }
 
     // idle the first and the last thread since we don't need to limit the first and the last wave in this block
-    grid_valid = grid_valid && ( 0 < threadIdx.x && threadIdx.x < HORIZONTAL_K_BLOCKSIZEX-1 );
+    grid_valid = grid_valid && ( 0 < threadIdx.x && threadIdx.x < HORIZONTAL_K_BLOCKSIZEX-1 && col < param.cellsX-2);
     __syncthreads();
 
     // write the apdq to shared memory

@@ -260,7 +260,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call cpu_timer_start(timer_memory)
 #endif
         call gpu_allocate(grid_data_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
-        call gpu_allocate(grid_data_d_new(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        call gpu_allocate(grid_data_d_copy2(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         call gpu_allocate(aux_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         call gpu_allocate(fms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         call gpu_allocate(fps_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
@@ -277,8 +277,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ! copy q to GPU
         !$OMP CRITICAL(launch)
         cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
-        cudaResult = cudaMemcpyAsync(grid_data_d_new(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToDevice, get_cuda_stream(id,device_id))
-        ! cudaResult = cudaMemcpy(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice)
         
         if (associated(fflux_hh(mptr)%ptr)) then
             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
@@ -328,7 +326,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 ! test the new cudaclaw function here
         call stepgrid_cudaclaw(mitot,mjtot,nghost, &
             xlow, xlow+hx*mitot, ylow, ylow+hy*mjtot, delt, &
-            grid_data_d_new(mptr)%ptr, grid_data_d(mptr)%ptr, &
+            grid_data_d_copy2(mptr)%ptr, grid_data_d(mptr)%ptr, &
             aux_d(mptr)%ptr, &
             cfls_d, numgrids(level), &
             id, device_id) 
@@ -519,7 +517,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call cpu_deallocate_pinned(grid_data(mptr)%ptr)
 
         call gpu_deallocate(grid_data_d(mptr)%ptr,device_id)
-        call gpu_deallocate(grid_data_d_new(mptr)%ptr,device_id)
+        call gpu_deallocate(grid_data_d_copy2(mptr)%ptr,device_id)
         call gpu_deallocate(aux_d(mptr)%ptr,device_id)
         call gpu_deallocate(fms_d(mptr)%ptr,device_id)
         call gpu_deallocate(fps_d(mptr)%ptr,device_id)
@@ -648,6 +646,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef PROFILE
     call cpu_timer_stop(timer_advanc)
 #endif
+    print *, "advance level: ", level
     return
 end subroutine advanc
     !

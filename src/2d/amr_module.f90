@@ -268,7 +268,7 @@ module amr_module
     type(cpu_3d_real_ptr_type) :: grid_data(maxgr)
 
     type(gpu_3d_real_ptr_type) :: grid_data_d(maxgr)
-    type(gpu_3d_real_ptr_type) :: grid_data_d_new(maxgr)
+    type(gpu_3d_real_ptr_type) :: grid_data_d_copy2(maxgr)
     type(gpu_3d_real_ptr_type) :: aux_d(maxgr)
     type(gpu_3d_real_ptr_type) :: fms_d(maxgr)
     type(gpu_3d_real_ptr_type) :: fps_d(maxgr)
