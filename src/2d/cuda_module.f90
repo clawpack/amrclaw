@@ -111,11 +111,11 @@ contains
 
         cudaResult = cudaSetDevice(device_id)
         call check_cuda_error(cudaResult)
-        if (CLAW_REAL .eq. 8) then
+        #if (CLAW_REAL == 8)
             cudaResult = cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte)
-        else 
+        #else 
             cudaResult = cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeFourByte)
-        endif
+        #endif
 
         print *, 'Use the GPU with id: ',device_id
 

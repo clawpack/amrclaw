@@ -265,11 +265,13 @@ module amr_module
     type(gpu_2d_int_ptr_type), allocatable, device :: cflux_dd(:)
 
     ! These are in SoA format, namely q(i,j,ivar)
-    type(cpu_3d_real_ptr_type) :: grid_data(maxgr)
+    ! type(cpu_3d_real_ptr_type) :: grid_data(maxgr)
 
     type(gpu_3d_real_ptr_type) :: grid_data_d(maxgr)
     type(gpu_3d_real_ptr_type) :: grid_data_d_copy2(maxgr)
     type(gpu_3d_real_ptr_type) :: aux_d(maxgr)
+
+    ! TODO: remove these once step2_cuda_module is no longer used.
     type(gpu_3d_real_ptr_type) :: fms_d(maxgr)
     type(gpu_3d_real_ptr_type) :: fps_d(maxgr)
     type(gpu_3d_real_ptr_type) :: gms_d(maxgr)
@@ -294,6 +296,9 @@ module amr_module
     !real(CLAW_REAL), allocatable, target, dimension(:) :: storage
     !real(CLAW_REAL), pointer, dimension(:) :: alloc   ! old way, changed mjb Sept. 2014
     real(CLAW_REAL), allocatable, dimension(:) :: alloc    ! new way, use allocatable, not pointer
+#ifdef CUDA
+    attributes(pinned) :: alloc
+#endif
     integer memsize
        
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\

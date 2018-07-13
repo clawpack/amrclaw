@@ -91,7 +91,8 @@ public:
     void useDevice(int dev_id) {device_id = dev_id;}
 
     //! The default memory hunk size to grab from the heap.
-    enum { DefaultHunkSize = 1024*1024*1024};
+    static constexpr size_t _GB = 1024*1024*1024;
+    static constexpr size_t DefaultHunkSize = 5*_GB;
 
     /**
     * \brief Given a minimum required memory block of sz bytes, this returns

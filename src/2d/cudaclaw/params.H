@@ -5,6 +5,7 @@
 
 #include "real.H"
 #include "error.H"
+#include "common.H"
 #include "clawpack_mempool.H"
 #include "clawpack_device.H"
 #include "clawpack_CUDA_helper.H"
@@ -126,9 +127,14 @@ class pdeParam
         __device__ __host__ 
         inline int getIndex_q(int row, int column, int state)
         {
-            // Usual C/C++ row major order
+            // column => cellsX, row => cellsY
+            //
+            // SOA
             // state is the slowest moving dimension now, then row, then column
-            return (state*cellsX*cellsY + row*cellsX + column);
+            // return (state*cellsX*cellsY + row*cellsX + column);
+            //
+            // AOS
+            return (state + column*NUMSTATES + row*NUMSTATES*cellsX);
         }
         inline __device__ real &getElement_q(int row, int column, int state)
         {
@@ -143,9 +149,14 @@ class pdeParam
         // Dictates how the memory layout for qNew will be
         inline __device__ int getIndex_qNew(int row, int column, int state)
         {
-            // Usual C/C++ row major order
+            // column => cellsX, row => cellsY
+            //
+            // SOA
             // state is the slowest moving dimension now, then row, then column
-            return (state*cellsX*cellsY + row*cellsX + column);
+            // return (state*cellsX*cellsY + row*cellsX + column);
+            //
+            // AOS
+            return (state + column*NUMSTATES + row*NUMSTATES*cellsX);
         }
         inline __device__ real &getElement_qNew(int row, int column, int state)
         {

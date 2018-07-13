@@ -143,7 +143,7 @@ contains
         format_string="('    Wall Time (seconds)          Percentage (%)        # of Calls')"
         write(*,format_string)
         write(outunit,format_string)
-        do i = 1, max_cpu_timers
+        do i = 0, max_cpu_timers
             if (cpu_timers(i)%used) then
                 format_string = "('"//trim(cpu_timers(i)%timer_name)//": ')"
                 write(*,format_string)

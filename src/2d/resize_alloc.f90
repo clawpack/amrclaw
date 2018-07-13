@@ -35,7 +35,7 @@ subroutine resize_storage(new_size,status)
 #ifdef CUDA
         allocate(new_storage(new_size),STAT=status, pinned=plog)
         if (.not. plog) then
-            print *, "Warning: allocating pinned memory in init_alloc() failed"
+            print *, "Warning: allocating pinned memory in resize_storage() failed"
         endif
 #else
         allocate(new_storage(new_size),STAT=status)

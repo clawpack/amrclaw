@@ -29,16 +29,18 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use profiling_module
 #endif
 #endif
-    implicit real(CLAW_REAL) (a-h,o-z)
+    implicit none
 
 
-    logical    vtime
+    logical vtime
     integer omp_get_thread_num, omp_get_max_threads
     integer mythread/0/, maxthreads/1/
     integer listgrids(numgrids(level))
     integer clock_start, clock_finish, clock_rate
     integer clock_startStepgrid,clock_startBound,clock_finishBound
-    real(CLAW_REAL) hx,hy,delt
+    integer :: level, levst, mptr, locsvq
+    integer :: nx, ny, mitot, mjtot, nvar, naux, lenbc, ntot
+    real(CLAW_REAL) hx,hy,delt, dtnew, dtlevnew, time
     real(CLAW_REAL) cpu_start, cpu_finish
     real(CLAW_REAL) cpu_startBound, cpu_finishBound
     real(CLAW_REAL) cpu_startStepgrid, cpu_finishStepgrid
@@ -53,9 +55,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     real(CLAW_REAL), dimension(:,:), pointer, contiguous :: cfls
     real(CLAW_REAL), dimension(:,:), pointer, contiguous, device :: cfls_d
 
-    type(grid_type), allocatable         :: grids(:)
-    ! TODO: customized memory allocator for this?
-    type(grid_type), allocatable, device :: grids_d(:)
+    ! type(grid_type), allocatable         :: grids(:)
+    ! type(grid_type), allocatable, device :: grids_d(:)
     integer :: max_lenbc
 
 #endif
@@ -75,15 +76,20 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     !
 
+    ! get start time for more detailed timing by level
+    call system_clock(clock_start,clock_rate)
+    call cpu_time(cpu_start)
+
 #ifdef PROFILE
     call take_cpu_timer("advanc", timer_advanc)
     call cpu_timer_start(timer_advanc)
 #endif
 
-!$OMP PARALLEL PRIVATE(hx, hy, delt, maxthreads, &
+!$OMP PARALLEL PRIVATE(hx, hy, delt, &
 !$OMP                  j, levSt, mptr, nx, ny, mitot, mjtot, locold, locnew, locaux, time, &
 !$OMP                  id, xlow, ylow, cudaResult, lenbc, locsvq, numBlocks, numThreads, &
 !$OMP                  ntot, mythread, dtnew) &
+!$OMP          SHARED(node, rnode, alloc) &
 !$OMP          DEFAULT(SHARED)
     cudaResult = cudaSetDevice(device_id)
 
@@ -91,11 +97,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call startCudaProfiler("advanc level "//toString(level),level)
 #endif
 
-    ! get start time for more detailed timing by level
-    !$OMP MASTER
-    call system_clock(clock_start,clock_rate)
-    call cpu_time(cpu_start)
-    !$OMP END MASTER
 
 
     hx   = hxposs(level)
@@ -112,7 +113,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
     !     maxthreads initialized to 1 above in case no openmp
-    !$    maxthreads = omp_get_max_threads()
+    ! !$    maxthreads = omp_get_max_threads()
 
 
 
@@ -128,10 +129,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! We want to do this regardless of the threading type
     !$OMP DO SCHEDULE (DYNAMIC,1)
     do j = 1, numgrids(level)
-        !mptr   = listgrids(j)
         levSt = listStart(level)
         mptr   = listOfGrids(levSt+j-1)
-        !write(*,*)"old ",listgrids(j)," new",mptr
         nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
         mitot  = nx + 2*nghost
@@ -161,29 +160,32 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !! ##################################################################
 !! Save coarse level values if there is a finer level for wave fixup
 !! ##################################################################
-    !$OMP MASTER 
+
 #ifdef PROFILE
     call startCudaProfiler("saveqc", 24)
     call take_cpu_timer('saveqc', timer_saveqc)
     call cpu_timer_start(timer_saveqc)
 #endif
+
+    !$OMP MASTER 
     if (level+1 .le. mxnest) then
-        if (lstart(level+1) .ne. null) then
+        if (lstart(level+1) .ne. clawpack_null) then
             call saveqc(level+1,nvar,naux)
         endif
     endif
     call system_clock(clock_startStepgrid,clock_rate)
     call cpu_time(cpu_startStepgrid)
+    !$OMP END MASTER 
+
 #ifdef PROFILE
     call cpu_timer_stop(timer_saveqc)
     call endCudaProfiler() ! saveqc
 #endif
-    !$OMP END MASTER 
+
 
     !$OMP SINGLE
     dtlevnew = rinfinity
     cfl_level = 0.d0    !# to keep track of max cfl seen on each level
-
     !$OMP END SINGLE
 
 #ifdef PROFILE
@@ -205,11 +207,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     cfls_d = 0.d0
     !$OMP END SINGLE 
 
-    !$OMP SINGLE 
-    allocate(grids(numgrids(level)))
-    allocate(grids_d(numgrids(level)))
-    max_lenbc = 0
-    !$OMP END SINGLE 
+    ! !$OMP SINGLE 
+    ! allocate(grids(numgrids(level)))
+    ! allocate(grids_d(numgrids(level)))
+    ! max_lenbc = 0
+    ! !$OMP END SINGLE 
     !$OMP BARRIER
 
 #ifdef PROFILE
@@ -236,15 +238,46 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         locnew = node(store1, mptr)
         id = j
 
-        call cpu_allocate_pinned(grid_data(mptr)%ptr, &
-                1,mitot,1,mjtot,1,nvar)
+        !  copy old soln. values into  next time step's soln. values
+        !  since integrator will overwrite it. only for grids not at
+        !  the finest level. finest level grids do not maintain copies
+        !  of old and new time solution values.
+
+        locold = node(store2, mptr)
+        locnew = node(store1, mptr)
+        locaux = node(storeaux,mptr)
+    
+        if (level .lt. mxnest) then
+            ntot   = mitot * mjtot * nvar
+            do i = 1, ntot
+                alloc(locold + i - 1) = alloc(locnew + i - 1)
+            enddo
+        endif
+
+        !        # See if the grid about to be advanced has gauge data to output.
+        !        # This corresponds to previous time step, but output done
+        !        # now to make linear interpolation easier, since grid
+        !        # now has boundary conditions filled in.
+
+        !     should change the way print_gauges does io - right now is critical section
+        !     no more,  each gauge has own array.
+
+        xlow = rnode(cornxlo,mptr) - nghost*hx
+        ylow = rnode(cornylo,mptr) - nghost*hy
+        if (num_gauges > 0) then
+            call update_gauges(alloc(locnew:locnew+nvar*mitot*mjtot), &
+                               alloc(locaux:locaux+nvar*mitot*mjtot), &
+                               xlow,ylow,nvar,mitot,mjtot,naux,mptr)
+        endif
+
+
+        ! call cpu_allocate_pinned(grid_data(mptr)%ptr, &
+        !         1,mitot,1,mjtot,1,nvar)
 #ifdef PROFILE
         call take_cpu_timer('aos_to_soa', timer_aos_to_soa)
         call cpu_timer_start(timer_aos_to_soa)
         call startCudaProfiler("aos_to_soa", 14)
 #endif
-        ! convert q array to SoA format
-        call aos_to_soa_r2(grid_data(mptr)%ptr, alloc(locnew), nvar, 1, mitot, 1, mjtot)
 #ifdef PROFILE
         call endCudaProfiler() ! aos_to_soa
         call cpu_timer_stop(timer_aos_to_soa)
@@ -262,42 +295,42 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call gpu_allocate(grid_data_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         call gpu_allocate(grid_data_d_copy2(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         call gpu_allocate(aux_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
-        call gpu_allocate(fms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
-        call gpu_allocate(fps_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
-        call gpu_allocate(gms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
-        call gpu_allocate(gps_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
-        call gpu_allocate(sx_d(mptr)%ptr,device_id,1,mitot-1,1,mjtot-2,1,NWAVES)
-        call gpu_allocate(sy_d(mptr)%ptr,device_id,1,mitot-2,1,mjtot-1,1,NWAVES)
-        call gpu_allocate(wave_x_d(mptr)%ptr,device_id,1,mitot-1,1,mjtot-2,1,NEQNS,1,NWAVES)
-        call gpu_allocate(wave_y_d(mptr)%ptr,device_id,1,mitot-2,1,mjtot-1,1,NEQNS,1,NWAVES)
+        ! call gpu_allocate(fms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        ! call gpu_allocate(fps_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        ! call gpu_allocate(gms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        ! call gpu_allocate(gps_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        ! call gpu_allocate(sx_d(mptr)%ptr,device_id,1,mitot-1,1,mjtot-2,1,NWAVES)
+        ! call gpu_allocate(sy_d(mptr)%ptr,device_id,1,mitot-2,1,mjtot-1,1,NWAVES)
+        ! call gpu_allocate(wave_x_d(mptr)%ptr,device_id,1,mitot-1,1,mjtot-2,1,NEQNS,1,NWAVES)
+        ! call gpu_allocate(wave_y_d(mptr)%ptr,device_id,1,mitot-2,1,mjtot-1,1,NEQNS,1,NWAVES)
 #ifdef PROFILE
         call cpu_timer_stop(timer_memory)
 #endif
 
         ! copy q to GPU
         !$OMP CRITICAL(launch)
-        cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, grid_data(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, alloc(locnew), nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
         
-        if (associated(fflux_hh(mptr)%ptr)) then
-            lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-            locsvq = 1 + nvar*lenbc
-
-            ! CPU version
-            ! cudaResult = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
-            ! call qad_cpu2(grid_data(mptr)%ptr,mitot,mjtot,nghost,nvar, &
-            !        fflux_hh(mptr)%ptr,fflux_hh(mptr)%ptr(locsvq),lenbc, &
-            !        intratx(level-1),intraty(level-1),hx,hy, &
-            !        delt,mptr,cc,zz)
-            ! cudaResult = cudaMemcpy(fflux_hd(mptr)%ptr, fflux_hh(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
-
-            call compute_kernel_size(numBlocks, numThreads, &
-                1,2*(nx+ny))
-            call qad_gpu<<<numBlocks,numThreads,0,get_cuda_stream(id,device_id)>>>( &
-                   grid_data_d(mptr)%ptr,mitot,mjtot,nghost,nvar, &
-                   fflux_hd(mptr)%ptr,fflux_hd(mptr)%ptr(locsvq),lenbc, &
-                   intratx(level-1),intraty(level-1),hx,hy, &
-                   delt,mptr,max1d,cc,zz)
-        endif
+!         if (associated(fflux_hh(mptr)%ptr)) then
+!             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
+!             locsvq = 1 + nvar*lenbc
+! 
+!             ! CPU version
+!             ! cudaResult = cudaMemcpy(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
+!             ! call qad_cpu2(grid_data(mptr)%ptr,mitot,mjtot,nghost,nvar, &
+!             !        fflux_hh(mptr)%ptr,fflux_hh(mptr)%ptr(locsvq),lenbc, &
+!             !        intratx(level-1),intraty(level-1),hx,hy, &
+!             !        delt,mptr,cc,zz)
+!             ! cudaResult = cudaMemcpy(fflux_hd(mptr)%ptr, fflux_hh(mptr)%ptr, nvar*lenbc*2+naux*lenbc)
+! 
+!             call compute_kernel_size(numBlocks, numThreads, &
+!                 1,2*(nx+ny))
+!             call qad_gpu<<<numBlocks,numThreads,0,get_cuda_stream(id,device_id)>>>( &
+!                    grid_data_d(mptr)%ptr,mitot,mjtot,nghost,nvar, &
+!                    fflux_hd(mptr)%ptr,fflux_hd(mptr)%ptr(locsvq),lenbc, &
+!                    intratx(level-1),intraty(level-1),hx,hy, &
+!                    delt,mptr,max1d,cc,zz)
+!         endif
 
 
 !         if (dimensional_split .eq. 0) then
@@ -331,7 +364,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             cfls_d, numgrids(level), &
             id, device_id) 
 
-        cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync(alloc(locnew), grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
 
 
         !$OMP END CRITICAL(launch)
@@ -362,21 +395,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         mitot  = nx + 2*nghost
         mjtot  = ny + 2*nghost
 
-        !  copy old soln. values into  next time step's soln. values
-        !  since integrator will overwrite it. only for grids not at
-        !  the finest level. finest level grids do not maintain copies
-        !  of old and new time solution values.
-
-        locold = node(store2, mptr)
-        locnew = node(store1, mptr)
-    
-        if (level .lt. mxnest) then
-            ntot   = mitot * mjtot * nvar
-            do i = 1, ntot
-                alloc(locold + i - 1) = alloc(locnew + i - 1)
-            enddo
-        endif
-
         xlow = rnode(cornxlo,mptr) - nghost*hx
         ylow = rnode(cornylo,mptr) - nghost*hy
 
@@ -386,33 +404,19 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         !$OMP END CRITICAL(rv)
 
 
-        locaux = node(storeaux,mptr)
-        !        # See if the grid about to be advanced has gauge data to output.
-        !        # This corresponds to previous time step, but output done
-        !        # now to make linear interpolation easier, since grid
-        !        # now has boundary conditions filled in.
 
-        !     should change the way print_gauges does io - right now is critical section
-        !     no more,  each gauge has own array.
-
-        if (num_gauges > 0) then
-            call update_gauges(alloc(locnew:locnew+nvar*mitot*mjtot), &
-                               alloc(locaux:locaux+nvar*mitot*mjtot), &
-                               xlow,ylow,nvar,mitot,mjtot,naux,mptr)
-        endif
-
-        grids(j)%fm => fms_d(mptr)%ptr
-        grids(j)%fp => fps_d(mptr)%ptr
-        grids(j)%gm => gms_d(mptr)%ptr
-        grids(j)%gp => gps_d(mptr)%ptr
-        grids(j)%mptr = mptr
-        grids(j)%nx   = nx 
-        grids(j)%ny   = ny 
-        if (level > 1) then
-            !$OMP CRITICAL (max_lenbc)
-            max_lenbc = max(max_lenbc, 2*(nx/intratx(level-1)+ny/intraty(level-1)))
-            !$OMP END CRITICAL (max_lenbc)
-        endif
+        ! grids(j)%fm => fms_d(mptr)%ptr
+        ! grids(j)%fp => fps_d(mptr)%ptr
+        ! grids(j)%gm => gms_d(mptr)%ptr
+        ! grids(j)%gp => gps_d(mptr)%ptr
+        ! grids(j)%mptr = mptr
+        ! grids(j)%nx   = nx 
+        ! grids(j)%ny   = ny 
+        ! if (level > 1) then
+        !     !$OMP CRITICAL (max_lenbc)
+        !     max_lenbc = max(max_lenbc, 2*(nx/intratx(level-1)+ny/intraty(level-1)))
+        !     !$OMP END CRITICAL (max_lenbc)
+        ! endif
 
     enddo
     !$OMP END DO
@@ -424,7 +428,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     !$OMP MASTER 
     call wait_for_all_gpu_tasks(device_id)
-    grids_d = grids
+    ! grids_d = grids
     !$OMP END MASTER 
     !$OMP BARRIER
 #ifdef PROFILE
@@ -448,23 +452,23 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef PROFILE
     call startCudaProfiler("Launch fluxad and fluxsv",12)
 #endif
-    if (level > 1) then
-        call compute_kernel_size(numBlocks, numThreads, &
-            1,max_lenbc,1,numgrids(level))
-        call fluxad_fused_gpu<<<numBlocks,numThreads,0,get_cuda_stream(1,device_id)>>>( &
-                grids_d, fflux_dd,&
-                nghost, numgrids(level), intratx(level-1), intraty(level-1), &
-                delt, hx, hy)
-    endif
-    ! one kernel launch to do fluxsv for all grids at this level
-    ! we don't do this for the fineset level
-    if (level < lfine) then
-        call compute_kernel_size(numBlocks, numThreads, &
-            1,listsp(level),1,numgrids(level))
-        call fluxsv_fused_gpu<<<numBlocks,numThreads,0,get_cuda_stream(2,device_id)>>>( &
-                 grids_d, cflux_dd, fflux_dd, &
-                 nghost, numgrids(level), nvar,listsp(level),delt,hx,hy)
-    endif
+!     if (level > 1) then
+!         call compute_kernel_size(numBlocks, numThreads, &
+!             1,max_lenbc,1,numgrids(level))
+!         call fluxad_fused_gpu<<<numBlocks,numThreads,0,get_cuda_stream(1,device_id)>>>( &
+!                 grids_d, fflux_dd,&
+!                 nghost, numgrids(level), intratx(level-1), intraty(level-1), &
+!                 delt, hx, hy)
+!     endif
+!     ! one kernel launch to do fluxsv for all grids at this level
+!     ! we don't do this for the fineset level
+!     if (level < lfine) then
+!         call compute_kernel_size(numBlocks, numThreads, &
+!             1,listsp(level),1,numgrids(level))
+!         call fluxsv_fused_gpu<<<numBlocks,numThreads,0,get_cuda_stream(2,device_id)>>>( &
+!                  grids_d, cflux_dd, fflux_dd, &
+!                  nghost, numgrids(level), nvar,listsp(level),delt,hx,hy)
+!     endif
 #ifdef PROFILE
     call endCudaProfiler() ! Launch fluxad and fluxsv
 #endif
@@ -487,9 +491,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         mjtot  = ny + 2*nghost
         locnew = node(store1, mptr)
 
-        ! TODO: use callback function to let this get executed right after grid mptr
-        ! is done in its cuda stream
-        call soa_to_aos_r2(alloc(locnew), grid_data(mptr)%ptr, nvar, 1, mitot, 1, mjtot)
 
         rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
 
@@ -514,19 +515,18 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         levSt = listStart(level)
         mptr = listOfGrids(levSt+j-1)
 
-        call cpu_deallocate_pinned(grid_data(mptr)%ptr)
 
         call gpu_deallocate(grid_data_d(mptr)%ptr,device_id)
         call gpu_deallocate(grid_data_d_copy2(mptr)%ptr,device_id)
         call gpu_deallocate(aux_d(mptr)%ptr,device_id)
-        call gpu_deallocate(fms_d(mptr)%ptr,device_id)
-        call gpu_deallocate(fps_d(mptr)%ptr,device_id)
-        call gpu_deallocate(gms_d(mptr)%ptr,device_id)
-        call gpu_deallocate(gps_d(mptr)%ptr,device_id)
-        call gpu_deallocate(sx_d(mptr)%ptr,device_id)
-        call gpu_deallocate(sy_d(mptr)%ptr,device_id)
-        call gpu_deallocate(wave_x_d(mptr)%ptr,device_id)
-        call gpu_deallocate(wave_y_d(mptr)%ptr,device_id)
+        ! call gpu_deallocate(fms_d(mptr)%ptr,device_id)
+        ! call gpu_deallocate(fps_d(mptr)%ptr,device_id)
+        ! call gpu_deallocate(gms_d(mptr)%ptr,device_id)
+        ! call gpu_deallocate(gps_d(mptr)%ptr,device_id)
+        ! call gpu_deallocate(sx_d(mptr)%ptr,device_id)
+        ! call gpu_deallocate(sy_d(mptr)%ptr,device_id)
+        ! call gpu_deallocate(wave_x_d(mptr)%ptr,device_id)
+        ! call gpu_deallocate(wave_y_d(mptr)%ptr,device_id)
 
     enddo
     !$OMP END DO
@@ -538,24 +538,24 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call startCudaProfiler('Transfer fflux to CPU',99)
 #endif
 
-    !$OMP SINGLE
-    if (level > 1) then
-        do j = 1, numgrids(level)
-            levSt = listStart(level)
-            mptr = listOfGrids(levSt+j-1)
-            nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
-            ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-            lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
-            cudaResult = cudaMemcpyAsync(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, &
-                nvar*lenbc*2+naux*lenbc,get_cuda_stream(id_copy_fflux,device_id))
-        enddo
-    endif
-    !$OMP END SINGLE
+    ! !$OMP SINGLE
+    ! if (level > 1) then
+    !     do j = 1, numgrids(level)
+    !         levSt = listStart(level)
+    !         mptr = listOfGrids(levSt+j-1)
+    !         nx   = node(ndihi,mptr) - node(ndilo,mptr) + 1
+    !         ny   = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+    !         lenbc = 2*(nx/intratx(level-1)+ny/intraty(level-1))
+    !         cudaResult = cudaMemcpyAsync(fflux_hh(mptr)%ptr, fflux_hd(mptr)%ptr, &
+    !             nvar*lenbc*2+naux*lenbc,get_cuda_stream(id_copy_fflux,device_id))
+    !     enddo
+    ! endif
+    ! !$OMP END SINGLE
 
-    !$OMP SINGLE
-    deallocate(grids)
-    deallocate(grids_d)
-    !$OMP END SINGLE
+    ! !$OMP SINGLE
+    ! deallocate(grids)
+    ! deallocate(grids_d)
+    ! !$OMP END SINGLE
     !$OMP BARRIER
 
 #ifdef PROFILE
@@ -631,21 +631,22 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call endCudaProfiler() ! Stepgrid
     call endCudaProfiler() ! advanc level 
 #endif
-    !$OMP MASTER 
-    call system_clock(clock_finish,clock_rate)
-    call cpu_time(cpu_finish)
-    ! tvoll = timeStepgrid + time_bound + time_saveqc
-    tvoll(level) = tvoll(level) + clock_finish - clock_start
-    tvollCPU(level) = tvollCPU(level) + cpu_finish - cpu_start
+    !$OMP MASTER
     timeStepgrid = timeStepgrid +clock_finish-clock_startStepgrid
     timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid      
-    !$OMP END MASTER 
+    !$OMP END MASTER
 
 !$OMP END PARALLEL 
 
 #ifdef PROFILE
     call cpu_timer_stop(timer_advanc)
 #endif
+
+    call system_clock(clock_finish,clock_rate)
+    call cpu_time(cpu_finish)
+    tvoll(level) = tvoll(level) + clock_finish - clock_start
+    tvollCPU(level) = tvollCPU(level) + cpu_finish - cpu_start
+
     print *, "advance level: ", level
     return
 end subroutine advanc
