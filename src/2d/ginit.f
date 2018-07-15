@@ -18,7 +18,7 @@ c
 c
       use amr_module
 #ifdef CUDA
-      use memory_module, only: gpu_allocate, cpu_allocate_pinned
+      use memory_module, only: gpu_allocate
       use cuda_module, only: device_id
 #endif
       implicit real(CLAW_REAL) (a-h,o-z)
@@ -49,11 +49,21 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
           if(.not. (first)) go to 20
               loc                 = igetsp(mitot*mjtot*nvar)
               node(store1,mptr)   = loc
+#ifdef CUDA
+              call gpu_allocate(grid_data_d(mptr)%ptr,device_id,
+     &          1,mitot,1,mjtot,1,nvar)
+              call gpu_allocate(grid_data_d_copy2(mptr)%ptr,device_id,
+     &          1,mitot,1,mjtot,1,nvar)
+#endif
               if (naux .gt. 0) then
                 locaux              = igetsp(mitot*mjtot*naux)
                 do k = 1, mitot*mjtot*naux,naux  ! set first component of aux to signal that it
                    alloc(locaux+k-1) = NEEDS_TO_BE_SET ! needs val, wasnt copied from other grids
                 end do
+#ifdef CUDA
+                call gpu_allocate(aux_d(mptr)%ptr,device_id,
+     &              1,mitot,1,mjtot,1,nvar)
+#endif
                 
                 call setaux(nghost,nx,ny,corn1,corn2,hx,hy,
      &                    naux,alloc(locaux))

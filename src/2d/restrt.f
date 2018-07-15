@@ -168,9 +168,19 @@ c
                    if (lev .gt. mxnest) then ! if level going away take away first storage
                       call reclam(node(store1,mptr),mitot*mjtot*nvar)
                       node(store1,mptr) = 0
+#ifdef CUDA
+                      call gpu_deallocate(
+     &                  grid_data_d(mptr)%ptr, device_id)
+                      call gpu_deallocate(
+     &                  grid_data_d_copy2(mptr)%ptr,device_id)
+#endif
+
                       if (naux .gt. 0) then ! and aux arrays
                        call reclam(node(storeaux,mptr),mitot*mjtot*naux)
                        node(storeaux,mptr) = 0
+#ifdef CUDA
+                       call gpu_deallocate(aux_d(mptr)%ptr,device_id)
+#endif
                       endif
                    endif
                    if (lev .ge. mxnest .and. lev .lt. mxnold) then  !reclam 2nd level storage too

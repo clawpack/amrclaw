@@ -9,6 +9,10 @@ c :::::::::::::::::::::: CLEANUP ::::::::::::::::::::::::::::::::;
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
       use amr_module
+#ifdef CUDA
+      use memory_module, only: gpu_deallocate
+      use cuda_module, only: device_id
+#endif
       implicit real(CLAW_REAL) (a-h,o-z)
 c
 c      ## clean up storage to double check that everything taken care of
@@ -22,10 +26,18 @@ c      ## done after the checkpoint so pointers sitll work on restart
             mjtot  = ny + 2*nghost
             nwords  = mitot*mjtot*nvar
             call reclam(node(store1, mptr), nwords)
+#ifdef CUDA
+            call gpu_deallocate(grid_data_d(mptr)%ptr,device_id)
+            call gpu_deallocate(grid_data_d_copy2(mptr)%ptr,device_id)
+#endif
             if (level .lt. mxnest) 
      .         call reclam(node(store2, mptr), nwords)
-            if (naux .gt. 0) 
-     .         call reclam(node(storeaux, mptr), mitot*mjtot*naux)
+            if (naux .gt. 0) then
+               call reclam(node(storeaux, mptr), mitot*mjtot*naux)
+#ifdef CUDA
+               call gpu_deallocate(aux_d(mptr)%ptr,device_id)
+#endif
+            endif
         mptr = node(levelptr, mptr)
         if (mptr .ne. 0) go to 110
 120    continue 
