@@ -23,7 +23,7 @@ c
       
       logical sticksout, found
 !     make fliparray largest possible grid size
-      dimension fliparray(2*max1d*nghost*(nvar+naux))
+      dimension fliparray(2*max1d*max1d/2*nghost*(nvar+naux))
 c
 c ::::::::::::::::::::::::: SAVEQC :::::::::::::::::::::::::::::::::
 c  prepare new fine grids to save fluxes after each integration step

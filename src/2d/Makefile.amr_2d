@@ -40,7 +40,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/init_iflags.f \
   $(AMRLIB)/igetsp.f \
   $(AMRLIB)/reclam.f \
-  $(AMRLIB)/birect.f \
+  $(AMRLIB)/birect.f90 \
   $(AMRLIB)/cleanup.f \
   $(AMRLIB)/colate2.f \
   $(AMRLIB)/bufnst2.f90 \
