@@ -302,4 +302,7 @@ inline void __getLastCudaError(const char *errorMessage, const char *file, const
 
     }
 }
+
+#define abort_device() {asm("trap;");}
+
 #endif

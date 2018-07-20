@@ -6,7 +6,7 @@
 #include "real.H"
 #include "params.H"
 #include "fused_solvers_headers.H"
-#include "cuda_helper.H"
+#include "../clawpack_CUDA_helper.H"
 #include "reduce_Max.H"
 #include "clawpack_device.H"
 #include "sharedMemory.H"
@@ -717,7 +717,6 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
 
         Riemann_horizontal_kernel<NUMSTATES, NUMWAVES, NUMCOEFF, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size,stream>>>(param, Riemann_pointwise_solver_h, limiter_phi);
         // Riemann_horizontal_kernel_warp<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
-        CHKERR();
 
         // REDUCTION
         const unsigned int blockDim_X = 512;		// fine tune the best block size
@@ -731,7 +730,6 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimBlock1(blockDim_X);
         reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR,
                 param.dx, param.dt, &(param.cfl_grid[0]) );
-        CHKERR();
     }
     {
         // RIEMANN, FLUCTUATIONS and UPDATE
@@ -747,7 +745,6 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         // allocate param.waveSpeedsY here
         param.alloc_waveSpeedsY(dimGrid_vR.x * dimGrid_vR.y);
         Riemann_vertical_kernel<NUMSTATES, NUMWAVES, NUMCOEFF, VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY, Riemann_v, Limiter><<<dimGrid_vR, dimBlock_vR,shared_mem_size,stream>>>(param, Riemann_pointwise_solver_v, limiter_phi);
-        CHKERR();
 
 
         // REDUCTION
@@ -763,31 +760,10 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
 
         reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR,
                 param.dy, param.dt, &(param.cfl_grid[1]) );
-        CHKERR();
     }
     // Let the memory manager free memory allocated by param later 
     // when the memory is not needed by GPU
     param.register_allocated_memory();
-    // {
-    //     timeStepAdjust_simple<<<1,1>>>(param);
-    //     CHKERR();
-    //     
-    //     bool revert;
-    //     cudaError_t err;
-    //     err = cudaMemcpy(&revert, param.revert, sizeof(bool), cudaMemcpyDeviceToHost);
-    //     CHKERRQ(err);
-
-    //     if (revert)
-    //         {
-    //     	// Swap q and qNew before stepping again
-    //     	// At this stage qNew became old and q has the latest state that is
-    //     	// because q was updated based on qNew, which right before 'step'
-    //     	// held the latest update.
-    //     	real* temp = param.qNew;
-    //     	param.qNew = param.q;
-    //     	param.q = temp;
-    //         }
-    // }
 
     return 0;
 }

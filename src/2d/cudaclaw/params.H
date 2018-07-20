@@ -4,7 +4,6 @@
 #ifdef CUDA
 
 #include "real.H"
-#include "error.H"
 #include "common.H"
 #include "clawpack_mempool.H"
 #include "clawpack_device.H"
