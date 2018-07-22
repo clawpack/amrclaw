@@ -38,10 +38,10 @@ def setrun(claw_pkg='amrclaw'):
     #------------------------------------------------------------------
 
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('rhol', 1., 'Density left of interface')
-    probdata.add_param('cl',   1., 'Sound speed left of interface')
-    probdata.add_param('rhor', 4., 'Density right of interface')
-    probdata.add_param('cr',  0.5, 'Sound speed right of interface')
+    probdata.add_param('rho_l', 4.0, 'Density in left half')
+    probdata.add_param('rho_r', 1.0, 'Density in right half')
+    probdata.add_param('bulk_l', 4.0, 'Bulk modulus in left half')
+    probdata.add_param('bulk_r', 4.0, 'Bulk modulus in right half')
 
     
     #------------------------------------------------------------------
@@ -70,8 +70,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.upper[1] = 1.000000e+00          # yupper
     
     # Number of grid cells:
-    clawdata.num_cells[0] = 1000     # mx
-    clawdata.num_cells[1] = 1000      # my
+    clawdata.num_cells[0] = 200     # mx
+    clawdata.num_cells[1] = 200      # my
     
 
     # ---------------
@@ -82,7 +82,7 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.num_eqn = 3
 
     # Number of auxiliary variables in the aux array (initialized in setaux)
-    clawdata.num_aux = 0
+    clawdata.num_aux = 2
     
     # Index of aux array corresponding to capacity function, if there is one:
     clawdata.capa_index = 0
@@ -116,8 +116,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 10
-        clawdata.tfinal = 1.0
+        clawdata.num_output_times = 20
+        clawdata.tfinal = 0.6
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -226,10 +226,10 @@ def setrun(claw_pkg='amrclaw'):
     #   2 or 'periodic' => periodic (must specify this at both boundaries)
     #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
     
-    clawdata.bc_lower[0] = 'extrap'   # at xlower
+    clawdata.bc_lower[0] = 'wall'   # at xlower
     clawdata.bc_upper[0] = 'extrap'   # at xupper
 
-    clawdata.bc_lower[1] = 'extrap'   # at ylower
+    clawdata.bc_lower[1] = 'wall'   # at ylower
     clawdata.bc_upper[1] = 'extrap'   # at yupper
                          
 
@@ -288,7 +288,7 @@ def setrun(claw_pkg='amrclaw'):
     # Specify type of each aux variable in clawdata.auxtype.
     # This must be a list of length num_aux, each element of which is one of:
     #   'center',  'capacity', 'xleft', or 'yleft'  (see documentation).
-    amrdata.aux_type = []
+    amrdata.aux_type = ['center','center']
 
 
     # Flag for refinement based on Richardson error estimater:
@@ -297,17 +297,17 @@ def setrun(claw_pkg='amrclaw'):
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True      # use this?
-    amrdata.flag2refine_tol = 0.01 # tolerance used in this routine
+    amrdata.flag2refine_tol = 0.05 # tolerance used in this routine
     # User can modify flag2refine to change the criterion for flagging.
     # Default: check maximum absolute difference of first component of q
     # between a cell and each of its neighbors.
 
     # steps to take on each level L between regriddings of level L+1:
-    amrdata.regrid_interval = 8
+    amrdata.regrid_interval = 2
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
-    amrdata.regrid_buffer_width  = 8
+    amrdata.regrid_buffer_width  = 2
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)

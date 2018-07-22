@@ -1,9 +1,10 @@
 module problem_para_module
 
-    real(CLAW_REAL), save :: rho_l, rho_r, bulk_l, bulk_r
+    save
+    real(CLAW_REAL) :: rho_l, rho_r, bulk_l, bulk_r
 
     ! TODO: remove this. It is not used for heterogeneous case
-    real(CLAW_REAL), save :: rho, bulk, cc, zz
+    real(CLAW_REAL) :: rho, bulk, cc, zz
 
     contains
     subroutine setprob

@@ -1,38 +1,35 @@
 !     ============================================
-subroutine setaux(mbc,mx,xlower,dx,maux,aux)
+subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,maux,aux)
 !     ============================================
 !     
 !     # set auxiliary arrays 
 !     # variable coefficient acoustics
-!     #  aux(i,1) = impedance Z in i'th cell
-!     #  aux(i,2) = sound speed c in i'th cell
+!     #  aux(1,i,j) =  density rho in cell (i,j)
+!     #  aux(2,i,j) = bulk modulus in cell (i,j)
 !     
 !     # Piecewise constant medium with single interface at x=0
-!     # Density and sound speed to left and right are set in setprob.f
-!
+!     # Density and bulk modulus to left and right are set in problem_para_module.f90
+    use problem_para_module, only: rho_l, rho_r, bulk_l, bulk_r
 
     implicit none
+    integer, intent(in) :: mbc,mx,my,maux
+    real(CLAW_REAL), intent(in) :: xlower,ylower,dx,dy
+    real(CLAW_REAL), intent(inout) ::  aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
 
-    integer, intent(in) :: mbc, mx, maux
-    double precision, intent(in) :: xlower, dx
-    double precision, intent(out) :: aux
-    dimension aux(maux, 1-mbc:mx+mbc)
-
-    common /comaux/ Zl, cl, Zr, cr
-    double precision Zl, cl, Zr, cr
-
-    integer i,ii
+    integer i,j
     double precision xcell
 
     do i=1-mbc,mx+mbc
-        xcell = xlower + (i-0.5d0)*dx
-        if (xcell .lt. 0.0d0) then
-            aux(1,i) = Zl
-            aux(2,i) = cl
-        else
-            aux(1,i) = Zr
-            aux(2,i) = cr
-        endif
+        do j=1-mbc,my+mbc
+            xcell = xlower + (i-0.5d0)*dx
+            if (xcell .lt. 0.0d0) then
+                aux(1,i,j) = rho_l
+                aux(2,i,j) = bulk_l
+            else
+                aux(1,i,j) = rho_r
+                aux(2,i,j) = bulk_r
+            endif
+        enddo
     enddo
 
     return

@@ -55,15 +55,13 @@ def setplot(plotdata=None):
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
     plotitem.plot_var = 0
-    plotitem.pcolor_cmap = colormaps.blue_yellow_red
+    plotitem.pcolor_cmap = colormaps.yellow_red_blue
     plotitem.add_colorbar = True
     plotitem.show = True       # show on plot?
-    plotitem.pcolor_cmin = -2.0
-    plotitem.pcolor_cmax = 2.0
-    plotitem.amr_patchedges_show = [1,1,1]
+    plotitem.pcolor_cmin = -0.0
+    plotitem.pcolor_cmax = 1.0
+    plotitem.amr_patchedges_show = [1,0,0]
     plotitem.amr_celledges_show = [0,0,0]
-    # plotitem.amr_patchedges_show = [0,0,0]
-    # plotitem.amr_celledges_show = [0,0,0]
 
     # Figure for u-velocity
     # -------------------
@@ -81,14 +79,12 @@ def setplot(plotdata=None):
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
     plotitem.plot_var = 1
-    plotitem.pcolor_cmap = colormaps.blue_yellow_red
+    plotitem.pcolor_cmap = colormaps.yellow_red_blue
     plotitem.add_colorbar = True
     plotitem.show = True       # show on plot?
-    plotitem.pcolor_cmin = -0.5
-    plotitem.pcolor_cmax = 0.5
-    # plotitem.amr_patchedges_show = [1,1,1]
-    # plotitem.amr_celledges_show = [1,0,0]
-    plotitem.amr_patchedges_show = [0,0,0]
+    plotitem.pcolor_cmin = -0.3
+    plotitem.pcolor_cmax = 0.3
+    plotitem.amr_patchedges_show = [0,1,0]
     plotitem.amr_celledges_show = [0,0,0]
 
     # Figure for v-velocity
@@ -107,58 +103,14 @@ def setplot(plotdata=None):
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
     plotitem.plot_var = 2
-    plotitem.pcolor_cmap = colormaps.blue_yellow_red
+    plotitem.pcolor_cmap = colormaps.yellow_red_blue
     plotitem.add_colorbar = True
     plotitem.show = True       # show on plot?
-    plotitem.pcolor_cmin = -0.5
-    plotitem.pcolor_cmax = 0.5
-    # plotitem.amr_patchedges_show = [1,1,1]
-    # plotitem.amr_celledges_show = [1,0,0]
-    plotitem.amr_patchedges_show = [0,0,0]
+    plotitem.pcolor_cmin = -0.3
+    plotitem.pcolor_cmax = 0.3
+    plotitem.amr_patchedges_show = [0,0,1]
     plotitem.amr_celledges_show = [0,0,0]
     
-    
-
-    # Figure for scatter plot
-    # -----------------------
-
-    plotfigure = plotdata.new_plotfigure(name='scatter', figno=3)
-    plotfigure.show = (qref_dir is not None)
-
-    # Set up for axes in this figure:
-    plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = [0,1.5]
-    plotaxes.ylimits = [-2.,4.]
-    plotaxes.title = 'Scatter plot'
-
-    # Set up for item on these axes: scatter of 2d data
-    plotitem = plotaxes.new_plotitem(plot_type='1d_from_2d_data')
-    
-    def p_vs_r(current_data):
-        # Return radius of each grid cell and p value in the cell
-        from pylab import sqrt
-        x = current_data.x
-        y = current_data.y
-        r = sqrt(x**2 + y**2)
-        q = current_data.q
-        p = q[0,:,:]
-        return r,p
-
-    plotitem.map_2d_to_1d = p_vs_r
-    plotitem.plot_var = 0
-    plotitem.plotstyle = 'o'
-    plotitem.color = 'b'
-    plotitem.show = True       # show on plot?
-    
-    # Set up for item on these axes: 1d reference solution
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.outdir = qref_dir
-    plotitem.plot_var = 0
-    plotitem.plotstyle = '-'
-    plotitem.color = 'r'
-    plotitem.kwargs = {'linewidth': 2}
-    plotitem.show = True       # show on plot?
-    plotaxes.afteraxes = "import pylab; pylab.legend(('2d data', '1d reference solution'))"
     
 
     #-----------------------------------------
