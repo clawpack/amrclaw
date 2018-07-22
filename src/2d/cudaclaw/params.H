@@ -133,7 +133,7 @@ class pdeParam
             // return (state*cellsX*cellsY + row*cellsX + column);
             //
             // AOS
-            return (state + column*NUMSTATES + row*NUMSTATES*cellsX);
+            return (state + column*numStates + row*numStates*cellsX);
         }
         inline __device__ real &getElement_q(int row, int column, int state)
         {
@@ -155,7 +155,7 @@ class pdeParam
             // return (state*cellsX*cellsY + row*cellsX + column);
             //
             // AOS
-            return (state + column*NUMSTATES + row*NUMSTATES*cellsX);
+            return (state + column*numStates + row*numStates*cellsX);
         }
         inline __device__ real &getElement_qNew(int row, int column, int state)
         {
@@ -178,7 +178,7 @@ class pdeParam
             // return (coeff*cellsX*cellsY + row*cellsX + column);
             //
             // AOS
-            return (coeff + column*NCOEFFS + row*NCOEFFS*cellsX);
+            return (coeff + column*numCoeff + row*numCoeff*cellsX);
         }
 
         inline __device__ real &getElement_coeff(int row, int column, int coeff)

@@ -17,11 +17,6 @@
 
 #define FULL_MASK 0xffffffff
 
-
-
-#define NUMSTATES 3
-#define NUMWAVES 2
-
 constexpr real claw_zero = 0.0;  
 
 #endif //-Xptxas -dlcm=cg 
