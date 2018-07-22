@@ -170,9 +170,15 @@ class pdeParam
         // COEFFICIENTS
         inline __device__ __host__ int getIndex_coeff(int row, int column, int coeff)
         {
+            // column => cellsX, row => cellsY
+            //
+            // SOA
             // Usual C/C++ row major order
             // coeff is the slowest moving dimension now, then row, then column
-            return (coeff*cellsX*cellsY + row*cellsX + column);
+            // return (coeff*cellsX*cellsY + row*cellsX + column);
+            //
+            // AOS
+            return (coeff + column*NCOEFFS + row*NCOEFFS*cellsX);
         }
 
         inline __device__ real &getElement_coeff(int row, int column, int coeff)

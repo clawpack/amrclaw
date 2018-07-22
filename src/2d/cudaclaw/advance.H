@@ -715,7 +715,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         // allocate param.waveSpeedsX here
         param.alloc_waveSpeedsX(dimGrid_hR.x * dimGrid_hR.y);
 
-        Riemann_horizontal_kernel<NUMSTATES, NUMWAVES, NUMCOEFF, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size,stream>>>(param, Riemann_pointwise_solver_h, limiter_phi);
+        Riemann_horizontal_kernel<NUMSTATES, NUMWAVES, NCOEFFS, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size,stream>>>(param, Riemann_pointwise_solver_h, limiter_phi);
         // Riemann_horizontal_kernel_warp<NUMSTATES, NUMWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
 
         // REDUCTION
@@ -744,7 +744,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
 
         // allocate param.waveSpeedsY here
         param.alloc_waveSpeedsY(dimGrid_vR.x * dimGrid_vR.y);
-        Riemann_vertical_kernel<NUMSTATES, NUMWAVES, NUMCOEFF, VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY, Riemann_v, Limiter><<<dimGrid_vR, dimBlock_vR,shared_mem_size,stream>>>(param, Riemann_pointwise_solver_v, limiter_phi);
+        Riemann_vertical_kernel<NUMSTATES, NUMWAVES, NCOEFFS, VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY, Riemann_v, Limiter><<<dimGrid_vR, dimBlock_vR,shared_mem_size,stream>>>(param, Riemann_pointwise_solver_v, limiter_phi);
 
 
         // REDUCTION
@@ -774,6 +774,7 @@ extern "C" void call_C_limited_riemann_update(
         const real dt,
         real* q, real* qNew, 
         real* coefficients,
+        const int numStates, const int numCoefficients,
         real* cfls, const int ngrids, 
         const int id, const int dev_id) {
 
@@ -789,7 +790,7 @@ extern "C" void call_C_limited_riemann_update(
     // This is a wrapper for limited_Riemann_Update, called from fortran
     // It also sets up para
     pdeParam param(cellsX, cellsY, ghostCells, 
-            NEQNS, NWAVES, NUMCOEFF,
+            numStates, NWAVES, numCoefficients,
             startX, endX, startY, endY, dt,
             q, qNew, 
             NULL, NULL, coefficients, 
@@ -798,8 +799,11 @@ extern "C" void call_C_limited_riemann_update(
     param.setOrderOfAccuracy(2);
 
     // acoustics_homo_2d_horizontal_warp acoustic_h;
-    acoustics_homo_2d_horizontal acoustic_h;
-    acoustics_homo_2d_vertical acoustic_v;
+    // acoustics_homo_2d_horizontal acoustic_h;
+    // acoustics_homo_2d_vertical acoustic_v;
+    
+    acoustics_2d_horizontal acoustic_h;
+    acoustics_2d_vertical acoustic_v;
     limiter_VanLeer phi;
 
     limited_Riemann_Update(param, 

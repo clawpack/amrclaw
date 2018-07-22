@@ -84,7 +84,7 @@
               locaux = igetsp(mitot * mjtot * naux)
 #ifdef CUDA
               call gpu_allocate(aux_d(mptr)%ptr,device_id,
-     &          1,mitot,1,mjtot,1,nvar)
+     &          1,mitot,1,mjtot,1,naux)
 #endif
              else
               locaux = 1

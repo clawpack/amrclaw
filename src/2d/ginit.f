@@ -62,7 +62,7 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
                 end do
 #ifdef CUDA
                 call gpu_allocate(aux_d(mptr)%ptr,device_id,
-     &              1,mitot,1,mjtot,1,nvar)
+     &              1,mitot,1,mjtot,1,naux)
 #endif
                 
                 call setaux(nghost,nx,ny,corn1,corn2,hx,hy,

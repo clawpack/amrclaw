@@ -18,7 +18,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use cuda_module, only: device_id, id_copy_cflux, toString, id_copy_fflux
     use cuda_module, only: wait_for_all_gpu_tasks, wait_for_stream
     use cuda_module, only: aos_to_soa_r2, soa_to_aos_r2, get_cuda_stream
-    use cuda_module, only: compute_kernel_size, device_id
+    use cuda_module, only: compute_kernel_size
     use timer_module
     use cudafor
     use reflux_module, only: qad_cpu2, qad_gpu, &
@@ -168,11 +168,11 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
 
     !$OMP MASTER 
-    if (level+1 .le. mxnest) then
-        if (lstart(level+1) .ne. clawpack_null) then
-            call saveqc(level+1,nvar,naux)
-        endif
-    endif
+    ! if (level+1 .le. mxnest) then
+    !     if (lstart(level+1) .ne. clawpack_null) then
+    !         call saveqc(level+1,nvar,naux)
+    !     endif
+    ! endif
     call system_clock(clock_startStepgrid,clock_rate)
     call cpu_time(cpu_startStepgrid)
     !$OMP END MASTER 
@@ -294,7 +294,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #endif
         ! call gpu_allocate(grid_data_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         ! call gpu_allocate(grid_data_d_copy2(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
-        ! call gpu_allocate(aux_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
+        ! call gpu_allocate(aux_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,naux)
         ! call gpu_allocate(fms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         ! call gpu_allocate(fps_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         ! call gpu_allocate(gms_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
@@ -310,6 +310,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ! copy q to GPU
         !$OMP CRITICAL(launch)
         cudaResult = cudaMemcpyAsync(grid_data_d(mptr)%ptr, alloc(locnew), nvar*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
+        cudaResult = cudaMemcpyAsync(aux_d(mptr)%ptr, alloc(locaux), naux*mitot*mjtot, cudaMemcpyHostToDevice, get_cuda_stream(id,device_id))
         
 !         if (associated(fflux_hh(mptr)%ptr)) then
 !             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
@@ -361,6 +362,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             xlow, xlow+hx*mitot, ylow, ylow+hy*mjtot, delt, &
             grid_data_d_copy2(mptr)%ptr, grid_data_d(mptr)%ptr, &
             aux_d(mptr)%ptr, &
+            nvar, naux, &
             cfls_d, numgrids(level), &
             id, device_id) 
 

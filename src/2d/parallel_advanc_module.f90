@@ -7,12 +7,16 @@ module parallel_advanc_module
             startX, endX, startY, endY, dt, &
             q, qNew, &
             coefficients, &
+            numStates, numCoefficients, &
             cfls_d, ngrids, id, dev_id) &
             bind(C,NAME='call_C_limited_riemann_update')
 
+
             use iso_c_binding
+
+            implicit none
             integer(kind=c_int), value, intent(in) :: cellsX, cellsY, ghostCells, &
-                ngrids, id, dev_id
+                ngrids, id, dev_id, numStates, numCoefficients
 
             #if (CLAW_REAL == 8)
                 real(kind=c_double), value, intent(in) :: startX, endX, startY, endY, dt

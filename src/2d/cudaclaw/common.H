@@ -21,7 +21,6 @@
 
 #define NUMSTATES 3
 #define NUMWAVES 2
-#define NUMCOEFF 0
 
 constexpr real claw_zero = 0.0;  
 
