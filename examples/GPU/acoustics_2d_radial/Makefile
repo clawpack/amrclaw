@@ -36,7 +36,7 @@ USE_CPP = TRUE
 PROFILE = TRUE
 # PROFILE = FALSE 
 
-USE_OPENMP = FALSE
+USE_OPENMP = TRUE
 
 VERBOSE = FALSE
 
@@ -46,6 +46,7 @@ USE_DOUBLE_PRECISION = TRUE
 DIM = 2
 NUM_EQUATIONS = 3
 NUM_WAVES = 2
+NUM_COEFFS = 0
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
@@ -75,7 +76,7 @@ EXCLUDE_SOURCES = \
 # ----------------------------------------
 
 MODULES = \
-  $(CLAW)/amrclaw/examples/GPU/acoustics_2d_radial/problem_para_module.f90
+  problem_para_module.f90
 
 SOURCES = \
   qinit.f \

@@ -179,8 +179,8 @@ def setrun(claw_pkg='amrclaw'):
     clawdata.order = 2
     
     # Use dimensional splitting?
-    clawdata.dimensional_split = 'unsplit'
-    # clawdata.dimensional_split = 'godunov'
+    # clawdata.dimensional_split = 'unsplit'
+    clawdata.dimensional_split = 'godunov'
     
     # For unsplit method, transverse_waves can be 
     #  0 or 'none'      ==> donor cell (only normal solver used)
@@ -314,14 +314,6 @@ def setrun(claw_pkg='amrclaw'):
     # print info about each regridding up to this level:
     amrdata.verbosity_regrid = 0      
 
-    # ---------------
-    # All parameters for GPU computing:
-    # ---------------
-
-    gpudata = rundata.gpudata
-    # which gpu you would like to use
-    # must between 0 and num_of_total_gpus-1
-    gpudata.which_gpu = 0
 
     # ---------------
     # Regions:
@@ -329,6 +321,18 @@ def setrun(claw_pkg='amrclaw'):
     rundata.regiondata.regions = []
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
+
+
+
+    # ---------------
+    # All parameters for GPU computing:
+    # ---------------
+
+    gpudata = rundata.gpudata
+    # which gpu you would like to use
+    # must between 0 and num_of_total_gpus-1
+    gpudata.which_gpu = 1
+
 
 
     #  ----- For developers ----- 
