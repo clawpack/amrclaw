@@ -70,7 +70,6 @@ include $(AMRLIB)/Makefile.amr_2d
 EXCLUDE_MODULES = \
 
 EXCLUDE_SOURCES = \
-  # $(CLAW)/amrclaw/src/2d/setaux.f
 
 # ----------------------------------------
 # List of custom sources for this program:
@@ -86,6 +85,7 @@ SOURCES = \
 
 ifeq ($(USE_CUDA), TRUE) 
     SOURCES += $(CLAW)/riemann/src/rpn2_acoustics_gpu.f90
+    CPP_SOURCES += stepgrid_cuda.cu
 else
     SOURCES += $(CLAW)/riemann/src/rpn2_acoustics.f90 
 endif

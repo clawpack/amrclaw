@@ -4,6 +4,7 @@
 #include "real.H"
 #include "common.H"
 #include "staticArray.H"
+#include "fused_solvers_headers.H"
 #include <cmath>
 #include <cassert>
 

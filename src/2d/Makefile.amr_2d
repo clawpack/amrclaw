@@ -166,4 +166,7 @@ CPP_HEADERS += \
   $(AMRLIB)/cudaclaw/burger_riemann_solver.H
 endif
 
+ifeq ($(USE_CUDA), TRUE)
+    INCLUDE += $(AMRLIB)/cudaclaw
+endif
 endif
