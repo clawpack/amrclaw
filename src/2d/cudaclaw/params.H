@@ -70,12 +70,11 @@ class pdeParam
                 real startX, real endX, real startY, real endY,
                 real dt_,
                 real* q_, real* qNew_, 
-                real* waveSpeedsX_, real* waveSpeedsY_,
                 real* coefficients_,
                 real* cfl_grid_, const int id_, int dev_id_):
                 cellsX(cellsX), cellsY(cellsY), numGhostCells(numGhostCells), numStates(numStates), numWaves(numWaves), numCoeff(numCoeff),
                 startX(startX), endX(endX), startY(startY), endY(endY), dt(dt_),
-                q(q_), qNew(qNew_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_),
+                q(q_), qNew(qNew_), waveSpeedsX(NULL), waveSpeedsY(NULL),
                 coefficients(coefficients_), cfl_grid(cfl_grid_), id(id_), dev_id(dev_id_)
         {
 

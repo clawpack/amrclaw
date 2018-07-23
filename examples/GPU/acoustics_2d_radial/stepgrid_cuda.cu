@@ -28,7 +28,7 @@ extern "C" void call_C_limited_riemann_update(
             numStates, NWAVES, numCoefficients,
             startX, endX, startY, endY, dt,
             q, qNew, 
-            NULL, NULL, coefficients, 
+            coefficients, 
             cfl_grid, id, dev_id); 
 
     param.setOrderOfAccuracy(2);
