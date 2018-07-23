@@ -188,7 +188,6 @@ contains
         use cudafor
 #endif
         implicit real(CLAW_REAL) (a-h,o-z)
-        external rpn2,rpt2
 
         parameter (msize=max1d+4)
         parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
@@ -291,13 +290,13 @@ contains
 !       call step2_fused(mbig,nvar,maux, &
 !           mbc,mx,my, &
 !           q_d,dx,dy,dt,cflgrid, &
-!           fm_d,fp_d,gm_d,gp_d,rpn2,rpt2,mptr,ngrids,id)
+!           fm_d,fp_d,gm_d,gp_d,mptr,ngrids,id)
 ! 
 ! #else
 !       call step2_fused(mbig,nvar,maux, &
 !           mbc,mx,my, &
 !           q,dx,dy,dt,cflgrid, &
-!           fm,fp,gm,gp,rpn2,rpt2,mptr)
+!           fm,fp,gm,gp,mptr)
 ! #endif
 
 !$OMP  CRITICAL (cflm)
@@ -477,7 +476,6 @@ contains
         use cudafor
 #endif
         implicit real(CLAW_REAL) (a-h,o-z)
-        external rpn2,rpt2
 
         parameter (msize=max1d+4)
         parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
@@ -548,7 +546,7 @@ contains
       call step2_fused(mbig,nvar,maux, &
           mbc,mx,my, &
           q,dx,dy,dt,cfls, &
-          fm,fp,gm,gp,rpn2,rpt2,mptr,ngrids,id)
+          fm,fp,gm,gp,mptr,ngrids,id)
 
 !       # update q
         dtdx = dt/dx
@@ -619,7 +617,6 @@ contains
         use step2_cuda_module, only: step2_and_update
         use cudafor
         implicit real(CLAW_REAL) (a-h,o-z)
-        external rpn2,rpt2
 
         parameter (msize=max1d+4)
         parameter (mwork=msize*(maxvar*maxvar + 13*maxvar + 3*maxaux +2))
@@ -671,7 +668,7 @@ contains
       call step2_and_update(mbig,nvar,maux, &
           mbc,mx,my, &
           q,dx,dy,dt,cfls, &
-          fm,fp,gm,gp,rpn2,rpt2,mptr,ngrids,id)
+          fm,fp,gm,gp,mptr,ngrids,id)
 
 !       # update q
         dtdx = dt/dx

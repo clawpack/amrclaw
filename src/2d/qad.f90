@@ -6,6 +6,7 @@
 !!
 ! -------------------------------------------------------------
 !
+#ifndef CUDA
        subroutine qad(valbig,mitot,mjtot,nvar, &
                svdflx,qc1d,lenbc,lratiox,lratioy,hx,hy,&
                maux,aux,auxc1d,delt,mptr)
@@ -367,3 +368,4 @@
 #endif
        return
        end
+#endif

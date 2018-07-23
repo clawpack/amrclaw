@@ -10,7 +10,7 @@ contains
     !! \param fp[out] fluxes on the right side of each vertical edge
     !! \param gm[out] fluxes on the lower side of each horizontal edge
     !! \param gp[out] fluxes on the upper side of each horizontal edge
-    subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2,rpt2,mptr,ngrids,id)
+    subroutine step2_fused(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,mptr,ngrids,id)
         !
         !     clawpack routine ...  modified for AMRCLAW
         !
@@ -39,8 +39,6 @@ contains
         #endif
 
         implicit none
-
-        external rpn2, rpt2
 
         ! Arguments
         integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
@@ -192,7 +190,7 @@ contains
     !! \param fp[out] fluxes on the right side of each vertical edge
     !! \param gm[out] fluxes on the lower side of each horizontal edge
     !! \param gp[out] fluxes on the upper side of each horizontal edge
-    subroutine step2_and_update(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,rpn2,rpt2,mptr,ngrids,id)
+    subroutine step2_and_update(maxm,meqn,maux,mbc,mx,my,q,dx,dy,dt,cfls,fm,fp,gm,gp,mptr,ngrids,id)
         !
         !     clawpack routine ...  modified for AMRCLAW
         !
@@ -222,7 +220,6 @@ contains
 
         implicit none
 
-        external rpn2, rpt2
 
         ! Arguments
         integer, intent(in) :: maxm,meqn,maux,mbc,mx,my

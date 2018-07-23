@@ -1,6 +1,7 @@
 c
 c -------------------------------------------------------------
 c
+#ifndef CUDA
       subroutine stepgrid_dimSplit(q,fm,fp,gm,gp,mitot,mjtot,mbc,
      &                             dt,dtnew,dx,dy,
      &                             nvar,xlow,ylow,time,mptr,maux,aux)
@@ -197,5 +198,6 @@ c
       endif
       return
       end
+#endif
 
 

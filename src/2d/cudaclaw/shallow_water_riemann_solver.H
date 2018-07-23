@@ -4,8 +4,12 @@
 #include "real.H"
 #include "common.H"
 #include "staticArray.H"
+#include "fused_solvers_headers.H"
 #include <cmath>
 #include <cassert>
+
+// gravitational constant
+real constexpr g = 1.0;
 
 #ifdef CUDA
 // As a general rule a Riemann solver must have the following arguments:
@@ -26,14 +30,16 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct shallow_water_horizontal
 {
+    template<const size_t N>
     __device__ void 
-    operator() (real* q_left, real* q_right, real* u_left, real* u_right,	
-            int row, int col, int numStates, int numWaves,
-            real* wave, real* waveSpeeds)	
+    operator() (const real* const q_left, const real* const q_right, 
+            const staticArrayReal<N>& u_left, const staticArrayReal<N>& u_right,
+            const int row, const int col, const int numStates, const int numWaves,
+            real* const wave, real* const waveSpeeds)	
     {
+        static_assert(N == 0, 
+                "Number of coefficients must be 0 for shallow_water_horizontal");
         // try rearanging, or using ul and ur, vl and vr variables instead of dividing every time!
-        real g = 9.8f;
-
         real h_left   = q_left[0];
         real hu_left  = q_left[1];
         real hv_left  = q_left[2];
@@ -81,14 +87,16 @@ struct shallow_water_horizontal
 
 struct shallow_water_vertical
 {
+    template<const size_t N>
     __device__ void 
-    operator() (real* q_left, real* q_right, real* u_left, real* u_right,
-            int row, int col, int numStates, int numWaves,
-            real* wave, real* waveSpeeds)	
+    operator() (const real* const q_left, const real* const q_right, 
+            const staticArrayReal<N>& u_left, const staticArrayReal<N>& u_right,
+            const int row, const int col, const int numStates, const int numWaves,
+            real* const wave, real* const waveSpeeds)	
     {
+        static_assert(N == 0, 
+                "Number of coefficients must be 0 for shallow_water_horizontal");
         // try rearanging, or using ul and ur, vl and vr variables instead of dividing every time!
-        real g = 9.8f;
-
         real h_left   = q_left[0];
         real hu_left  = q_left[1];
         real hv_left  = q_left[2];
