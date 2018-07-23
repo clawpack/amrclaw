@@ -38,16 +38,13 @@ class pdeParam
         const real startY;		// physical domain's starting y in cartesian coordinates
         const real endY;		// physical domain's ending y in cartesian coordinates
 
-        real dt;			// time step to be used in the computation
+        const real dt;			// time step to be used in the computation
 
         real* coefficients;		// physical medium coefficients
 
         // GPU residents
         real* q;			// data, cells' states
         real* qNew;		       	// intermediate update holder
-
-        // real* wavesX;		// horizontal waves
-        // real* wavesY;		// vertical waves
 
         // Each entry in waveSpeedsX stores maximum u-velocity in one CUDA block. So the size
         // of waveSpeedsX should be number of CUDA blocks for this AMR grid patch

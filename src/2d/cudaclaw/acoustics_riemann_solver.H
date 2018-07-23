@@ -10,6 +10,8 @@
 
 #ifdef CUDA
 
+// This is for homogeneous acoustics.
+// TODO: should let the user specify bulk and rho in case directory
 constexpr real bulk = 4.0;
 constexpr real rho = 1.0;
 
@@ -39,7 +41,8 @@ struct acoustics_homo_2d_horizontal
             const int row, const int col, const int numStates, const int numWaves,
             real* const wave, real* const waveSpeeds)
     {
-        assert(NCOEFFS == 0); // this is the case for homogeneous acoustics
+        static_assert(N == 0, 
+                "Number of coefficients must be 0 for homogeneous acoustics");
         real c = sqrt(bulk/rho);
         real z = c*rho;
 
@@ -95,7 +98,8 @@ struct acoustics_homo_2d_vertical
             const int row, const int col, const int numStates, const int numWaves,
             real* const wave, real* const waveSpeeds)										// output
     {
-        assert(NCOEFFS == 0); // this is the case for homogeneous acoustics
+        static_assert(N == 0, 
+                "Number of coefficients must be 0 for homogeneous acoustics");
         real c = sqrt(bulk/rho);
         real z = c*rho;
 
@@ -115,7 +119,7 @@ struct acoustics_homo_2d_vertical
     }
 };
 
-struct acoustics_2d_horizontal
+struct acoustics_heterogeneous_2d_horizontal
 {
     template<const size_t N>
     __device__ void operator() (const real* const q_left, const real* const q_right, 
@@ -123,7 +127,8 @@ struct acoustics_2d_horizontal
             const int row, const int col, const int numStates, const int numWaves,
             real* const wave, real* const waveSpeeds)
     {
-        assert(N>0);
+        static_assert(N>0, 
+                "N must be larger than 0: heterogeneous acoustic riemann solver requires material property");
         real rho_l = u_left[0];
         real bulk_l = u_left[1];
 
@@ -156,7 +161,7 @@ struct acoustics_2d_horizontal
     }
 };
 
-struct acoustics_2d_vertical
+struct acoustics_heterogeneous_2d_vertical
 {
     template<const size_t N>
     __device__ void operator() (const real* const q_left, const real* const q_right, 
@@ -164,7 +169,8 @@ struct acoustics_2d_vertical
             const int row, const int col, const int numStates, const int numWaves,
             real* const wave, real* const waveSpeeds)
     {
-        assert(N > 0); // this is the case for homogeneous acoustics
+        static_assert(N>0, 
+                "N must be larger than 0: heterogeneous acoustic riemann solver requires material property");
         real rho_l = u_left[0];
         real bulk_l = u_left[1];
 

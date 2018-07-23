@@ -50,69 +50,6 @@ inline __device__ void first_order_update(real* waves, real* waveSpeeds, real* a
 }
 
 
-template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
-inline __device__ void second_order_update_horizontal(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, int row, int col, real dt, Limiter phi)
-{
-#pragma unroll
-    for (int w = 0; w < numWaves; w++)
-    {
-        real waveSpeed =  getSharedSpeed(waveSpeeds, row, col, w, numWaves, blockSizeY, blockSizeX);
-
-        if (waveSpeed < claw_zero)
-        {
-            real limiting_factor = limiting_shared_h_l<numStates, numWaves, blockSizeX, blockSizeY, Limiter>(phi, waves, row, col, w);
-
-#pragma unroll
-            for (int k = 0; k < numStates; k++)
-            {
-                real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
-                amdq[k] += - (real)0.5f*waveSpeed*(1+(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
-            }
-        }
-        else
-        {
-            real limiting_factor = limiting_shared_h_r<numStates, numWaves, blockSizeX, blockSizeY, Limiter>(phi, waves, row, col, w);
-
-#pragma unroll
-            for (int k = 0; k < numStates; k++)
-            {
-                real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
-                apdq[k] += - (real)0.5f*waveSpeed*(1-(dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
-            }
-        }
-    }
-}
-
-template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
-inline __device__ void second_order_update_vertical(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, int row, int col, real dt, Limiter phi)
-{
-#pragma unroll
-    for (int w = 0; w < numWaves; w++)
-    {
-        real waveSpeed =  getSharedSpeed(waveSpeeds, row, col, w, numWaves, blockSizeY, blockSizeX);
-
-        if (waveSpeed < claw_zero)
-        {
-            real limiting_factor = limiting_shared_v_d<numStates, numWaves, blockSizeX, blockSizeY>(phi, waves, row, col, w);
-#pragma unroll
-            for (int k = 0; k < numStates; k++)
-            {
-                real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
-                amdq[k] += -(real)0.5f*waveSpeed*(1+(dt/param.dy)*waveSpeed)*limiting_factor*wave_state;
-            }
-        }
-        else
-        {
-            real limiting_factor = limiting_shared_v_u<numStates, numWaves, blockSizeX, blockSizeY>(phi, waves, row, col, w);
-#pragma unroll
-            for (int k = 0; k < numStates; k++)
-            {
-                real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
-                apdq[k] += - (real)0.5f*waveSpeed*(1-(dt/param.dy)*waveSpeed)*limiting_factor*wave_state;
-            }
-        }
-    }
-}
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
 inline __device__ void first_second_order_update_horizontal(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
@@ -219,8 +156,6 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
     SharedMemory<real> smem;
     real* wavesX = smem.getPointer();
     real* waveSpeedsX = smem.getPointer(blockSize*numWaves*numStates);
-
-    real dt = param.dt;
 
     real apdq[numStates];
     real amdq[numStates];
@@ -370,7 +305,7 @@ __global__ void Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver
         for (int k = 0; k < numStates; k++)
         {
             param.setElement_q(row, col, k, 
-                param.getElement_qNew(row, col, k) - dt/param.dx * (amdq[k] + getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX))
+                param.getElement_qNew(row, col, k) - param.dt/param.dx * (amdq[k] + getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX))
                     );
         }
     }
@@ -408,8 +343,6 @@ __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_s
     SharedMemory<real> smem;
     real* wavesX = smem.getPointer();
     real* waveSpeedsX = smem.getPointer(blockSize*numWaves*numStates);
-
-    real dt = param.dt;
 
     real apdq[numStates];
     real amdq[numStates];
@@ -528,7 +461,8 @@ __global__ void Riemann_horizontal_kernel_warp(pdeParam param, Riemann Riemann_s
         if (grid_valid && threadIdx.x > 1) {
             if (lane_id==0) 
                 apdq_k = getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX);
-            param.setElement_q(row, col, k, param.getElement_qNew(row, col, k) - dt/param.dx * (amdq[k] + apdq_k));
+            param.setElement_q(row, col, k, 
+                    param.getElement_qNew(row, col, k) - param.dt/param.dx * (amdq[k] + apdq_k));
         }
     }
 
@@ -547,8 +481,6 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
     // (row  ,col)
     int col = threadIdx.x + blockIdx.x*blockDim.x;
     int row = threadIdx.y + blockIdx.y*blockDim.y - 3*blockIdx.y;
-
-    real dt = param.dt;
 
     real apdq[numStates];
     real amdq[numStates];
@@ -683,7 +615,7 @@ __global__ void Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v
         for (int k = 0; k < numStates; k++)
         {
             param.setElement_qNew(row, col, k, 
-                param.getElement_q(row, col, k) - dt/param.dy * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX))
+                param.getElement_q(row, col, k) - param.dt/param.dy * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX))
                     );
         }
     }

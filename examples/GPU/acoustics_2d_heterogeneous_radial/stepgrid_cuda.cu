@@ -33,8 +33,8 @@ extern "C" void call_C_limited_riemann_update(
 
     param.setOrderOfAccuracy(2);
 
-    acoustics_2d_horizontal acoustic_h;
-    acoustics_2d_vertical acoustic_v;
+    acoustics_heterogeneous_2d_horizontal acoustic_h;
+    acoustics_heterogeneous_2d_vertical acoustic_v;
     
     limiter_VanLeer phi;
 
