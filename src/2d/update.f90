@@ -102,13 +102,13 @@
          if (node(cfluxptr,mptr) .eq. 0) go to 25
 #endif
 
-#ifdef CUDA
-         call upbnd(cflux_hh(mptr)%ptr,alloc(loc),nvar, &
-                    naux,mitot,mjtot,listsp(lget),mptr)
-#else
-         call upbnd(alloc(node(cfluxptr,mptr)),alloc(loc),nvar, &
-                    naux,mitot,mjtot,listsp(lget),mptr)
-#endif
+! #ifdef CUDA
+!          call upbnd(cflux_hh(mptr)%ptr,alloc(loc),nvar, &
+!                     naux,mitot,mjtot,listsp(lget),mptr)
+! #else
+!          call upbnd(alloc(node(cfluxptr,mptr)),alloc(loc),nvar, &
+!                     naux,mitot,mjtot,listsp(lget),mptr)
+! #endif
 !
 !  loop through all intersecting fine grids as source updaters.
 !
