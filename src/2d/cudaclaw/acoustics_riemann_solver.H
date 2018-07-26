@@ -15,6 +15,17 @@
 constexpr real bulk = 4.0;
 constexpr real rho = 1.0;
 
+extern "C" 
+{
+    __device__
+    void riemann_acoustics_homo_2d_fortran(const int ixy, const int num_eqn, 
+            const int num_aux, const int num_waves,
+            const real* const q_left, const real* const q_right,
+            const real* const aux_left, const real* const aux_right,
+            real* wave, real* waveSpeeds, 
+            const real bulk, const real rho);
+}
+
 
 // As a general rule a Riemann solver must have the following arguments:
 // Input:
@@ -43,22 +54,24 @@ struct acoustics_homo_2d_horizontal
     {
         static_assert(N == 0, 
                 "Number of coefficients must be 0 for homogeneous acoustics");
-        real c = sqrt(bulk/rho);
-        real z = c*rho;
 
-        setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, -c);
-        setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x,  c);
+        real wave_local[NWAVES*NEQNS];
+        real waveSpeeds_local[NWAVES];
+        riemann_acoustics_homo_2d_fortran(1, numStates, N, numWaves, 
+                q_left, q_right, NULL, NULL, 
+                wave_local, waveSpeeds_local, bulk, rho);
 
-        real alpha1 = ( q_left[0] - q_right[0] + z*(q_right[1] - q_left[1])) / (2*z);
-        real alpha2 = ( q_right[0] - q_left[0] + z*(q_right[1] - q_left[1])) / (2*z);
+        setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[0]);
+        setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[1]);
 
-        setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, -alpha1*z);
-        setSharedWave(wave, row, col, 0, 1, numWaves, numStates, blockDim.y, blockDim.x, alpha1);
-        setSharedWave(wave, row, col, 0, 2, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
+        setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, wave_local[0]);
+        setSharedWave(wave, row, col, 0, 1, numWaves, numStates, blockDim.y, blockDim.x, wave_local[1]);
+        setSharedWave(wave, row, col, 0, 2, numWaves, numStates, blockDim.y, blockDim.x, wave_local[2]);
 
-        setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha2*z);
-        setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, alpha2);
-        setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
+        setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, wave_local[3]);
+        setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, wave_local[4]);
+        setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, wave_local[5]);
+
     }
 };
 
@@ -100,22 +113,24 @@ struct acoustics_homo_2d_vertical
     {
         static_assert(N == 0, 
                 "Number of coefficients must be 0 for homogeneous acoustics");
-        real c = sqrt(bulk/rho);
-        real z = c*rho;
 
-        setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, -c);
-        setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x,  c);
+        real wave_local[NWAVES*NEQNS];
+        real waveSpeeds_local[NWAVES];
+        riemann_acoustics_homo_2d_fortran(2, numStates, N, numWaves, 
+                q_left, q_right, NULL, NULL, 
+                wave_local, waveSpeeds_local, bulk, rho);
 
-        real alpha1 = ( q_left[0] - q_right[0] + z*(q_right[2] - q_left[2])) / (2*z);
-        real alpha2 = ( q_right[0] - q_left[0] + z*(q_right[2] - q_left[2])) / (2*z);
+        setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[0]);
+        setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[1]);
 
-        setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, -alpha1*z);
-        setSharedWave(wave, row, col, 0, 1, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
-        setSharedWave(wave, row, col, 0, 2, numWaves, numStates, blockDim.y, blockDim.x, alpha1);
+        setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, wave_local[0]);
+        setSharedWave(wave, row, col, 0, 1, numWaves, numStates, blockDim.y, blockDim.x, wave_local[1]);
+        setSharedWave(wave, row, col, 0, 2, numWaves, numStates, blockDim.y, blockDim.x, wave_local[2]);
 
-        setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha2*z);
-        setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
-        setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, alpha2);
+        setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, wave_local[3]);
+        setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, wave_local[4]);
+        setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, wave_local[5]);
+
     }
 };
 
