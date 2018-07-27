@@ -6,7 +6,8 @@ COMMON_MODULES += \
   $(CLAW)/classic/src/utility_module.f90 \
   $(AMRLIB)/amr_module.f90 \
   $(AMRLIB)/gauges_module.f90 \
-  $(AMRLIB)/regions_module.f90
+  $(AMRLIB)/regions_module.f90 \
+  $(AMRLIB)/abl_module.f90
 
 COMMON_SOURCES += \
   $(AMRLIB)/qinit.f \
