@@ -22,7 +22,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
 
         # Need to have a pointer to this so we can get num_dim and num_aux
         self._clawdata = clawdata
-        
+
         # Refinement control
         self.add_attribute('amr_levels_max',1)
         self.add_attribute('refinement_ratios_x',[1])
@@ -45,7 +45,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         self.add_attribute('clustering_cutoff',0.7)
         self.add_attribute('verbosity_regrid',3)
 
-        
+
         # debugging flags:
         self.add_attribute('dprint',False)
         self.add_attribute('eprint',False)
@@ -62,7 +62,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
     def write(self, out_file='amr.data', data_source='setrun.py'):
 
         self.open_data_file(out_file, data_source)
-    
+
         self.data_write('amr_levels_max')
 
         num_ratios = max(abs(self.amr_levels_max)-1, 1)
@@ -89,14 +89,24 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         if len(self.aux_type) < self._clawdata.num_aux:
             raise ValueError("*** length of aux_type array should be " +\
                   "same as num_aux = %i" % self._clawdata.num_aux)
-        if self._clawdata.num_aux > 0:
+
+        # If necessary, adjust data for absorbing boundary layer
+        if self._clawdata.abldata.abltype != 0:
+            aux_type = self.aux_type
+            aux_type.append('xleft')
+            if self._clawdata.num_dim > 1:
+              aux_type.append('yleft')
+            if self._clawdata.num_dim > 2:
+              aux_type.append('zleft')
+            self.data_write('', value=aux_type, alt_name='aux_type')
+        elif self._clawdata.num_aux > 0:
             self.data_write('aux_type')
         self.data_write()
 
         self.data_write('flag_richardson')
         if self.flag_richardson == False:
             # Still need to add flag_richardson to fortran, for now this works:
-            self.flag_richardson_tol = -1.   
+            self.flag_richardson_tol = -1.
         self.data_write('flag_richardson_tol')
         self.data_write('flag2refine')
         self.data_write('flag2refine_tol')
@@ -149,7 +159,7 @@ class RegionData(clawpack.clawutil.data.ClawData):
             # write minlevel,maxlevel as integers, remaining floats in e format:
             self._out_file.write("%i  %i " % (regions[0], regions[1]))
             self._out_file.write((len(regions)-2)*"%20.14e  " % tuple(regions[2:]) +"\n")
-            
+
         self.close_data_file()
 
 
@@ -169,7 +179,7 @@ class RegionData(clawpack.clawutil.data.ClawData):
             else:
                 break
 
-        # Read in number of regions        
+        # Read in number of regions
         num_regions, tail = line.split("=:")
         num_regions = int(num_regions)
         varname = tail.split()[0]
@@ -186,7 +196,7 @@ class RegionData(clawpack.clawutil.data.ClawData):
 
 
 # ==============================================================================
-        
+
 # ==============================================================================
 #  Gauge data object
 class GaugeData(clawpack.clawutil.data.ClawData):
@@ -225,12 +235,12 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         output = "\t".join((output, "display: %s" % self.display_format))
         output = "\n\t".join((output, "q fields: %s" % self.q_out_fields))
         output = "\n\t".join((output, "aux fields: %s" % self.aux_out_fields))
-        output = "\n\t".join((output, "min. time increment: %s" 
+        output = "\n\t".join((output, "min. time increment: %s"
                                                      % self.min_time_increment))
         return output
 
 
-    def write(self, num_eqn, num_aux, out_file='gauges.data', 
+    def write(self, num_eqn, num_aux, out_file='gauges.data',
                                       data_source='setrun.py'):
         r"""Write out gauge information data file."""
 
@@ -246,7 +256,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             format = "%4i" + (len(gauge)-3) * "  %17.10e" + 2 * "  %13.6e" + "\n"
             self._out_file.write(format % tuple(gauge))
         self.data_write()
-        
+
         # Expand all gauge format option dictionaries
         for key in self.defaults.keys():
             self.expand_gauge_format_option(key)
@@ -282,16 +292,16 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             if isinstance(self.q_out_fields[gauge_num], six.string_types):
                 if self.q_out_fields[gauge_num].lower() == 'all':
                     self._out_file.write("%s\n" % " ".join(['True'] * num_eqn))
-                elif self.q_out_fields[gauge_num].lower() == 'none': 
+                elif self.q_out_fields[gauge_num].lower() == 'none':
                     self._out_file.write("%s\n" % " ".join(['False'] * num_eqn))
                 else:
-                    raise ValueError("Unknown q field string specified, '%s'" 
+                    raise ValueError("Unknown q field string specified, '%s'"
                                                  % self.q_out_fields[gauge_num])
             else:
                 # Specify by field number
                 if not isinstance(self.q_out_fields[gauge_num], list):
                     self.q_out_fields[gauge_num] = [self.q_out_fields[gauge_num]]
-                bool_list = [n in self.q_out_fields[gauge_num] 
+                bool_list = [n in self.q_out_fields[gauge_num]
                                                        for n in range(num_eqn)]
                 bool_list = [str(value) for value in bool_list]
                 self._out_file.write("%s\n" % (" ".join(bool_list)))
@@ -305,16 +315,16 @@ class GaugeData(clawpack.clawutil.data.ClawData):
                 if isinstance(self.aux_out_fields[gauge_num], six.string_types):
                     if self.aux_out_fields[gauge_num].lower() == 'all':
                         self._out_file.write("%s\n" % " ".join(['True'] * num_aux))
-                    elif self.aux_out_fields[gauge_num].lower() == 'none': 
+                    elif self.aux_out_fields[gauge_num].lower() == 'none':
                         self._out_file.write("%s\n" % " ".join(['False'] * num_aux))
                     else:
-                        raise ValueError("Unknown q field string specified, '%s'" 
+                        raise ValueError("Unknown q field string specified, '%s'"
                                                      % self.aux_out_fields[gauge_num])
                 else:
                     # Specify by field number
                     if not isinstance(self.aux_out_fields[gauge_num], list):
                         self.aux_out_fields[gauge_num] = [self.aux_out_fields[gauge_num]]
-                    bool_list = [n in self.aux_out_fields[gauge_num] 
+                    bool_list = [n in self.aux_out_fields[gauge_num]
                                                            for n in range(num_aux)]
                     bool_list = [str(value) for value in bool_list]
                     self._out_file.write("%s\n" % (" ".join(bool_list)))
@@ -385,4 +395,3 @@ class GaugeData(clawpack.clawutil.data.ClawData):
 
 if __name__ == '__main__':
     raise Exception("Not unit tests have been defined for this module.")
-
