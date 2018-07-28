@@ -223,11 +223,13 @@ struct limiter_superbee
 };
 struct limiter_VanLeer
 {
-    __device__ real operator() (real theta)
+    __forceinline__ __device__ 
+    real operator() (real theta)
     {
         real absTheta = fabs(theta);
         return (theta + absTheta) / ((real)1.0f + absTheta);
     }
 };
+
 
 #endif

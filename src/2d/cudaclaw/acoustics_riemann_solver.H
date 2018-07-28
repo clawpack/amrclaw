@@ -10,20 +10,19 @@
 
 #ifdef CUDA
 
-// This is for homogeneous acoustics.
-// TODO: should let the user specify bulk and rho in case directory
-constexpr real bulk = 4.0;
-constexpr real rho = 1.0;
 
 extern "C" 
 {
     __device__
-    void riemann_acoustics_homo_2d_fortran(const int ixy, const int num_eqn, 
-            const int num_aux, const int num_waves,
+    void riemann_acoustics_homo_2d_fortran_x(
             const real* const q_left, const real* const q_right,
             const real* const aux_left, const real* const aux_right,
-            real* wave, real* waveSpeeds, 
-            const real bulk, const real rho);
+            real* wave, real* waveSpeeds);
+    __device__
+    void riemann_acoustics_homo_2d_fortran_y(
+            const real* const q_left, const real* const q_right,
+            const real* const aux_left, const real* const aux_right,
+            real* wave, real* waveSpeeds);
 }
 
 
@@ -57,9 +56,9 @@ struct acoustics_homo_2d_horizontal
 
         real wave_local[NWAVES*NEQNS];
         real waveSpeeds_local[NWAVES];
-        riemann_acoustics_homo_2d_fortran(1, numStates, N, numWaves, 
+        riemann_acoustics_homo_2d_fortran_x(
                 q_left, q_right, NULL, NULL, 
-                wave_local, waveSpeeds_local, bulk, rho);
+                wave_local, waveSpeeds_local);
 
         setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[0]);
         setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[1]);
@@ -75,34 +74,34 @@ struct acoustics_homo_2d_horizontal
     }
 };
 
-struct acoustics_homo_2d_horizontal_warp
-{
-    // u_left and u_right are empty and not used here
-    __device__ void operator() (real* q_left, real* q_right, real* u_left, real* u_right,
-            int row, int col, int numStates, int numWaves,
-            real* wave, real* waveSpeeds, real* apdq, real* amdq)
-    {
-        assert(NCOEFFS == 0); // this is the case for homogeneous acoustics
-        real c = sqrt(bulk/rho);
-        real z = c*rho;
-
-        setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, -c);
-        setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x,  c);
-
-        real alpha1 = ( q_left[0] - q_right[0] + z*(q_right[1] - q_left[1])) / (2*z);
-        real alpha2 = ( q_right[0] - q_left[0] + z*(q_right[1] - q_left[1])) / (2*z);
-
-        amdq[0] = (-alpha1*z)*(-c);
-        amdq[1] = alpha1*(-c);
-        amdq[2] = claw_zero;
-
-        apdq[0] = alpha2*z*c;
-        apdq[1] = alpha2*c;
-        apdq[2] = claw_zero;
-
-    }
-};
-
+// struct acoustics_homo_2d_horizontal_warp
+// {
+//     // u_left and u_right are empty and not used here
+//     __device__ void operator() (real* q_left, real* q_right, real* u_left, real* u_right,
+//             int row, int col, int numStates, int numWaves,
+//             real* wave, real* waveSpeeds, real* apdq, real* amdq)
+//     {
+//         assert(NCOEFFS == 0); // this is the case for homogeneous acoustics
+//         real c = sqrt(bulk/rho);
+//         real z = c*rho;
+// 
+//         setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, -c);
+//         setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x,  c);
+// 
+//         real alpha1 = ( q_left[0] - q_right[0] + z*(q_right[1] - q_left[1])) / (2*z);
+//         real alpha2 = ( q_right[0] - q_left[0] + z*(q_right[1] - q_left[1])) / (2*z);
+// 
+//         amdq[0] = (-alpha1*z)*(-c);
+//         amdq[1] = alpha1*(-c);
+//         amdq[2] = claw_zero;
+// 
+//         apdq[0] = alpha2*z*c;
+//         apdq[1] = alpha2*c;
+//         apdq[2] = claw_zero;
+// 
+//     }
+// };
+// 
 struct acoustics_homo_2d_vertical
 {
     template<const size_t N>
@@ -116,9 +115,9 @@ struct acoustics_homo_2d_vertical
 
         real wave_local[NWAVES*NEQNS];
         real waveSpeeds_local[NWAVES];
-        riemann_acoustics_homo_2d_fortran(2, numStates, N, numWaves, 
+        riemann_acoustics_homo_2d_fortran_y(
                 q_left, q_right, NULL, NULL, 
-                wave_local, waveSpeeds_local, bulk, rho);
+                wave_local, waveSpeeds_local);
 
         setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[0]);
         setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[1]);
