@@ -3,6 +3,7 @@
 
 #include "real.H"
 #include "common.H"
+#include "arrayIndex.H"
 #include "staticArray.H"
 #include <cmath>
 #include <cassert>
@@ -23,49 +24,30 @@ using std::sqrt;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////      Waves    //////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline __device__ 
-int general_indexing(int a, int sizeA, int b, int sizeB, int c, int sizeC, int d, int sizeD)
-{
-    return (a*sizeB*sizeC*sizeD + b*sizeC*sizeD + c*sizeD + d);
-}
-inline __device__ 
-int getIndex_SharedWave(int row, int col, int wave, int state, int numWaves, int numStates, int blockHeight, int blockWidth)
-{
-    // return ( general_indexing(row, blockHeight, wave, numWaves, state, numStates, col, blockWidth) );
-    // NOTE: if pointwise Riemann solver written in Fortran is used, it assumes this index
-    return state + wave*numStates + col*numStates*numWaves + row*numStates*numWaves*blockWidth;
-}
 
 inline __device__ 
 real &getSharedWave(real* sharedData, const int row, const int col, const int wave, const int state, const int numWaves, const int numStates, const int blockHeight, const int blockWidth)
 {
-    return sharedData[getIndex_SharedWave(row, col, wave, state, numWaves, numStates, blockHeight, blockWidth)];
+    return sharedData[GET_INDEX_SHARED_WAVE_0INDEX(row, col, wave, state, numWaves, numStates, blockHeight, blockWidth)];
 }
 inline __device__ 
 void setSharedWave(real* sharedData, int row, int col, int wave, int state, int numWaves, int numStates, int blockHeight, int blockWidth, real newVal)
 {
-    sharedData[getIndex_SharedWave(row, col, wave, state, numWaves, numStates, blockHeight, blockWidth)] = newVal;
+    sharedData[GET_INDEX_SHARED_WAVE_0INDEX(row, col, wave, state, numWaves, numStates, blockHeight, blockWidth)] = newVal;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////  Wave Speeds  //////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 inline __device__ 
-int getIndex_SharedSpeed(int row, int col, int wave, int numWaves, int blockHeight, int blockWidth)
-{
-    // vreturn (wave*blockHeight*blockWidth + row*blockWidth + col);
-    // NOTE: if pointwise Riemann solver written in Fortran is used, it assumes this index
-    return (row*numWaves*blockWidth + col*numWaves + wave);
-}
-inline __device__ 
 real &getSharedSpeed(real* sharedData, const int row, const int col, const int wave, const int numWaves, const int blockHeight, const int blockWidth)
 {
-    return sharedData[getIndex_SharedSpeed(row, col, wave, numWaves, blockHeight, blockWidth)];
+    return sharedData[GET_INDEX_SHARED_SPEED_0INDEX(row, col, wave, numWaves, blockHeight, blockWidth)];
 }
 inline __device__ 
 void setSharedSpeed(real* sharedData, int row, int col, int wave, int numWaves, int blockHeight, int blockWidth, real newVal)
 {
-    sharedData[getIndex_SharedSpeed(row, col, wave, numWaves, blockHeight, blockWidth)] = newVal;
+    sharedData[GET_INDEX_SHARED_SPEED_0INDEX(row, col, wave, numWaves, blockHeight, blockWidth)] = newVal;
 }
 
 

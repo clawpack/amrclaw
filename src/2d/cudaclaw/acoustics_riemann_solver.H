@@ -54,56 +54,15 @@ struct acoustics_homo_2d_horizontal
         static_assert(N == 0, 
                 "Number of coefficients must be 0 for homogeneous acoustics");
 
-        // real wave_local[NWAVES*NEQNS];
-        // real waveSpeeds_local[NWAVES];
         riemann_acoustics_homo_2d_fortran_x(
                 q_left, q_right, NULL, NULL, 
-                &getSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x),
-                &getSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x)
+                wave, waveSpeeds
                 );
 
-        // setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[0]);
-        // setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[1]);
-
-        // setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, wave_local[0]);
-        // setSharedWave(wave, row, col, 0, 1, numWaves, numStates, blockDim.y, blockDim.x, wave_local[1]);
-        // setSharedWave(wave, row, col, 0, 2, numWaves, numStates, blockDim.y, blockDim.x, wave_local[2]);
-
-        // setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, wave_local[3]);
-        // setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, wave_local[4]);
-        // setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, wave_local[5]);
 
     }
 };
 
-// struct acoustics_homo_2d_horizontal_warp
-// {
-//     // u_left and u_right are empty and not used here
-//     __device__ void operator() (real* q_left, real* q_right, real* u_left, real* u_right,
-//             int row, int col, int numStates, int numWaves,
-//             real* wave, real* waveSpeeds, real* apdq, real* amdq)
-//     {
-//         assert(NCOEFFS == 0); // this is the case for homogeneous acoustics
-//         real c = sqrt(bulk/rho);
-//         real z = c*rho;
-// 
-//         setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, -c);
-//         setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x,  c);
-// 
-//         real alpha1 = ( q_left[0] - q_right[0] + z*(q_right[1] - q_left[1])) / (2*z);
-//         real alpha2 = ( q_right[0] - q_left[0] + z*(q_right[1] - q_left[1])) / (2*z);
-// 
-//         amdq[0] = (-alpha1*z)*(-c);
-//         amdq[1] = alpha1*(-c);
-//         amdq[2] = claw_zero;
-// 
-//         apdq[0] = alpha2*z*c;
-//         apdq[1] = alpha2*c;
-//         apdq[2] = claw_zero;
-// 
-//     }
-// };
-// 
 struct acoustics_homo_2d_vertical
 {
     template<const size_t N>
@@ -115,24 +74,10 @@ struct acoustics_homo_2d_vertical
         static_assert(N == 0, 
                 "Number of coefficients must be 0 for homogeneous acoustics");
 
-        // real wave_local[NWAVES*NEQNS];
-        // real waveSpeeds_local[NWAVES];
         riemann_acoustics_homo_2d_fortran_y(
                 q_left, q_right, NULL, NULL, 
-                &getSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x),
-                &getSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x)
+                wave, waveSpeeds
                 );
-
-        // setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[0]);
-        // setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x, waveSpeeds_local[1]);
-
-        // setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, wave_local[0]);
-        // setSharedWave(wave, row, col, 0, 1, numWaves, numStates, blockDim.y, blockDim.x, wave_local[1]);
-        // setSharedWave(wave, row, col, 0, 2, numWaves, numStates, blockDim.y, blockDim.x, wave_local[2]);
-
-        // setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, wave_local[3]);
-        // setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, wave_local[4]);
-        // setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, wave_local[5]);
 
     }
 };

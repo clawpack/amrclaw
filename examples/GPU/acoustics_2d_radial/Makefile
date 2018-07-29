@@ -89,6 +89,10 @@ ifeq ($(USE_CUDA), TRUE)
 else
     SOURCES += $(CLAW)/riemann/src/rpn2_acoustics.f90 
 endif
+
+# case specific dependency
+$(CLAW)/riemann/src/acoustics_device_module.f90:$(CLAW)/amrclaw/src/2d/cudaclaw/arrayIndex.H
+
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
 include $(CLAWMAKE)

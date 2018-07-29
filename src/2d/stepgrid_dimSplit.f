@@ -1,7 +1,6 @@
 c
 c -------------------------------------------------------------
 c
-#ifndef CUDA
       subroutine stepgrid_dimSplit(q,fm,fp,gm,gp,mitot,mjtot,mbc,
      &                             dt,dtnew,dx,dy,
      &                             nvar,xlow,ylow,time,mptr,maux,aux)
@@ -28,6 +27,7 @@ c dtnew      = return suggested new time step for this grid's soln.
 c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+#ifndef CUDA
       use amr_module
       implicit real(CLAW_REAL) (a-h,o-z)
       external rpn2
@@ -196,8 +196,8 @@ c
          end do
          end do
       endif
+#endif
       return
       end
-#endif
 
 

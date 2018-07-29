@@ -6,7 +6,6 @@
 !!
 ! -------------------------------------------------------------
 !
-#ifndef CUDA
        subroutine qad(valbig,mitot,mjtot,nvar, &
                svdflx,qc1d,lenbc,lratiox,lratioy,hx,hy,&
                maux,aux,auxc1d,delt,mptr)
@@ -50,6 +49,8 @@
        dimension wave(nvar,mwaves,max1dp1), s(mwaves,max1dp1)
        dimension amdq(nvar,max1dp1),  apdq(nvar,max1dp1)
        dimension auxl(maxaux*max1dp1),  auxr(maxaux*max1dp1)
+
+#ifndef CUDA
 !
 !  WARNING: auxl,auxr dimensioned at max possible, but used as if
 !  they were dimensioned as the real maux by max1dp1. Would be better
@@ -366,6 +367,6 @@
 #ifdef PROFILE
        call endCudaProfiler()
 #endif
+#endif
        return
        end
-#endif
