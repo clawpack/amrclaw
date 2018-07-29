@@ -159,10 +159,12 @@ module amr_module
 
     ! :::::::  for flagging points   
     ! TODO: can use one bit for this instead of real?
+    ! needs to be set
+    real(kind=8), parameter :: UNSET = -1.0
     ! needs no refine
-    real(kind=8), parameter :: goodpt = 0.0
+    real(kind=8), parameter :: DONTFLAG = 0.0
     ! needs refine
-    real(kind=8), parameter :: badpt  = 2.0
+    real(kind=8), parameter :: DOFLAG  = 2.0
     real(kind=8), parameter :: badpro = 3.0
 
     real(kind=8), parameter :: NEEDS_TO_BE_SET = 10.e33

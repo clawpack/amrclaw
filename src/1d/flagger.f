@@ -9,6 +9,7 @@ c
       integer omp_get_thread_num, omp_get_max_threads
       integer mythread/0/, maxthreads/1/
       integer listgrids(numgrids(lcheck)), locuse
+      logical keepflagging
 
 c ::::::::::::::::::::: FLAGGER :::::::::::::::::::::::::
 c
@@ -43,7 +44,7 @@ c            mptr = listgrids(jg)
 !$OMP PARALLEL DO PRIVATE(jg,mptr,nx,mitot,locnew,locaux),
 !$OMP&            PRIVATE(time,dx,xleft,xlow,locbig),
 !$OMP&            PRIVATE(locold,mbuff,mibuff,locamrflags,i),
-!$OMP&            PRIVATE(locuse),
+!$OMP&            PRIVATE(locuse,keepflagging),
 !$OMP&            SHARED(numgrids,listgrids,lcheck,nghost,nvar,naux),
 !$OMP&            SHARED(levSt,listStart,listOfGrids),
 !$OMP&            SHARED(tolsp,alloc,node,rnode,hxposs,ibuff),
@@ -94,13 +95,30 @@ c            them in locnew
          mbuff = max(nghost,ibuff+1)  
          mibuff = nx + 2*mbuff       ! NOTE THIS NEW DIMENSIONING TO ALLOW ROOM FOR BUFFERING IN PLACE
 
-!              ##  locamrflags used for flag storage. flag2refine flags directly into it.
+!              ##  locamrflags used for flag storage.
+!              ## flagregions flags directly into it. flag2refine and
 !              ## richardson flags added to it. Then colate finished the job
                 locamrflags = node(storeflags,mptr)
                 do 20 i = 1, mibuff  ! initialize
- 20                alloc(locamrflags+i-1) = goodpt
+ 20                alloc(locamrflags+i-1) = UNSET
 
-         if (flag_gradient) then
+c      ##  new call to flag regions: check if cells must be refined, or exceed
+c      ##  maximum refinement level for that region.  used to be included with
+c      ## flag2refine. moved here to include flags from richardson too.
+       call flagregions1(nx,mbuff,rnode(cornxlo,mptr),
+     1                  dx,lcheck,time,
+     2                  alloc(locamrflags))
+
+c       ##  check if any flags remain unset
+        keepflagging = .false.
+        do i = 1, mibuff
+            if(alloc(locamrflags+i-1) == UNSET) then
+                keepflagging = .true.
+                exit
+            endif
+        enddo
+
+         if (flag_gradient .and. keepflagging) then
 
 c     # call user-supplied routine to flag any points where 
 c     # refinement is desired based on user's criterion.  
@@ -110,11 +128,19 @@ c no longer getting locbig, using "real" solution array in locnew
             call flag2refine1(nx,nghost,mbuff,nvar,naux,
      &                        xleft,dx,time,lcheck,
      &                        tolsp,alloc(locuse),
-     &                        alloc(locaux),alloc(locamrflags),
-     &                        goodpt,badpt)
+     &                        alloc(locaux),alloc(locamrflags))
              endif     
-c     
-         if (flag_richardson) then
+c
+c       ##  check if any flags remain unset
+        keepflagging = .false.
+        do i = 1, mibuff
+            if(alloc(locamrflags+i-1) == UNSET) then
+                keepflagging = .true.
+                exit
+            endif
+        enddo
+
+         if (flag_richardson .and. keepflagging) then
               call errest(nvar,naux,lcheck,mptr,nx)
          endif
 

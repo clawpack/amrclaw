@@ -63,26 +63,38 @@ c
       ifine = nghost+1
 c
       do 30  i  = nghost+1, mi2tot-nghost
-          rflag = goodpt
-          xofi  = xleft + (dble(ifine) - .5d0)*hx
-          term1 = rctfine(1,ifine,jfine)
-          term2 = rctfine(1,ifine+1,jfine)
-          term3 = rctfine(1,ifine+1,jfine+1)
-          term4 = rctfine(1,ifine,jfine+1)
-c         # divide by (aval*order) for relative error
-          aval  = (term1+term2+term3+term4)/4.d0
-          est   =  dabs((aval-rctcrse(1,i,j))/ order)
-          if (est .gt. errmax) errmax = est
-          err2 = err2 + est*est
-c         write(outunit,102) i,j,est,rctcrse(1,i,j)
- 102      format(' i,j,est ',2i5,2e15.7)
-c          write(outunit,104) term1,term2,term3,term4
- 104      format('   ',4e15.7)
-c         rctcrse(2,i,j) = est
+          rflag = UNSET
+c Only check errors if flag hasn't been set yet.
+c If flag == DONTFLAG then refinement is forbidden by a region,
+c if flag == DOFLAG checking is not needed
+
+c Note: here rctcrse is being used as a temporary flag
+c the fine grid amrflags array is stored in rctflg, and will be
+c updated based on rctcrse at the end of this routine
+          if(rctflg(ifine,jfine) == UNSET
+     .         .or. rctflg(ifine+1,jfine) == UNSET
+     .         .or. rctflg(ifine,jfine+1) == UNSET
+     .         .or. rctflg(ifine+1,jfine+1) == UNSET) then
+              xofi  = xleft + (dble(ifine) - .5d0)*hx
+              term1 = rctfine(1,ifine,jfine)
+              term2 = rctfine(1,ifine+1,jfine)
+              term3 = rctfine(1,ifine+1,jfine+1)
+              term4 = rctfine(1,ifine,jfine+1)
+c             # divide by (aval*order) for relative error
+              aval  = (term1+term2+term3+term4)/4.d0
+              est   =  dabs((aval-rctcrse(1,i,j))/ order)
+              if (est .gt. errmax) errmax = est
+              err2 = err2 + est*est
+c             write(outunit,102) i,j,est,rctcrse(1,i,j)
+ 102          format(' i,j,est ',2i5,2e15.7)
+c              write(outunit,104) term1,term2,term3,term4
+ 104          format('   ',4e15.7)
+c             rctcrse(2,i,j) = est
 c
-          if (est .ge. tol) then
-             rflag  = badpt
-          endif 
+              if (est .ge. tol) then
+                 rflag  = DOFLAG
+              endif
+          endif
       rctcrse(1,i,j) = rflag
       ifine = ifine + 2
  30   continue
@@ -112,15 +124,16 @@ c
       do 70 j = nghost+1, mj2tot-nghost
       ifine   = nghost+1
       do 60 i = nghost+1, mi2tot-nghost
-         if (rctcrse(1,i,j) .eq. goodpt) go to 55
-c           ## never set rctflg to good, since flag2refine may
-c           ## have previously set it to bad
-c           ## can only add bad pts in this routine
-            rctflg(ifine,jfine)    = badpt
-            rctflg(ifine+1,jfine)  = badpt
-            rctflg(ifine,jfine+1)  = badpt
-            rctflg(ifine+1,jfine+1)= badpt
- 55       ifine   = ifine + 2
+         if (rctcrse(1,i,j) .eq. DOFLAG) then
+c           ## never set rctflg to DONTFLAG, since flagregions2 or
+c           ## flag2refine may have previously set it to DOFLAG
+c           ## can only add DOFLAG pts in this routine
+            rctflg(ifine,jfine)    = DOFLAG
+            rctflg(ifine+1,jfine)  = DOFLAG
+            rctflg(ifine,jfine+1)  = DOFLAG
+            rctflg(ifine+1,jfine+1)= DOFLAG
+          endif
+          ifine   = ifine + 2
  60     continue
         jfine   = jfine + 2
  70   continue

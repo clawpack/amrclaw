@@ -71,15 +71,6 @@ c        mptr = listgrids(jg)
          mjbuff = ny + 2*mbuff
          locamrflags = node(storeflags,mptr)
 
-c        ### is richardson used, add those flags to flags computed by spatial gradients
-c        ### (or whatever user-defined criteria used). Even if nothing else used,
-c        ### put flags into locamrflag array.
-!--         if (flag_richardson) then   
-!--            loctmp = node(store2, mptr)
-!--            call addflags(alloc(locamrflags),mibuff,mjbuff,
-!--     .           alloc(loctmp),nvar,mitot,mjtot,mptr)
-!--         endif 
-
 c     still need to reclaim error est space from spest.f 
 c     which was saved for possible errest reuse
          if (flag_richardson) then
@@ -95,13 +86,6 @@ c
      &              i=mbuff+1,mibuff-mbuff)
             enddo
          endif
-
-c      ##  new call to flag regions: check if cells must be refined, or exceed
-c      ##  maximum refinement level for that region.  used to be included with
-c      ## flag2refine. moved here to include flags from richardson too.
-       call flagregions2(nx,ny,mbuff,rnode(cornxlo,mptr),
-     1                  rnode(cornylo,mptr),dx,dy,lcheck,time,
-     2                  alloc(locamrflags),goodpt,badpt)
 
 c     for this version project to each grid separately, no giant iflags
          if (lcheck+2 .le. mxnest) then
@@ -154,7 +138,7 @@ c
       numflagged = 0
       do 82 j = 1, mjbuff
          do 82 i = 1, mibuff
-            if (alloc(iadd(i,j)) .ne. goodpt) then 
+            if (alloc(iadd(i,j)) .gt. DONTFLAG) then
                numflagged=numflagged + 1
             endif
  82      continue

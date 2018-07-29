@@ -9,10 +9,10 @@
 !             DONTFLAG (no refinement needed)  or
 !             DOFLAG   (refinement desired)    
 !
-! On input, amrflags is already set by flagger routine using 
-! Richardson extrapolation and/or flag2refine routine, as requested.
 ! This routine may change flags only in cells that are (partially)
-! covered by one or more regions.
+! covered by one or more regions. amrflags will be later modified
+! by Richardson extrapolation and/or flag2refine routine, as requested,
+! which will only add DOFLAG points to cells that are still UNSET
 !
 ! If any part of a grid cell is covered by one or more regions, then
 ! refinement is *required* to at least the max of all region min_levels
@@ -23,9 +23,10 @@
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 subroutine flagregions1(mx,mbuff,xlower,dx,level,t, &
-                            amrflags,DONTFLAG,DOFLAG)
+                            amrflags)
 
     use regions_module
+    use amr_module, only : DOFLAG, UNSET, DONTFLAG
 
     implicit none
 
@@ -35,8 +36,6 @@ subroutine flagregions1(mx,mbuff,xlower,dx,level,t, &
     
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff)
-    real(kind=8), intent(in) :: DONTFLAG
-    real(kind=8), intent(in) :: DOFLAG
     
     ! Locals
     integer :: i,m,i1,i2

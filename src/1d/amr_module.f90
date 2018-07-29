@@ -42,8 +42,9 @@ module amr_module
     integer, parameter :: gridNbor = 1 !use 1st col, 2nd col is nextfree - the link
 
     ! :::::::  for flagging points   
-    real(kind=8), parameter :: goodpt = 0.0
-    real(kind=8), parameter :: badpt  = 2.0
+    real(kind=8), parameter :: UNSET = -1.0
+    real(kind=8), parameter :: DONTFLAG = 0.0
+    real(kind=8), parameter :: DOFLAG  = 2.0
     real(kind=8), parameter :: badpro = 3.0
 
     real(kind=8), parameter :: NEEDS_TO_BE_SET = 10.e33
