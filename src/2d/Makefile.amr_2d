@@ -157,6 +157,7 @@ CPP_HEADERS += \
   $(AMRLIB)/clawpack_GPUMemoryManager.H \
   $(AMRLIB)/cudaclaw/advance.H \
   $(AMRLIB)/cudaclaw/common.H \
+  $(AMRLIB)/cudaclaw/arrayIndex.H \
   $(AMRLIB)/cudaclaw/params.H \
   $(AMRLIB)/cudaclaw/real.H \
   $(AMRLIB)/cudaclaw/reduce_Max.H \
