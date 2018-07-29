@@ -31,35 +31,9 @@ int general_indexing(int a, int sizeA, int b, int sizeB, int c, int sizeC, int d
 inline __device__ 
 int getIndex_SharedWave(int row, int col, int wave, int state, int numWaves, int numStates, int blockHeight, int blockWidth)
 {
-    //return ( general_indexing(row, blockHeight, col, blockWidth, wave, numWaves, state, numStates) ); // 2.55, 22r 23r
-    //return ( general_indexing(row, blockHeight, col, blockWidth, state, numStates, wave, numWaves) ); // 2.55, 22r 23r
-    //return ( general_indexing(row, blockHeight, state, numStates, col, blockWidth, wave, numWaves) ); // 2.67
-    //return ( general_indexing(row, blockHeight, state, numStates, wave, numWaves, col, blockWidth) ); // 2.88
-    //return ( general_indexing(row, blockHeight, wave, numWaves, col, blockWidth, state, numStates) ); // 2.67
-    return ( general_indexing(row, blockHeight, wave, numWaves, state, numStates, col, blockWidth) ); // 2.88, 24r 26r <------- this vs
-    //return ( (((row*numWaves) + wave)*numStates + state)*blockWidth + col);
-    //return ( row*blockWidth*numWaves*numStates + col*numWaves*numStates + wave*numStates + state);	//					<------- this
-    //
-    //return ( general_indexing(col, blockWidth, row, blockHeight, wave, numWaves, state, numStates) );
-    //return ( general_indexing(col, blockWidth, row, blockHeight, state, numStates, wave, numWaves) );
-    //return ( general_indexing(col, blockWidth, wave, numWaves, row, blockHeight, state, numStates) );
-    //return ( general_indexing(col, blockWidth, wave, numWaves, state, numStates, row, blockHeight) );
-    //return ( general_indexing(col, blockWidth, state, numStates, wave, numWaves, row, blockHeight) );
-    //return ( general_indexing(col, blockWidth, state, numStates, row, blockHeight, wave, numWaves) );
-    //
-    //return ( general_indexing(wave, numWaves, row, blockHeight, col, blockWidth, state, numStates) );
-    //return ( general_indexing(wave, numWaves, row, blockHeight, state, numStates, col, blockWidth) );
-    //return ( general_indexing(wave, numWaves, col, blockWidth, row, blockHeight, state, numStates) );
-    //return ( general_indexing(wave, numWaves, col, blockWidth, state, numStates, row, blockHeight) );
-    //return ( general_indexing(wave, numWaves, state, numStates, col, blockWidth, row, blockHeight) );
-    //return ( general_indexing(wave, numWaves, state, numStates, row, blockHeight, col, blockWidth) );
-
-    //return ( general_indexing(state, numStates, col, blockWidth, row, blockHeight, wave, numWaves) );	// generally bad
-    //return ( general_indexing(state, numStates, col, blockWidth, wave, numWaves, row, blockHeight) );
-    //return ( general_indexing(state, numStates, row, blockHeight, col, blockWidth, wave, numWaves) );
-    //return ( general_indexing(state, numStates, row, blockHeight, wave, numWaves, col, blockWidth) );
-    //return ( general_indexing(state, numStates, wave, numWaves, row, blockHeight, col, blockWidth) );
-    //return ( general_indexing(state, numStates, wave, numWaves, col, blockWidth, row, blockHeight) );
+    // return ( general_indexing(row, blockHeight, wave, numWaves, state, numStates, col, blockWidth) );
+    // NOTE: if pointwise Riemann solver written in Fortran is used, it assumes this index
+    return state + wave*numStates + col*numStates*numWaves + row*numStates*numWaves*blockWidth;
 }
 
 inline __device__ 
@@ -79,13 +53,9 @@ void setSharedWave(real* sharedData, int row, int col, int wave, int state, int 
 inline __device__ 
 int getIndex_SharedSpeed(int row, int col, int wave, int numWaves, int blockHeight, int blockWidth)
 {
-    // return (row*numWaves*blockWidth + wave*blockWidth + col);		// seems like the best
-    //
-    //return ( row*blockWidth*numWaves + col*numWaves + wave);
-    //return (col*numWaves*blockHeight + wave*blockHeight + row);
-    //return (col*blockHeight*numWaves + row*numWaves + wave);
-    return (wave*blockHeight*blockWidth + row*blockWidth + col);
-    //return (wave*blockWidth*blockHeight + col*blockHeight + row);
+    // vreturn (wave*blockHeight*blockWidth + row*blockWidth + col);
+    // NOTE: if pointwise Riemann solver written in Fortran is used, it assumes this index
+    return (row*numWaves*blockWidth + col*numWaves + wave);
 }
 inline __device__ 
 real &getSharedSpeed(real* sharedData, const int row, const int col, const int wave, const int numWaves, const int blockHeight, const int blockWidth)
@@ -223,7 +193,7 @@ struct limiter_superbee
 };
 struct limiter_VanLeer
 {
-    __forceinline__ __device__ 
+    __device__ 
     real operator() (real theta)
     {
         real absTheta = fabs(theta);
