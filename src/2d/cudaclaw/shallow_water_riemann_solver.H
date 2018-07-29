@@ -12,6 +12,19 @@
 real constexpr g = 1.0;
 
 #ifdef CUDA
+extern "C" 
+{
+    __device__
+    void riemann_shallow_x(
+            const real* const q_left, const real* const q_right,
+            const real* const aux_left, const real* const aux_right,
+            real* wave, real* waveSpeeds);
+    __device__
+    void riemann_shallow_y(
+            const real* const q_left, const real* const q_right,
+            const real* const aux_left, const real* const aux_right,
+            real* wave, real* waveSpeeds);
+}
 // As a general rule a Riemann solver must have the following arguments:
 // Input:
 // - 2 cells, one left one right (equivalently up and down)
@@ -39,49 +52,11 @@ struct shallow_water_horizontal
     {
         static_assert(N == 0, 
                 "Number of coefficients must be 0 for shallow_water_horizontal");
-        // try rearanging, or using ul and ur, vl and vr variables instead of dividing every time!
-        real h_left   = q_left[0];
-        real hu_left  = q_left[1];
-        real hv_left  = q_left[2];
+        riemann_shallow_x(
+                q_left, q_right, NULL, NULL, 
+                wave, waveSpeeds
+                );
 
-        real h_right  = q_right[0];
-        real hu_right = q_right[1];
-        real hv_right = q_right[2];
-
-        real h_bar = 0.5f*(h_left + h_right);
-        real sqrt_h_left  = sqrt(h_left);
-        real sqrt_h_right = sqrt(h_right);
-
-        //real sum_sqrt_hleft_hright = sqrt_h_left + sqrt_h_right;
-
-        real u_hat = ((hu_left/sqrt_h_left)+(hu_right/sqrt_h_right))/(sqrt_h_left + sqrt_h_right);
-        real v_hat = ((hv_left/sqrt_h_left)+(hv_right/sqrt_h_right))/(sqrt_h_left + sqrt_h_right);
-
-        //real a_left  = h_left*u_hat - hu_left;
-        //real a_right = hu_right - h_right*u_hat;
-        //real v_hat   = (a_left*(hv_left/h_left) + a_right*(hv_right/h_right)) / (a_left+a_right);
-
-        real c_hat = sqrt(g*h_bar);
-
-        setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, u_hat - c_hat);
-        setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x, u_hat);
-        setSharedSpeed(waveSpeeds, row, col, 2, numWaves, blockDim.y, blockDim.x, u_hat + c_hat);
-
-        real alpha1 = 0.5f*((u_hat + c_hat)*(h_right - h_left) - (hu_right - hu_left))/c_hat;
-        real alpha2 = (hv_right-hv_left)-v_hat*(h_right - h_left);
-        real alpha3 = 0.5f*((c_hat - u_hat)*(h_right - h_left) + (hu_right - hu_left))/c_hat;
-
-        setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha1);
-        setSharedWave(wave, row, col, 0, 1, numWaves, numStates, blockDim.y, blockDim.x, alpha1*(u_hat - c_hat));
-        setSharedWave(wave, row, col, 0, 2, numWaves, numStates, blockDim.y, blockDim.x, alpha1*v_hat);
-
-        setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
-        setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
-        setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, alpha2);
-
-        setSharedWave(wave, row, col, 2, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha3);
-        setSharedWave(wave, row, col, 2, 1, numWaves, numStates, blockDim.y, blockDim.x, alpha3*(u_hat + c_hat));
-        setSharedWave(wave, row, col, 2, 2, numWaves, numStates, blockDim.y, blockDim.x, alpha3*v_hat);
     }
 };
 
@@ -96,52 +71,10 @@ struct shallow_water_vertical
     {
         static_assert(N == 0, 
                 "Number of coefficients must be 0 for shallow_water_horizontal");
-        // try rearanging, or using ul and ur, vl and vr variables instead of dividing every time!
-        real h_left   = q_left[0];
-        real hu_left  = q_left[1];
-        real hv_left  = q_left[2];
-
-        real h_right  = q_right[0];
-        real hu_right = q_right[1];
-        real hv_right = q_right[2];
-
-        real h_bar = 0.5f*(h_left + h_right);
-        real sqrt_h_left  = sqrt(h_left);
-        real sqrt_h_right = sqrt(h_right);
-
-        //real sum_sqrt_hleft_hright = sqrt_h_left + sqrt_h_right;
-
-        //real u_hat = ((hu_left/sqrt_h_left)+(hu_right/sqrt_h_right))/(sqrt_h_left + sqrt_h_right);
-        //real v_hat = ((hv_left/sqrt_h_left)+(hv_right/sqrt_h_right))/(sqrt_h_left + sqrt_h_right);
-        //real a_left  = h_left*u_hat - hu_left;
-        //real a_right = hu_right - h_right*u_hat;
-        //real v_hat   = (a_left*(hv_left/h_left) + a_right*(hv_right/h_right)) / (a_left+a_right);
-
-        real u_hat = (hu_left/sqrt_h_left + hu_right/sqrt_h_right)/(sqrt_h_left + sqrt_h_right);
-        real v_hat = (hv_left/sqrt_h_left + hv_right/sqrt_h_right)/(sqrt_h_left + sqrt_h_right);
-
-
-        real c_hat = sqrt(g*h_bar);
-
-        setSharedSpeed(waveSpeeds, row, col, 0, numWaves, blockDim.y, blockDim.x, v_hat - c_hat);
-        setSharedSpeed(waveSpeeds, row, col, 1, numWaves, blockDim.y, blockDim.x, v_hat);
-        setSharedSpeed(waveSpeeds, row, col, 2, numWaves, blockDim.y, blockDim.x, v_hat + c_hat);
-
-        real alpha1 = 0.5f*((v_hat + c_hat)*(h_right - h_left) - (hv_right - hv_left))/c_hat;
-        real alpha2 = -(hu_right-hu_left) + u_hat*(h_right - h_left);
-        real alpha3 = 0.5f*((c_hat - v_hat)*(h_right - h_left) + (hv_right - hv_left))/c_hat;
-
-        setSharedWave(wave, row, col, 0, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha1);
-        setSharedWave(wave, row, col, 0, 1, numWaves, numStates, blockDim.y, blockDim.x, alpha1*u_hat);
-        setSharedWave(wave, row, col, 0, 2, numWaves, numStates, blockDim.y, blockDim.x, alpha1*(v_hat - c_hat));
-
-        setSharedWave(wave, row, col, 1, 0, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
-        setSharedWave(wave, row, col, 1, 1, numWaves, numStates, blockDim.y, blockDim.x, -alpha2);
-        setSharedWave(wave, row, col, 1, 2, numWaves, numStates, blockDim.y, blockDim.x, claw_zero);
-
-        setSharedWave(wave, row, col, 2, 0, numWaves, numStates, blockDim.y, blockDim.x, alpha3);
-        setSharedWave(wave, row, col, 2, 1, numWaves, numStates, blockDim.y, blockDim.x, alpha3*u_hat);
-        setSharedWave(wave, row, col, 2, 2, numWaves, numStates, blockDim.y, blockDim.x, alpha3*(v_hat + c_hat));
+        riemann_shallow_y(
+                q_left, q_right, NULL, NULL, 
+                wave, waveSpeeds
+                );
     }
 };
 
