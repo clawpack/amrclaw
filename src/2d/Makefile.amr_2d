@@ -164,6 +164,7 @@ CPP_HEADERS += \
   $(AMRLIB)/cudaclaw/sharedMemory.H \
   $(AMRLIB)/cudaclaw/acoustics_riemann_solver.H \
   $(AMRLIB)/cudaclaw/shallow_water_riemann_solver.H \
+  $(AMRLIB)/cudaclaw/shallow_topo_riemann_solver.H \
   $(AMRLIB)/cudaclaw/burger_riemann_solver.H
 endif
 
