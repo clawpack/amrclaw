@@ -308,7 +308,7 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
         #pragma unroll
         for (int k = 0; k < numStates; k++)
         {
-            param.setElement_q(row, col, k, 
+            param.setElement_q_tmp(row, col, k, 
                 param.getElement_qNew(row, col, k) - param.dt/param.dx * (amdq[k] + getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX))
                     );
         }
@@ -320,7 +320,7 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
             #pragma unroll
             for (int k = 0; k < numStates; k++)
             {
-                param.setElement_q(row, col, k, param.getElement_qNew(row, col, k));
+                param.setElement_q_tmp(row, col, k, param.getElement_qNew(row, col, k));
             }
         }
     }
@@ -372,8 +372,8 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
 #pragma unroll
         for (int i = 0; i < numStates; i++)
         {
-            downCell[i] = param.getElement_q(row,col,i);	// use intermediate data
-            upCell[i] = param.getElement_q(row+1,col,i);
+            downCell[i] = param.getElement_q_tmp(row,col,i);	// use intermediate data
+            upCell[i] = param.getElement_q_tmp(row+1,col,i);
         }
         if (numCoeff > 0) {
 #pragma unroll
@@ -477,7 +477,7 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
         for (int k = 0; k < numStates; k++)
         {
             param.setElement_qNew(row, col, k, 
-                param.getElement_q(row, col, k) - param.dt/param.dy * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX))
+                param.getElement_q_tmp(row, col, k) - param.dt/param.dy * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX))
                     );
         }
     }
@@ -509,7 +509,6 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         param.alloc_waveSpeedsX(dimGrid_hR.x * dimGrid_hR.y);
 
         Riemann_horizontal_kernel<NEQNS, NWAVES, NCOEFFS, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size,stream>>>(param, Riemann_pointwise_solver_h, limiter_phi);
-        // Riemann_horizontal_kernel_warp<NEQNS, NWAVES, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size>>>(param, Riemann_pointwise_solver_h, limiter_phi);
 
         // REDUCTION
         const unsigned int blockDim_X = 512;		// fine tune the best block size

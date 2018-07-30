@@ -5,7 +5,7 @@ module parallel_advanc_module
 #ifdef CUDA
         subroutine stepgrid_cudaclaw(cellsX, cellsY, ghostCells, &
             startX, endX, startY, endY, dt, &
-            q, qNew, &
+            q_tmp, qNew, &
             coefficients, &
             numStates, numCoefficients, &
             cfls_d, ngrids, id, dev_id) &
@@ -20,13 +20,13 @@ module parallel_advanc_module
 
             #if (CLAW_REAL == 8)
                 real(kind=c_double), value, intent(in) :: startX, endX, startY, endY, dt
-                real(kind=c_double), device :: q(cellsX,cellsY,numStates)
+                real(kind=c_double), device :: q_tmp(cellsX,cellsY,numStates)
                 real(kind=c_double), device :: qNew(cellsX,cellsY,numStates)
                 real(kind=c_double), device :: coefficients(cellsX,cellsY,numStates)
                 real(kind=c_double), device :: cfls_d(SPACEDIM,ngrids)
             #else
                 real(kind=c_float), value, intent(in) :: startX, endX, startY, endY, dt
-                real(kind=c_float), device :: q(cellsX,cellsY,numStates)
+                real(kind=c_float), device :: q_tmp(cellsX,cellsY,numStates)
                 real(kind=c_float), device :: qNew(cellsX,cellsY,numStates)
                 real(kind=c_float), device :: coefficients(cellsX,cellsY,numStates)
                 real(kind=c_float), device :: cfls_d(SPACEDIM,ngrids)

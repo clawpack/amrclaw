@@ -43,8 +43,8 @@ class pdeParam
         real* coefficients;		// physical medium coefficients
 
         // GPU residents
-        real* q;			// data, cells' states
-        real* qNew;		       	// intermediate update holder
+        real* q_tmp; // intermediate update holder
+        real* qNew; // data, cells' states
 
         // Each entry in waveSpeedsX stores maximum u-velocity in one CUDA block. So the size
         // of waveSpeedsX should be number of CUDA blocks for this AMR grid patch
@@ -69,12 +69,12 @@ class pdeParam
         pdeParam(int cellsX, int cellsY, int numGhostCells, int numStates, int numWaves, int numCoeff,
                 real startX, real endX, real startY, real endY,
                 real dt_,
-                real* q_, real* qNew_, 
+                real* q_tmp_, real* qNew_, 
                 real* coefficients_,
                 real* cfl_grid_, const int id_, int dev_id_):
                 cellsX(cellsX), cellsY(cellsY), numGhostCells(numGhostCells), numStates(numStates), numWaves(numWaves), numCoeff(numCoeff),
                 startX(startX), endX(endX), startY(startY), endY(endY), dt(dt_),
-                q(q_), qNew(qNew_), waveSpeedsX(NULL), waveSpeedsY(NULL),
+                q_tmp(q_tmp_), qNew(qNew_), waveSpeedsX(NULL), waveSpeedsY(NULL),
                 coefficients(coefficients_), cfl_grid(cfl_grid_), id(id_), dev_id(dev_id_)
         {
 
@@ -117,27 +117,26 @@ class pdeParam
 
         // GETTER AND SETTER FUNCTIONS
 
-        // Q
-        // Dictates how the memory layout for q will be
+        // Dictates how the memory layout for q_tmp will be
         __device__ __host__ 
-        inline int getIndex_q(int row, int column, int state)
+        inline int getIndex_q_tmp(int row, int column, int state)
         {
             // column => cellsX, row => cellsY
             //
             // SOA
             // state is the slowest moving dimension now, then row, then column
-            // return (state*cellsX*cellsY + row*cellsX + column);
+            return (state*cellsX*cellsY + row*cellsX + column);
             //
             // AOS
-            return (state + column*numStates + row*numStates*cellsX);
+            // return (state + column*numStates + row*numStates*cellsX);
         }
-        inline __device__ real &getElement_q(int row, int column, int state)
+        inline __device__ real &getElement_q_tmp(int row, int column, int state)
         {
-            return q[getIndex_q(row, column, state)];
+            return q_tmp[getIndex_q_tmp(row, column, state)];
         }
-        inline __device__ void setElement_q(int row, int column, int state, real setValue)
+        inline __device__ void setElement_q_tmp(int row, int column, int state, real setValue)
         {
-            q[getIndex_q(row, column, state)] = setValue;
+            q_tmp[getIndex_q_tmp(row, column, state)] = setValue;
         }
 
         // QNEW
