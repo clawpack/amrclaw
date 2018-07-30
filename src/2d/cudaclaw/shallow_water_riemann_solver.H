@@ -9,7 +9,6 @@
 #include <cassert>
 
 // gravitational constant
-real constexpr g = 1.0;
 
 #ifdef CUDA
 extern "C" 
