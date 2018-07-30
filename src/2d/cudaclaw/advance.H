@@ -20,6 +20,12 @@
 #include <math_functions.h>
 #include <cstdio>
 
+#if __CUDA_ARCH__ >= 600
+    #define KERNEL_MIN_BLOCKS=4
+#else
+    #define KERNEL_MIN_BLOCKS=1
+#endif
+
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY>
 inline __device__ void first_order_update(real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col)
@@ -144,7 +150,7 @@ void first_second_order_update_vertical(pdeParam &param, real* waves, real* wave
 
 template <const unsigned int numStates, const unsigned int numWaves, const unsigned int numCoeff, const unsigned int blockSize, class Riemann, class Limiter>
 __global__ void 
-// __launch_bounds__(HORIZONTAL_K_BLOCKSIZE,2)
+__launch_bounds__(HORIZONTAL_K_BLOCKSIZE,KERNEL_MIN_BLOCKS)
 Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 {
     // Every threads gets a unique interface
@@ -333,7 +339,7 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 
 template <const unsigned int numStates, const unsigned int numWaves, const unsigned int numCoeff, const unsigned int blockSize, class Riemann, class Limiter>
 __global__ void 
-// __launch_bounds__(VERTICAL_K_BLOCKSIZE,2)
+__launch_bounds__(HORIZONTAL_K_BLOCKSIZE,KERNEL_MIN_BLOCKS)
 Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
 {
     // Every threads gets a unique interface
