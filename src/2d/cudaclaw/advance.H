@@ -21,9 +21,9 @@
 #include <cstdio>
 
 #if __CUDA_ARCH__ >= 600
-    #define KERNEL_MIN_BLOCKS=4
+    #define KERNEL_MIN_BLOCKS 4
 #else
-    #define KERNEL_MIN_BLOCKS=1
+    #define KERNEL_MIN_BLOCKS 1
 #endif
 
 
