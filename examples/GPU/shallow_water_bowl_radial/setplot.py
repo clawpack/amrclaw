@@ -53,9 +53,9 @@ def setplot(plotdata=None):
     plotitem.add_colorbar = True
     plotitem.show = True       # show on plot?
     plotitem.pcolor_cmin = 0.0
-    plotitem.pcolor_cmax = 45.0
-    plotitem.amr_patchedges_show = [1,0,0]
-    plotitem.amr_celledges_show = [0,0,0]
+    plotitem.pcolor_cmax = 100.0
+    plotitem.amr_patchedges_show = [1,1,0,0]
+    plotitem.amr_celledges_show = [0,0,0,0]
 
     # Figure for u-velocity
     # -------------------
@@ -76,10 +76,10 @@ def setplot(plotdata=None):
     plotitem.pcolor_cmap = colormaps.red_yellow_blue
     plotitem.add_colorbar = True
     plotitem.show = True       # show on plot?
-    plotitem.pcolor_cmin = -5.0
-    plotitem.pcolor_cmax = 5.0
-    plotitem.amr_patchedges_show = [0,1,0]
-    plotitem.amr_celledges_show = [0,0,0]
+    plotitem.pcolor_cmin = -15.0
+    plotitem.pcolor_cmax = 15.0
+    plotitem.amr_patchedges_show = [0,0,1,0]
+    plotitem.amr_celledges_show = [0,0,0,0]
 
     # Figure for v-velocity
     # -------------------
@@ -100,10 +100,10 @@ def setplot(plotdata=None):
     plotitem.pcolor_cmap = colormaps.red_yellow_blue
     plotitem.add_colorbar = True
     plotitem.show = True       # show on plot?
-    plotitem.pcolor_cmin = -5.0
-    plotitem.pcolor_cmax = 5.0
-    plotitem.amr_patchedges_show = [0,0,1]
-    plotitem.amr_celledges_show = [0,0,0]
+    plotitem.pcolor_cmin = -15.0
+    plotitem.pcolor_cmax = 15.0
+    plotitem.amr_patchedges_show = [0,0,0,1]
+    plotitem.amr_celledges_show = [0,0,0,0]
     
     
 
