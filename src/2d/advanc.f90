@@ -649,7 +649,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     tvoll(level) = tvoll(level) + clock_finish - clock_start
     tvollCPU(level) = tvollCPU(level) + cpu_finish - cpu_start
 
-    print *, "advance level: ", level
     return
 end subroutine advanc
     !

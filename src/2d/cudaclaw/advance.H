@@ -148,10 +148,9 @@ void first_second_order_update_vertical(pdeParam &param, real* waves, real* wave
     }
 }
 
-// TODO: rename all waves to fwaves
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
 __forceinline__ __device__ 
-void first_second_order_update_fwave_horizontal(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
+void first_second_order_update_fwave_horizontal(pdeParam &param, real* fwaves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
 {
     real F_tilde[numStates];
     for (int k = 0; k < numStates; k++){
@@ -164,24 +163,24 @@ void first_second_order_update_fwave_horizontal(pdeParam &param, real* waves, re
 
         if (waveSpeed < claw_zero)
         {
-            real limiting_factor = limiting_shared_h_l<numStates, numWaves, blockSizeX, blockSizeY>(phi, waves, row, col, w);
+            real limiting_factor = limiting_shared_h_l<numStates, numWaves, blockSizeX, blockSizeY>(phi, fwaves, row, col, w);
 
 #pragma unroll
             for (int k = 0; k < numStates; k++)
             {
-                real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
+                real wave_state = getSharedWave(fwaves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
                 amdq[k] += wave_state;
                 F_tilde[k] += -(real)0.5f*(1+(param.dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
             }
         }
         else if (waveSpeed > claw_zero)
         {
-            real limiting_factor = limiting_shared_h_r<numStates, numWaves, blockSizeX, blockSizeY>(phi, waves, row, col, w);
+            real limiting_factor = limiting_shared_h_r<numStates, numWaves, blockSizeX, blockSizeY>(phi, fwaves, row, col, w);
 
 #pragma unroll
             for (int k = 0; k < numStates; k++)
             {
-                real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
+                real wave_state = getSharedWave(fwaves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
                 apdq[k] += wave_state;
                 F_tilde[k] += (real)0.5f*(1-(param.dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
             }
@@ -191,7 +190,7 @@ void first_second_order_update_fwave_horizontal(pdeParam &param, real* waves, re
 #pragma unroll
             for (int k = 0; k < numStates; k++)
             {
-                real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
+                real wave_state = getSharedWave(fwaves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
                 amdq[k] += 0.5*wave_state;
                 apdq[k] += 0.5*wave_state;
             }
@@ -206,10 +205,9 @@ void first_second_order_update_fwave_horizontal(pdeParam &param, real* waves, re
     }
 }
 
-// TODO: rename all waves to fwaves
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
 __forceinline__ __device__ 
-void first_second_order_update_fwave_vertical(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
+void first_second_order_update_fwave_vertical(pdeParam &param, real* fwaves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
 {
     real F_tilde[numStates];
     for (int k = 0; k < numStates; k++){
@@ -222,22 +220,22 @@ void first_second_order_update_fwave_vertical(pdeParam &param, real* waves, real
 
         if (waveSpeed < claw_zero)
         {
-            real limiting_factor = limiting_shared_v_d<numStates, numWaves, blockSizeX, blockSizeY>(phi, waves, row, col, w);
+            real limiting_factor = limiting_shared_v_d<numStates, numWaves, blockSizeX, blockSizeY>(phi, fwaves, row, col, w);
 #pragma unroll
             for (int k = 0; k < numStates; k++)
             {
-                real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
+                real wave_state = getSharedWave(fwaves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
                 F_tilde[k] += -(real)0.5f*(1+(param.dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
                 amdq[k] += wave_state;
             }
         }
         else if (waveSpeed > claw_zero)
         {
-            real limiting_factor = limiting_shared_v_u<numStates, numWaves, blockSizeX, blockSizeY>(phi, waves, row, col, w);
+            real limiting_factor = limiting_shared_v_u<numStates, numWaves, blockSizeX, blockSizeY>(phi, fwaves, row, col, w);
 #pragma unroll
             for (int k = 0; k < numStates; k++)
             {
-                real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
+                real wave_state = getSharedWave(fwaves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
                 F_tilde[k] += (real)0.5f*(1-(param.dt/param.dx)*waveSpeed)*limiting_factor*wave_state;
                 apdq[k] += wave_state;
             }
@@ -247,7 +245,7 @@ void first_second_order_update_fwave_vertical(pdeParam &param, real* waves, real
 #pragma unroll
             for (int k = 0; k < numStates; k++)
             {
-                real wave_state = getSharedWave(waves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
+                real wave_state = getSharedWave(fwaves, row, col, w, k, numWaves, numStates, blockSizeY, blockSizeX);
                 amdq[k] += 0.5*wave_state;
                 apdq[k] += 0.5*wave_state;
             }
@@ -352,8 +350,11 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
         }
         else
         {
-            // first_second_order_update_horizontal<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY> 
+#ifdef USE_FWAVES
             first_second_order_update_fwave_horizontal<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY> 
+#else
+            first_second_order_update_horizontal<numStates, numWaves, HORIZONTAL_K_BLOCKSIZEX, HORIZONTAL_K_BLOCKSIZEY> 
+#endif
                 (param, wavesX, waveSpeedsX, amdq, apdq, threadIdx.y, threadIdx.x, phi);
         }
     }
@@ -536,8 +537,11 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
         }
         else	// simple first order scheme
         {
-            // first_second_order_update_vertical<numStates, numWaves, VERTICAL_K_BLOCKSIZEX, VERTICAL_K_BLOCKSIZEY>
+#ifdef USE_FWAVES
             first_second_order_update_fwave_vertical<numStates, numWaves, VERTICAL_K_BLOCKSIZEX, VERTICAL_K_BLOCKSIZEY>
+#else
+            first_second_order_update_vertical<numStates, numWaves, VERTICAL_K_BLOCKSIZEX, VERTICAL_K_BLOCKSIZEY>
+#endif
                 (param, wavesY, waveSpeedsY, amdq, apdq, threadIdx.y, threadIdx.x, phi);
         }
     }

@@ -47,6 +47,7 @@ DIM = 2
 NUM_EQUATIONS = 3
 NUM_WAVES = 3
 NUM_COEFFS = 1
+USE_FWAVES = TRUE
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 

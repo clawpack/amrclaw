@@ -252,6 +252,19 @@ program amr2
     read(inunit,*) mcapa1
     
     read(inunit,*) use_fwaves
+#ifdef CUDA
+    if (use_fwaves) then
+#ifndef USE_FWAVES
+       print *, 'Must turn on USE_FWAVES in Makefile when compile the code'
+       stop
+#endif
+    else
+#ifdef USE_FWAVES
+       print *, 'Must turn off USE_FWAVES in Makefile when compile the code'
+       stop
+#endif
+    endif
+#endif
     allocate(mthlim(mwaves))
     read(inunit,*) (mthlim(mw), mw=1,mwaves)
 
