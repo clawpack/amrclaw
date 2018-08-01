@@ -12,7 +12,12 @@
 extern "C" 
 {
     __device__
-    void riemann_shallow_topo(const int ixy,
+    void riemann_shallow_topo_x(
+            const real* const q_left, const real* const q_right,
+            const real* const aux_left, const real* const aux_right,
+            real* wave, real* waveSpeeds);
+    __device__
+    void riemann_shallow_topo_y(
             const real* const q_left, const real* const q_right,
             const real* const aux_left, const real* const aux_right,
             real* wave, real* waveSpeeds);
@@ -44,7 +49,7 @@ struct shallow_topo_horizontal
     {
         static_assert(N == 1, 
                 "Number of coefficients must be 1 for shallow_topo_horizontal");
-        riemann_shallow_topo(1,
+        riemann_shallow_topo_x(
                 q_left, q_right, &(u_left[0]), &(u_right[0]), 
                 wave, waveSpeeds
                 );
@@ -63,7 +68,7 @@ struct shallow_topo_vertical
     {
         static_assert(N == 1, 
                 "Number of coefficients must be 1 for shallow_topo_vertical");
-        riemann_shallow_topo(2,
+        riemann_shallow_topo_y(
                 q_left, q_right, &(u_left[0]), &(u_right[0]), 
                 wave, waveSpeeds
                 );
