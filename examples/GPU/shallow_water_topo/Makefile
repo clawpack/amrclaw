@@ -78,9 +78,7 @@ EXCLUDE_SOURCES = \
 
 MODULES = \
   problem_para_module.f90 \
-  $(CLAW)/riemann/src/shallow_device_module.f90 \
-  $(CLAW)/riemann/src/shallow_topo_device_module.f90 \
-  $(CLAW)/riemann/src/geoclaw_riemann_utils_module.f90
+  $(CLAW)/riemann/src/shallow_topo_device_module.f90
 
 SOURCES = \
   qinit.f \
@@ -88,7 +86,6 @@ SOURCES = \
 
 ifeq ($(USE_CUDA), TRUE) 
     CPP_SOURCES += stepgrid_cuda.cu
-else
 endif
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:

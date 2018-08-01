@@ -78,13 +78,12 @@ EXCLUDE_SOURCES = \
 
 MODULES = \
   problem_para_module.f90 \
-  $(CLAW)/riemann/src/shallow_device_module.f90 \
-  $(CLAW)/riemann/src/shallow_topo_device_module.f90 \
-  $(CLAW)/riemann/src/geoclaw_riemann_utils_module.f90
+  $(CLAW)/riemann/src/shallow_topo_device_module.f90
 
 SOURCES = \
   qinit.f90 \
-  setaux.f90
+  setaux.f90 \
+  $(CLAW)/riemann/src/geoclaw_riemann_utils.f90
 
 ifeq ($(USE_CUDA), TRUE) 
     CPP_SOURCES += stepgrid_cuda.cu
