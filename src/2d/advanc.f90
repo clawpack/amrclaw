@@ -11,6 +11,11 @@
 subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use amr_module 
     use parallel_advanc_module
+#ifdef GEOCLAW
+    use fixedgrids_module
+    use topo_module, only: topo_finalized
+    use geoclaw_module
+#endif
 #ifdef CUDA
     use gauges_module, only: update_gauges, num_gauges
     use memory_module, only: cpu_allocate_pinned, cpu_deallocate_pinned, &
@@ -24,7 +29,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use reflux_module, only: qad_cpu2, qad_gpu, &
         fluxad_fused_gpu, fluxsv_fused_gpu
     use cuda_module, only: grid_type
-    use problem_para_module, only: cc, zz
+    ! use problem_para_module, only: cc, zz
 #ifdef PROFILE
     use profiling_module
 #endif
@@ -175,6 +180,17 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! endif
     call system_clock(clock_startStepgrid,clock_rate)
     call cpu_time(cpu_startStepgrid)
+#ifdef GEOCLAW
+    if (.not. topo_finalized) then
+#ifndef CUDA
+        time = rnode(timemult,lstart(level))
+        call topo_update(time)
+#else
+        print *, "dtopo is not supported in CUDA version."
+        stop
+#endif
+    endif
+#endif
     !$OMP END MASTER 
 
 #ifdef PROFILE
@@ -235,7 +251,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
         mitot  = nx + 2*nghost
         mjtot  = ny + 2*nghost
+        xlow = rnode(cornxlo,mptr) - nghost*hx
+        ylow = rnode(cornylo,mptr) - nghost*hy
         locnew = node(store1, mptr)
+        locold = node(store2, mptr)
+        locaux = node(storeaux,mptr)
+        time = rnode(timemult,mptr)
         id = j
 
         !  copy old soln. values into  next time step's soln. values
@@ -243,10 +264,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         !  the finest level. finest level grids do not maintain copies
         !  of old and new time solution values.
 
-        locold = node(store2, mptr)
-        locnew = node(store1, mptr)
-        locaux = node(storeaux,mptr)
     
+        ! TODO: should move this to run when GPU is stepping the grid
         if (level .lt. mxnest) then
             ntot   = mitot * mjtot * nvar
             do i = 1, ntot
@@ -262,14 +281,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         !     should change the way print_gauges does io - right now is critical section
         !     no more,  each gauge has own array.
 
-        xlow = rnode(cornxlo,mptr) - nghost*hx
-        ylow = rnode(cornylo,mptr) - nghost*hy
         if (num_gauges > 0) then
             call update_gauges(alloc(locnew:locnew+nvar*mitot*mjtot), &
                                alloc(locaux:locaux+nvar*mitot*mjtot), &
                                xlow,ylow,nvar,mitot,mjtot,naux,mptr)
         endif
 
+        call b4step2(nghost,nx,ny,nvar,alloc(locnew), &
+           xlow,ylow,hx,hy,time,delt,naux,alloc(locaux))
 
         ! call cpu_allocate_pinned(grid_data(mptr)%ptr, &
         !         1,mitot,1,mjtot,1,nvar)
@@ -282,11 +301,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call endCudaProfiler() ! aos_to_soa
         call cpu_timer_stop(timer_aos_to_soa)
 #endif
-
-
-        xlow = rnode(cornxlo,mptr) - nghost*hx
-        ylow = rnode(cornylo,mptr) - nghost*hy
-        locaux = node(storeaux,mptr)
 
 #ifdef PROFILE
         call take_cpu_timer('memory operation', timer_memory)
@@ -357,7 +371,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !         cudaResult = cudaMemcpyAsync(grid_data(mptr)%ptr, grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
 
 
-! test the new cudaclaw function here
+
         call stepgrid_cudaclaw(mitot,mjtot,nghost, &
             xlow, xlow+hx*mitot, ylow, ylow+hy*mjtot, delt, &
             grid_data_d_copy2(mptr)%ptr, grid_data_d(mptr)%ptr, &
@@ -436,6 +450,32 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 #ifdef PROFILE
     call endCudaProfiler()
     call cpu_timer_stop(timer_gpu_loop)
+#endif
+
+#ifdef GEOCLAW
+    !$OMP DO SCHEDULE (DYNAMIC,1)
+    do j = 1, numgrids(level)
+        levSt = listStart(level)
+        mptr = listOfGrids(levSt+j-1)
+        nx     = node(ndihi,mptr) - node(ndilo,mptr) + 1
+        ny     = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
+        mitot  = nx + 2*nghost
+        mjtot  = ny + 2*nghost
+        locnew = node(store1, mptr)
+        locaux = node(storeaux,mptr)
+        xlow = rnode(cornxlo,mptr) - nghost*hx
+        ylow = rnode(cornylo,mptr) - nghost*hy
+        time = rnode(timemult,mptr)
+
+        call zeroize_dry(alloc(locnew),mitot,mjtot,nvar)
+
+        if (method(5).eq.1) then
+            !        # with source term:   use Godunov splitting
+            call src2(nvar,nghost,nx,ny,xlow,ylow,hx,hy, &
+                alloc(locnew),naux,alloc(locaux),time,delt)
+        endif
+    enddo
+    !$OMP END DO
 #endif
 
     
@@ -674,3 +714,20 @@ subroutine prepgrids(listgrids, num, level)
     return
 end subroutine prepgrids
 
+
+#ifdef GEOCLAW
+subroutine zeroize_dry(q,mitot,mjtot,meqn)
+    use geoclaw_module, only: dry_tolerance
+    implicit none
+
+    real(CLAW_REAL), intent(inout) :: q(meqn,mitot,mjtot)
+    integer, intent(in) :: mitot, mjtot, meqn
+    integer :: i,j
+
+    forall(i=1:mitot, j=1:mjtot, q(1,i,j) < dry_tolerance)
+        q(1,i,j) = max(q(1,i,j),0.d0)
+        q(2:meqn,i,j) = 0.d0
+    end forall
+    return
+end subroutine zeroize_dry
+#endif
