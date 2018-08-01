@@ -97,8 +97,10 @@ program amr2
     use gauges_module, only: set_gauges, num_gauges
 
     use problem_para_module, only: setprob
+#ifdef PROFILE
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop, &
         print_all_cpu_timers, timer_total_run_time
+#endif
 
 
 #ifdef CUDA
@@ -336,7 +338,7 @@ program amr2
     ! ==========================================================================
     ! GPU setups
     call initialize_cuda()
-    ! END GPU setups==========================================================================
+    ! END GPU setups============================================================
 #endif
 
     ! ==========================================================================
@@ -754,7 +756,9 @@ program amr2
     write(*,*)
     write(outunit,*)
 
+#ifdef PROFILE
     call print_all_cpu_timers()
+#endif
 
     ! Done with computation, cleanup:
     lentotsave = lentot

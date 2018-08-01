@@ -88,7 +88,6 @@ SOURCES = \
 
 ifeq ($(USE_CUDA), TRUE) 
     CPP_SOURCES += stepgrid_cuda.cu
-else
 endif
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:

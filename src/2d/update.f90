@@ -26,15 +26,6 @@
           implicit real(CLAW_REAL) (a-h,o-z)
 
 
-          integer listgrids(numgrids(level))
-
-!$$$  OLD INDEXING
-!$$$      iadd(i,j,ivar)  = loc     + i - 1 + mitot*((ivar-1)*mjtot+j-1)
-!$$$      iaddf(i,j,ivar) = locf    + i - 1 + mi*((ivar-1)*mj  +j-1)
-!$$$      iaddfaux(i,j)   = locfaux + i - 1 + mi*((mcapa-1)*mj + (j-1))
-!$$$      iaddcaux(i,j)   = loccaux + i - 1 + mitot*((mcapa-1)*mjtot+(j-1))
-
-!
 !
 ! :::::::::::::::::::::::::: UPDATE :::::::::::::::::::::::::::::::::
 ! update - update all grids at level 'level'.
@@ -66,7 +57,7 @@
 !$OMP                     ichi,jchi,mi,mj,locf,locfaux, &
 !$OMP                     iplo,jplo,iphi,jphi,iff,jff,totrat,i,j, &
 !$OMP                     ivar,ico,jco,capa,levSt), &
-!$OMP          SHARED(lget,numgrids,listgrids,listsp,alloc,nvar,naux, &
+!$OMP          SHARED(lget,numgrids,listsp,alloc,nvar,naux, &
 !$OMP                    intratx,intraty,nghost,uprint,mcapa,node, &
 !$OMP                    listOfGrids,listStart,lstart,level,cflux_hh), &
 !$OMP          DEFAULT(none)
@@ -76,13 +67,12 @@
 !$OMP                     ichi,jchi,mi,mj,locf,locfaux, &
 !$OMP                     iplo,jplo,iphi,jphi,iff,jff,totrat,i,j, &
 !$OMP                     ivar,ico,jco,capa,levSt), &
-!$OMP          SHARED(lget,numgrids,listgrids,listsp,alloc,nvar,naux, &
+!$OMP          SHARED(lget,numgrids,listOfGrids,listsp,alloc,nvar,naux, &
 !$OMP                    intratx,intraty,nghost,uprint,mcapa,node, &
-!$OMP                    listOfGrids,listStart,lstart,level), &
+!$OMP                    listStart,lstart,level), &
 !$OMP          DEFAULT(none)
 #endif
        do ng = 1, numgrids(lget)
-         !mptr    = listgrids(ng)
          levSt   = listStart(lget)
          mptr    = listOfGrids(levSt + ng - 1)
          loc     = node(store1,mptr)
