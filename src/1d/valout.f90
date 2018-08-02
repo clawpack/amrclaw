@@ -25,6 +25,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     real(kind=8), intent(in) :: time
 
     ! Locals
+    logical :: timing_file_exists
     integer, parameter :: out_unit = 50
     integer :: i, j, m, level, output_aux_num, num_stop, digit
     integer :: grid_ptr, num_cells, num_grids, q_loc, aux_loc
@@ -258,7 +259,8 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     ! ==========================================================================
     ! Write out timing stats
     ! Assume that this has been started some where
-    if (frame == 0) then
+    inquire(file=timing_file_name, exist=timing_file_exists)
+    if (.not. timing_file_exists) then
         ! Write header out and continue
         open(unit=out_unit, file=timing_file_name, form='formatted',         &
              status='unknown', action='write')
@@ -314,16 +316,14 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
 contains
 
-    !
-    !
+    ! Index into q array
     pure integer function iadd(m, i)
         implicit none
         integer, intent(in) :: m, i
         iadd = q_loc + m - 1 + num_eqn * (i - 1)
     end function iadd
 
-    !
-    !
+    ! Index into aux array
     pure integer function iaddaux(m, i)
         implicit none
         integer, intent(in) :: m, i
