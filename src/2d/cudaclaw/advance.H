@@ -21,7 +21,7 @@
 #include <cstdio>
 
 #if __CUDA_ARCH__ >= 600
-    #define KERNEL_MIN_BLOCKS 4
+    #define KERNEL_MIN_BLOCKS 2
 #else
     #define KERNEL_MIN_BLOCKS 1
 #endif
@@ -271,6 +271,7 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
     //		thread (row,col)
     //
     //  each block solves Riemann problems that is required for blockDim.x-3 columns of cells 
+    
     int col = threadIdx.x + blockIdx.x*blockDim.x - 3*blockIdx.x;
     int row = threadIdx.y + blockIdx.y*blockDim.y;
 
@@ -454,7 +455,7 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 
 template <const unsigned int numStates, const unsigned int numWaves, const unsigned int numCoeff, const unsigned int blockSize, class Riemann, class Limiter>
 __global__ void 
-__launch_bounds__(HORIZONTAL_K_BLOCKSIZE,KERNEL_MIN_BLOCKS)
+__launch_bounds__(VERTICAL_K_BLOCKSIZE,KERNEL_MIN_BLOCKS)
 Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
 {
     // Every threads gets a unique interface
