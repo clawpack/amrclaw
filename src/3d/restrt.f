@@ -39,10 +39,12 @@ c     rstfile  = 'restart.data'
       open(rstunit,file=trim(rstfile),status='old',form='unformatted')
       rewind rstunit
 
-      read(rstunit) lenmax,lendim,isize
+      !! new version has flexible node size, so need to read current size maxgr
+      read(rstunit) lenmax,lendim,isize,maxgr
 
 c     # need to allocate for dynamic memory:
       call restrt_alloc(isize)
+      call restrt_nodes(maxgr)
 
       read(rstunit) (alloc(i),i=1,lendim)
       read(rstunit) hxposs,hyposs,hzposs,possk,icheck
@@ -207,8 +209,8 @@ c          #  add second storage location to previous mxnest level
 15       if (mptr .eq. 0) go to 25
             mitot = node(ndihi,mptr)-node(ndilo,mptr)+1+2*nghost
             mjtot = node(ndjhi,mptr)-node(ndjlo,mptr)+1+2*nghost
-        mktot = node(ndkhi,mptr)-node(ndklo,mptr)+1+2*nghost
-        node(store2,mptr) = igetsp(mitot*mjtot*mktot*nvar)
+            mktot = node(ndkhi,mptr)-node(ndklo,mptr)+1+2*nghost
+            node(store2,mptr) = igetsp(mitot*mjtot*mktot*nvar)
             mptr = node(levelptr,mptr)
             go to 15
 25       continue
@@ -246,5 +248,6 @@ c     bndry list for faster ghost cell filling
          call makeBndryList(level)
       end do
 c
+      call initTimers()
       return
       end

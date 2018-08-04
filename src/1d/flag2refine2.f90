@@ -36,12 +36,13 @@
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
-                            tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
+                            tolsp,q,aux,amrflags)
 
     use regions_module
     use adjoint_module, only: totnum_adjoints, innerprod_index, &
                               adjoint_flagging,select_snapshots, &
                               calculate_innerproduct
+    use amr_module, only : DOFLAG, UNSET
 
     implicit none
 
@@ -54,8 +55,6 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
     
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff)
-    real(kind=8), intent(in) :: DONTFLAG
-    real(kind=8), intent(in) :: DOFLAG
     
     logical :: allowflag
     external allowflag
@@ -65,11 +64,12 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
     real(kind=8) :: x_c,x_low,x_hi
     real(kind=8) :: dqi(meqn), dq(meqn)
 
+    ! Don't initialize flags, since they were already 
+    ! flagged by flagregions2
+    ! amrflags = DONTFLAG
+
     ! Adjoint method specific variables
     logical mask_selecta(totnum_adjoints)
-
-    ! Initialize flags
-    amrflags = DONTFLAG
 
     if(adjoint_flagging) then
         aux(innerprod_index,:) = 0.0
@@ -103,24 +103,29 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
         x_hi = xlower + i * dx
 
         ! -----------------------------------------------------------------
+            ! Only check undivided differences if flag hasn't been set yet. 
+            ! If flag == DONTFLAG then refinement is forbidden by a region, 
+            ! if flag == DOFLAG checking is not needed
+            if(amrflags(i) == UNSET) then
 
-            if(adjoint_flagging) then
-                if (aux(innerprod_index,i) > tolsp) then
-                    amrflags(i) = DOFLAG
-                    cycle x_loop
-                endif
-            else
-                dq = 0.d0
-                dqi = abs(q(:,i+1) - q(:,i-1))
-                dq = max(dq,dqi)
-
-                ! default checks all components of undivided difference:
-                do m=1,meqn
-                    if (dq(m) > tolsp) then
+                if(adjoint_flagging) then
+                    if (aux(innerprod_index,i) > tolsp) then
                         amrflags(i) = DOFLAG
                         cycle x_loop
                     endif
-                enddo
+                else
+                    dq = 0.d0
+                    dqi = abs(q(:,i+1) - q(:,i-1))
+                    dq = max(dq,dqi)
+                    ! default checks all components of undivided difference:
+                    do m=1,meqn
+                        if (dq(m) > tolsp) then
+                           amrflags(i) = DOFLAG
+                           cycle x_loop
+                        endif
+                    enddo
+                endif
+
             endif
 
     enddo x_loop

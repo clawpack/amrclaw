@@ -59,7 +59,7 @@ module amr_module
     integer, parameter :: iplane = 1
     integer, parameter :: jplane = 2
     integer, parameter :: kplane = 3
-    integer, parameter :: maxgr = 5000
+    !! integer, parameter :: maxgr = 5000 ! No longer fixed
     integer, parameter :: maxlv = 10
     integer, parameter :: maxcl = 5000
 
@@ -77,17 +77,30 @@ module amr_module
     ! order is coarsest level to finest. is redone after regridding
     ! and on restarting.  note use of sentinel in listStart
 
-    integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
-    integer, parameter :: bndListSize = 8*maxgr
-    integer :: bndList(bndListSize,2) ! guess size, average # nbors 6? manage as linnked list
+    !! CHANGED mjb 6/15/18 to make maxgr a variable
+    !!integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
+    integer :: listStart(0:maxlv+1)
+    !integer, parameter :: bndListSize = 8*maxgr
+    !integer :: bndList(bndListSize,2) ! guess size, average # nbors 6? manage as linked list
+    integer :: bndListSize
+    integer,allocatable, dimension(:,:) :: bndList  ! new way is allocatable 
 
-    real(kind=8) hxposs(maxlv),hyposs(maxlv),hzposs(maxlv), &
-                 possk(maxlv),rnode(rsize, maxgr) 
 
+    !real(kind=8) hxposs(maxlv),hyposs(maxlv),hzposs(maxlv), &
+    !             possk(maxlv),rnode(rsize, maxgr) 
+    real(kind=8) hxposs(maxlv),hyposs(maxlv),hzposs(maxlv),possk(maxlv) 
+
+    ! start of dynamic allocation for maxgr and associated arrays
+    integer maxgr
+    real(kind=8), allocatable, dimension(:,:) :: rnode    
+    ! new way, use allocatable, not pointer
+    integer, allocatable, dimension(:,:) :: node
+    integer, allocatable, dimension(:) :: listOfGrids
 
 
     real(kind=8) tol, tolsp
-    integer ibuff, mstart,ndfree,ndfree_bnd,lfine,node(nsize, maxgr), &
+    !integer ibuff, mstart,ndfree,ndfree_bnd,lfine,node(nsize, maxgr), &
+    integer ibuff, mstart,ndfree,ndfree_bnd,lfine, &
             icheck(maxlv),lstart(maxlv),newstl(maxlv), &
             listsp(maxlv),intratx(maxlv),intraty(maxlv), &
             intratz(maxlv),kratio(maxlv), &
@@ -132,6 +145,7 @@ module amr_module
     integer lentot,lenmax,lendim
     integer timeRegridding, timeValout
     integer timeBound, timeStepgrid
+    integer :: timeTick, tick_clock_start
     real(kind=8) tvollCPU(maxlv)
     real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU
     real(kind=8) timeValoutCPU

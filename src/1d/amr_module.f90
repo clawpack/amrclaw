@@ -42,8 +42,9 @@ module amr_module
     integer, parameter :: gridNbor = 1 !use 1st col, 2nd col is nextfree - the link
 
     ! :::::::  for flagging points   
-    real(kind=8), parameter :: goodpt = 0.0
-    real(kind=8), parameter :: badpt  = 2.0
+    real(kind=8), parameter :: UNSET = -1.0
+    real(kind=8), parameter :: DONTFLAG = 0.0
+    real(kind=8), parameter :: DOFLAG  = 2.0
     real(kind=8), parameter :: badpro = 3.0
 
     real(kind=8), parameter :: NEEDS_TO_BE_SET = 10.e33
@@ -120,8 +121,8 @@ module amr_module
     integer :: timeRegridding, timeUpdating, timeValout
     integer :: timeFlglvl,timeGrdfit2,timeGrdfit3,timeGrdfitAll
     integer :: timeSetaux,timeFilval,timeBound,timeStepgrid,timeFilvalTot
-    integer :: timeFlagger, timeBufnst
-    real(kind=8) tvollCPU(maxlv)
+    integer :: timeFlagger, timeBufnst, timeTick, tick_clock_start
+    real(kind=8) tvollCPU(maxlv), timeTickCPU
     real(kind=8) timeBoundCPU,timeStepgridCPU,timeSetauxCPU,timeRegriddingCPU
     real(kind=8) timeValoutCPU
 
