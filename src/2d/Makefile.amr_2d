@@ -13,7 +13,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/setprob.f \
   $(AMRLIB)/setaux.f90 \
   $(AMRLIB)/amr2.f90 \
-  $(AMRLIB)/bc2amr.f \
+  $(AMRLIB)/bc2amr.f90 \
   $(AMRLIB)/b4step2.f90 \
   $(AMRLIB)/qad.f \
   $(AMRLIB)/src2.f90 \
