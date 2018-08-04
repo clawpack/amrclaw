@@ -260,7 +260,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     ! Write out timing stats
     ! Assume that this has been started some where
     inquire(file=timing_file_name, exist=timing_file_exists)
-    if (.not. timing_file_exists) then
+    if (frame == 0 .or. (.not. timing_file_exists)) then
         ! Write header out and continue
         open(unit=out_unit, file=timing_file_name, form='formatted',         &
              status='unknown', action='write')
