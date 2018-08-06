@@ -86,7 +86,7 @@ def setplot(plotdata=None):
     plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
                                          type='each_gauge')
     plotfigure.clf_each_gauge = True
-
+    plotfigure.kwargs = {'figsize': (10,10)}
                                          
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(211)'

@@ -97,7 +97,7 @@ def setplot(plotdata=None):
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = [-.5,1.1]      # use when taking inner product with forward solution
+    plotaxes.ylimits = [-0.1,1]         # use when taking inner product with forward solution
     #plotaxes.ylimits = [-0.01,0.02]    # use when taking inner product with Richardson error
     plotaxes.title = 'Inner Product'
     plotaxes.afteraxes = draw_interface_add_legend_innerprod
@@ -117,7 +117,7 @@ def setplot(plotdata=None):
     plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
                                          type='each_gauge')
     plotfigure.clf_each_gauge = True
-
+    plotfigure.kwargs = {'figsize': (10,10)}
                                          
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(211)'
@@ -154,5 +154,5 @@ def setplot(plotdata=None):
     return plotdata
 
 def plot_innerprod(current_data):
-    return current_data.aux[0,:]
+    return current_data.aux[2,:]
     
