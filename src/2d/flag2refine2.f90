@@ -90,14 +90,14 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     ! min_level and max_level specified in any regions.
 
     y_loop: do j=1,my
-        y_low = ylower + (j - 1) * dy
-        y_c = ylower + (j - 0.5d0) * dy
-        y_hi = ylower + j * dy
+        !y_low = ylower + (j - 1) * dy
+        !y_c = ylower + (j - 0.5d0) * dy
+        !y_hi = ylower + j * dy
         
         x_loop: do i = 1,mx
-            x_low = xlower + (i - 1) * dx
-            x_c = xlower + (i - 0.5d0) * dx
-            x_hi = xlower + i * dx
+            !x_low = xlower + (i - 1) * dx
+            !x_c = xlower + (i - 0.5d0) * dx
+            !x_hi = xlower + i * dx
 
             ! -----------------------------------------------------------------
             ! Only check undivided differences if flag hasn't been set yet. 
