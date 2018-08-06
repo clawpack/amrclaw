@@ -40,9 +40,10 @@
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
-                            tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
+                            tolsp,q,aux,amrflags)
 
     use regions_module
+    use amr_module, only : DOFLAG, UNSET
 
     implicit none
 
@@ -55,8 +56,6 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
     
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff)
-    real(kind=8), intent(in) :: DONTFLAG
-    real(kind=8), intent(in) :: DOFLAG
     
     logical :: allowflag
     external allowflag
@@ -64,8 +63,9 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
     ! Locals
     integer :: i
 
-    ! Initialize flags
-    amrflags = DONTFLAG
+    ! Don't initialize flags, since they were already 
+    ! flagged by flagregions2
+    ! amrflags = DONTFLAG
     
     ! Loop over interior points on this grid
     ! (i) grid cell is [x_low,x_hi], cell center at (x_c)
