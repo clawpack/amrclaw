@@ -279,23 +279,38 @@ contains
         ifine = nghost+1
 
         do i  = nghost+1, mi2tot-nghost
-          xofi  = xleft + (dble(ifine) - .5d0)*hx
 
-          do k = 1, nvar
-            term1 = rctfine(k,ifine,jfine)
-            term2 = rctfine(k,ifine+1,jfine)
-            term3 = rctfine(k,ifine+1,jfine+1)
-            term4 = rctfine(k,ifine,jfine+1)
-!           # divide by (aval*order) for relative error
-            aval  = (term1+term2+term3+term4)/4.d0
-            est   =  dabs((aval-rctcrse(k,i,j))/ order)
-            if (est .gt. errmax) errmax = est
-              err2 = err2 + est*est
+! Only check errors if flag hasn't been set yet.
+! If flag == DONTFLAG then refinement is forbidden by a region,
+! if flag == DOFLAG checking is not needed
 
-              err_crse(k,i,j) = est
-!             retaining directionality of the wave
-              err_crse(k,i,j) = sign(est,rctcrse(k,i,j))
-          enddo
+! Note: here rctcrse is being used as a temporary flag
+! the fine grid amrflags array is stored in rctflg, and will be
+! updated based on rctcrse at the end of this routine
+           if(rctflg(ifine,jfine) == UNSET &
+              .or. rctflg(ifine+1,jfine) == UNSET &
+              .or. rctflg(ifine,jfine+1) == UNSET &
+              .or. rctflg(ifine+1,jfine+1) == UNSET) then
+              xofi  = xleft + (dble(ifine) - .5d0)*hx
+
+              do k = 1, nvar
+                term1 = rctfine(k,ifine,jfine)
+                term2 = rctfine(k,ifine+1,jfine)
+                term3 = rctfine(k,ifine+1,jfine+1)
+                term4 = rctfine(k,ifine,jfine+1)
+!               # divide by (aval*order) for relative error
+                aval  = (term1+term2+term3+term4)/4.d0
+                est   =  dabs((aval-rctcrse(k,i,j))/ order)
+                if (est .gt. errmax) errmax = est
+                  err2 = err2 + est*est
+
+                  err_crse(k,i,j) = est
+!                 retaining directionality of the wave
+                  err_crse(k,i,j) = sign(est,rctcrse(k,i,j))
+              enddo
+            else
+                err_crse(:,i,j) = 0.d0
+            endif
 
           ifine = ifine + 2
         enddo
@@ -319,12 +334,12 @@ contains
           j_val = j-nghost
           errors(eptr(jg)+(i_val-1)*ny/2+j_val) = aux_crse(i,j)
 
-          rctcrse(1,i,j)  = goodpt
+          rctcrse(1,i,j)  = DONTFLAG
           if (aux_crse(i,j) .ge. levtol(levm)) then
-!                    ## never set rctflg to good, since flag2refine may
-!                    ## have previously set it to bad
+!                    ## never set rctflg to good, since flag2refine or
+!                    ## flagregions2 may have previously set it to bad
 !                    ## can only add bad pts in this routine
-              rctcrse(1,i,j)  = badpt
+              rctcrse(1,i,j)  = DOFLAG
           endif
 
         enddo
@@ -340,14 +355,14 @@ contains
           auxfine(innerprod_index,ifine,jfine+1) = aux_crse(i,j)
           auxfine(innerprod_index,ifine+1,jfine+1) = aux_crse(i,j)
 
-          if (rctcrse(1,i,j) .ne. goodpt) then
-!           ## never set rctflg to good, since flag2refine may
-!           ## have previously set it to bad
+          if (rctcrse(1,i,j) .eq. DOFLAG) then
+!           ## never set rctflg to good, since flag2refine or
+!           ## flagregions2 may have previously set it to bad
 !           ## can only add bad pts in this routine
-            rctflg(ifine,jfine)    = badpt
-            rctflg(ifine+1,jfine)  = badpt
-            rctflg(ifine,jfine+1)  = badpt
-            rctflg(ifine+1,jfine+1)= badpt
+            rctflg(ifine,jfine)    = DOFLAG
+            rctflg(ifine+1,jfine)  = DOFLAG
+            rctflg(ifine,jfine+1)  = DOFLAG
+            rctflg(ifine+1,jfine+1)= DOFLAG
           endif
           ifine   = ifine + 2
         enddo
@@ -356,6 +371,5 @@ contains
       enddo
 
     end subroutine errf1a
-
 
 end module adjointsup_module
