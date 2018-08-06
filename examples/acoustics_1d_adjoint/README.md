@@ -26,7 +26,7 @@ make .plots
 The code will produce two new folders: _output and _plots. 
 The first one contains all the output files, while the latter one contains the plots and interactive visualization apps.
 
-* Go to the main folder **acoustics_2d_radial_mixed** and run in the terminal:
+* Go to the main folder **acoustics_1d_adjoint** and run in the terminal:
 
 ```
 make new
@@ -46,4 +46,4 @@ Run in the terminal:
 python run_adjoint_flagging.py
 ```
 
-This example can be run with either the regular surface-flagging technique (by using the flag2refine file) or with error-flagging (by using errf1 file). These options can be set by setting the flag2refine and/or flag_richardson flags in setrun.py.
+This example can be run with either the regular surface-flagging technique (by using the flag2refine file) or with error-flagging (by using errf1 file). These options can be set by setting the flag_forward_adjoint and/or flag_richardson_adjoint flags in setrun.py.
