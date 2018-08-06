@@ -1,10 +1,10 @@
-Acoustics 2D -- Heterogeneous example
+Acoustics 1D -- Heterogeneous example
 ------------------------------------------
 
-2D acoustics in a piecewise constant medium to illustrate reflection and
+1D acoustics in a piecewise constant medium to illustrate reflection and
 transmission at an interface.
 
-The density and bulk modulus of the medium are specified in setrun.py.
+The density and bulk modulus of the medium are specified in setrun.py, along with a parameter determining what initial conditions to use (see qinit.f).
 
 ### Folder Organization
 * **adjoint:**
