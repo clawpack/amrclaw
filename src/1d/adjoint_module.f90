@@ -547,6 +547,16 @@ contains
 !
       ifine = nghost+1
       do i  = nghost+1, mi2tot-nghost
+
+! Only check errors if flag hasn't been set yet.
+! If flag == DONTFLAG then refinement is forbidden by a region,
+! if flag == DOFLAG checking is not needed
+
+! Note: here rctcrse is being used as a temporary flag
+! the fine grid amrflags array is stored in rctflg, and will be
+! updated based on rctcrse at the end of this routine
+        if(rctflg(ifine) == UNSET &
+              .or. rctflg(ifine+1) == UNSET) then
           do k = 1,nvar
               xofi  = xleft + (dble(ifine) - .5d0)*hx
               term1 = rctfine(k,ifine)
@@ -561,6 +571,9 @@ contains
 !             retaining directionality of the wave
               err_crse(k,i) = sign(est,rctcrse(k,i))
           enddo
+        else
+            err_crse(:,i) = 0.d0
+        endif
 
         ifine = ifine + 2
       enddo
@@ -578,12 +591,12 @@ contains
       do i  = nghost+1, mi2tot-nghost
           errors(eptr(jg)+i-nghost) = aux_crse(i)
 
-          rctcrse(1,i)  = goodpt
+          rctcrse(1,i)  = DONTFLAG
           if (aux_crse(i) .ge. levtol(levm)) then
-!                    ## never set rctflg to good, since flag2refine may
-!                    ## have previously set it to bad
+!                    ## never set rctflg to good, since flag2refine or
+!                    ## flagregions may have previously set it to bad
 !                    ## can only add bad pts in this routine
-              rctcrse(1,i)  = badpt
+              rctcrse(1,i)  = DOFLAG
           endif
 
       enddo
@@ -592,12 +605,12 @@ contains
       do i = nghost+1, mi2tot-nghost
          auxfine(innerprod_index,ifine) = aux_crse(i)
          auxfine(innerprod_index,ifine+1) = aux_crse(i)
-         if (rctcrse(1,i) .ne. goodpt) then
+         if (rctcrse(1,i) .eq. DOFLAG) then
 !           ## never set rctflg to good, since flag2refine may
 !           ## have previously set it to bad
 !           ## can only add bad pts in this routine
-            rctflg(ifine)    = badpt
-            rctflg(ifine+1)  = badpt
+            rctflg(ifine)    = DOFLAG
+            rctflg(ifine+1)  = DOFLAG
         endif
         ifine   = ifine + 2
       enddo
