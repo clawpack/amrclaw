@@ -17,7 +17,7 @@ class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
         
         # Run adjoint problem
         currentdir = os.getcwd()
-        adjointdir = currentdir + '/acoustics_1d_forwardprob/adjoint'
+        adjointdir = currentdir + '/adjoint'
 
         # Running the adjoint problem
         os.chdir(adjointdir)

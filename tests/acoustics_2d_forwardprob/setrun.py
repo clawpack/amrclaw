@@ -14,9 +14,7 @@ import numpy as np
 # Set these parameters for adjoint flagging....
 
 # location of output from computing adjoint:
-# note: current folder needed in adjoint_output because nose tests are run from
-# the tests directory (which is one level up)
-adjoint_output = os.path.abspath('acoustics_2d_forwardprob/adjoint/_output')
+adjoint_output = os.path.abspath('adjoint/_output')
 print('Will flag using adjoint solution from  %s' % adjoint_output)
 
 # Time period of interest:
