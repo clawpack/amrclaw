@@ -1,5 +1,5 @@
 """
-Regression tests for 1D acoustics with adjoint.
+Regression tests for 1D acoustics with adjoint flagging.
 """
 
 from __future__ import print_function

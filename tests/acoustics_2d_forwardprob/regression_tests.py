@@ -1,5 +1,5 @@
 """
-Regression tests for 2D advection on a square.
+Regression tests for 2D acoustics with adjoint flagging.
 """
 
 from __future__ import print_function
