@@ -51,9 +51,9 @@ MODULES = \
 
 SOURCES = \
   qinit.f \
-  qtrue.f \
+  qtrue.f90 \
   setprob.f \
-  bc2amr.f \
+  bc2amr.f90 \
   $(CLAW)/riemann/src/rpn2_advection.f \
   $(CLAW)/riemann/src/rpt2_advection.f \
 
