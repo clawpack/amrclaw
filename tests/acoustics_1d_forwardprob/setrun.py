@@ -398,7 +398,6 @@ def setadjoint(rundata):
     counter = 1
     for fname in files:
         f = open(fname)
-        time = f.readline().split()[-1]
         adjointdata.add_param('file' + str(counter), fname, 'Binary file' + str(counter))
         counter = counter + 1
     
