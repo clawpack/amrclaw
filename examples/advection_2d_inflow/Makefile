@@ -54,8 +54,8 @@ SOURCES = \
   qtrue.f90 \
   setprob.f \
   bc2amr.f90 \
-  $(CLAW)/riemann/src/rpn2_advection.f \
-  $(CLAW)/riemann/src/rpt2_advection.f \
+  $(CLAW)/riemann/src/rpn2_advection.f90 \
+  $(CLAW)/riemann/src/rpt2_advection.f90
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:

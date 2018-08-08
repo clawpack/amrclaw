@@ -85,7 +85,7 @@ subroutine bc2amr(val,aux,nrow,ncol,meqn,naux, hx, hy, level, time,   &
                   xlo_patch, xhi_patch, ylo_patch, yhi_patch) 
 
     use amr_module, only: mthbc, xlower, ylower, xupper, yupper
-    use amr_module, only: xperdom,yperdom,spheredom
+    use amr_module, only: xperdom, yperdom, spheredom
 
     implicit none
 
@@ -102,7 +102,7 @@ subroutine bc2amr(val,aux,nrow,ncol,meqn,naux, hx, hy, level, time,   &
     real(kind=8) :: hxmarg, hymarg
 
     ! Inflow boundary condition variables
-    real(kind=8) :: x, y
+    real(kind=8) :: x, y, tau, x0, y0
 
     ! True solution for BCs
     interface
@@ -143,17 +143,15 @@ subroutine bc2amr(val,aux,nrow,ncol,meqn,naux, hx, hy, level, time,   &
 
                 do j = 1, ncol
                     y = ylo_patch + (j - 0.5d0) * hy
+                    if (nxl >= 1) then
+                        ! First ghost cell
+                        tau = hx / (2.d0 * ubar)
+                        val(1,nxl,j) = qtrue(0.d0, y + vbar * tau, time + tau)
+                    end if
                     if (nxl == 2) then
                         ! second ghost cell:
-                        val(1,1,j) =                                           &
-                                  qtrue(0.d0,                                  &
-                                        y + vbar * 3.d0 * hx / (2.d0 * ubar),  &
-                                        time + 3.d0 * hx / (2.d0 * ubar))
-                    else
-                        ! First ghost cell
-                        val(1, nxl, j) = qtrue(0.d0,                           &
-                                               y + vbar * hx / (2.d0 * ubar),  &
-                                               time + hx / (2.d0 * ubar))
+                        tau = 3.d0 * hx / (2.d0 * ubar)
+                        val(1,1,j) = qtrue(0.d0, y + vbar * tau, time + tau)
                     end if
                 end do
 
@@ -246,23 +244,21 @@ subroutine bc2amr(val,aux,nrow,ncol,meqn,naux, hx, hy, level, time,   &
         select case(mthbc(3))
             case(0) ! User defined boundary condition
                 ! Inflow boundary condition
-                if (ubar < 0.1d0 * vbar) then
-                    stop "Inflow BCs at left boundary assume ubar >= vbar / 10"
+                if (vbar < 0.1d0 * ubar) then
+                    stop "Inflow BCs at bottom boundary assume vbar >= ubar / 10"
                 end if
 
                 do i = 1, nrow
                     x = xlo_patch + (i - 0.5d0) * hx
+                    if (nyb >= 1) then
+                        ! First ghost cell
+                        tau = hy / (2.d0 * vbar)
+                        val(1,i,nyb) = qtrue(x + vbar * tau, 0.d0, time + tau)
+                    end if
                     if (nyb == 2) then
                         ! second ghost cell:
-                        val(1, i, nyb) =                                       &
-                                   qtrue(x + ubar * 3.d0 * hy / (2.d0 * vbar), &
-                                         0.d0,                                 &
-                                         time + 3.d0 * hy / (2.d0 * vbar))
-                    else
-                        ! First ghost cell
-                        val(1, i, nyb) = qtrue(x + vbar * hy / (2.d0 * vbar),  &
-                                               0.d0,                           &
-                                               time + hy / (2.d0 * vbar))
+                        tau = 3.d0 * hy / (2.d0 * vbar)
+                        val(1,i,1) = qtrue(x + ubar * tau, 0.d0, time + tau)
                     end if
                 end do
 
