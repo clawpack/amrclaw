@@ -54,7 +54,7 @@
 !
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 
-subroutine bc2amr(val, aux, nrow, meqn,naux, hx, level, time,           &
+subroutine bc1amr(val, aux, nrow, meqn,naux, hx, level, time,           &
                   xlo_patch, xhi_patch) 
 
     use amr_module, only: mthbc, xlower, xupper
@@ -145,9 +145,7 @@ subroutine bc2amr(val, aux, nrow, meqn,naux, hx, level, time,           &
                 end do
                 ! negate the normal velocity:
                 do i = ibeg, nrow
-                    do j = 1, ncol
-                        val(2, i) = -val(2, i)
-                    end do
+                    val(2, i) = -val(2, i)
                 end do
 
             case default
@@ -157,4 +155,4 @@ subroutine bc2amr(val, aux, nrow, meqn,naux, hx, level, time,           &
         end select
     end if
 
-end subroutine bc2amr
+end subroutine bc1amr
