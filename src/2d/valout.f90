@@ -1,4 +1,4 @@
-!> Output the results for a general system of conservation laws
+!! Output the results for a general system of conservation laws
 !! in 2 dimensions
 !!
 !! Write the results to the file fort.q<iframe>
@@ -26,6 +26,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     real(kind=8), intent(in) :: time
 
     ! Locals
+    logical :: timing_file_exists
     integer, parameter :: out_unit = 50
     integer :: i, j, m, level, output_aux_num, num_stop, digit, num_dim
     integer :: grid_ptr, num_cells(2), num_grids, q_loc, aux_loc
@@ -68,10 +69,6 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                                            "i6,'                 naux'/,"   // &
                                            "i6,'                 ndim'/,"   // &
                                            "i6,'                 nghost'/,/)"
-    character(len=*), parameter :: timing_header_format =                      &
-                                                  "(' wall time (', i2,')," // &
-                                                  " CPU time (', i2,'), "   // &
-                                                  "cells updated (', i2,'),')"
     character(len=*), parameter :: console_format = &
              "('AMRCLAW: Frame ',i4,' output files done at time t = ', d13.6,/)"
 
@@ -366,23 +363,8 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
     ! ==========================================================================
     ! Write out timing stats
-    ! Assume that this has been started some where
-    if (frame == 0) then
-        ! Write header out and continue
-        open(unit=out_unit, file=timing_file_name, form='formatted',         &
-             status='unknown', action='write')
-        ! Construct header string
-        timing_line = 'output_time,total_wall_time,total_cpu_time,'
-        timing_substr = ""
-        do level=1, mxnest
-            write(timing_substr, timing_header_format) level, level, level
-            timing_line = trim(timing_line) // trim(timing_substr)
-        end do
-        write(out_unit, "(a)") timing_line
-    else
-        open(unit=out_unit, file=timing_file_name, form='formatted',         &
+    open(unit=out_unit, file=timing_file_name, form='formatted',         &
              status='old', action='write', position='append')
-    end if
     
     timing_line = "(e16.6, ', ', e16.6, ', ', e16.6,"
     do level=1, mxnest

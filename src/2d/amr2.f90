@@ -113,6 +113,13 @@ program amr2
     real(kind=8) ::ttotalcpu, cpu_start,cpu_finish 
     integer :: clock_start, clock_finish, clock_rate
     integer, parameter :: timing_unit = 48
+    integer, parameter :: out_unit = 67
+    character(len=256) :: timing_line, timing_substr
+    character(len=*), parameter :: timing_file_name = "timing.csv"
+    character(len=*), parameter :: timing_header_format =                      &
+                                                  "(' wall time (', i2,')," // &
+                                                  " CPU time (', i2,'), "   // &
+                                                  "cells updated (', i2,'),')"
 
 #ifdef HDF5
     ! HDF5 Output
@@ -482,7 +489,20 @@ program amr2
         call set_regions()
         call set_gauges(rest, nvar, naux)
 
-    else
+    else        
+
+        ! Create new timing file
+        open(unit=out_unit, file=timing_file_name, form='formatted',         &
+             status='unknown', action='write')
+        ! Construct header string
+        timing_line = 'output_time,total_wall_time,total_cpu_time,'
+        timing_substr = ""
+        do level=1, mxnest
+            write(timing_substr, timing_header_format) level, level, level
+            timing_line = trim(timing_line) // trim(timing_substr)
+        end do
+        write(out_unit, "(a)") timing_line
+        close(out_unit)
 
         open(outunit, file=outfile, status='unknown', form='formatted')
 
