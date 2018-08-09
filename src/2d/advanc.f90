@@ -287,8 +287,15 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
                                xlow,ylow,nvar,mitot,mjtot,naux,mptr)
         endif
 
+#ifdef GEOCLAW
         call b4step2(nghost,nx,ny,nvar,alloc(locnew), &
-           xlow,ylow,hx,hy,time,delt,naux,alloc(locaux))
+           rnode(cornxlo,mptr),rnode(cornylo,mptr), &
+           hx,hy,time,delt,naux,alloc(locaux))
+#else
+        call b4step2(nghost,nx,ny,nvar,alloc(locnew), &
+           xlow,ylow, &
+           hx,hy,time,delt,naux,alloc(locaux))
+#endif
 
         ! call cpu_allocate_pinned(grid_data(mptr)%ptr, &
         !         1,mitot,1,mjtot,1,nvar)
