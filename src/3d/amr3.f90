@@ -112,6 +112,12 @@ program amr3
     integer :: clock_start, clock_finish, clock_rate, ttotal
     real(kind=8) :: cpu_start, cpu_finish,ttotalcpu
     integer, parameter :: timing_unit = 48
+    character(len=256) :: timing_line, timing_substr
+    character(len=*), parameter :: timing_base_name = "timing."
+    character(len=*), parameter :: timing_header_format =                      &
+                                                  "(' wall time (', i2,')," // &
+                                                  " CPU time (', i2,'), "   // &
+                                                  "cells updated (', i2,'),')"
 
     ! Common block variables
     real(kind=8) :: dxmin, dymin, dzmin
@@ -125,7 +131,6 @@ program amr3
     character(len=*), parameter :: dbugfile = 'fort.debug'
     character(len=*), parameter :: matfile  = 'fort.nplot'
     character(len=*), parameter :: parmfile = 'fort.parameters'
-    character(len=*), parameter :: timing_file = 'timing.txt'
 
     ! Open parameter and debug files
     open(dbugunit,file=dbugfile,status='unknown',form='formatted')
@@ -478,6 +483,18 @@ program amr3
 
         call set_gauges(rest, nvar, naux)
     else
+        ! Write header out and continue
+        open(unit=timing_unit, file=timing_base_name//"csv",            &
+             form='formatted', status='unknown', action='write')
+        ! Construct header string
+        timing_line = 'output_time,total_wall_time,total_cpu_time,'
+        timing_substr = ""
+        do level=1, mxnest
+            write(timing_substr, timing_header_format) level, level, level
+            timing_line = trim(timing_line) // trim(timing_substr)
+        end do
+        write(timing_unit, "(a)") timing_line
+        close(timing_unit)
 
         open(outunit, file=outfile, status='unknown', form='formatted')
 
@@ -608,7 +625,8 @@ program amr3
     call cpu_time(cpu_finish)
     
     !output timing data
-    open(timing_unit, file=timing_file, status='unknown', form='formatted')
+    open(timing_unit, file=timing_base_name//"txt", status='unknown',        &
+         form='formatted')
     write(*,*)
     write(timing_unit,*)
     format_string="('============================== Timing Data ==============================')"
