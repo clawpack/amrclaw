@@ -55,7 +55,7 @@ MODULES = \
 SOURCES = \
   qinit.f \
   setaux.f \
-  bc3amr.f \
+  bc3amr.f90 \
   setprob.f90 \
   $(CLAW)/riemann/src/rpn3_vc_advection.f90 \
   $(CLAW)/riemann/src/rpt3_vc_advection.f90 \
