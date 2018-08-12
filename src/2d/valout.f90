@@ -28,7 +28,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     ! Locals
     logical :: timing_file_exists
     integer, parameter :: out_unit = 50
-    integer :: i, j, m, level, output_aux_num, num_stop, digit, num_dim
+    integer :: i, j, m, level, output_aux_num, num_stop, digit
     integer :: grid_ptr, num_cells(2), num_grids, q_loc, aux_loc
     real(kind=8) :: lower_corner(2), delta(2)
     logical :: out_aux
@@ -48,12 +48,6 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     character(len=256) :: timing_line, timing_substr
     character(len=*), parameter :: timing_file_name = "timing.csv"
 
-    character(len=*), parameter :: header_format_1d =                          &
-                                    "(i6,'                 grid_number',/," // &
-                                     "i6,'                 AMR_level',/,"   // &
-                                     "i6,'                 mx',/,"          // &
-                                     "e26.16,'    xlow', /, "               // &
-                                     "e26.16,'    dx',/)"
     character(len=*), parameter :: header_format_2d =                          &
                                     "(i6,'                 grid_number',/," // &
                                      "i6,'                 AMR_level',/,"   // &
@@ -141,19 +135,13 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
             lower_corner = [rnode(cornxlo, grid_ptr), rnode(cornylo, grid_ptr)]
 
             ! Write out header data                 
-            if (num_dim == 1) then
-                write(out_unit, header_format_1d) grid_ptr, level,             &
-                                                  num_cells(1),                &
-                                                  lower_corner(1),             &
-                                                  delta(1)
-            else
-                write(out_unit, header_format_2d) grid_ptr, level,             &
-                                                  num_cells(1),                &
-                                                  num_cells(2),                &
-                                                  lower_corner(1),             &
-                                                  lower_corner(2),             &
-                                                  delta(1), delta(2)
-            end if
+            
+            write(out_unit, header_format_2d) grid_ptr, level,             &
+                                              num_cells(1),                &
+                                              num_cells(2),                &
+                                              lower_corner(1),             &
+                                              lower_corner(2),             &
+                                              delta(1), delta(2)
 
             ! Output grids
             select case(output_format)
@@ -260,19 +248,12 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
                         ! We only output header info for aux data if writing 
                         ! ASCII data
-                        if (num_dim == 1) then
-                            write(out_unit, header_format_1d) grid_ptr, level, &
-                                                              num_cells(1),    &
-                                                              lower_corner(1), &
-                                                              delta(1)
-                        else
-                            write(out_unit, header_format_2d) grid_ptr, level, &
-                                                              num_cells(1),    &
-                                                              num_cells(2),    &
-                                                              lower_corner(1), &
-                                                              lower_corner(2), &
-                                                              delta(1), delta(2)
-                        end if
+                        write(out_unit, header_format_2d) grid_ptr, level,    &
+                                                          num_cells(1),       &
+                                                          num_cells(2),       &
+                                                          lower_corner(1),    &
+                                                          lower_corner(2),    &
+                                                          delta(1), delta(2)
 
                         ! Round off if nearly zero
                         forall (m = 1:num_aux,                              &
@@ -348,16 +329,9 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     ! Write fort.t file
     open(unit=out_unit, file=file_name(2), status='unknown', form='formatted')
 
-    ! Handle special case of using 2D AMR to do 1D AMR
-    if (num_cells(2) > 1) then
-        num_dim = 2
-    else
-        num_dim = 1
-    end if
-
     ! Note:  We need to print out num_ghost too in order to strip ghost cells
     !        from q array when reading in pyclaw.io.binary
-    write(out_unit, t_file_format) time, num_eqn, num_grids, num_aux, num_dim, &
+    write(out_unit, t_file_format) time, num_eqn, num_grids, num_aux, 2, &
                                    num_ghost
     close(out_unit)
 
@@ -376,12 +350,12 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     if (time == t0) then
         t_CPU_overall = 0.d0
         timeTick_overall = 0.d0
-      else
+    else
         call cpu_time(t_CPU_overall)
         call system_clock(tick_clock_finish,tick_clock_rate)
         timeTick_int = timeTick + tick_clock_finish - tick_clock_start
         timeTick_overall = real(timeTick_int, kind=8)/real(clock_rate,kind=8)
-      endif
+    endif
 
     write(out_unit, timing_line) time, timeTick_overall, t_CPU_overall, &
         (real(tvoll(i), kind=8) / real(clock_rate, kind=8), &
