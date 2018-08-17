@@ -47,8 +47,8 @@ struct shallow_topo_horizontal
             const int row, const int col, const int numStates, const int numWaves,
             real* const wave, real* const waveSpeeds)	
     {
-        static_assert(N == 1, 
-                "Number of coefficients must be 1 for shallow_topo_horizontal");
+        static_assert(N > 0, 
+                "Number of coefficients must be larger than 0 for shallow_topo_horizontal");
         riemann_shallow_topo_x(
                 q_left, q_right, &(u_left[0]), &(u_right[0]), 
                 wave, waveSpeeds
@@ -66,8 +66,8 @@ struct shallow_topo_vertical
             const int row, const int col, const int numStates, const int numWaves,
             real* const wave, real* const waveSpeeds)	
     {
-        static_assert(N == 1, 
-                "Number of coefficients must be 1 for shallow_topo_vertical");
+        static_assert(N > 0, 
+                "Number of coefficients must be larger than 0 for shallow_topo_vertical");
         riemann_shallow_topo_y(
                 q_left, q_right, &(u_left[0]), &(u_right[0]), 
                 wave, waveSpeeds

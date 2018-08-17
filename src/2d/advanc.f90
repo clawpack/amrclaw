@@ -182,13 +182,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_time(cpu_startStepgrid)
 #ifdef GEOCLAW
     if (.not. topo_finalized) then
-#ifndef CUDA
         time = rnode(timemult,lstart(level))
         call topo_update(time)
-#else
-        print *, "dtopo is not supported in CUDA version."
-        stop
-#endif
     endif
 #endif
     !$OMP END MASTER 
@@ -384,7 +379,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             grid_data_d_copy2(mptr)%ptr, grid_data_d(mptr)%ptr, &
             aux_d(mptr)%ptr, &
             nvar, naux, &
-            cfls_d, numgrids(level), &
+            cfls_d, numgrids(level), mcapa-1,& ! C arrays are 0-indexed
             id, device_id) 
 
         cudaResult = cudaMemcpyAsync(alloc(locnew), grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))

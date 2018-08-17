@@ -56,6 +56,7 @@ class pdeParam
 
         real* cfl_grid; // an array of size 1xSPACEDIM, storing cfl number in current grid patch in all directions
 
+        const int mcapa; // index in aux array that corresponds to capacity variable. 0-indexed.
         const int dev_id; // ID of the device on which storage are allocated
         const int id; // local id of this grid
 
@@ -71,11 +72,12 @@ class pdeParam
                 real dt_,
                 real* q_tmp_, real* qNew_, 
                 real* coefficients_,
-                real* cfl_grid_, const int id_, int dev_id_):
+                real* cfl_grid_, const int mcapa_, const int id_, int dev_id_):
                 cellsX(cellsX), cellsY(cellsY), numGhostCells(numGhostCells), numStates(numStates), numWaves(numWaves), numCoeff(numCoeff),
                 startX(startX), endX(endX), startY(startY), endY(endY), dt(dt_),
                 q_tmp(q_tmp_), qNew(qNew_), waveSpeedsX(NULL), waveSpeedsY(NULL),
-                coefficients(coefficients_), cfl_grid(cfl_grid_), id(id_), dev_id(dev_id_)
+                coefficients(coefficients_), cfl_grid(cfl_grid_), mcapa(mcapa_),
+                id(id_), dev_id(dev_id_)
         {
 
             assert( (cellsX-2*numGhostCells) > 0 );

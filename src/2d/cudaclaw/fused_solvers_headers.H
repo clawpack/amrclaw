@@ -1,5 +1,5 @@
-#ifndef __FUSED_RIEMANN_LIMITER_HEADERS_H__
-#define __FUSED_RIEMANN_LIMITER_HEADERS_H__
+#ifndef __FUSED_SOLVERS_HEADERS_H__
+#define __FUSED_SOLVERS_HEADERS_H__
 
 #include "real.H"
 #include "common.H"

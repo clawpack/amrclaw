@@ -8,7 +8,7 @@ module parallel_advanc_module
             q_tmp, qNew, &
             coefficients, &
             numStates, numCoefficients, &
-            cfls_d, ngrids, id, dev_id) &
+            cfls_d, ngrids, mcapa, id, dev_id) &
             bind(C,NAME='call_C_limited_riemann_update')
 
 
@@ -16,7 +16,7 @@ module parallel_advanc_module
 
             implicit none
             integer(kind=c_int), value, intent(in) :: cellsX, cellsY, ghostCells, &
-                ngrids, id, dev_id, numStates, numCoefficients
+                ngrids, id, dev_id, numStates, numCoefficients, mcapa
 
             #if (CLAW_REAL == 8)
                 real(kind=c_double), value, intent(in) :: startX, endX, startY, endY, dt
