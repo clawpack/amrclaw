@@ -57,6 +57,10 @@ inline __device__ void first_order_update(real* waves, real* waveSpeeds, real* a
 
 
 
+/*
+ * This regular wave approach does not handle capacity
+ * In case where capacity variable exists, use fwave approach below.
+ */
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
 __forceinline__ __device__ 
 void first_second_order_update_horizontal(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
@@ -104,6 +108,10 @@ void first_second_order_update_horizontal(pdeParam &param, real* waves, real* wa
     }
 }
 
+/*
+ * This regular wave approach does not handle capacity
+ * In case where capacity variable exists, use fwave approach below.
+ */
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
 __forceinline__ __device__ 
 void first_second_order_update_vertical(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
