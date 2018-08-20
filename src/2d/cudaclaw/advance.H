@@ -367,7 +367,8 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
     __syncthreads();
 
     // idle the first and the last thread since we don't need to limit the first and the last wave in this block
-    // should also handle the edge case:  idle the last effective thread in the last block in x direction
+    // should also handle the edge case:  idle the last effective thread in the last block in x direction, in case
+    // only part of the last block is mapped to internal of a grid patch
     grid_valid = grid_valid && 
         (0 < threadIdx.x && threadIdx.x < (HORIZONTAL_K_BLOCKSIZEX-1) && col < (param.cellsX-2));
 
@@ -410,6 +411,15 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
     {
         setSharedWave(wavesX, threadIdx.y, threadIdx.x, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, apdq[k]);
     }
+
+    // Some wave speeds should not be used in computing maximum CFL number,
+    // e.g. wave speeds from the 1st and last Riemann problem in a row of cells
+    // so we set them to 0.0
+    if (col == 0 || col == param.cellsX-2)
+        #pragma unroll
+        for (int i = 0; i < numWaves; i++)
+            setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, claw_zero);
+
 
     // Local Reduce over Wave Speeds
     // Stage 1
@@ -624,6 +634,15 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
     {
         setSharedWave(wavesY, threadIdx.y, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, apdq[k]);
     }
+
+    // Some wave speeds should not be used in computing maximum CFL number,
+    // e.g. wave speeds from the 1st and last Riemann problem in a col of cells
+    // and from the first and last two columns
+    // so we set them to 0.0
+    if (row == 0 || row == param.cellsY-2 || col < 2 || col > param.cellsX-3)
+        #pragma unroll
+        for (int i = 0; i < numWaves; i++)
+            setSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, claw_zero);
 
     // Local Reduce over Wave Speeds
     // Stage 1
