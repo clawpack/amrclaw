@@ -76,6 +76,7 @@ c        where A^* represents either A^- or A^+.
 c
 c
       use amr_module
+      use abl_module, only: abl_type
       implicit double precision (a-h,o-z)
       external rpn2, rpt2
       dimension    q1d(meqn,1-mbc:maxm+mbc)
@@ -124,6 +125,20 @@ c     ---------------------------------------------------------------------
 c
       call rpn2(ixy,maxm,meqn,mwaves,maux,mbc,mx,q1d,q1d,
      &          aux2,aux2,wave,s,amdq,apdq)
+
+c    # apply ABL scaling to propagation speed and update fluctuations if needed
+      if (abl_type .ne. 0) then
+        do i = 1-mbc,mx+mbc
+          do m = 1,mwaves
+              s(m,i) = s(m,i)*aux2(maux-2+ixy,i)
+          end do
+          do m = 1,meqn
+            amdq(m,i) = amdq(m,i)*aux2(maux-2+ixy,i)
+            apdq(m,i) = apdq(m,i)*aux2(maux-2+ixy,i)
+          end do
+        end do
+      end if
+
 c
 c     # Set fadd for the donor-cell upwind method (Godunov)
       do 40 i=1,mx+1
@@ -202,6 +217,18 @@ c     # split the left-going flux difference into down-going and up-going:
       call rpt2(ixy,1,maxm,meqn,mwaves,maux,mbc,mx,
      &          q1d,q1d,aux1,aux2,aux3,
      &          amdq,bmasdq,bpasdq)
+
+c
+c     # Adjust for ABL if needed
+      if (abl_type .ne. 0) then
+        do i = 1,mx+mbc
+          do m = 1,meqn
+            bmasdq(m,i) = bmasdq(m,i)*aux2(maux+1-ixy,i-1)
+            bpasdq(m,i) = bpasdq(m,i)*aux3(maux+1-ixy,i-1)
+          end do
+        end do
+      end if
+
 c
 c     # modify flux below and above by B^- A^- Delta q and  B^+ A^- Delta q:
        do 160 i = 1, mx+1
@@ -219,6 +246,16 @@ c     # split the right-going flux difference into down-going and up-going:
       call rpt2(ixy,2,maxm,meqn,mwaves,maux,mbc,mx,
      &          q1d,q1d,aux1,aux2,aux3,
      &          apdq,bmasdq,bpasdq)
+
+c     # Adjust for ABL if needed
+      if (abl_type .ne. 0) then
+        do i = 1,mx+mbc
+          do m = 1,meqn
+            bmasdq(m,i) = bmasdq(m,i)*aux2(maux+1-ixy,i)
+            bpasdq(m,i) = bpasdq(m,i)*aux3(maux+1-ixy,i)
+          end do
+        end do
+      end if
 c
 c     # modify flux below and above by B^- A^+ Delta q and  B^+ A^+ Delta q:
        do 180 i = 1, mx+1
