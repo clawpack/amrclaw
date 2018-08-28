@@ -28,6 +28,10 @@
             2) git remote add xinshengqin https://github.com/xinshengqin/geoclaw.git
             3) git fetch xinshengqin
             4) git checkout gpu
+    3. Make sure the other sub-modules (visclaw, classic, pyclaw) are checked out at v5.4.1. 
+        If not, you can do (for pyclaw, for example), 
+            1) cd $CLAW/pyclaw
+            4) git checkout v5.4.1
 
 - Run examples
     Three examples can be found at:
