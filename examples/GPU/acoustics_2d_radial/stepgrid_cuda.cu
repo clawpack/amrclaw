@@ -12,7 +12,7 @@ extern "C" void call_C_limited_riemann_update(
         real* q_tmp, real* qNew, 
         real* coefficients,
         const int numStates, const int numCoefficients,
-        real* cfls, const int ngrids, 
+        real* cfls, const int ngrids, const int mcapa,
         const int id, const int dev_id) {
 
     // actually qNew holds the input old solution as well as new output solution
@@ -29,11 +29,10 @@ extern "C" void call_C_limited_riemann_update(
             startX, endX, startY, endY, dt,
             q_tmp, qNew, 
             coefficients, 
-            cfl_grid, id, dev_id); 
+            cfl_grid, mcapa, id, dev_id); 
 
     param.setOrderOfAccuracy(2);
 
-    // acoustics_homo_2d_horizontal_warp acoustic_h;
     acoustics_homo_2d_horizontal acoustic_h;
     acoustics_homo_2d_vertical acoustic_v;
     

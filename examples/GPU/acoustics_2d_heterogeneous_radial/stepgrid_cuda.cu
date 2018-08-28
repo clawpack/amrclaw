@@ -9,14 +9,14 @@ extern "C" void call_C_limited_riemann_update(
         const int cellsX, const int cellsY, const int ghostCells,
         const real startX, const real endX, const real startY, const real endY,
         const real dt,
-        real* q, real* qNew, 
+        real* q_tmp, real* qNew, 
         real* coefficients,
         const int numStates, const int numCoefficients,
-        real* cfls, const int ngrids, 
+        real* cfls, const int ngrids, const int mcapa,
         const int id, const int dev_id) {
 
     // actually qNew holds the input old solution as well as new output solution
-    // q is just temporary storage for intermediate solution between x-sweep and y-sweep
+    // q_tmp is just temporary storage for intermediate solution between x-sweep and y-sweep
 
     real* cfl_grid = cfls+(id-1)*SPACEDIM;
 
@@ -27,9 +27,9 @@ extern "C" void call_C_limited_riemann_update(
     pdeParam param(cellsX, cellsY, ghostCells, 
             numStates, NWAVES, numCoefficients,
             startX, endX, startY, endY, dt,
-            q, qNew, 
+            q_tmp, qNew, 
             coefficients, 
-            cfl_grid, id, dev_id); 
+            cfl_grid, mcapa, id, dev_id); 
 
     param.setOrderOfAccuracy(2);
 
