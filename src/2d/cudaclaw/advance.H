@@ -310,6 +310,7 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
     int col = threadIdx.x + blockIdx.x*blockDim.x - 3*blockIdx.x;
     int row = threadIdx.y + blockIdx.y*blockDim.y;
 
+
     SharedMemory<real> smem;
     real* wavesX = smem.getPointer();
     real* waveSpeedsX = smem.getPointer(blockSize*numWaves*numStates);
@@ -435,6 +436,10 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 #endif
 
 #pragma unroll
+    // TODO: if numWaves is large, we should check s>0 or s<0 first,
+    // then compute only one of 
+    // "-waveSpeedsX[tid + i*blockSize]/leftCoeff[param.mcapa]" and
+    // "waveSpeedsX[tid + i*blockSize]/rightCoeff[param.mcapa]"
     for (int i = 1; i < numWaves; i++)
     {
         // TODO: call getSharedSpeed to do this?
@@ -721,6 +726,15 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
         param.waveSpeedsY[blockIdx.x + blockIdx.y*gridDim.x] =  waveSpeedsY[0];
 }
 
+
+#ifdef GEOCLAW
+__global__ void 
+b4xsweep_kernel(pdeParam param);
+__global__ void 
+b4ysweep_kernel(pdeParam param);
+
+#endif
+
 template <class Riemann_h, class Riemann_v, class Limiter>
 int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         Riemann_h Riemann_pointwise_solver_h,	//
@@ -729,6 +743,16 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         const cudaStream_t stream
         )
 {
+    {
+        // before x-sweep
+        const unsigned int blockDim_XR = HORIZONTAL_K_BLOCKSIZEX;
+        const unsigned int blockDim_YR = HORIZONTAL_K_BLOCKSIZEY;
+        unsigned int gridDim_XR = (param.cellsX + blockDim_XR - 1) / blockDim_XR;
+        unsigned int gridDim_YR = (param.cellsY + blockDim_YR - 1) / blockDim_YR;
+        dim3 dimGrid_hR(gridDim_XR, gridDim_YR);
+        dim3 dimBlock_hR(blockDim_XR, blockDim_YR);
+        b4xsweep_kernel<<<dimGrid_hR,dimBlock_hR,0,stream>>>(param);
+    }
     {
         // RIEMANN, FLUCTUATIONS and UPDATES
         const unsigned int blockDim_XR = HORIZONTAL_K_BLOCKSIZEX;
@@ -757,6 +781,16 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimBlock1(blockDim_X);
         reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR,
                 param.dx, param.dt, &(param.cfl_grid[0]) );
+    }
+    {
+        // before y-sweep
+        const unsigned int blockDim_XR = VERTICAL_K_BLOCKSIZEX;
+        const unsigned int blockDim_YR = VERTICAL_K_BLOCKSIZEY;
+        unsigned int gridDim_XR = (param.cellsX + blockDim_XR - 1) / blockDim_XR;
+        unsigned int gridDim_YR = (param.cellsY + blockDim_YR - 1) / blockDim_YR;
+        dim3 dimGrid_hR(gridDim_XR, gridDim_YR);
+        dim3 dimBlock_hR(blockDim_XR,blockDim_YR);
+        b4ysweep_kernel<<<dimGrid_hR,dimBlock_hR,0,stream>>>(param);
     }
     {
         // RIEMANN, FLUCTUATIONS and UPDATE
