@@ -8,7 +8,9 @@ module parallel_advanc_module
             q_tmp, qNew, &
             coefficients, &
             numStates, numCoefficients, &
-            cfls_d, ngrids, mcapa, id, dev_id) &
+            cfls_d, ngrids, mcapa, id, dev_id, &
+            waveSpeedsX, waveSpeedsY, &
+            ws_size_x, ws_size_y) &
             bind(C,NAME='call_C_limited_riemann_update')
 
 
@@ -16,7 +18,8 @@ module parallel_advanc_module
 
             implicit none
             integer(kind=c_int), value, intent(in) :: cellsX, cellsY, ghostCells, &
-                ngrids, id, dev_id, numStates, numCoefficients, mcapa
+                ngrids, id, dev_id, numStates, numCoefficients, mcapa, &
+                ws_size_x, ws_size_y
 
             #if (CLAW_REAL == 8)
                 real(kind=c_double), value, intent(in) :: startX, endX, startY, endY, dt
@@ -24,12 +27,16 @@ module parallel_advanc_module
                 real(kind=c_double), device :: qNew(cellsX,cellsY,numStates)
                 real(kind=c_double), device :: coefficients(cellsX,cellsY,numStates)
                 real(kind=c_double), device :: cfls_d(SPACEDIM,ngrids)
+                real(kind=c_double), device :: waveSpeedsX(ws_size_x)
+                real(kind=c_double), device :: waveSpeedsY(ws_size_y)
             #else
                 real(kind=c_float), value, intent(in) :: startX, endX, startY, endY, dt
                 real(kind=c_float), device :: q_tmp(cellsX,cellsY,numStates)
                 real(kind=c_float), device :: qNew(cellsX,cellsY,numStates)
                 real(kind=c_float), device :: coefficients(cellsX,cellsY,numStates)
                 real(kind=c_float), device :: cfls_d(SPACEDIM,ngrids)
+                real(kind=c_float), device :: waveSpeedsX(ws_size_x)
+                real(kind=c_float), device :: waveSpeedsY(ws_size_y)
             #endif
 
         end subroutine stepgrid_cudaclaw

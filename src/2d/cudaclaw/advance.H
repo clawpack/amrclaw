@@ -421,6 +421,17 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
         for (int i = 0; i < numWaves; i++)
             setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, claw_zero);
 
+    // debug waveSpeeds
+    #pragma unroll
+    for (int i = 0; i < numWaves; i++)
+    {
+        real ws =  getSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX );
+        real cfl = fmax(-ws/leftCoeff[param.mcapa],ws/rightCoeff[param.mcapa])*param.dt/param.dx;
+        if (cfl > 1.0)
+        {
+            printf("cfl larger than 1.0 in horizontal kernel. At row = %d, col = %d, wave number = %d. \ncfl = %E. local grid id = %d. \n", row, col, i, cfl, param.id);
+        }
+    }
 
     // Local Reduce over Wave Speeds
     // Stage 1
@@ -524,8 +535,15 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
         }
     }
 
-    if (tid == 0)
-        param.waveSpeedsX[blockIdx.x + blockIdx.y*gridDim.x] =  waveSpeedsX[0];
+    if (tid == 0) {
+        param.waveSpeedsX[blockIdx.x + blockIdx.y*gridDim.x] = waveSpeedsX[0];
+        real cfl = waveSpeedsX[0]*param.dt/param.dx;
+        if ( cfl > 1.0)
+            printf("cfl larger than 1.0 in horizontal kernel. cfl = %E. \n blockIdx.x = %d, blockIdx.y = %d, local grid id = %d. \n", cfl, blockIdx.x, blockIdx.y, param.id);
+//         int idx = blockIdx.x + blockIdx.y*gridDim.x;
+//         printf("param.waveSpeedsX[%d]*dt/dx = %E.\n",idx, param.waveSpeedsX[idx]*param.dt/param.dx);
+    }
+
 }
 
 
@@ -649,6 +667,17 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
         for (int i = 0; i < numWaves; i++)
             setSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, claw_zero);
 
+    // debug waveSpeeds
+    #pragma unroll
+    for (int i = 0; i < numWaves; i++)
+    {
+        real ws =  getSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX);
+        real cfl = fmax(-ws/downCoeff[param.mcapa],ws/upCoeff[param.mcapa])*param.dt/param.dy;
+        if (cfl > 1.0)
+        {
+            printf("cfl larger than 1.0 in vertical kernel. At row = %d, col = %d, wave number = %d. \ncfl = %E. local grid id = %d. \n", row, col, i, cfl, param.id);
+        }
+    }
     // Local Reduce over Wave Speeds
     // Stage 1
     // Bringing down the number of elements to compare to block size
@@ -723,7 +752,14 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
     }
 
     if (tid == 0)
+    {
         param.waveSpeedsY[blockIdx.x + blockIdx.y*gridDim.x] =  waveSpeedsY[0];
+        real cfl = waveSpeedsY[0]*param.dt/param.dy;
+        if ( cfl > 1.0)
+            printf("cfl larger than 1.0 in vertical kernel. cfl = %E. \n blockIdx.x = %d, blockIdx.y = %d, local grid id = %d. \n", cfl, blockIdx.x, blockIdx.y, param.id);
+//         int idx = blockIdx.x + blockIdx.y*gridDim.x;
+//         printf("param.waveSpeedsY[%d]*dt/dy = %E.\n",idx, param.waveSpeedsY[idx]*param.dt/param.dy);
+    }
 }
 
 
@@ -765,7 +801,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         int shared_mem_size = HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY*NWAVES*(NEQNS+1)*sizeof(real);
 
         // allocate param.waveSpeedsX here
-        param.alloc_waveSpeedsX(dimGrid_hR.x * dimGrid_hR.y);
+        // param.alloc_waveSpeedsX(dimGrid_hR.x * dimGrid_hR.y);
 
         Riemann_horizontal_kernel<NEQNS, NWAVES, NCOEFFS, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size,stream>>>(param, Riemann_pointwise_solver_h, limiter_phi);
 
@@ -779,7 +815,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
 
         dim3 dimGrid1(gridDim_X1);
         dim3 dimBlock1(blockDim_X);
-        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR,
+        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR, param.id, 0,
                 param.dx, param.dt, &(param.cfl_grid[0]) );
     }
     {
@@ -804,7 +840,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         int shared_mem_size = VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY*NWAVES*(NEQNS+1)*sizeof(real);
 
         // allocate param.waveSpeedsY here
-        param.alloc_waveSpeedsY(dimGrid_vR.x * dimGrid_vR.y);
+        // param.alloc_waveSpeedsY(dimGrid_vR.x * dimGrid_vR.y);
         Riemann_vertical_kernel<NEQNS, NWAVES, NCOEFFS, VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY, Riemann_v, Limiter><<<dimGrid_vR, dimBlock_vR,shared_mem_size,stream>>>(param, Riemann_pointwise_solver_v, limiter_phi);
 
 
@@ -819,12 +855,12 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimGrid2(gridDim_X2);
         dim3 dimBlock2(blockDim_X);
 
-        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR,
+        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR, param.id, 1,
                 param.dy, param.dt, &(param.cfl_grid[1]) );
     }
     // Let the memory manager free memory allocated by param later 
     // when the memory is not needed by GPU
-    param.register_allocated_memory();
+    // param.register_allocated_memory();
 
     return 0;
 }

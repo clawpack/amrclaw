@@ -29,7 +29,7 @@ warpReduce(volatile real *sdata, unsigned int tid)
 // return the first element in shared to the global input's first place
 template <unsigned int blockSize>
 __global__ void 
-reduceMax_simplified(real *globalWaves, int size, 
+reduceMax_simplified(real *globalWaves, int size, int id, int direction,
         real dx = claw_zero, real dt = claw_zero, real* result = NULL)
 {
     // size holds the exact number of wave speeds there are to be max reduced
@@ -101,6 +101,22 @@ reduceMax_simplified(real *globalWaves, int size,
     if (tid < 32)
         warpReduce<blockSize>(sharedWaveSpeeds, tid);
     if (tid == 0) {
+        real cfl = sharedWaveSpeeds[0]*dt/dx;
+        if ( cfl > 1.0) {
+            printf("cfl larger than 1.0 in reduce_max. cfl = %E. \n" , cfl);
+            printf("array size: %d\n" , size);
+            printf("local grid id: %d\n", id);
+            printf("direction: %d\n", direction);
+            printf("globalWaves: \n");
+            for (int i = 0; i < size; ++i) {
+                printf("%d: %E\n", i, globalWaves[i]*dt/dx);
+            }
+            printf("sharedWaveSpeeds: \n");
+            for (int i = 0; i < size; ++i) {
+                printf("%d: %E\n", i, sharedWaveSpeeds[i]*dt/dx);
+            }
+        }
+
         globalWaves[blockIdx.x] = sharedWaveSpeeds[0];
         if (result)
             *result = sharedWaveSpeeds[0]*dt/dx;

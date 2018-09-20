@@ -258,6 +258,7 @@ module amr_module
     type(gpu_1d_real_ptr_type), allocatable         :: fflux_hd(:)
     type(gpu_1d_real_ptr_type), allocatable, device :: fflux_dd(:)
 
+
     ! We never allocate cflux_dd(mptr)%ptr
     ! When we need cflux on device, we copy cflux_hd to cflux_dd
     type(cpu_2d_int_ptr_type), allocatable         :: cflux_hh(:)
