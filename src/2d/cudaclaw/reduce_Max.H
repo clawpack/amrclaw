@@ -4,6 +4,24 @@
 #include "real.H"
 #include <assert.h>
 #include <sm_20_atomic_functions.h>
+#include "params.H"
+
+template <unsigned int blockSize>
+__global__ void 
+check_cfl(real *globalWaves, int size, pdeParam param, int direction)
+{
+    int tid = threadIdx.x;
+    if (tid < size) {
+        real dx = (direction == 0) ? param.dx : param.dy; 
+        real cfl = globalWaves[tid]*param.dt/dx;
+        if (cfl > 1.0) {
+            printf("cfl larger than 1.0 in check_cfl. cfl = %E. tid = %d. direction = %d. size = %d.\n", cfl, tid, direction, size);
+            printf("local grid id: %d\n", param.id);
+            printf("x-size: %d; y-size: %d\n", param.cellsX, param.cellsY);
+            printf("address of globalWaves in check_cfl: %p.\n", (void*)globalWaves);
+        }
+    }
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////   Reduction   //////////////////////////////////////////////////////////////////////////
@@ -29,7 +47,7 @@ warpReduce(volatile real *sdata, unsigned int tid)
 // return the first element in shared to the global input's first place
 template <unsigned int blockSize>
 __global__ void 
-reduceMax_simplified(real *globalWaves, int size, int id, int direction,
+reduceMax_simplified(real *globalWaves, int size, pdeParam param, int direction,
         real dx = claw_zero, real dt = claw_zero, real* result = NULL)
 {
     // size holds the exact number of wave speeds there are to be max reduced
@@ -65,6 +83,17 @@ reduceMax_simplified(real *globalWaves, int size, int id, int direction,
         {
             assert(globalWaves[tid] >= claw_zero);
             sharedWaveSpeeds[tid] = globalWaves[tid];
+
+            real cfl = globalWaves[tid]*dt/dx;
+            if (cfl > 1.0) {
+                printf("cfl larger than 1.0 in early reduce_max. cfl = %E. tid = %d. direction = %d. size = %d.\n", cfl, tid, direction, size);
+                printf("local grid id: %d\n", param.id);
+                printf("x-size: %d; y-size: %d\n", param.cellsX, param.cellsY);
+                printf("address of globalWaves at early reduce_max: %p.\n", (void*)globalWaves);
+                printf("address of param.qNew at early reduce_max: %p.\n", (void*)param.qNew);
+                printf("address of param.q_tmp at early reduce_max: %p.\n", (void*)param.q_tmp);
+                printf("address of param.coefficients at early reduce_max: %p.\n", (void*)param.coefficients);
+            }
         }
         else
             sharedWaveSpeeds[tid] = claw_zero;
@@ -105,8 +134,14 @@ reduceMax_simplified(real *globalWaves, int size, int id, int direction,
         if ( cfl > 1.0) {
             printf("cfl larger than 1.0 in reduce_max. cfl = %E. \n" , cfl);
             printf("array size: %d\n" , size);
-            printf("local grid id: %d\n", id);
+            printf("local grid id: %d\n", param.id);
             printf("direction: %d\n", direction);
+            printf("x-size: %d; y-size: %d\n", param.cellsX, param.cellsY);
+            printf("address of globalWaves at later reduce_max: %p.\n", (void*)globalWaves);
+            printf("address of param.qNew at later reduce_max: %p.\n", (void*)param.qNew);
+            printf("address of param.q_tmp at later reduce_max: %p.\n", (void*)param.q_tmp);
+            printf("address of param.coefficients at later reduce_max: %p.\n", (void*)param.coefficients);
+
             printf("globalWaves: \n");
             for (int i = 0; i < size; ++i) {
                 printf("%d: %E\n", i, globalWaves[i]*dt/dx);

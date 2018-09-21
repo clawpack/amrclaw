@@ -69,14 +69,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! type(grid_type), allocatable, device :: grids_d(:)
     integer :: max_lenbc
 
-    ! type(gpu_1d_real_ptr_type) :: waveSpeedsX(numgrids(level))
-    ! type(gpu_1d_real_ptr_type) :: waveSpeedsY(numgrids(level))
+    type(gpu_1d_real_ptr_type) :: waveSpeedsX(numgrids(level))
+    type(gpu_1d_real_ptr_type) :: waveSpeedsY(numgrids(level))
 
     type gpu_1d_array
         real(CLAW_REAL), allocatable, device :: ptr(:)
     end type gpu_1d_array
-    type(gpu_1d_array) :: waveSpeedsX(numgrids(level))
-    type(gpu_1d_array) :: waveSpeedsY(numgrids(level))
+    type(gpu_1d_array) :: waveSpeedsX_pseudo(numgrids(level))
+    type(gpu_1d_array) :: waveSpeedsY_pseudo(numgrids(level))
 
     integer :: ws_size_x(numgrids(level))
     integer :: ws_size_y(numgrids(level))
@@ -98,6 +98,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     !
 
+    print *, "advanc called for level: ", level
+    print *, "num of grids:: ", numgrids(level)
     ! get start time for more detailed timing by level
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
@@ -331,10 +333,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         call take_cpu_timer('memory operation', timer_memory)
         call cpu_timer_start(timer_memory)
 #endif
-        allocate(waveSpeedsX(id)%ptr(ws_size_x(id)))
-        allocate(waveSpeedsY(id)%ptr(ws_size_y(id)))
-        ! call gpu_allocate(waveSpeedsX(id)%ptr,device_id,1,ws_size_x(id))
-        ! call gpu_allocate(waveSpeedsY(id)%ptr,device_id,1,ws_size_y(id))
+        ! allocate(waveSpeedsX(id)%ptr(ws_size_x(id)))
+        ! allocate(waveSpeedsY(id)%ptr(ws_size_y(id)))
+        call gpu_allocate(waveSpeedsX(id)%ptr,device_id,1,ws_size_x(id))
+        call gpu_allocate(waveSpeedsY(id)%ptr,device_id,1,ws_size_y(id))
+        waveSpeedsX(id)%ptr = 0.d0
+        waveSpeedsY(id)%ptr = 0.d0
+        allocate(waveSpeedsX_pseudo(id)%ptr(ws_size_x(id)))
+        allocate(waveSpeedsY_pseudo(id)%ptr(ws_size_y(id)))
         ! call gpu_allocate(grid_data_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         ! call gpu_allocate(grid_data_d_copy2(mptr)%ptr,device_id,1,mitot,1,mjtot,1,nvar)
         ! call gpu_allocate(aux_d(mptr)%ptr,device_id,1,mitot,1,mjtot,1,naux)
@@ -409,6 +415,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             cfls_d, numgrids(level), mcapa-1,& ! C arrays are 0-indexed
             id, device_id, &
             waveSpeedsX(id)%ptr, waveSpeedsY(id)%ptr, &
+            waveSpeedsX_pseudo(id)%ptr, waveSpeedsY_pseudo(id)%ptr, &
             ws_size_x(id), ws_size_y(id))
 
         cudaResult = cudaMemcpyAsync(alloc(locnew), grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
@@ -590,10 +597,12 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
         id = j
 
 
-        deallocate(waveSpeedsX(id)%ptr)
-        deallocate(waveSpeedsY(id)%ptr)
-        ! call gpu_deallocate(waveSpeedsX(id)%ptr,device_id)
-        ! call gpu_deallocate(waveSpeedsY(id)%ptr,device_id)
+        ! deallocate(waveSpeedsX(id)%ptr)
+        ! deallocate(waveSpeedsY(id)%ptr)
+        call gpu_deallocate(waveSpeedsX(id)%ptr,device_id)
+        call gpu_deallocate(waveSpeedsY(id)%ptr,device_id)
+        deallocate(waveSpeedsX_pseudo(id)%ptr)
+        deallocate(waveSpeedsY_pseudo(id)%ptr)
         ! call gpu_deallocate(grid_data_d(mptr)%ptr,device_id)
         ! call gpu_deallocate(grid_data_d_copy2(mptr)%ptr,device_id)
         ! call gpu_deallocate(aux_d(mptr)%ptr,device_id)

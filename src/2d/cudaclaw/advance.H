@@ -540,7 +540,16 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
         real cfl = waveSpeedsX[0]*param.dt/param.dx;
         if ( cfl > 1.0)
             printf("cfl larger than 1.0 in horizontal kernel. cfl = %E. \n blockIdx.x = %d, blockIdx.y = %d, local grid id = %d. \n", cfl, blockIdx.x, blockIdx.y, param.id);
-//         int idx = blockIdx.x + blockIdx.y*gridDim.x;
+        int idx = blockIdx.x + blockIdx.y*gridDim.x;
+        if (idx == 0) {
+            printf("num of cells for grid %d: %d.\n", param.id, param.cellsX*param.cellsY);
+            printf("sizes of ws_x for grid %d: %d.\n", param.id, gridDim.x*gridDim.y);
+            printf("address of param.qNew for grid %d: %p.\n", param.id,(void*)param.qNew);
+            printf("address of param.q_tmp for grid %d: %p.\n", param.id,(void*)param.q_tmp);
+            printf("address of param.coefficients for grid %d: %p.\n", param.id,(void*)param.coefficients);
+            printf("address of param.waveSpeedsX for grid %d: %p.\n", param.id,(void*)param.waveSpeedsX);
+            printf("address of param.waveSpeedsY for grid %d: %p.\n", param.id,(void*)param.waveSpeedsY);
+        }
 //         printf("param.waveSpeedsX[%d]*dt/dx = %E.\n",idx, param.waveSpeedsX[idx]*param.dt/param.dx);
     }
 
@@ -695,7 +704,7 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
 #pragma unroll
     for (int i = 1; i < numWaves; i++)
     {
-        // blockDim.x * blockDim.y is usally a multiple of 32, so there should be no bank conflicts.
+        // blockDim.x * blockDim.y is usually a multiple of 32, so there should be no bank conflicts.
 #ifdef USE_CAPA
         waveSpeedsY[tid] = fmax(waveSpeedsY[tid], 
                 fmax(-waveSpeedsY[tid + i*blockSize]/downCoeff[param.mcapa],
@@ -757,7 +766,11 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
         real cfl = waveSpeedsY[0]*param.dt/param.dy;
         if ( cfl > 1.0)
             printf("cfl larger than 1.0 in vertical kernel. cfl = %E. \n blockIdx.x = %d, blockIdx.y = %d, local grid id = %d. \n", cfl, blockIdx.x, blockIdx.y, param.id);
-//         int idx = blockIdx.x + blockIdx.y*gridDim.x;
+        int idx = blockIdx.x + blockIdx.y*gridDim.x;
+        if (idx == 0) {
+            printf("sizes of ws_y for grid %d: %d.\n", param.id, gridDim.x*gridDim.y);
+        }
+//         if (idx == 0) printf("address of param.waveSpeedsY[0]: %p.\n", (void*)&(param.waveSpeedsY[0]));
 //         printf("param.waveSpeedsY[%d]*dt/dy = %E.\n",idx, param.waveSpeedsY[idx]*param.dt/param.dy);
     }
 }
@@ -815,8 +828,10 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
 
         dim3 dimGrid1(gridDim_X1);
         dim3 dimBlock1(blockDim_X);
-        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR, param.id, 0,
+        check_cfl<blockDim_X><<< dimGrid1, dimBlock1, 0, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR, param, 0);
+        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR, param, 0,
                 param.dx, param.dt, &(param.cfl_grid[0]) );
+
     }
     {
         // before y-sweep
@@ -848,14 +863,13 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         const unsigned int blockDim_X = 512;		// fine tune the best block size
 
         size_t SharedMemorySize = (blockDim_X)*sizeof(real);
-        unsigned int gridDim_X2;
-
-        gridDim_X2 = 1;
+        unsigned int gridDim_X2 = 1;
 
         dim3 dimGrid2(gridDim_X2);
         dim3 dimBlock2(blockDim_X);
 
-        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR, param.id, 1,
+        check_cfl<blockDim_X><<< dimGrid2, dimBlock2, 0, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR, param, 1);
+        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR, param, 1,
                 param.dy, param.dt, &(param.cfl_grid[1]) );
     }
     // Let the memory manager free memory allocated by param later 

@@ -41,7 +41,7 @@ GPUMemoryManager::~GPUMemoryManager ()
         std::cout << "Maximum GPU heap memory used during the execution: " << m_used << std::endl;
     if (cudaResult != CUDA_ERROR_DEINITIALIZED) {
         checkCudaErrors(cudaSetDevice(device_id));
-        for (unsigned int i = 0, N = m_alloc.size(); i < N; ++i)
+        for (size_t i = 0, N = m_alloc.size(); i < N; ++i)
             checkCudaErrors(cudaFree(m_alloc[i]));
         if (local_verbose) 
             std::cout << "Free all memory requested by GPUMemoryManager back to the system." << std::endl;
@@ -238,7 +238,7 @@ GPUMemoryManager::free_device (void* vp, int dev_id)
         if (addr == (*free_it).block())
         {
             bool merge = true;
-            for (unsigned int i = 0, N = m_alloc.size(); i < N; i++) {
+            for (size_t i = 0, N = m_alloc.size(); i < N; i++) {
                 // Don't merge two nodes if the merge will give a node 
                 // whose memory block crosses the hunk boundary
                 if (addr == m_alloc[i]) merge = false; 
@@ -271,7 +271,7 @@ GPUMemoryManager::free_device (void* vp, int dev_id)
     if (++hi_it != m_freelist.end() && addr == (*hi_it).block())
     {
         bool merge = true;
-        for (unsigned int i = 0, N = m_alloc.size(); i < N; i++) {
+        for (size_t i = 0, N = m_alloc.size(); i < N; i++) {
                 // Don't merge two nodes if the merge will give a node 
                 // whose memory block crosses the hunk boundary
             if (addr == m_alloc[i])  merge = false;
