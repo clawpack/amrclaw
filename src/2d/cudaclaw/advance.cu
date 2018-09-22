@@ -1,5 +1,4 @@
 #include "advance.H"
-#ifdef GEOCLAW
 __global__ void 
 b4xsweep_kernel(pdeParam param)
 {
@@ -34,4 +33,3 @@ b4ysweep_kernel(pdeParam param)
         }
     }
 }
-#endif

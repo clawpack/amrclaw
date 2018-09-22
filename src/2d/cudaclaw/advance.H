@@ -747,7 +747,9 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         unsigned int gridDim_YR = (param.cellsY + blockDim_YR - 1) / blockDim_YR;
         dim3 dimGrid_hR(gridDim_XR, gridDim_YR);
         dim3 dimBlock_hR(blockDim_XR, blockDim_YR);
+#ifdef GEOCLAW
         b4xsweep_kernel<<<dimGrid_hR,dimBlock_hR,0,stream>>>(param);
+#endif
     }
     {
         // RIEMANN, FLUCTUATIONS and UPDATES
@@ -786,7 +788,9 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         unsigned int gridDim_YR = (param.cellsY + blockDim_YR - 1) / blockDim_YR;
         dim3 dimGrid_vR(gridDim_XR, gridDim_YR);
         dim3 dimBlock_vR(blockDim_XR,blockDim_YR);
+#ifdef GEOCLAW
         b4ysweep_kernel<<<dimGrid_vR,dimBlock_vR,0,stream>>>(param);
+#endif
     }
     {
         // RIEMANN, FLUCTUATIONS and UPDATE
