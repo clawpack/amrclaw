@@ -7,7 +7,9 @@ module cuda_module
         cudaSharedMemBankSizeEightByte
     use amr_module, only: inunit, maxgr, &
         fflux_hh, fflux_hd, fflux_dd, &
-        cflux_hh, cflux_hd, cflux_dd
+        cflux_hh, cflux_hd, cflux_dd, &
+        waveSpeedsX, waveSpeedsY, ws_len
+
     use memory_module, only: clawpack_mempool_init
 
     implicit none
@@ -129,6 +131,8 @@ contains
         allocate(cflux_hd(maxgr))
         allocate(cflux_dd(maxgr))
 
+        allocate(waveSpeedsX(ws_len*maxgr))
+        allocate(waveSpeedsY(ws_len*maxgr))
     end subroutine initialize_cuda
 
     subroutine check_cuda_error(istat) 
@@ -397,6 +401,9 @@ contains
         deallocate(cflux_hh)
         deallocate(cflux_hd)
         deallocate(cflux_dd)
+
+        deallocate(waveSpeedsX)
+        deallocate(waveSpeedsY)
     end subroutine finalize_cuda
 
     function get_num_devices_used() result(nDev) bind(C, name='get_num_devices_used')

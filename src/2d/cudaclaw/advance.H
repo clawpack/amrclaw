@@ -457,6 +457,7 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
         ws_max = fmax(ws_max,ws);
     }
 #endif
+    __syncthreads();
     waveSpeedsX[tid] = ws_max;
 
     __syncthreads();	// unmovable syncthreads
