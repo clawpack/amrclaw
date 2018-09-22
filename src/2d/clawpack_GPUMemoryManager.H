@@ -219,7 +219,6 @@ protected:
             data->push_back(memory_block);
         }
 
-        // TODO: remove this 
         // for debuggging
         void print() const {
             std::cout << "tag: " << tag << std::endl;
