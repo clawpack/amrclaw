@@ -72,10 +72,11 @@ class pdeParam
                 real dt_,
                 real* q_tmp_, real* qNew_, 
                 real* coefficients_,
+                real* waveSpeedsX_, real* waveSpeedsY_,
                 real* cfl_grid_, const int mcapa_, const int id_, int dev_id_):
                 cellsX(cellsX), cellsY(cellsY), numGhostCells(numGhostCells), numStates(numStates), numWaves(numWaves), numCoeff(numCoeff),
                 startX(startX), endX(endX), startY(startY), endY(endY), dt(dt_),
-                q_tmp(q_tmp_), qNew(qNew_), waveSpeedsX(NULL), waveSpeedsY(NULL),
+                q_tmp(q_tmp_), qNew(qNew_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_),
                 coefficients(coefficients_), cfl_grid(cfl_grid_), mcapa(mcapa_),
                 id(id_), dev_id(dev_id_)
         {
@@ -199,7 +200,8 @@ class pdeParam
         }
 
         // add cuda callback function to free memory allocated and managed by this pdeParam object
-        // The memory will be free after all CUDA events in the stream before this function call are finished
+        // The memory will be free after:
+        // all CUDA events in the stream earlier than this function call are finished
         inline void register_allocated_memory() {
             cudaStream_t stream;
             get_cuda_stream(this->id, this->dev_id, &stream);

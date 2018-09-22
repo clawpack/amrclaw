@@ -378,6 +378,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             xlow, xlow+hx*mitot, ylow, ylow+hy*mjtot, delt, &
             grid_data_d_copy2(mptr)%ptr, grid_data_d(mptr)%ptr, &
             aux_d(mptr)%ptr, &
+            waveSpeedsX((mptr-1)*ws_len+1), waveSpeedsY((mptr-1)*ws_len+1), &
             nvar, naux, &
             cfls_d, numgrids(level), mcapa-1,& ! C arrays are 0-indexed
             id, device_id) 
@@ -648,7 +649,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     do j = 1,numgrids(level)
         cfl_local = max(cfls(1,j),cfls(2,j))
         if (cfl_local .gt. cflv1) then
-            write(*,810) cfl_local
+            write(*,810) cfl_local, cflv1
             write(outunit,810) cfl_local, cflv1
       810   format('*** WARNING *** Courant number  =', d12.4, &
           '  is larger than input cfl_max = ', d12.4)

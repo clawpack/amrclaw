@@ -621,6 +621,4 @@ contains
 	a => Null()
     end subroutine cpu_deallocate_pinned_i3
 
-
-
 end module memory_module

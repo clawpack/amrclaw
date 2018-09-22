@@ -761,7 +761,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         int shared_mem_size = HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY*NWAVES*(NEQNS+1)*sizeof(real);
 
         // allocate param.waveSpeedsX here
-        param.alloc_waveSpeedsX(dimGrid_hR.x * dimGrid_hR.y);
+        // param.alloc_waveSpeedsX(dimGrid_hR.x * dimGrid_hR.y);
 
         Riemann_horizontal_kernel<NEQNS, NWAVES, NCOEFFS, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size,stream>>>(param, Riemann_pointwise_solver_h, limiter_phi);
 
@@ -800,7 +800,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         int shared_mem_size = VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY*NWAVES*(NEQNS+1)*sizeof(real);
 
         // allocate param.waveSpeedsY here
-        param.alloc_waveSpeedsY(dimGrid_vR.x * dimGrid_vR.y);
+        // param.alloc_waveSpeedsY(dimGrid_vR.x * dimGrid_vR.y);
         Riemann_vertical_kernel<NEQNS, NWAVES, NCOEFFS, VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY, Riemann_v, Limiter><<<dimGrid_vR, dimBlock_vR,shared_mem_size,stream>>>(param, Riemann_pointwise_solver_v, limiter_phi);
 
 
@@ -818,7 +818,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
     }
     // Let the memory manager free memory allocated by param later 
     // when the memory is not needed by GPU
-    param.register_allocated_memory();
+    // param.register_allocated_memory();
 
     return 0;
 }
