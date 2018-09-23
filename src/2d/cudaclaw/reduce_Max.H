@@ -47,8 +47,8 @@ warpReduce(volatile real *sdata, unsigned int tid)
 // return the first element in shared to the global input's first place
 template <unsigned int blockSize>
 __global__ void 
-reduceMax_simplified(real *globalWaves, int size, pdeParam param, int direction,
-        real dx = claw_zero, real dt = claw_zero, real* result = NULL)
+reduceMax_simplified(volatile real *globalWaves, int size, pdeParam param, int direction,
+        real dx = claw_zero, real dt = claw_zero, volatile real* result = NULL)
 {
     // size holds the exact number of wave speeds there are to be max reduced
     extern __shared__ real sharedWaveSpeeds[];	// This will be as big as the block size
@@ -153,8 +153,11 @@ reduceMax_simplified(real *globalWaves, int size, pdeParam param, int direction,
         }
 
         globalWaves[blockIdx.x] = sharedWaveSpeeds[0];
-        if (result)
+        if (result) {
             *result = sharedWaveSpeeds[0]*dt/dx;
+            __threadfence_system();
+            printf("direction = %d, cfl = %E, in grid %d, stored at address %p.\n", direction, *result, param.id, result);
+        }
     }
 }
 

@@ -15,12 +15,14 @@ extern "C"
     void riemann_shallow_topo_x(
             const real* const q_left, const real* const q_right,
             const real* const aux_left, const real* const aux_right,
-            real* wave, real* waveSpeeds);
+            volatile real* wave, volatile real* waveSpeeds, 
+            const int* blocksize);
     __device__
     void riemann_shallow_topo_y(
             const real* const q_left, const real* const q_right,
             const real* const aux_left, const real* const aux_right,
-            real* wave, real* waveSpeeds);
+            volatile real* wave, volatile real* waveSpeeds,
+            const int* blocksize);
 }
 // As a general rule a Riemann solver must have the following arguments:
 // Input:
@@ -40,38 +42,44 @@ extern "C"
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct shallow_topo_horizontal
 {
-    template<const size_t N>
+    // template<const size_t N>
     __device__ void 
     operator() (const real* const q_left, const real* const q_right, 
-            const staticArrayReal<N>& u_left, const staticArrayReal<N>& u_right,
+            // const staticArrayReal<N>& u_left, const staticArrayReal<N>& u_right,
+            const real* const u_left, const real* const u_right,
             const int row, const int col, const int numStates, const int numWaves,
-            real* const wave, real* const waveSpeeds)	
+            volatile real* const wave, volatile real* const waveSpeeds,
+            const int blocksize)	
     {
-        static_assert(N > 0, 
-                "Number of coefficients must be larger than 0 for shallow_topo_horizontal");
+//         static_assert(N > 0, 
+//                 "Number of coefficients must be larger than 0 for shallow_topo_horizontal");
         riemann_shallow_topo_x(
-                q_left, q_right, &(u_left[0]), &(u_right[0]), 
-                wave, waveSpeeds
-                );
+                // q_left, q_right, &(u_left[0]), &(u_right[0]), 
+                q_left, q_right, u_left, u_right, 
+                wave, waveSpeeds,
+                &blocksize);
 
     }
 };
 
 struct shallow_topo_vertical
 {
-    template<const size_t N>
+    // template<const size_t N>
     __device__ void 
     operator() (const real* const q_left, const real* const q_right, 
-            const staticArrayReal<N>& u_left, const staticArrayReal<N>& u_right,
+            // const staticArrayReal<N>& u_left, const staticArrayReal<N>& u_right,
+            const real* const u_left, const real* const u_right,
             const int row, const int col, const int numStates, const int numWaves,
-            real* const wave, real* const waveSpeeds)	
+            volatile real* const wave, volatile real* const waveSpeeds,	
+            const int blocksize)	
     {
-        static_assert(N > 0, 
-                "Number of coefficients must be larger than 0 for shallow_topo_vertical");
+//         static_assert(N > 0, 
+//                 "Number of coefficients must be larger than 0 for shallow_topo_vertical");
         riemann_shallow_topo_y(
-                q_left, q_right, &(u_left[0]), &(u_right[0]), 
-                wave, waveSpeeds
-                );
+                // q_left, q_right, &(u_left[0]), &(u_right[0]), 
+                q_left, q_right, u_left, u_right, 
+                wave, waveSpeeds,
+                &blocksize);
     }
 };
 
