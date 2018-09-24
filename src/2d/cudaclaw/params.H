@@ -15,6 +15,7 @@
 #include <string>
 #include <cstring>
 
+#define CHECK_BOUND
 
 
 class pdeParam
@@ -43,8 +44,8 @@ class pdeParam
         real* coefficients;		// physical medium coefficients
 
         // GPU residents
-        real* q_tmp; // intermediate update holder
-        real* qNew; // data, cells' states
+        volatile real* q_tmp; // intermediate update holder
+        volatile real* qNew; // data, cells' states
 
         // Each entry in waveSpeedsX stores maximum u-velocity in one CUDA block. So the size
         // of waveSpeedsX should be number of CUDA blocks for this AMR grid patch
@@ -54,7 +55,7 @@ class pdeParam
         real* waveSpeedsX;		// speed of horizontal waves
         real* waveSpeedsY;		// speed of vertical waves
 
-        real* cfl_grid; // an array of size 1xSPACEDIM, storing cfl number in current grid patch in all directions
+        volatile real* cfl_grid; // an array of size 1xSPACEDIM, storing cfl number in current grid patch in all directions
 
         const int mcapa; // index in aux array that corresponds to capacity variable. 0-indexed.
         const int dev_id; // ID of the device on which storage are allocated
@@ -70,10 +71,10 @@ class pdeParam
         pdeParam(int cellsX, int cellsY, int numGhostCells, int numStates, int numWaves, int numCoeff,
                 real startX, real endX, real startY, real endY,
                 real dt_,
-                real* q_tmp_, real* qNew_, 
+                volatile real* q_tmp_, volatile real* qNew_, 
                 real* coefficients_,
                 real* waveSpeedsX_, real* waveSpeedsY_,
-                real* cfl_grid_, const int mcapa_, const int id_, int dev_id_):
+                volatile real* cfl_grid_, const int mcapa_, const int id_, int dev_id_):
                 cellsX(cellsX), cellsY(cellsY), numGhostCells(numGhostCells), numStates(numStates), numWaves(numWaves), numCoeff(numCoeff),
                 startX(startX), endX(endX), startY(startY), endY(endY), dt(dt_),
                 q_tmp(q_tmp_), qNew(qNew_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_),
@@ -133,12 +134,28 @@ class pdeParam
             // AOS
             // return (state + column*numStates + row*numStates*cellsX);
         }
-        inline __device__ real &getElement_q_tmp(int row, int column, int state)
+        inline __device__ volatile real &getElement_q_tmp(int row, int column, int state)
         {
+#ifdef CHECK_BOUND
+            size_t idx = getIndex_q_tmp(row, column, state);
+            size_t bound = cellsX*cellsY*numStates;
+            if ( idx >= bound) {
+                printf("Index %d out of bound %d in getElement_q_tmp.\n", idx, bound);
+                assert(0);
+            }
+#endif
             return q_tmp[getIndex_q_tmp(row, column, state)];
         }
         inline __device__ void setElement_q_tmp(int row, int column, int state, real setValue)
         {
+#ifdef CHECK_BOUND
+            size_t idx = getIndex_q_tmp(row, column, state);
+            size_t bound = cellsX*cellsY*numStates;
+            if ( idx >= bound) {
+                printf("Index %d out of bound %d in setElement_q_tmp.\n", idx, bound);
+                assert(0);
+            }
+#endif
             q_tmp[getIndex_q_tmp(row, column, state)] = setValue;
         }
 
@@ -155,12 +172,28 @@ class pdeParam
             // AOS
             return (state + column*numStates + row*numStates*cellsX);
         }
-        inline __device__ real &getElement_qNew(int row, int column, int state)
+        inline __device__ volatile real &getElement_qNew(int row, int column, int state)
         {
+#ifdef CHECK_BOUND
+            size_t idx = getIndex_qNew(row, column, state);
+            size_t bound = cellsX*cellsY*numStates;
+            if ( idx >= bound) {
+                printf("Index %d out of bound %d in getElement_qNew.\n", idx, bound);
+                assert(0);
+            }
+#endif
             return qNew[getIndex_qNew(row, column, state)];
         }
         inline __device__ void setElement_qNew(int row, int column, int state, real setValue)
         {
+#ifdef CHECK_BOUND
+            size_t idx = getIndex_qNew(row, column, state);
+            size_t bound = cellsX*cellsY*numStates;
+            if ( idx >= bound) {
+                printf("Index %d out of bound %d in setElement_qNew.\n", idx, bound);
+                assert(0);
+            }
+#endif
             qNew[getIndex_qNew(row, column, state)] = setValue;
         }
 
@@ -181,11 +214,27 @@ class pdeParam
 
         inline __device__ real &getElement_coeff(int row, int column, int coeff)
         {
+#ifdef CHECK_BOUND
+            size_t idx = getIndex_coeff(row, column, coeff);
+            size_t bound = cellsX*cellsY*numCoeff;
+            if ( idx >= bound) {
+                printf("Index %d out of bound %d in getElement_coeff.\n", idx, bound);
+                assert(0);
+            }
+#endif
             return coefficients[getIndex_coeff(row, column, coeff)];
         }
 
         inline __device__ void setElement_coeff(int row, int column, int coeff, real setValue)
         {
+#ifdef CHECK_BOUND
+            size_t idx = getIndex_coeff(row, column, coeff);
+            size_t bound = cellsX*cellsY*numCoeff;
+            if ( idx >= bound) {
+                printf("Index %d out of bound %d in setElement_coeff.\n", idx, bound);
+                assert(0);
+            }
+#endif
             coefficients[getIndex_coeff(row, column, coeff)] = setValue;
         }
 

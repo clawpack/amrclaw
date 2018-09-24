@@ -648,7 +648,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !$OMP MASTER
     ! cudaResult = cudaMemcpy(cfls, cfls_d, numgrids(level)*SPACEDIM)
     cudaResult = cudaMemcpy(cfls, cfls_d, 1)
-    do j = 1,numgrids(level)
+    do j = 1,1
         ! cfl_local = max(cfls(1,j),cfls(2,j))
         cfl_local = cfls(1,1)
         if (cfl_local .gt. cflv1) then
@@ -657,7 +657,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
       810   format('*** WARNING *** Courant number  =', d12.4, &
           '  is larger than input cfl_max = ', d12.4)
             write(*,*) "level: ", level
-            exit
+            cfl_level = max(cfl_level, cfl_local)
         endif
         cfl_level = max(cfl_level, cfl_local)
     enddo

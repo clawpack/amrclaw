@@ -53,6 +53,11 @@ struct shallow_topo_horizontal
     {
 //         static_assert(N > 0, 
 //                 "Number of coefficients must be larger than 0 for shallow_topo_horizontal");
+        int i = 0;
+        if (q_left[i] < 0.0)
+            printf("q_left[%d] < 0.0 in x sweep: %E\n",i,q_left[i]);
+        if (q_right[i] < 0.0)
+            printf("q_right[%d] < 0.0 in x sweep: %E\n",i,q_right[i]);
         riemann_shallow_topo_x(
                 // q_left, q_right, &(u_left[0]), &(u_right[0]), 
                 q_left, q_right, u_left, u_right, 
@@ -75,6 +80,11 @@ struct shallow_topo_vertical
     {
 //         static_assert(N > 0, 
 //                 "Number of coefficients must be larger than 0 for shallow_topo_vertical");
+        int i = 0;
+        if (q_left[i] < 0.0)
+            printf("q_left[%d] < 0.0 in y sweep: %E\n",i,q_left[i]);
+        if (q_right[i] < 0.0)
+            printf("q_right[%d] < 0.0 in y sweep: %E\n",i,q_right[i]);
         riemann_shallow_topo_y(
                 // q_left, q_right, &(u_left[0]), &(u_right[0]), 
                 q_left, q_right, u_left, u_right, 
