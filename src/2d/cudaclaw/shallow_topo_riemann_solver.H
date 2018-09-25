@@ -15,12 +15,12 @@ extern "C"
     void riemann_shallow_topo_x(
             const real* const q_left, const real* const q_right,
             const real* const aux_left, const real* const aux_right,
-            volatile real* wave, volatile real* waveSpeeds);
+            real* wave, real* waveSpeeds);
     __device__
     void riemann_shallow_topo_y(
             const real* const q_left, const real* const q_right,
             const real* const aux_left, const real* const aux_right,
-            volatile real* wave, volatile real* waveSpeeds);
+            real* wave, real* waveSpeeds);
 }
 // As a general rule a Riemann solver must have the following arguments:
 // Input:
@@ -45,7 +45,7 @@ struct shallow_topo_horizontal
     operator() (const real* const q_left, const real* const q_right, 
             const staticArrayReal<N>& u_left, const staticArrayReal<N>& u_right,
             const int row, const int col, const int numStates, const int numWaves,
-            volatile real* const wave, volatile real* const waveSpeeds)
+            real* const wave, real* const waveSpeeds)
     {
         static_assert(N > 0, 
                 "Number of coefficients must be larger than 0 for shallow_topo_horizontal");
@@ -64,7 +64,7 @@ struct shallow_topo_vertical
     operator() (const real* const q_left, const real* const q_right, 
             const staticArrayReal<N>& u_left, const staticArrayReal<N>& u_right,
             const int row, const int col, const int numStates, const int numWaves,
-            volatile real* const wave, volatile real* const waveSpeeds)	
+            real* const wave, real* const waveSpeeds)	
     {
         static_assert(N > 0, 
                 "Number of coefficients must be larger than 0 for shallow_topo_vertical");

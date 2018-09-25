@@ -44,8 +44,8 @@ class pdeParam
         real* coefficients;		// physical medium coefficients
 
         // GPU residents
-        volatile real* q_tmp; // intermediate update holder
-        volatile real* qNew; // data, cells' states
+        real* q_tmp; // intermediate update holder
+        real* qNew; // data, cells' states
 
         // Each entry in waveSpeedsX stores maximum u-velocity in one CUDA block. So the size
         // of waveSpeedsX should be number of CUDA blocks for this AMR grid patch
@@ -55,7 +55,7 @@ class pdeParam
         real* waveSpeedsX;		// speed of horizontal waves
         real* waveSpeedsY;		// speed of vertical waves
 
-        volatile real* cfl_grid; // an array of size 1xSPACEDIM, storing cfl number in current grid patch in all directions
+        real* cfl_grid; // an array of size 1xSPACEDIM, storing cfl number in current grid patch in all directions
 
         const int mcapa; // index in aux array that corresponds to capacity variable. 0-indexed.
         const int dev_id; // ID of the device on which storage are allocated
@@ -71,10 +71,10 @@ class pdeParam
         pdeParam(int cellsX, int cellsY, int numGhostCells, int numStates, int numWaves, int numCoeff,
                 real startX, real endX, real startY, real endY,
                 real dt_,
-                volatile real* q_tmp_, volatile real* qNew_, 
+                real* q_tmp_, real* qNew_, 
                 real* coefficients_,
                 real* waveSpeedsX_, real* waveSpeedsY_,
-                volatile real* cfl_grid_, const int mcapa_, const int id_, int dev_id_):
+                real* cfl_grid_, const int mcapa_, const int id_, int dev_id_):
                 cellsX(cellsX), cellsY(cellsY), numGhostCells(numGhostCells), numStates(numStates), numWaves(numWaves), numCoeff(numCoeff),
                 startX(startX), endX(endX), startY(startY), endY(endY), dt(dt_),
                 q_tmp(q_tmp_), qNew(qNew_), waveSpeedsX(waveSpeedsX_), waveSpeedsY(waveSpeedsY_),
@@ -134,7 +134,7 @@ class pdeParam
             // AOS
             // return (state + column*numStates + row*numStates*cellsX);
         }
-        inline __device__ volatile real &getElement_q_tmp(int row, int column, int state)
+        inline __device__ real &getElement_q_tmp(int row, int column, int state)
         {
 #ifdef CHECK_BOUND
             size_t idx = getIndex_q_tmp(row, column, state);
@@ -172,7 +172,7 @@ class pdeParam
             // AOS
             return (state + column*numStates + row*numStates*cellsX);
         }
-        inline __device__ volatile real &getElement_qNew(int row, int column, int state)
+        inline __device__ real &getElement_qNew(int row, int column, int state)
         {
 #ifdef CHECK_BOUND
             size_t idx = getIndex_qNew(row, column, state);

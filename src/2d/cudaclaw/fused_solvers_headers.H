@@ -26,12 +26,12 @@ using std::sqrt;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 inline __device__ 
-volatile real &getSharedWave(volatile real* sharedData, const int row, const int col, const int wave, const int state, const int numWaves, const int numStates, const int blockHeight, const int blockWidth)
+real &getSharedWave(real* sharedData, const int row, const int col, const int wave, const int state, const int numWaves, const int numStates, const int blockHeight, const int blockWidth)
 {
     return sharedData[GET_INDEX_SHARED_WAVE_0INDEX(row, col, wave, state, numWaves, numStates, blockHeight, blockWidth)];
 }
 inline __device__ 
-void setSharedWave(volatile real* sharedData, int row, int col, int wave, int state, int numWaves, int numStates, int blockHeight, int blockWidth, real newVal)
+void setSharedWave(real* sharedData, int row, int col, int wave, int state, int numWaves, int numStates, int blockHeight, int blockWidth, real newVal)
 {
     sharedData[GET_INDEX_SHARED_WAVE_0INDEX(row, col, wave, state, numWaves, numStates, blockHeight, blockWidth)] = newVal;
 }
@@ -40,12 +40,12 @@ void setSharedWave(volatile real* sharedData, int row, int col, int wave, int st
 ////////////////////////////////////////////////  Wave Speeds  //////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 inline __device__ 
-const volatile real &getSharedSpeed(const volatile real* sharedData, const int row, const int col, const int wave, const int numWaves, const int blockHeight, const int blockWidth)
+const real &getSharedSpeed(const real* sharedData, const int row, const int col, const int wave, const int numWaves, const int blockHeight, const int blockWidth)
 {
     return sharedData[GET_INDEX_SHARED_SPEED_0INDEX(row, col, wave, numWaves, blockHeight, blockWidth)];
 }
 inline __device__ 
-void setSharedSpeed(volatile real* sharedData, int row, int col, int wave, int numWaves, int blockHeight, int blockWidth, real newVal)
+void setSharedSpeed(real* sharedData, int row, int col, int wave, int numWaves, int blockHeight, int blockWidth, real newVal)
 {
     sharedData[GET_INDEX_SHARED_SPEED_0INDEX(row, col, wave, numWaves, blockHeight, blockWidth)] = newVal;
 }
@@ -55,7 +55,7 @@ void setSharedSpeed(volatile real* sharedData, int row, int col, int wave, int n
 /////////////////////////////////////////////////   Limiters   //////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
-__device__ real limiting_shared_h_l (Limiter phi, volatile real* waves, int row, int col, int waveNum)
+__device__ real limiting_shared_h_l (Limiter phi, real* waves, int row, int col, int waveNum)
 {
     real main_wave = getSharedWave(waves, row, col,   waveNum, 0, numWaves, numStates, blockSizeY, blockSizeX);
     real aux_wave  = getSharedWave(waves, row, col+1, waveNum, 0, numWaves, numStates, blockSizeY, blockSizeX);
@@ -77,7 +77,7 @@ __device__ real limiting_shared_h_l (Limiter phi, volatile real* waves, int row,
 }
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
-__device__ real limiting_shared_h_r (Limiter phi, volatile real* waves, int row, int col, int waveNum)
+__device__ real limiting_shared_h_r (Limiter phi, real* waves, int row, int col, int waveNum)
 {
     real main_wave = getSharedWave(waves, row, col,   waveNum, 0, numWaves, numStates, blockSizeY, blockSizeX);
     real aux_wave  = getSharedWave(waves, row, col-1, waveNum, 0, numWaves, numStates, blockSizeY, blockSizeX);
@@ -99,7 +99,7 @@ __device__ real limiting_shared_h_r (Limiter phi, volatile real* waves, int row,
 }
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
-__device__ real limiting_shared_v_u (Limiter phi, volatile real* waves, int row, int col, int waveNum)
+__device__ real limiting_shared_v_u (Limiter phi, real* waves, int row, int col, int waveNum)
 {
     real main_wave = getSharedWave(waves, row,   col, waveNum, 0, numWaves, numStates, blockSizeY, blockSizeX);
     real aux_wave  = getSharedWave(waves, row-1, col, waveNum, 0, numWaves, numStates, blockSizeY, blockSizeX);
@@ -121,7 +121,7 @@ __device__ real limiting_shared_v_u (Limiter phi, volatile real* waves, int row,
 }
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
-__device__ real limiting_shared_v_d (Limiter phi, volatile real* waves, int row, int col, int waveNum)
+__device__ real limiting_shared_v_d (Limiter phi, real* waves, int row, int col, int waveNum)
 {
     real main_wave = getSharedWave(waves, row,   col, waveNum, 0, numWaves, numStates, blockSizeY, blockSizeX);
     real aux_wave  = getSharedWave(waves, row+1, col, waveNum, 0, numWaves, numStates, blockSizeY, blockSizeX);

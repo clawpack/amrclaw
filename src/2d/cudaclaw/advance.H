@@ -26,7 +26,7 @@
     #define KERNEL_MIN_BLOCKS 1
 #endif
 
-__device__ static double atomicMax(volatile double* address, double val)
+__device__ static double atomicMax(double* address, double val)
 {
     unsigned long long* address_as_ull = (unsigned long long*) address;
     unsigned long long old = *address_as_ull, assumed;
@@ -40,7 +40,7 @@ __device__ static double atomicMax(volatile double* address, double val)
 
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY>
-inline __device__ void first_order_update(volatile real* waves, volatile real* waveSpeeds, real* amdq, real* apdq, const int row, const int col)
+inline __device__ void first_order_update(real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col)
 {
 #pragma unroll
     for (int w = 0; w < numWaves; w++)
@@ -75,7 +75,7 @@ inline __device__ void first_order_update(volatile real* waves, volatile real* w
  */
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
 __forceinline__ __device__ 
-void first_second_order_update_horizontal(pdeParam &param, volatile real* waves, volatile real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
+void first_second_order_update_horizontal(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
 {
     real F_tilde[numStates];
     for (int k = 0; k < numStates; k++){
@@ -126,7 +126,7 @@ void first_second_order_update_horizontal(pdeParam &param, volatile real* waves,
  */
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, class Limiter>
 __forceinline__ __device__ 
-void first_second_order_update_vertical(pdeParam &param, volatile real* waves, volatile real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
+void first_second_order_update_vertical(pdeParam &param, real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi)
 {
     real F_tilde[numStates];
     for (int k = 0; k < numStates; k++){
@@ -171,7 +171,7 @@ void first_second_order_update_vertical(pdeParam &param, volatile real* waves, v
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, const bool hasCapa,
     class Limiter>
 __forceinline__ __device__ 
-void first_second_order_update_fwave_horizontal(pdeParam &param, volatile real* fwaves, const volatile real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi,
+void first_second_order_update_fwave_horizontal(pdeParam &param, real* fwaves, const real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi,
         const real capa = claw_nan)
 {
     real F_tilde[numStates];
@@ -243,7 +243,7 @@ template<const unsigned int numStates, const unsigned int numWaves,
     const unsigned int blockSizeX, const unsigned int blockSizeY, const bool hasCapa, 
     class Limiter>
 __forceinline__ __device__ 
-void first_second_order_update_fwave_vertical(pdeParam &param, volatile real* fwaves, const volatile real* waveSpeeds, real* amdq, real* apdq, 
+void first_second_order_update_fwave_vertical(pdeParam &param, real* fwaves, const real* waveSpeeds, real* amdq, real* apdq, 
         const int row, const int col, const Limiter phi, const real capa = claw_nan)
 {
     real F_tilde[numStates];
@@ -326,8 +326,8 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 
 
     SharedMemory<real> smem;
-    volatile real* wavesX = smem.getPointer();
-    volatile real* waveSpeedsX = smem.getPointer(blockSize*numWaves*numStates);
+    real* wavesX = smem.getPointer();
+    real* waveSpeedsX = smem.getPointer(blockSize*numWaves*numStates);
 
     real apdq[numStates];
     real amdq[numStates];
@@ -557,8 +557,8 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
     real amdq[numStates];
 
     SharedMemory<real> smem;
-    volatile real* wavesY = smem.getPointer();
-    volatile real* waveSpeedsY = smem.getPointer(blockSize*numWaves*numStates);
+    real* wavesY = smem.getPointer();
+    real* waveSpeedsY = smem.getPointer(blockSize*numWaves*numStates);
 
     real upCell[numStates];		
     real downCell[numStates];	
