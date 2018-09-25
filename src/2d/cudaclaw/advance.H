@@ -553,16 +553,23 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 #endif
         }
     }
-    else { // copy the remaining cells (ghost cells) to qNew, which is required by the vertical kernel
-        if ( (row < param.cellsY) &&
-             (col < 2 || (col > param.cellsX-3 && col < param.cellsX))
-           ) {
-            #pragma unroll
-            for (int k = 0; k < numStates; k++)
-            {
-                param.setElement_q_tmp(row, col, k, param.getElement_qNew(row, col, k));
-            }
-        }
+
+    // copy the remaining cells (ghost cells) to qNew, which is required by the vertical kernel
+    // copy the two columns on the left boundary
+    if ( row < param.cellsY && 
+         col < 2 ) {
+        #pragma unroll
+        for (int k = 0; k < numStates; k++)
+            // TODO: use leftCell here instead of reading from global memory?
+            param.setElement_q_tmp(row, col, k, param.getElement_qNew(row, col, k));
+    }
+    // copy the two columns on the right boundary
+    if ( row < param.cellsY && 
+         (col == (param.cellsX-3) || col == (param.cellsX-2)) ) {
+        #pragma unroll
+        for (int k = 0; k < numStates; k++)
+            // TODO: use rightCell[i] here instead of reading from global memory?
+            param.setElement_q_tmp(row, col+1, k, param.getElement_qNew(row, col+1, k));
     }
 
     __syncthreads();
@@ -753,9 +760,13 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
         ws_max = fmax(ws_max,ws);
     }
 #endif
+    __syncthreads();
     waveSpeedsY[tid] = ws_max;
 
-    __syncthreads();
+    __syncthreads();	// unmovable syncthreads
+
+    // Stage 2
+    // Reducing over block size elements
 
     if (VERTICAL_K_BLOCKSIZE > 64)
     {
