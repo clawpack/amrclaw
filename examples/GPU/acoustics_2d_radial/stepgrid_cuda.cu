@@ -11,7 +11,6 @@ extern "C" void call_C_limited_riemann_update(
         const real dt,
         real* q_tmp, real* qNew, 
         real* coefficients,
-        real* waveSpeedsX, real* waveSpeedsY,
         const int numStates, const int numCoefficients,
         real* cfls, const int ngrids, const int mcapa,
         const int id, const int dev_id) {
@@ -30,7 +29,6 @@ extern "C" void call_C_limited_riemann_update(
             startX, endX, startY, endY, dt,
             q_tmp, qNew, 
             coefficients, 
-            waveSpeedsX, waveSpeedsY,
             cfl_grid, mcapa, id, dev_id); 
 
     param.setOrderOfAccuracy(2);
