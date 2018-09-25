@@ -94,7 +94,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 !$OMP                  j, levSt, mptr, nx, ny, mitot, mjtot, locold, locnew, locaux, time, &
 !$OMP                  id, xlow, ylow, cudaResult, lenbc, locsvq, numBlocks, numThreads, &
 !$OMP                  ntot, mythread, dtnew) &
-!$OMP          SHARED(node, rnode, alloc) &
+!$OMP          SHARED(node, rnode, alloc, cfls, cfls_d) &
 !$OMP          DEFAULT(SHARED)
     cudaResult = cudaSetDevice(device_id)
 
@@ -380,11 +380,10 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             aux_d(mptr)%ptr, &
             waveSpeedsX((mptr-1)*ws_len+1), waveSpeedsY((mptr-1)*ws_len+1), &
             nvar, naux, &
-            cfls_d, numgrids(level), mcapa-1,& ! C arrays are 0-indexed
+            cfls_d(:,id), numgrids(level), mcapa-1,& ! C arrays are 0-indexed
             id, device_id) 
 
         cudaResult = cudaMemcpyAsync(alloc(locnew), grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
-
 
         !$OMP END CRITICAL(launch)
 
@@ -645,7 +644,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     ! reduction to get cflmax and dtlevnew
     !$OMP MASTER
-    cudaResult = cudaMemcpy(cfls, cfls_d, numgrids(level)*2)
+    cudaResult = cudaMemcpy(cfls, cfls_d, numgrids(level)*SPACEDIM)
     do j = 1,numgrids(level)
         cfl_local = max(cfls(1,j),cfls(2,j))
         if (cfl_local .gt. cflv1) then

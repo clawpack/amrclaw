@@ -26,6 +26,18 @@
     #define KERNEL_MIN_BLOCKS 1
 #endif
 
+__device__ static double atomicMax(double* address, double val)
+{
+    unsigned long long* address_as_ull = (unsigned long long*) address;
+    unsigned long long old = *address_as_ull, assumed;
+    do {
+        assumed = old;
+        old = ::atomicCAS(address_as_ull, assumed,
+            __double_as_longlong(::fmax(val, __longlong_as_double(assumed))));
+    } while (assumed != old);
+    return __longlong_as_double(old);
+}
+
 
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY>
 inline __device__ void first_order_update(real* waves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col)
@@ -159,10 +171,11 @@ void first_second_order_update_vertical(pdeParam &param, real* waves, real* wave
 template<const int numStates, const int numWaves, const int blockSizeX, const int blockSizeY, const bool hasCapa,
     class Limiter>
 __forceinline__ __device__ 
-void first_second_order_update_fwave_horizontal(pdeParam &param, real* fwaves, real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi,
+void first_second_order_update_fwave_horizontal(pdeParam &param, real* fwaves, const real* waveSpeeds, real* amdq, real* apdq, const int row, const int col, const Limiter phi,
         const real capa = claw_nan)
 {
     real F_tilde[numStates];
+#pragma unroll
     for (int k = 0; k < numStates; k++){
         F_tilde[k] = claw_zero;
     }
@@ -230,10 +243,11 @@ template<const unsigned int numStates, const unsigned int numWaves,
     const unsigned int blockSizeX, const unsigned int blockSizeY, const bool hasCapa, 
     class Limiter>
 __forceinline__ __device__ 
-void first_second_order_update_fwave_vertical(pdeParam &param, real* fwaves, real* waveSpeeds, real* amdq, real* apdq, 
+void first_second_order_update_fwave_vertical(pdeParam &param, real* fwaves, const real* waveSpeeds, real* amdq, real* apdq, 
         const int row, const int col, const Limiter phi, const real capa = claw_nan)
 {
     real F_tilde[numStates];
+#pragma unroll
     for (int k = 0; k < numStates; k++){
         F_tilde[k] = claw_zero;
     }
@@ -324,16 +338,10 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
     staticArrayReal<numCoeff> leftCoeff;
     staticArrayReal<numCoeff> rightCoeff;
 
-
-    // Parts of the CUDA block might be mapped to outside of grid patch. 
-    // So we need to set waveSpeedsX that corresponds to those parts to 0.0
-    // These 0.0's are automatically ignored when we do max reduction later
-    if (blockIdx.x == gridDim.x-1 || blockIdx.y == gridDim.y-1) // last block in either direction
-    {
+    // TODO: might not need this
 #pragma unroll
-        for (int i = 0; i < numWaves; i++)
-            setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, claw_zero);
-    }
+    for (int i = 0; i < numWaves; i++)
+        setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, claw_zero);
 
     bool grid_valid = row < param.cellsY && col < param.cellsX-1;
 
@@ -378,8 +386,8 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 #pragma unroll
         for (int k = 0; k < numStates; k++)
         {
-            amdq[k] = 0;
-            apdq[k] = 0;
+            amdq[k] = claw_zero;
+            apdq[k] = claw_zero;
         }
         if (!param.second_order)	// simple first order scheme
         {
@@ -403,7 +411,7 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 #endif // USE_FWAVES
         }
     }
-    __syncthreads();
+    __syncthreads(); // includes  __threadfence_block()
 
     // write the apdq to shared memory
     // overwrite some entries used by wavesX in shared memory
@@ -413,13 +421,6 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
         setSharedWave(wavesX, threadIdx.y, threadIdx.x, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, apdq[k]);
     }
 
-    // Some wave speeds should not be used in computing maximum CFL number,
-    // e.g. wave speeds from the 1st and last Riemann problem in a row of cells
-    // so we set them to 0.0
-    if (col == 0 || col == param.cellsX-2)
-        #pragma unroll
-        for (int i = 0; i < numWaves; i++)
-            setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, claw_zero);
 
 
     // Local Reduce over Wave Speeds
@@ -430,14 +431,17 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 #ifdef USE_CAPA
     // if s>0, use capa in right cell to compute CFL
     // if s<0, use capa in left cell to compute CFL
-#pragma unroll
-    for (int i = 0; i < numWaves; i++)
-    {
-        real ws =  getSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, 
-                i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX );
-        real ws_capa = fmax(-ws/leftCoeff[param.mcapa],ws/rightCoeff[param.mcapa]);
-        ws_max = fmax(ws_max,ws_capa);
-    }
+    if (grid_valid) {
+        #pragma unroll
+        for (int i = 0; i < numWaves; i++)
+        {
+            real ws =  getSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, 
+                    i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX );
+            // TODO: hoist 1/leftCoeff out of the loop
+            real ws_capa = fmax(-ws/leftCoeff[param.mcapa],ws/rightCoeff[param.mcapa]);
+            ws_max = fmax(ws_max,ws_capa);
+        }
+    } 
 #else
     for (int i = 0; i < numWaves; i++)
     {
@@ -446,9 +450,11 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
         ws_max = fmax(ws_max,ws);
     }
 #endif
-    waveSpeedsX[tid] = ws_max;
-
+    __syncthreads();
+    // threads where (grid_valid == false) will have ws_max = 0.0
+    waveSpeedsX[tid] = ws_max; 
     __syncthreads();	// unmovable syncthreads
+
 
     // Stage 2
     // Reducing over block size elements
@@ -508,20 +514,27 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 #endif
         }
     }
-    else // copy the remaining cells (ghost cells) to qNew, which is required by the vertical kernel
-    {
-        if (col < 2 || (col > param.cellsX-3 && col < param.cellsX) )
-        {
-            #pragma unroll
-            for (int k = 0; k < numStates; k++)
-            {
-                param.setElement_q_tmp(row, col, k, param.getElement_qNew(row, col, k));
-            }
-        }
+
+    // copy the ghost cells to qNew, which is required by the vertical kernel
+    // copy the two columns on the left boundary
+    if ( row < param.cellsY && 
+         col < 2 ) {
+        #pragma unroll
+        for (int k = 0; k < numStates; k++)
+            // TODO: use leftCell here instead of reading from global memory?
+            param.setElement_q_tmp(row, col, k, param.getElement_qNew(row, col, k));
+    }
+    // copy the two columns on the right boundary
+    if ( row < param.cellsY && 
+         (col == (param.cellsX-3) || col == (param.cellsX-2)) ) {
+        #pragma unroll
+        for (int k = 0; k < numStates; k++)
+            // TODO: use rightCell[i] here instead of reading from global memory?
+            param.setElement_q_tmp(row, col+1, k, param.getElement_qNew(row, col+1, k));
     }
 
     if (tid == 0)
-        param.waveSpeedsX[blockIdx.x + blockIdx.y*gridDim.x] =  waveSpeedsX[0];
+        param.waveSpeedsX[blockIdx.x + blockIdx.y*gridDim.x] = waveSpeedsX[0];
 }
 
 
@@ -553,12 +566,10 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
     staticArrayReal<numCoeff> upCoeff;
     staticArrayReal<numCoeff> downCoeff;
 
-    if (blockIdx.x == gridDim.x-1 || blockIdx.y == gridDim.y-1)
-    {
+    // TODO: might not need this
 #pragma unroll
-        for (int i = 0; i < numWaves; i++)
-            setSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, claw_zero);
-    }
+    for (int i = 0; i < numWaves; i++)
+        setSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, claw_zero);
 
     bool grid_valid = row < param.cellsY-1 && col < param.cellsX;
 
@@ -636,14 +647,6 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
         setSharedWave(wavesY, threadIdx.y, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, apdq[k]);
     }
 
-    // Some wave speeds should not be used in computing maximum CFL number,
-    // e.g. wave speeds from the 1st and last Riemann problem in a col of cells
-    // and from the first and last two columns
-    // so we set them to 0.0
-    if (row == 0 || row == param.cellsY-2 || col < 2 || col > param.cellsX-3)
-        #pragma unroll
-        for (int i = 0; i < numWaves; i++)
-            setSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, claw_zero);
 
     // Local Reduce over Wave Speeds
     // Stage 1
@@ -653,13 +656,15 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
 #ifdef USE_CAPA
     // if s>0, use capa in up cell to compute CFL
     // if s<0, use capa in down cell to compute CFL
+    if (grid_valid) {
 #pragma unroll
-    for (int i = 0; i < numWaves; i++)
-    {
-        real ws =  getSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, 
-                i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX );
-        real ws_capa = fmax(-ws/downCoeff[param.mcapa],ws/upCoeff[param.mcapa]);
-        ws_max = fmax(ws_max,ws_capa);
+        for (int i = 0; i < numWaves; i++)
+        {
+            real ws =  getSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, 
+                    i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX );
+            real ws_capa = fmax(-ws/downCoeff[param.mcapa],ws/upCoeff[param.mcapa]);
+            ws_max = fmax(ws_max,ws_capa);
+        }
     }
 #else
     for (int i = 0; i < numWaves; i++)
@@ -669,9 +674,13 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
         ws_max = fmax(ws_max,ws);
     }
 #endif
+    __syncthreads();
     waveSpeedsY[tid] = ws_max;
 
-    __syncthreads();
+    __syncthreads();	// unmovable syncthreads
+
+    // Stage 2
+    // Reducing over block size elements
 
     if (VERTICAL_K_BLOCKSIZE > 64)
     {
@@ -719,7 +728,7 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
     }
 
     if (tid == 0)
-        param.waveSpeedsY[blockIdx.x + blockIdx.y*gridDim.x] =  waveSpeedsY[0];
+        param.waveSpeedsY[blockIdx.x + blockIdx.y*gridDim.x] = waveSpeedsY[0];
 }
 
 

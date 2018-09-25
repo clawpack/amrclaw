@@ -8,7 +8,7 @@
 // The ideal block sizes chosen by an automated test suite
 // The cell size defined by the input
 #define HORIZONTAL_K_BLOCKSIZEX 128
-#define HORIZONTAL_K_BLOCKSIZEY 2		//2
+#define HORIZONTAL_K_BLOCKSIZEY 2
 
 #define VERTICAL_K_BLOCKSIZEX 32	//16 //32
 #define VERTICAL_K_BLOCKSIZEY 8 	//24 //12

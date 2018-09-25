@@ -40,7 +40,7 @@ void setSharedWave(real* sharedData, int row, int col, int wave, int state, int 
 ////////////////////////////////////////////////  Wave Speeds  //////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 inline __device__ 
-real &getSharedSpeed(real* sharedData, const int row, const int col, const int wave, const int numWaves, const int blockHeight, const int blockWidth)
+const real &getSharedSpeed(const real* sharedData, const int row, const int col, const int wave, const int numWaves, const int blockHeight, const int blockWidth)
 {
     return sharedData[GET_INDEX_SHARED_SPEED_0INDEX(row, col, wave, numWaves, blockHeight, blockWidth)];
 }
