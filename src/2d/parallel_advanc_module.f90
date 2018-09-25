@@ -1,7 +1,4 @@
 module parallel_advanc_module
-
-    use amr_module
-
     real(CLAW_REAL) :: dtcom,dxcom,dycom,tcom
     integer :: icom,jcom
     interface
@@ -10,7 +7,6 @@ module parallel_advanc_module
             startX, endX, startY, endY, dt, &
             q_tmp, qNew, &
             coefficients, &
-            waveSpeedsX, waveSpeedsY, &
             numStates, numCoefficients, &
             cfls_d, ngrids, mcapa, id, dev_id) &
             bind(C,NAME='call_C_limited_riemann_update')
@@ -28,16 +24,12 @@ module parallel_advanc_module
                 real(kind=c_double), device :: qNew(cellsX,cellsY,numStates)
                 real(kind=c_double), device :: coefficients(cellsX,cellsY,numStates)
                 real(kind=c_double), device :: cfls_d(SPACEDIM)
-                real(kind=c_double), device :: waveSpeedsX(ws_len)
-                real(kind=c_double), device :: waveSpeedsY(ws_len)
             #else
                 real(kind=c_float), value, intent(in) :: startX, endX, startY, endY, dt
                 real(kind=c_float), device :: q_tmp(cellsX,cellsY,numStates)
                 real(kind=c_float), device :: qNew(cellsX,cellsY,numStates)
                 real(kind=c_float), device :: coefficients(cellsX,cellsY,numStates)
                 real(kind=c_float), device :: cfls_d(SPACEDIM)
-                real(kind=c_float), device :: waveSpeedsX(ws_len)
-                real(kind=c_float), device :: waveSpeedsY(ws_len)
             #endif
 
         end subroutine stepgrid_cudaclaw

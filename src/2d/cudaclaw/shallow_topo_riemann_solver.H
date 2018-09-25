@@ -45,7 +45,7 @@ struct shallow_topo_horizontal
     operator() (const real* const q_left, const real* const q_right, 
             const staticArrayReal<N>& u_left, const staticArrayReal<N>& u_right,
             const int row, const int col, const int numStates, const int numWaves,
-            real* const wave, real* const waveSpeeds)
+            real* const wave, real* const waveSpeeds)	
     {
         static_assert(N > 0, 
                 "Number of coefficients must be larger than 0 for shallow_topo_horizontal");
