@@ -6,22 +6,6 @@
 #include <sm_20_atomic_functions.h>
 #include "params.H"
 
-template <unsigned int blockSize>
-__global__ void 
-check_cfl(real *globalWaves, int size, pdeParam param, int direction)
-{
-    int tid = threadIdx.x;
-    if (tid < size) {
-        real dx = (direction == 0) ? param.dx : param.dy; 
-        real cfl = globalWaves[tid]*param.dt/dx;
-        if (cfl > 1.0) {
-            printf("cfl larger than 1.0 in check_cfl. cfl = %E. tid = %d. direction = %d. size = %d.\n", cfl, tid, direction, size);
-            printf("local grid id: %d\n", param.id);
-            printf("x-size: %d; y-size: %d\n", param.cellsX, param.cellsY);
-            printf("address of globalWaves in check_cfl: %p.\n", (void*)globalWaves);
-        }
-    }
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////   Reduction   //////////////////////////////////////////////////////////////////////////
@@ -153,11 +137,8 @@ reduceMax_simplified(volatile real *globalWaves, int size, pdeParam param, int d
         }
 
         globalWaves[blockIdx.x] = sharedWaveSpeeds[0];
-        if (result) {
+        if (result)
             *result = sharedWaveSpeeds[0]*dt/dx;
-            __threadfence_system();
-            printf("direction = %d, cfl = %E, in grid %d, stored at address %p.\n", direction, *result, param.id, result);
-        }
     }
 }
 

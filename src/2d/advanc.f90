@@ -81,9 +81,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     !
 
-    print *, "advanc called for level: ", level
-    print *, "num of grids:: ", numgrids(level)
-    print *, "dx, dy, dt: ", hxposs(level), hyposs(level), possk(level)
     ! get start time for more detailed timing by level
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
@@ -383,7 +380,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             aux_d(mptr)%ptr, &
             waveSpeedsX((mptr-1)*ws_len+1), waveSpeedsY((mptr-1)*ws_len+1), &
             nvar, naux, &
-            cfls_d, numgrids(level), mcapa-1,& ! C arrays are 0-indexed
+            cfls_d(:,id), numgrids(level), mcapa-1,& ! C arrays are 0-indexed
             id, device_id) 
 
         cudaResult = cudaMemcpyAsync(alloc(locnew), grid_data_d(mptr)%ptr, nvar*mitot*mjtot, cudaMemcpyDeviceToHost, get_cuda_stream(id,device_id))
@@ -447,8 +444,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_stop(timer_copy_old_solution)
 #endif
 
-    call wait_for_all_gpu_tasks(device_id)
     !$OMP MASTER 
+    call wait_for_all_gpu_tasks(device_id)
     ! grids_d = grids
     !$OMP END MASTER 
     !$OMP BARRIER
@@ -548,7 +545,9 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call cpu_timer_stop(timer_soa_to_aos)
 #endif
 
+    !$OMP MASTER 
     call wait_for_all_gpu_tasks(device_id)
+    !$OMP END MASTER 
     !$OMP BARRIER
 
 #ifdef PROFILE
@@ -601,7 +600,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     ! deallocate(grids)
     ! deallocate(grids_d)
     ! !$OMP END SINGLE
-
     !$OMP BARRIER
 
 #ifdef PROFILE
@@ -646,18 +644,14 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
     ! reduction to get cflmax and dtlevnew
     !$OMP MASTER
-    ! cudaResult = cudaMemcpy(cfls, cfls_d, numgrids(level)*SPACEDIM)
-    cudaResult = cudaMemcpy(cfls, cfls_d, 1)
-    do j = 1,1
-        ! cfl_local = max(cfls(1,j),cfls(2,j))
-        cfl_local = cfls(1,1)
+    cudaResult = cudaMemcpy(cfls, cfls_d, numgrids(level)*SPACEDIM)
+    do j = 1,numgrids(level)
+        cfl_local = max(cfls(1,j),cfls(2,j))
         if (cfl_local .gt. cflv1) then
             write(*,810) cfl_local, cflv1
             write(outunit,810) cfl_local, cflv1
       810   format('*** WARNING *** Courant number  =', d12.4, &
           '  is larger than input cfl_max = ', d12.4)
-            write(*,*) "level: ", level
-            cfl_level = max(cfl_level, cfl_local)
         endif
         cfl_level = max(cfl_level, cfl_local)
     enddo

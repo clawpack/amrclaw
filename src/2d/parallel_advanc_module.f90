@@ -27,7 +27,7 @@ module parallel_advanc_module
                 real(kind=c_double), device :: q_tmp(cellsX,cellsY,numStates)
                 real(kind=c_double), device :: qNew(cellsX,cellsY,numStates)
                 real(kind=c_double), device :: coefficients(cellsX,cellsY,numStates)
-                real(kind=c_double), device :: cfls_d(SPACEDIM,ngrids)
+                real(kind=c_double), device :: cfls_d(SPACEDIM)
                 real(kind=c_double), device :: waveSpeedsX(ws_len)
                 real(kind=c_double), device :: waveSpeedsY(ws_len)
             #else
@@ -35,7 +35,7 @@ module parallel_advanc_module
                 real(kind=c_float), device :: q_tmp(cellsX,cellsY,numStates)
                 real(kind=c_float), device :: qNew(cellsX,cellsY,numStates)
                 real(kind=c_float), device :: coefficients(cellsX,cellsY,numStates)
-                real(kind=c_float), device :: cfls_d(SPACEDIM,ngrids)
+                real(kind=c_float), device :: cfls_d(SPACEDIM)
                 real(kind=c_float), device :: waveSpeedsX(ws_len)
                 real(kind=c_float), device :: waveSpeedsY(ws_len)
             #endif
