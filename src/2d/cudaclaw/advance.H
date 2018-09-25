@@ -18,7 +18,6 @@
 #include <cuda_runtime_api.h>
 #include <device_launch_parameters.h>
 #include <math_functions.h>
-#include <math_constants.h>
 #include <cstdio>
 
 #if __CUDA_ARCH__ >= 600
@@ -346,13 +345,26 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 
     bool grid_valid = row < param.cellsY && col < param.cellsX-1;
 
-
     // Riemann solver
     // Let's say the cells in X direction are indexed from 0 to cellsX-1 (including ghost cells). 
     // The last thread is mapped to the second last cell, cell (row,cellsX-2), and will
     // solve the Riemann problem between cell (row,cellsX-2) and cell (row,cellsX-1) 
     if (grid_valid)	
     {
+#pragma unroll
+        for (int i = 0; i < numStates; i++)
+        {
+            leftCell[i] = param.getElement_qNew(row,col,i);
+            rightCell[i] = param.getElement_qNew(row,col+1,i);
+        }
+        if (numCoeff > 0) {
+#pragma unroll
+            for (int i = 0; i < numCoeff; i++)
+            {
+                leftCoeff[i] = param.getElement_coeff(row,col,i);
+                rightCoeff[i] = param.getElement_coeff(row,col+1,i);
+            }
+        }
         Riemann_solver_h(leftCell, rightCell,
                 leftCoeff, rightCoeff,
                 threadIdx.y, threadIdx.x,
