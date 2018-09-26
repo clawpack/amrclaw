@@ -786,8 +786,9 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
 
         dim3 dimGrid1(gridDim_X1);
         dim3 dimBlock1(blockDim_X);
-        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR,
+        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR, param, 0,
                 param.dx, param.dt, &(param.cfl_grid[0]) );
+
     }
     {
         // before y-sweep
@@ -826,7 +827,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimGrid2(gridDim_X2);
         dim3 dimBlock2(blockDim_X);
 
-        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR,
+        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR, param, 1,
                 param.dy, param.dt, &(param.cfl_grid[1]) );
     }
     // Let the memory manager free memory allocated by param later 
