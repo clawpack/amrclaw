@@ -378,6 +378,7 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
             xlow, xlow+hx*mitot, ylow, ylow+hy*mjtot, delt, &
             grid_data_d_copy2(mptr)%ptr, grid_data_d(mptr)%ptr, &
             aux_d(mptr)%ptr, &
+            waveSpeedsX((mptr-1)*ws_len+1), waveSpeedsY((mptr-1)*ws_len+1), &
             nvar, naux, &
             cfls_d(:,id), numgrids(level), mcapa-1,& ! C arrays are 0-indexed
             id, device_id) 
