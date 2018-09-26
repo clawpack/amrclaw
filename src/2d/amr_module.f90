@@ -284,10 +284,18 @@ module amr_module
     type(gpu_4d_real_ptr_type) :: wave_y_d(maxgr)
 
 
-    ! should be changed based on number of CUDA blocks in computation kernel
-    integer, parameter :: ws_len = 200 
-    real(CLAW_REAL), allocatable, device :: waveSpeedsX(:)
-    real(CLAW_REAL), allocatable, device :: waveSpeedsY(:)
+    ! ws_len is maximum number of CUDA blocks
+    ! used for each grid patch in the computation kernel
+    ! It should be changed based on number of CUDA blocks for computation
+    ! kernel,
+    ! which depends on grid patch size and CUDA block size
+    ! These pre-allocated GPU memory, waveSpeedsX and waveSpeedsX
+    ! are used because it gives noticable speed-up compared to 
+    ! another alternative approach, calling GPUMemoryManager to 
+    ! allocate these memory before kernel launch.
+    integer, parameter :: ws_len = 200
+    real(CLAW_REAL), allocatable, device :: waveSpeedsX(:,:)
+    real(CLAW_REAL), allocatable, device :: waveSpeedsY(:,:)
 
 #endif
 

@@ -131,8 +131,8 @@ contains
         allocate(cflux_hd(maxgr))
         allocate(cflux_dd(maxgr))
 
-        allocate(waveSpeedsX(ws_len*maxgr))
-        allocate(waveSpeedsY(ws_len*maxgr))
+        allocate(waveSpeedsX(ws_len,maxgr))
+        allocate(waveSpeedsY(ws_len,maxgr))
     end subroutine initialize_cuda
 
     subroutine check_cuda_error(istat) 

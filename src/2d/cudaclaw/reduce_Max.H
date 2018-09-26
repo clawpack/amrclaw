@@ -29,7 +29,7 @@ warpReduce(volatile real *sdata, unsigned int tid)
 // return the first element in shared to the global input's first place
 template <unsigned int blockSize>
 __global__ void 
-reduceMax_simplified(volatile real *globalWaves, int size, pdeParam param, int direction,
+reduceMax_simplified(volatile real *globalWaves, int size, 
         real dx = claw_zero, real dt = claw_zero, real* result = NULL)
 {
     // size holds the exact number of wave speeds there are to be max reduced

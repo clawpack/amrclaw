@@ -771,9 +771,6 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimBlock_hR(blockDim_XR, blockDim_YR);
         int shared_mem_size = HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY*NWAVES*(NEQNS+1)*sizeof(real);
 
-        // allocate param.waveSpeedsX here
-        // param.alloc_waveSpeedsX(dimGrid_hR.x * dimGrid_hR.y);
-
         Riemann_horizontal_kernel<NEQNS, NWAVES, NCOEFFS, HORIZONTAL_K_BLOCKSIZEX*HORIZONTAL_K_BLOCKSIZEY, Riemann_h, Limiter><<<dimGrid_hR, dimBlock_hR, shared_mem_size,stream>>>(param, Riemann_pointwise_solver_h, limiter_phi);
 
         // REDUCTION
@@ -786,9 +783,8 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
 
         dim3 dimGrid1(gridDim_X1);
         dim3 dimBlock1(blockDim_X);
-        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR, param, 0,
+        reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR,
                 param.dx, param.dt, &(param.cfl_grid[0]) );
-
     }
     {
         // before y-sweep
@@ -813,8 +809,6 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimBlock_vR(blockDim_XR, blockDim_YR);
         int shared_mem_size = VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY*NWAVES*(NEQNS+1)*sizeof(real);
 
-        // allocate param.waveSpeedsY here
-        // param.alloc_waveSpeedsY(dimGrid_vR.x * dimGrid_vR.y);
         Riemann_vertical_kernel<NEQNS, NWAVES, NCOEFFS, VERTICAL_K_BLOCKSIZEX*VERTICAL_K_BLOCKSIZEY, Riemann_v, Limiter><<<dimGrid_vR, dimBlock_vR,shared_mem_size,stream>>>(param, Riemann_pointwise_solver_v, limiter_phi);
 
 
@@ -827,12 +821,9 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimGrid2(gridDim_X2);
         dim3 dimBlock2(blockDim_X);
 
-        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR, param, 1,
+        reduceMax_simplified<blockDim_X><<< dimGrid2, dimBlock2, SharedMemorySize, stream>>>(param.waveSpeedsY, gridDim_XR*gridDim_YR,
                 param.dy, param.dt, &(param.cfl_grid[1]) );
     }
-    // Let the memory manager free memory allocated by param later 
-    // when the memory is not needed by GPU
-    // param.register_allocated_memory();
 
     return 0;
 }
