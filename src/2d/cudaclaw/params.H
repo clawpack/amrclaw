@@ -52,8 +52,8 @@ class pdeParam
         // The same rule applies to waveSpeedsY
         // after calling reduceMax_simplified, waveSpeedsX[0] has the maximum u velocity on this grid, and
         // waveSpeedsY[0] has the maximum v velocity on this grid.
-        real* waveSpeedsX;		// speed of horizontal waves
-        real* waveSpeedsY;		// speed of vertical waves
+        volatile real* waveSpeedsX;		// speed of horizontal waves
+        volatile real* waveSpeedsY;		// speed of vertical waves
 
         real* cfl_grid; // an array of size 1xSPACEDIM, storing cfl number in current grid patch in all directions
 
