@@ -25,6 +25,9 @@
 #else
     #define KERNEL_MIN_BLOCKS 1
 #endif
+#ifdef GEOCLAW
+#define DRY_TOL 0.001 // the dry_tolerance parameter in setrun.py 
+#endif
 
 __device__ static double atomicMax(double* address, double val)
 {
@@ -338,11 +341,6 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
     staticArrayReal<numCoeff> leftCoeff;
     staticArrayReal<numCoeff> rightCoeff;
 
-    // TODO: might not need this
-#pragma unroll
-    for (int i = 0; i < numWaves; i++)
-        setSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX, claw_zero);
-
     bool grid_valid = row < param.cellsY && col < param.cellsX-1;
 
     // Riemann solver
@@ -351,14 +349,29 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
     // solve the Riemann problem between cell (row,cellsX-2) and cell (row,cellsX-1) 
     if (grid_valid)	
     {
-#pragma unroll
+        #pragma unroll
         for (int i = 0; i < numStates; i++)
         {
             leftCell[i] = param.getElement_qNew(row,col,i);
             rightCell[i] = param.getElement_qNew(row,col+1,i);
         }
+
+#ifdef GEOCLAW // zeroize dry cell before x-sweep
+        if ( leftCell[0] < DRY_TOL ) 
+        {
+            if (leftCell[0] < 0.0) leftCell[0] = 0.0;
+            leftCell[1] = 0.0;
+            leftCell[2] = 0.0;
+        }
+        if ( rightCell[0] < DRY_TOL ) 
+        {
+            if (rightCell[0] < 0.0) rightCell[0] = 0.0;
+            rightCell[1] = 0.0;
+            rightCell[2] = 0.0;
+        }
+#endif
         if (numCoeff > 0) {
-#pragma unroll
+            #pragma unroll
             for (int i = 0; i < numCoeff; i++)
             {
                 leftCoeff[i] = param.getElement_coeff(row,col,i);
@@ -442,6 +455,7 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
             ws_max = fmax(ws_max,ws_capa);
         }
     } 
+    // else ws_max = 0.0
 #else
     for (int i = 0; i < numWaves; i++)
     {
@@ -451,6 +465,7 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
     }
 #endif
     __syncthreads();
+
     // threads where (grid_valid == false) will have ws_max = 0.0
     waveSpeedsX[tid] = ws_max; 
     __syncthreads();	// unmovable syncthreads
@@ -505,11 +520,11 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
         {
 #ifdef USE_CAPA
             param.setElement_q_tmp(row, col, k, 
-                param.getElement_qNew(row, col, k) - param.dt/param.dx/leftCoeff[param.mcapa] * (amdq[k] + getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX))
+                leftCell[k] - param.dt/param.dx/leftCoeff[param.mcapa] * (amdq[k] + getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX))
                     );
 #else
             param.setElement_q_tmp(row, col, k, 
-                param.getElement_qNew(row, col, k) - param.dt/param.dx * (amdq[k] + getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX))
+                leftCell[k] - param.dt/param.dx * (amdq[k] + getSharedWave(wavesX, threadIdx.y, threadIdx.x-1, 0, k, numWaves, numStates, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX))
                     );
 #endif
         }
@@ -521,16 +536,14 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
          col < 2 ) {
         #pragma unroll
         for (int k = 0; k < numStates; k++)
-            // TODO: use leftCell here instead of reading from global memory?
-            param.setElement_q_tmp(row, col, k, param.getElement_qNew(row, col, k));
+            param.setElement_q_tmp(row, col, k, leftCell[k]);
     }
     // copy the two columns on the right boundary
     if ( row < param.cellsY && 
          (col == (param.cellsX-3) || col == (param.cellsX-2)) ) {
         #pragma unroll
         for (int k = 0; k < numStates; k++)
-            // TODO: use rightCell[i] here instead of reading from global memory?
-            param.setElement_q_tmp(row, col+1, k, param.getElement_qNew(row, col+1, k));
+            param.setElement_q_tmp(row, col+1, k, rightCell[k]);
     }
 
     if (tid == 0)
@@ -566,24 +579,33 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
     staticArrayReal<numCoeff> upCoeff;
     staticArrayReal<numCoeff> downCoeff;
 
-    // TODO: might not need this
-#pragma unroll
-    for (int i = 0; i < numWaves; i++)
-        setSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX, claw_zero);
-
     bool grid_valid = row < param.cellsY-1 && col < param.cellsX;
 
     // Riemann solver
     if (grid_valid)
     {
-#pragma unroll
+        #pragma unroll
         for (int i = 0; i < numStates; i++)
         {
             downCell[i] = param.getElement_q_tmp(row,col,i);	// use intermediate data
             upCell[i] = param.getElement_q_tmp(row+1,col,i);
         }
+#ifdef GEOCLAW // zeroize dry cell before x-sweep
+        if ( downCell[0] < DRY_TOL ) 
+        {
+            if (downCell[0] < 0.0) downCell[0] = 0.0;
+            downCell[1] = 0.0;
+            downCell[2] = 0.0;
+        }
+        if ( upCell[0] < DRY_TOL ) 
+        {
+            if (upCell[0] < 0.0) upCell[0] = 0.0;
+            upCell[1] = 0.0;
+            upCell[2] = 0.0;
+        }
+#endif
         if (numCoeff > 0) {
-#pragma unroll
+            #pragma unroll
             for (int i = 0; i < numCoeff; i++)
             {
                 downCoeff[i] = param.getElement_coeff(row,col,i);
@@ -717,11 +739,11 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
         {
 #ifdef USE_CAPA
             param.setElement_qNew(row, col, k, 
-                param.getElement_q_tmp(row, col, k) - param.dt/param.dy/downCoeff[param.mcapa] * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX))
+                downCell[k] - param.dt/param.dy/downCoeff[param.mcapa] * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX))
                     );
 #else
             param.setElement_qNew(row, col, k, 
-                param.getElement_q_tmp(row, col, k) - param.dt/param.dy * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX))
+                downCell[k] - param.dt/param.dy * (amdq[k] + getSharedWave(wavesY, threadIdx.y-1, threadIdx.x, 0, k, numWaves, numStates, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX))
                     );
 #endif
         }
@@ -732,13 +754,6 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
 }
 
 
-#ifdef GEOCLAW
-__global__ void 
-b4xsweep_kernel(pdeParam param);
-__global__ void 
-b4ysweep_kernel(pdeParam param);
-
-#endif
 
 template <class Riemann_h, class Riemann_v, class Limiter>
 int limited_Riemann_Update(pdeParam &param,						// Problem parameters
@@ -757,7 +772,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimGrid_hR(gridDim_XR, gridDim_YR);
         dim3 dimBlock_hR(blockDim_XR, blockDim_YR);
 #ifdef GEOCLAW
-        b4xsweep_kernel<<<dimGrid_hR,dimBlock_hR,0,stream>>>(param);
+        // b4xsweep_kernel<<<dimGrid_hR,dimBlock_hR,0,stream>>>(param);
 #endif
     }
     {
@@ -795,7 +810,7 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimGrid_vR(gridDim_XR, gridDim_YR);
         dim3 dimBlock_vR(blockDim_XR,blockDim_YR);
 #ifdef GEOCLAW
-        b4ysweep_kernel<<<dimGrid_vR,dimBlock_vR,0,stream>>>(param);
+        // b4ysweep_kernel<<<dimGrid_vR,dimBlock_vR,0,stream>>>(param);
 #endif
     }
     {
