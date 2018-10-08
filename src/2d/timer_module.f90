@@ -61,10 +61,11 @@ module timer_module
     integer, parameter :: timer_saveqc = 13
     integer, parameter :: timer_conck = 14
     integer, parameter :: timer_memory = 15
+    integer, parameter :: timer_advanc_all_levels = 16 
     ! time for calling advanc function
     ! starting from timer_advanc_start, the ids are reserved
     ! for timing level 1,2,3,4 ...
-    integer, parameter :: timer_advanc_start = 16 
+    integer, parameter :: timer_advanc_start = 17 
 
 contains
     subroutine take_cpu_timer(timer_name_, timer_id)
