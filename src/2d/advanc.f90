@@ -85,11 +85,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
 
-#ifdef PROFILE
-    call take_cpu_timer("advanc", timer_advanc)
-    call cpu_timer_start(timer_advanc)
-#endif
-
 !$OMP PARALLEL PRIVATE(hx, hy, delt, &
 !$OMP                  j, levSt, mptr, nx, ny, mitot, mjtot, locold, locnew, locaux, time, &
 !$OMP                  id, xlow, ylow, cudaResult, lenbc, locsvq, numBlocks, numThreads, &
@@ -681,10 +676,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     !$OMP END MASTER
 
 !$OMP END PARALLEL 
-
-#ifdef PROFILE
-    call cpu_timer_stop(timer_advanc)
-#endif
 
     call system_clock(clock_finish,clock_rate)
     call cpu_time(cpu_finish)

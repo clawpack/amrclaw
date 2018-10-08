@@ -52,6 +52,10 @@ c ::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::
 c
       call system_clock(tick_clock_start,tick_clock_rate)
       call cpu_time(tick_cpu_start)
+#ifdef PROFILE
+      call take_cpu_timer("Total run time", timer_total_run_time)
+      call cpu_timer_start(timer_total_run_time)
+#endif
 
 
       ncycle         = nstart
@@ -252,7 +256,13 @@ c
  90       continue
 
 
+#ifdef PROFILE
+          call take_cpu_timer("Advance level "//toString(level), 
+     &      timer_advanc_start+level-1)
+          call cpu_timer_start(timer_advanc_start+level-1)
           call advanc(level,nvar,dtlevnew,vtime,naux)
+          call cpu_timer_stop(timer_advanc_start+level-1)
+#endif
 
 c         # rjl modified 6/17/05 to print out *after* advanc and print cfl
 c         # rjl & mjb changed to cfl_level, 3/17/10
@@ -400,6 +410,7 @@ c
 
 c ## tick timing moved here so can be saved in checkpoint file 
 c
+      call cpu_timer_stop(timer_total_run_time)
       call system_clock(tick_clock_finish,tick_clock_rate)
       call cpu_time(tick_cpu_finish)
       timeTick = timeTick + tick_clock_finish - tick_clock_start 

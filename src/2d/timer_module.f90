@@ -23,7 +23,7 @@ module timer_module
     public
 
     ! initialized to be 0
-    integer, parameter :: max_cpu_timers = 20
+    integer, parameter :: max_cpu_timers = 30
     integer(kind=CLAW_REAL) :: clock_rate
     character(len=364) :: format_string
 
@@ -46,7 +46,7 @@ module timer_module
     ! What's each timer used for
     integer, parameter :: timer_total_run_time = 0
 
-    integer, parameter :: timer_stepgrid = 1
+    integer, parameter :: timer_stepgrid = 1 ! excluding saveqc, bound etc. in advanc function
     integer, parameter :: timer_gpu_loop = 2
     integer, parameter :: timer_launch_compute_kernels = 3
     integer, parameter :: timer_copy_old_solution = 4
@@ -55,13 +55,16 @@ module timer_module
     integer, parameter :: timer_soa_to_aos = 7
     integer, parameter :: timer_init_cfls = 8
     integer, parameter :: timer_fluxsv_fluxad = 9
-    integer, parameter :: timer_advanc = 10
-    integer, parameter :: timer_bound = 11
-    integer, parameter :: timer_updating = 12
-    integer, parameter :: timer_regridding = 13
-    integer, parameter :: timer_saveqc = 14
-    integer, parameter :: timer_conck = 15
-    integer, parameter :: timer_memory = 16
+    integer, parameter :: timer_bound = 10
+    integer, parameter :: timer_updating = 11
+    integer, parameter :: timer_regridding = 12
+    integer, parameter :: timer_saveqc = 13
+    integer, parameter :: timer_conck = 14
+    integer, parameter :: timer_memory = 15
+    ! time for calling advanc function
+    ! starting from timer_advanc_start, the ids are reserved
+    ! for timing level 1,2,3,4 ...
+    integer, parameter :: timer_advanc_start = 16 
 
 contains
     subroutine take_cpu_timer(timer_name_, timer_id)
