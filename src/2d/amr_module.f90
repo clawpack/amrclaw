@@ -185,7 +185,7 @@ module amr_module
 
     ! The max1d parameter should be changed if using OpenMP grid based 
     ! looping, usually set to max1d = 60
-    integer, parameter :: max1d = 80
+    integer, parameter :: max1d = 130
 
     integer, parameter :: maxvar = 10
     integer, parameter :: maxaux = 20
@@ -293,7 +293,7 @@ module amr_module
     ! are used because it gives noticable speed-up compared to 
     ! another alternative approach, calling GPUMemoryManager to 
     ! allocate these memory before kernel launch.
-    integer, parameter :: ws_len = 200
+    integer, parameter :: ws_len = 300
     real(CLAW_REAL), allocatable, device :: waveSpeedsX(:,:)
     real(CLAW_REAL), allocatable, device :: waveSpeedsY(:,:)
 

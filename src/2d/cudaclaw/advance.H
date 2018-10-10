@@ -355,7 +355,6 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
             leftCell[i] = param.getElement_qNew(row,col,i);
             rightCell[i] = param.getElement_qNew(row,col+1,i);
         }
-
 #ifdef GEOCLAW // zeroize dry cell before x-sweep
         if ( leftCell[0] < DRY_TOL ) 
         {
@@ -424,7 +423,7 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
 #endif // USE_FWAVES
         }
     }
-    __syncthreads(); // includes  __threadfence_block()
+    __syncthreads();
 
     // write the apdq to shared memory
     // overwrite some entries used by wavesX in shared memory
@@ -457,11 +456,14 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
     } 
     // else ws_max = 0.0
 #else
-    for (int i = 0; i < numWaves; i++)
-    {
-        real ws =  getSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, 
-                i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX );
-        ws_max = fmax(ws_max,ws);
+    if (grid_valid) {
+        #pragma unroll
+        for (int i = 0; i < numWaves; i++)
+        {
+            real ws =  getSharedSpeed(waveSpeedsX, threadIdx.y, threadIdx.x, 
+                    i, numWaves, HORIZONTAL_K_BLOCKSIZEY, HORIZONTAL_K_BLOCKSIZEX );
+            ws_max = fmax(ws_max,ws);
+        }
     }
 #endif
     __syncthreads();
@@ -679,7 +681,7 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
     // if s>0, use capa in up cell to compute CFL
     // if s<0, use capa in down cell to compute CFL
     if (grid_valid) {
-#pragma unroll
+        #pragma unroll
         for (int i = 0; i < numWaves; i++)
         {
             real ws =  getSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, 
@@ -689,11 +691,14 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
         }
     }
 #else
-    for (int i = 0; i < numWaves; i++)
-    {
-        real ws =  getSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, 
-                i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX );
-        ws_max = fmax(ws_max,ws);
+    if (grid_valid) {
+        #pragma unroll
+        for (int i = 0; i < numWaves; i++)
+        {
+            real ws =  getSharedSpeed(waveSpeedsY, threadIdx.y, threadIdx.x, 
+                    i, numWaves, VERTICAL_K_BLOCKSIZEY, VERTICAL_K_BLOCKSIZEX );
+            ws_max = fmax(ws_max,ws);
+        }
     }
 #endif
     __syncthreads();
