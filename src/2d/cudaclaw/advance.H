@@ -769,18 +769,6 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         )
 {
     {
-        // before x-sweep
-        const unsigned int blockDim_XR = HORIZONTAL_K_BLOCKSIZEX;
-        const unsigned int blockDim_YR = HORIZONTAL_K_BLOCKSIZEY;
-        unsigned int gridDim_XR = (param.cellsX + blockDim_XR - 1) / blockDim_XR;
-        unsigned int gridDim_YR = (param.cellsY + blockDim_YR - 1) / blockDim_YR;
-        dim3 dimGrid_hR(gridDim_XR, gridDim_YR);
-        dim3 dimBlock_hR(blockDim_XR, blockDim_YR);
-#ifdef GEOCLAW
-        // b4xsweep_kernel<<<dimGrid_hR,dimBlock_hR,0,stream>>>(param);
-#endif
-    }
-    {
         // RIEMANN, FLUCTUATIONS and UPDATES
         const unsigned int blockDim_XR = HORIZONTAL_K_BLOCKSIZEX;
         const unsigned int blockDim_YR = HORIZONTAL_K_BLOCKSIZEY;
@@ -805,18 +793,6 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
         dim3 dimBlock1(blockDim_X);
         reduceMax_simplified<blockDim_X><<< dimGrid1, dimBlock1, SharedMemorySize, stream>>>(param.waveSpeedsX, gridDim_XR*gridDim_YR,
                 param.dx, param.dt, &(param.cfl_grid[0]) );
-    }
-    {
-        // before y-sweep
-        const unsigned int blockDim_XR = VERTICAL_K_BLOCKSIZEX;
-        const unsigned int blockDim_YR = VERTICAL_K_BLOCKSIZEY;
-        unsigned int gridDim_XR = (param.cellsX + blockDim_XR - 1) / blockDim_XR;
-        unsigned int gridDim_YR = (param.cellsY + blockDim_YR - 1) / blockDim_YR;
-        dim3 dimGrid_vR(gridDim_XR, gridDim_YR);
-        dim3 dimBlock_vR(blockDim_XR,blockDim_YR);
-#ifdef GEOCLAW
-        // b4ysweep_kernel<<<dimGrid_vR,dimBlock_vR,0,stream>>>(param);
-#endif
     }
     {
         // RIEMANN, FLUCTUATIONS and UPDATE
