@@ -117,6 +117,14 @@ contains
         endif
         if (cpu_timers(timer_id)%running) then
             call system_clock(cpu_timers(timer_id)%stop_time, clock_rate)
+            if ( (cpu_timers(timer_id)%stop_time - cpu_timers(timer_id)%start_time) &
+                 < 0 ) then
+                 print *, "negative time accumulated in timer:"
+                 print *, timer_id, adjustl(cpu_timers(timer_id)%timer_name)
+                 print *, "start_time: ", cpu_timers(timer_id)%start_time
+                 print *, "stop_time: ", cpu_timers(timer_id)%stop_time
+                 stop
+            endif
             cpu_timers(timer_id)%accumulated_time = cpu_timers(timer_id)%accumulated_time + &
                 cpu_timers(timer_id)%stop_time - cpu_timers(timer_id)%start_time
             cpu_timers(timer_id)%running = .false.
