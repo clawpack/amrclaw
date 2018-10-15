@@ -11,6 +11,7 @@ module cuda_module
         waveSpeedsX, waveSpeedsY, ws_len
 
     use memory_module, only: clawpack_mempool_init
+    use timer_module
 
     implicit none
     save
@@ -370,7 +371,10 @@ contains
         call check_cuda_error(cudaResult)
 #endif
 
+        call take_cpu_timer('wait_for_all_gpu_tasks', timer_device_sync)
+        call cpu_timer_start(timer_device_sync)
         cudaResult = cudaDeviceSynchronize()
+        call cpu_timer_stop(timer_device_sync)
 
 #ifdef DEBUG
         call check_cuda_error(cudaResult)
