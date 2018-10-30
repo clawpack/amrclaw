@@ -63,6 +63,9 @@ module cuda_module
 
 contains
 
+    subroutine cudaProfilerStop() bind(C, name='cudaProfilerStop')
+    end subroutine
+
     subroutine initialize_cuda() 
         use cudafor, only: cudaStreamCreate, cudaGetDeviceCount, cudaSetDevice &
             , cudaGetDeviceCount, cudaGetDeviceProperties
@@ -391,6 +394,9 @@ contains
 
 
     subroutine finalize_cuda() 
+        use cudafor
+        implicit none
+        integer :: cudaResult
         deallocate(fflux_hh)
         deallocate(fflux_hd)
         deallocate(fflux_dd)
@@ -400,6 +406,9 @@ contains
 
         deallocate(waveSpeedsX)
         deallocate(waveSpeedsY)
+
+        call cudaProfilerStop()
+        cudaResult = cudaDeviceReset()
     end subroutine finalize_cuda
 
     function get_num_devices_used() result(nDev) bind(C, name='get_num_devices_used')

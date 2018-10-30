@@ -34,12 +34,6 @@ module profiling_module
 	    type(nvtxEventAttributes):: event
 	end subroutine
 
-        ! start profile data collection for nvprof
-	subroutine nvprofStart() bind(C, name='cudaProfilerStart')
-	end subroutine
-        ! end profile data collection for nvprof
-	subroutine nvprofStop() bind(C, name='cudaProfilerStop')
-	end subroutine
     end interface
 
     interface nvtxRangePop
