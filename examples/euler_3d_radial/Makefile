@@ -56,9 +56,9 @@ SOURCES = \
   qinit.f \
   setprob.f \
   flag2refine.f \
-  $(CLAW)/riemann/src/rpn3_euler.f90 \
-  $(CLAW)/riemann/src/rpt3_euler.f90 \
-  $(CLAW)/riemann/src/rptt3_euler.f90 \
+  $(CLAW)/riemann/riemann/rpn3_euler.f90 \
+  $(CLAW)/riemann/riemann/rpt3_euler.f90 \
+  $(CLAW)/riemann/riemann/rptt3_euler.f90 \
   $(AMRLIB)/limiter.f \
   $(AMRLIB)/philim.f \
 

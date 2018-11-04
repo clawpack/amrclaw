@@ -55,9 +55,9 @@ MODULES = \
 SOURCES = \
   qinit.f \
   setprob.f \
-  $(CLAW)/riemann/src/rpn3_burgers.f90 \
-  $(CLAW)/riemann/src/rpt3_burgers.f90 \
-  $(CLAW)/riemann/src/rptt3_burgers.f90 \
+  $(CLAW)/riemann/riemann/rpn3_burgers.f90 \
+  $(CLAW)/riemann/riemann/rpt3_burgers.f90 \
+  $(CLAW)/riemann/riemann/rptt3_burgers.f90 \
   $(AMRLIB)/limiter.f \
   $(AMRLIB)/philim.f \
 

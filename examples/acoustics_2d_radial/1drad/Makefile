@@ -35,7 +35,7 @@ SOURCES = \
   qinit.f \
   src1.f \
   setprob.f \
-  $(CLAW)/riemann/src/rp1_acoustics.f90 \
+  $(CLAW)/riemann/riemann/rp1_acoustics.f90 \
   $(CLAW)/classic/src/1d/setaux.f90 \
   $(CLAW)/classic/src/1d/bc1.f \
   $(CLAW)/classic/src/1d/b4step1.f90 \

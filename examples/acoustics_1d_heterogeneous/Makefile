@@ -54,7 +54,7 @@ SOURCES = \
   qinit.f \
   setprob.f \
   setaux.f \
-  $(CLAW)/riemann/src/rp1_acoustics_variable.f90 \
+  $(CLAW)/riemann/riemann/rp1_acoustics_variable.f90 \
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:

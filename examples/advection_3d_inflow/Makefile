@@ -57,9 +57,9 @@ SOURCES = \
   setaux.f \
   bc3amr.f90 \
   setprob.f90 \
-  $(CLAW)/riemann/src/rpn3_vc_advection.f90 \
-  $(CLAW)/riemann/src/rpt3_vc_advection.f90 \
-  $(CLAW)/riemann/src/rptt3_vc_advection.f90 \
+  $(CLAW)/riemann/riemann/rpn3_vc_advection.f90 \
+  $(CLAW)/riemann/riemann/rpt3_vc_advection.f90 \
+  $(CLAW)/riemann/riemann/rptt3_vc_advection.f90 \
   $(AMRLIB)/limiter.f \
   $(AMRLIB)/philim.f \
 

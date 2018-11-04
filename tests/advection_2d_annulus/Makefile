@@ -56,8 +56,8 @@ SOURCES = \
   stream.f \
   setprob.f \
   qinit.f \
-  $(CLAW)/riemann/src/rpn2_vc_advection.f \
-  $(CLAW)/riemann/src/rpt2_vc_advection.f
+  $(CLAW)/riemann/riemann/rpn2_vc_advection.f \
+  $(CLAW)/riemann/riemann/rpt2_vc_advection.f
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:

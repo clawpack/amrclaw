@@ -45,9 +45,9 @@ SOURCES = \
   setaux.f \
   valout.f \
   flag2refine2.f90 \
-  $(CLAW)/riemann/src/rpn3_vc_advection.f90 \
-  $(CLAW)/riemann/src/rpt3_vc_advection.f90 \
-  $(CLAW)/riemann/src/rptt3_vc_advection.f90 \
+  $(CLAW)/riemann/riemann/rpn3_vc_advection.f90 \
+  $(CLAW)/riemann/riemann/rpt3_vc_advection.f90 \
+  $(CLAW)/riemann/riemann/rptt3_vc_advection.f90 \
   $(AMRLIB)/amr3.f90 \
   $(AMRLIB)/opendatafile.f \
   $(AMRLIB)/b4step3.f90 \

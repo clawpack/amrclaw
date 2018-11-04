@@ -53,7 +53,7 @@ MODULES = \
 SOURCES = \
   qinit.f90 \
   setprob.f90 \
-  $(CLAW)/riemann/src/rp1_advection.f90
+  $(CLAW)/riemann/riemann/rp1_advection.f90
 
 
 #-------------------------------------------------------------------

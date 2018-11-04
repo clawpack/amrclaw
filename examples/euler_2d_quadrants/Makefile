@@ -52,8 +52,8 @@ MODULES = \
 SOURCES = \
   ./qinit.f \
   ./setprob.f \
-  $(CLAW)/riemann/src/rpn2_euler_4wave.f90 \
-  $(CLAW)/riemann/src/rpt2_euler.f90 \
+  $(CLAW)/riemann/riemann/rpn2_euler_4wave.f90 \
+  $(CLAW)/riemann/riemann/rpt2_euler.f90 \
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
