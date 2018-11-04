@@ -1,49 +1,53 @@
+
+.. _armclaw_examples_acoustics_2d_adjoint:
+
 Acoustics 2D -- Heterogeneous example (with adjoint flagging)
--------------------------------------------------------------
+=============================================================
 
 2D acoustics in a piecewise constant medium to illustrate reflection and
 transmission at an interface.
 
 The density and bulk modulus of the medium are specified in setrun.py.
 
-### Adjoint flagging
+Adjoint flagging
+----------------
 
 The adjoint method is used to flag cells needing refinement, as described in
+the paper:
 
 - Analysis and Performance Evaluation of Adjoint-Guided Adaptive Mesh
   Refinement for Linear Hyperbolic PDEs Using Clawpack, by
-  B. N. Davis and R. J. LeVeque,
-  [http://faculty.washington.edu/rjl/pubs/adjoint2018](http://faculty.washington.edu/rjl/pubs/adjoint2018)
+  B. N. Davis and R. J. LeVeque, 2018.
+  `[link] <http://faculty.washington.edu/rjl/pubs/adjoint2018>`_
+
+This example is similar to the problem in Example 3 of the paper.
 
 
+Folder Organization
+--------------------
 
-### Folder Organization
+- **adjoint:**
 
-* **adjoint:**
+  Contains code to solve the adjoint problem.
 
-Contains code to solve the adjoint problem.
+  The output times specified in this directory should agree with those for the
+  forward code.
 
-The output times specified in this directory should agree with those for the
-forward code.
+Running the Code
+--------------------
 
-### Running the Code
+Go to the folder `adjoint` and run in a terminal::
 
-* Go to the folder **adjoint** and run in a terminal:
-
-```
-make new
-make .plots
-```
+    make new
+    make .plots
 
 The code will produce two new folders: _output and _plots. 
 The first one contains all the output files, while the latter one contains the plots and interactive visualization apps.
 
-* Go to the main folder **acoustics_2d_adjoint** and run in the terminal:
+Go to the main folder `acoustics_2d_adjoint` and run in the terminal:
 
-```
-make new
-make .plots
-```
+    make new
+    make .plots
 
 The code will produce two new folders: _output and _plots. 
 The first one contains all the output files, while the latter one contains the plots and interactive visualization apps.
@@ -51,13 +55,12 @@ The first one contains all the output files, while the latter one contains the p
 
 Alternatively, to run first the adjoint and then the forward problem a
 single script can be invoked.  
-Run in the terminal:
+Run in the terminal::
 
-```
-python run_adjoint_flagging.py
-```
+    python run_adjoint_flagging.py
 
-### Running Variations
+Running Variations
+--------------------
 
 In `setrun.py`, the following flags are currently set::
 
