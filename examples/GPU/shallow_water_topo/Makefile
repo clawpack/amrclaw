@@ -77,8 +77,8 @@ EXCLUDE_SOURCES = \
 # ----------------------------------------
 
 MODULES = \
-  problem_para_module.f90 \
-  $(CLAW)/riemann/src/shallow_topo_device_module.f90
+  $(CLAW)/riemann/src/shallow_topo_device_module.f90 \
+  setprob_module.f90
 
 SOURCES = \
   qinit.f \
