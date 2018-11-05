@@ -16,14 +16,6 @@ subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,maux,aux)
 
     do i=1-mbc,mx+mbc
         do j=1-mbc,my+mbc
-!             xcell = xlower + (i-0.5d0)*dx
-!             if (xcell .lt. 0.0d0) then
-!                 aux(1,i,j) = rho_l
-!                 aux(2,i,j) = bulk_l
-!             else
-!                 aux(1,i,j) = rho_r
-!                 aux(2,i,j) = bulk_r
-!             endif
             aux(1,i,j) = -1.d0
         enddo
     enddo
