@@ -38,7 +38,6 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
 
 
     logical vtime
-    integer omp_get_thread_num, omp_get_max_threads
     integer mythread/0/, maxthreads/1/
     integer listgrids(numgrids(level))
     integer clock_start, clock_finish, clock_rate
@@ -671,6 +670,8 @@ subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     call endCudaProfiler() ! advanc level 
 #endif
     !$OMP MASTER
+    call system_clock(clock_finish,clock_rate)
+    call cpu_time(cpu_finish)
     timeStepgrid = timeStepgrid +clock_finish-clock_startStepgrid
     timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid      
     !$OMP END MASTER
