@@ -26,7 +26,9 @@
     #define KERNEL_MIN_BLOCKS 1
 #endif
 #ifdef GEOCLAW
-#define DRY_TOL 0.001 // the dry_tolerance parameter in setrun.py 
+// the dry_tolerance parameter in setrun.py 
+__device__ __constant__  
+extern real dry_tolerance;
 #endif
 
 __device__ static double atomicMax(double* address, double val)
@@ -356,13 +358,13 @@ Riemann_horizontal_kernel(pdeParam param, Riemann Riemann_solver_h, Limiter phi)
             rightCell[i] = param.getElement_qNew(row,col+1,i);
         }
 #ifdef GEOCLAW // zeroize dry cell before x-sweep
-        if ( leftCell[0] < DRY_TOL ) 
+        if ( leftCell[0] < dry_tolerance ) 
         {
             if (leftCell[0] < 0.0) leftCell[0] = 0.0;
             leftCell[1] = 0.0;
             leftCell[2] = 0.0;
         }
-        if ( rightCell[0] < DRY_TOL ) 
+        if ( rightCell[0] < dry_tolerance ) 
         {
             if (rightCell[0] < 0.0) rightCell[0] = 0.0;
             rightCell[1] = 0.0;
@@ -593,13 +595,13 @@ Riemann_vertical_kernel(pdeParam param, Riemann Riemann_solver_v, Limiter phi)
             upCell[i] = param.getElement_q_tmp(row+1,col,i);
         }
 #ifdef GEOCLAW // zeroize dry cell before x-sweep
-        if ( downCell[0] < DRY_TOL ) 
+        if ( downCell[0] < dry_tolerance ) 
         {
             if (downCell[0] < 0.0) downCell[0] = 0.0;
             downCell[1] = 0.0;
             downCell[2] = 0.0;
         }
-        if ( upCell[0] < DRY_TOL ) 
+        if ( upCell[0] < dry_tolerance ) 
         {
             if (upCell[0] < 0.0) upCell[0] = 0.0;
             upCell[1] = 0.0;
@@ -824,6 +826,9 @@ int limited_Riemann_Update(pdeParam &param,						// Problem parameters
     return 0;
 }
 
+extern "C" {
+    void set_dry_tolerance (real value);
+}
 
 
 #endif // __FUSED_SOLVERS_H__
