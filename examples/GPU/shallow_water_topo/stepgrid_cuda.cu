@@ -33,7 +33,8 @@ extern "C" void call_C_limited_riemann_update(
 
     param.setOrderOfAccuracy(2);
 
-    shallow_topo_horizontal swe_h; shallow_topo_vertical swe_v;
+    shallow_topo_horizontal swe_h; 
+    shallow_topo_vertical swe_v;
     
     limiter_VanLeer phi;
 
