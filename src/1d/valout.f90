@@ -25,6 +25,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     real(kind=8), intent(in) :: time
 
     ! Locals
+    logical :: timing_file_exists
     integer, parameter :: out_unit = 50
     integer :: i, j, m, level, output_aux_num, num_stop, digit
     integer :: grid_ptr, num_cells, num_grids, q_loc, aux_loc
@@ -258,22 +259,8 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     ! ==========================================================================
     ! Write out timing stats
     ! Assume that this has been started some where
-    if (frame == 0) then
-        ! Write header out and continue
-        open(unit=out_unit, file=timing_file_name, form='formatted',         &
-             status='unknown', action='write')
-        ! Construct header string
-        timing_line = 'output_time,total_wall_time,total_cpu_time,'
-        timing_substr = ""
-        do level=1, mxnest
-            write(timing_substr, timing_header_format) level, level, level
-            timing_line = trim(timing_line) // trim(timing_substr)
-        end do
-        write(out_unit, "(a)") timing_line
-    else
-        open(unit=out_unit, file=timing_file_name, form='formatted',         &
-             status='old', action='write', position='append')
-    end if
+    open(unit=out_unit, file=timing_file_name, form='formatted',         &
+         status='old', action='write', position='append')
     
     timing_line = "(e16.6, ', ', e16.6, ', ', e16.6,"
     do level=1, mxnest
@@ -314,16 +301,14 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
 contains
 
-    !
-    !
+    ! Index into q array
     pure integer function iadd(m, i)
         implicit none
         integer, intent(in) :: m, i
         iadd = q_loc + m - 1 + num_eqn * (i - 1)
     end function iadd
 
-    !
-    !
+    ! Index into aux array
     pure integer function iaddaux(m, i)
         implicit none
         integer, intent(in) :: m, i
