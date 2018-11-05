@@ -14,7 +14,6 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
 !
     
     use amr_module
-    use parallel_advanc_module, only: dtcom, dxcom, dycom, icom, jcom
 
     implicit none
     
@@ -57,15 +56,6 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
     integer :: i,j,thread_num
     real(CLAW_REAL) :: dtdx,dtdy,cfl1d
     
-    ! Common block storage
-    ! integer :: icom,jcom
-    ! real(CLAW_REAL) :: dtcom,dxcom,dycom,tcom
-    ! common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
-    
-    ! Store mesh parameters in common block
-    dxcom = dx
-    dycom = dy
-    dtcom = dt
     
     cflgrid = 0.d0
     dtdx = dt/dx
@@ -78,7 +68,7 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
     
     ! ============================================================================
     ! Perform X-Sweeps
-    !$OMP PARALLEL DO PRIVATE(j,jcom,thread_num)                  &
+    !$OMP PARALLEL DO PRIVATE(j,thread_num)                  &
     !$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdx1d) &
     !$OMP             PRIVATE(aux1,aux2,aux3)                     &
     !$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
@@ -110,9 +100,6 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
             aux3(:,1-mbc:mx+mbc) = aux(:,1-mbc:mx+mbc,j+1)
         endif
         
-        ! Store value of j along the slice into common block
-        ! *** WARNING *** This may not working with threading
-        jcom = j
 
         ! Compute modifications fadd and gadd to fluxes along this slice:
         call flux2(1,maxm,meqn,maux,mbc,mx,q1d,dtdx1d,aux1,aux2,aux3, &
@@ -141,7 +128,7 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
     ! ============================================================================
     !  y-sweeps    
     !
-    !$OMP PARALLEL DO PRIVATE(i,icom)                             &
+    !$OMP PARALLEL DO PRIVATE(i)                             &
     !$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdy1d) &
     !$OMP             PRIVATE(aux1,aux2,aux3)                     &
     !$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
@@ -168,9 +155,6 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
             aux3(:,1-mbc:my+mbc) = aux(:,i+1,1-mbc:my+mbc)
         endif
         
-        ! Store the value of i along this slice in the common block
-        ! *** WARNING *** This may not working with threading
-        icom = i
         
         ! Compute modifications fadd and gadd to fluxes along this slice
         call flux2(2,maxm,meqn,maux,mbc,my,q1d,dtdy1d,aux1,aux2,aux3, &

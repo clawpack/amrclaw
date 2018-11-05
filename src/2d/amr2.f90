@@ -96,7 +96,7 @@ program amr2
     use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
 
-    use problem_para_module, only: setprob
+    use setprob_module, only: setprob
 #ifdef PROFILE
     use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop, &
         print_all_cpu_timers, timer_total_run_time

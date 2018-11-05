@@ -10,7 +10,7 @@
 
 subroutine advanc(level,nvar,dtlevnew,vtime,naux)
     use amr_module 
-    use parallel_advanc_module
+    use stepgrid_module
 #ifdef GEOCLAW
     use fixedgrids_module
     use topo_module, only: topo_finalized

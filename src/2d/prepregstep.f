@@ -5,7 +5,6 @@ c
      .                        valbig,auxbig)
 
        use amr_module
-       use parallel_advanc_module, only: stepgrid
        implicit real(CLAW_REAL) (a-h,o-z)
 
        dimension fp(nvar,mitot,mjtot),gp(nvar,mitot,mjtot)

@@ -5,7 +5,6 @@ c
      .                       valbgc,auxbgc,mi2tot,mj2tot)
 
        use amr_module
-       use parallel_advanc_module, only: stepgrid
        implicit real(CLAW_REAL) (a-h,o-z)
 
        real(CLAW_REAL) valdub(nvar,midub,mjdub)

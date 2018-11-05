@@ -74,7 +74,6 @@ subroutine flux2(ixy,maxm,meqn,maux,mbc,mx, &
 !
 !
     use amr_module
-    use parallel_advanc_module, only: icom, jcom
 
     implicit real(CLAW_REAL) (a-h,o-z)
     external rpn2, rpt2, rpn2_no_aux
