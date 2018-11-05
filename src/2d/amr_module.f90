@@ -272,18 +272,6 @@ module amr_module
     type(gpu_3d_real_ptr_type) :: grid_data_d_copy2(maxgr)
     type(gpu_3d_real_ptr_type) :: aux_d(maxgr)
 
-    ! TODO: remove these once step2_cuda_module is no longer used.
-    type(gpu_3d_real_ptr_type) :: fms_d(maxgr)
-    type(gpu_3d_real_ptr_type) :: fps_d(maxgr)
-    type(gpu_3d_real_ptr_type) :: gms_d(maxgr)
-    type(gpu_3d_real_ptr_type) :: gps_d(maxgr)
-
-    type(gpu_3d_real_ptr_type) :: sx_d(maxgr)
-    type(gpu_3d_real_ptr_type) :: sy_d(maxgr)
-    type(gpu_4d_real_ptr_type) :: wave_x_d(maxgr)
-    type(gpu_4d_real_ptr_type) :: wave_y_d(maxgr)
-
-
     ! ws_len is maximum number of CUDA blocks
     ! used for each grid patch in the computation kernel
     ! It should be changed based on number of CUDA blocks for computation

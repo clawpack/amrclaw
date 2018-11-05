@@ -78,18 +78,15 @@ EXCLUDE_SOURCES = \
 # ----------------------------------------
 
 MODULES = \
-  problem_para_module.f90
+  setprob_module.f90
 
 SOURCES = \
   qinit.f \
   setaux.f90 \
-  $(CLAW)/riemann/src/rpt2_acoustics.f90
+  $(CLAW)/riemann/src/rp2_acoustics_variable.f90
 
 ifeq ($(USE_CUDA), TRUE) 
-    SOURCES += $(CLAW)/riemann/src/rpn2_acoustics_gpu.f90
     CPP_SOURCES += stepgrid_cuda.cu
-else
-    SOURCES += $(CLAW)/riemann/src/rpn2_acoustics.f90 
 endif
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:

@@ -9,7 +9,7 @@ subroutine setaux(mbc,mx,my,xlower,ylower,dx,dy,maux,aux)
 !     
 !     # Piecewise constant medium with single interface at x=0
 !     # Density and bulk modulus to left and right are set in problem_para_module.f90
-    use problem_para_module, only: rho_l, rho_r, bulk_l, bulk_r
+    use setprob_module, only: rho_l, rho_r, bulk_l, bulk_r
 
     implicit none
     integer, intent(in) :: mbc,mx,my,maux
