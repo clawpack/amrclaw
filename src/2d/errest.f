@@ -60,7 +60,7 @@ c     ## by flagregions2 or flag2refine so make sure not to overwrite
       if (adjoint_flagging) then
           call errf1a(alloc(locbig),nvar,valbgc,mptr,mi2tot,mj2tot,
      1           mitot,mjtot,alloc(locamrflags),mibuff,mjbuff,
-     1           alloc(locaux),naux)
+     1           alloc(locaux),naux,auxbgc)
       else
           call errf1(alloc(locbig),nvar,valbgc,mptr,mi2tot,mj2tot,
      1           mitot,mjtot,alloc(locamrflags),mibuff,mjbuff)
