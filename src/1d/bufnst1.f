@@ -81,13 +81,6 @@ c
      &              i=mbuff+1,mibuff-mbuff)
          endif
 
-c      ##  new call to flag regions: check if cells must be refined, or exceed
-c      ##  maximum refinement level for that region.  used to be included with
-c      ## flag2refine. moved here to include flags from richardson too.
-       call flagregions1(nx,mbuff,rnode(cornxlo,mptr),
-     1                  dx,lcheck,time,
-     2                  alloc(locamrflags),goodpt,badpt)
-
 c     for this version project to each grid separately, no giant iflags
          if (lcheck+2 .le. mxnest) then
             numpro2 = 0
@@ -132,7 +125,7 @@ c   count up
 c
       numflagged = 0
       do 82 i = 1, mibuff
-          if (alloc(iadd(i)) .ne. goodpt) then
+          if (alloc(iadd(i)) .gt. DONTFLAG) then
               numflagged=numflagged + 1
           endif
  82   continue

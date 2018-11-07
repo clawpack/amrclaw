@@ -94,8 +94,6 @@ c         make coarsened enlarged patch for conservative fixup
      .                hxc,hyc,hzc,naux,alloc(loctx))
           call system_clock(clock_finish, clock_rate)
           call cpu_time(cpu_finish)
-          timeSetaux = timeSetaux + clock_finish - clock_start
-          timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
        endif
 c
           call bc3amr(alloc(loctmp),alloc(loctx),nrow,ncol,nfil,

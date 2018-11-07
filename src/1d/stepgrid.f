@@ -46,11 +46,9 @@ c     # needed there.
       if (dump) then
          write(outunit,*) "dumping grid ",mptr," at time ",time
          do i = 1, mitot
-         do j = 1, mjtot
-            write(outunit,545) i,j,(q(ivar,i),ivar=1,nvar)
-c    .                  ,(aux(ivar,i,j),ivar=1,maux)
+            write(outunit,545) i,(q(ivar,i),ivar=1,nvar)
+c    .                  ,(aux(ivar,i),ivar=1,maux)
  545        format(2i4,5e15.7)
-         end do
          end do
       endif
 c

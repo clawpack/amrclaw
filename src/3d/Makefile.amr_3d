@@ -93,7 +93,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/flux3_dimSplit.f \
   $(AMRLIB)/cstore.f \
   $(AMRLIB)/saveqc.f \
-  $(AMRLIB)/valout.f \
+  $(AMRLIB)/valout.f90 \
   $(AMRLIB)/check.f \
   $(AMRLIB)/restrt.f \
   $(AMRLIB)/quick_sort1.f \
@@ -101,5 +101,10 @@ COMMON_SOURCES += \
   $(AMRLIB)/resize_alloc.f90 \
   $(AMRLIB)/restrt_alloc.f90 \
   $(AMRLIB)/inlinelimiter.f \
+  $(AMRLIB)/init_nodes.f90 \
+  $(AMRLIB)/restrt_nodes.f90 \
+  $(AMRLIB)/resize_nodes.f90 \
+  $(AMRLIB)/init_bndryList.f \
+  $(AMRLIB)/resize_bndryList.f \
 
 

@@ -166,10 +166,12 @@ module amr_module
 
     ! :::::::  for flagging points   
     ! TODO: can use one bit for this instead of real?
+    ! needs to be set
+    real(CLAW_REAL), parameter :: UNSET = -1.0
     ! needs no refine
-    real(CLAW_REAL), parameter :: goodpt = 0.0
+    real(CLAW_REAL), parameter :: DONTFLAG = 0.0
     ! needs refine
-    real(CLAW_REAL), parameter :: badpt  = 2.0
+    real(CLAW_REAL), parameter :: DOFLAG  = 2.0
     real(CLAW_REAL), parameter :: badpro = 3.0
 
     real(CLAW_REAL), parameter :: NEEDS_TO_BE_SET = 10.e33
@@ -177,7 +179,6 @@ module amr_module
     integer, parameter :: iinfinity = 999999999
     integer, parameter :: horizontal = 1
     integer, parameter :: vertical = 2
-    integer, parameter :: maxgr = 15000
     integer, parameter :: maxlv = 10
 
     !> maximum number of clusters (grids) on each grid level
@@ -193,27 +194,32 @@ module amr_module
 
 
     ! note use of sentinel in listStart
-    integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
-    integer,parameter :: bndListSize = 8*maxgr
-    integer :: bndList(bndListSize,2)  ! guess size, average # nbors 4? manage as linked list
+    !integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
+    integer :: listStart(0:maxlv+1)
+    !integer,parameter :: bndListSize = 8*maxgr ! old way
+    !integer :: bndList(bndListSize,2)  ! guess size, average # nbors 4? manage as linked list
+    integer :: bndListSize
+    integer,allocatable, dimension(:,:) :: bndList  ! new way is allocatable 
 
-    real(CLAW_REAL) hxposs(maxlv), hyposs(maxlv),possk(maxlv),rnode(rsize, maxgr) 
+    real(CLAW_REAL) hxposs(maxlv), hyposs(maxlv),possk(maxlv)
 
+    ! start of dynamic allocation for maxgr and associated arrays
+    integer   maxgr 
+    real(CLAW_REAL), allocatable, dimension(:,:) :: rnode    ! new way, use allocatable, not pointer
+    integer, allocatable, dimension(:,:) :: node
+    integer, allocatable, dimension(:) :: listOfGrids
 
 
     real(CLAW_REAL) tol, tolsp
-    integer ibuff,  mstart, ndfree, ndfree_bnd, &
-        lfine, & !  level of the finest grid at current time
-        node(nsize, maxgr), &
-        icheck(maxlv),lstart(maxlv),newstl(maxlv), &
-        listsp(maxlv),intratx(maxlv),intraty(maxlv), &
-        kratio(maxlv), iregsz(maxlv),jregsz(maxlv), &
-        iregst(maxlv),jregst(maxlv), &
-        iregend(maxlv),jregend(maxlv), &
-        numgrids(maxlv),numcells(maxlv), &
-        iorder,&
-        mxnest,& ! maximum allowed refined level set by the user
-        kcheck
+    !integer ibuff,  mstart, ndfree, ndfree_bnd, lfine, node(nsize, maxgr), &
+    integer ibuff,  mstart, ndfree, ndfree_bnd, lfine,  &
+            icheck(maxlv),lstart(maxlv),newstl(maxlv), &
+            listsp(maxlv),intratx(maxlv),intraty(maxlv), &
+            kratio(maxlv), iregsz(maxlv),jregsz(maxlv), &
+            iregst(maxlv),jregst(maxlv), &
+            iregend(maxlv),jregend(maxlv), &
+            numgrids(maxlv),numcells(maxlv), &
+            iorder,mxnest,kcheck
 #ifdef CUDA
     
     ! ### integer array ###
@@ -325,7 +331,7 @@ module amr_module
     integer :: timeRegridding, timeUpdating, timeValout
     integer :: timeFlglvl,timeGrdfit2,timeGrdfit3,timeGrdfitAll
     integer :: timeBound,timeStepgrid
-    integer :: timeFlagger, timeBufnst,timeTick
+    integer :: timeFlagger, timeBufnst,timeTick, tick_clock_start
     real(CLAW_REAL) tvollCPU(maxlv), timeTickCPU
     real(CLAW_REAL) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU
     real(CLAW_REAL) timeValoutCPU

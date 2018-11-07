@@ -106,6 +106,9 @@ program amr2
 #ifdef CUDA
    use cuda_module, only: initialize_cuda, finalize_cuda
 #endif
+#ifdef HDF5
+    use hdf5
+#endif
 
     implicit none
 
@@ -121,7 +124,12 @@ program amr2
     integer ::  ttotal
     real(CLAW_REAL) ::ttotalcpu, cpu_start,cpu_finish 
     integer :: clock_start, clock_finish, clock_rate  
+    integer, parameter :: timing_unit = 48
 
+#ifdef HDF5
+    ! HDF5 Output
+    integer :: hdf_error
+#endif
 
     ! Common block variables
     real(CLAW_REAL) :: dxmin, dymin
@@ -135,6 +143,7 @@ program amr2
     character(len=*), parameter :: dbugfile = 'fort.debug'
     character(len=*), parameter :: matfile = 'fort.nplot'
     character(len=*), parameter :: parmfile = 'fort.parameters'
+    character(len=*), parameter :: timing_file = 'timing.txt'
 
     ! Open parameter and debug files
     open(dbugunit,file=dbugfile,status='unknown',form='formatted')
@@ -215,6 +224,17 @@ program amr2
         read(inunit,*) (output_aux_components(i),i=1,naux)
         read(inunit,*) output_aux_onlyonce
     endif
+    if (output_format == 4) then
+#ifdef HDF5
+        ! Initialize HDF interface
+        call h5open_f(hdf_error)
+#else                    
+        print *, "ERROR:  HDF5 library is not available."
+        print *, "  Check the documentation as to how to include"
+        print *, "  the ability to output in HDF5 formats."
+        stop
+#endif
+    end if
     ! ==========================================================================
 
     ! ==========================================================================
@@ -629,23 +649,24 @@ program amr2
     call cpu_time(cpu_finish)
 
     !output timing data
+    open(timing_unit, file=timing_file, status='unknown', form='formatted')
     write(*,*)
-    write(outunit,*)
+    write(timing_unit,*)
     format_string="('============================== Timing Data ==============================')"
-    write(outunit,format_string)
+    write(timing_unit,format_string)
     write(*,format_string)
     
     write(*,*)
-    write(outunit,*)
+    write(timing_unit,*)
     
     !Integration time
     format_string="('Integration Time (stepgrid + BC + overhead)')"
-    write(outunit,format_string)
+    write(timing_unit,format_string)
     write(*,format_string)
     
     !Advanc time
     format_string="('Level           Wall Time (seconds)    CPU Time (seconds)   Total Cell Updates')"
-    write(outunit,format_string)
+    write(timing_unit,format_string)
     write(*,format_string)
     ttotalcpu=0.d0
     ttotal=0
@@ -655,8 +676,8 @@ program amr2
 
     do level=1,mxnest
         format_string="(i3,'           ',1f15.3,'        ',1f15.3,'    ', e17.3)"
-        write(outunit,format_string) level, &
-             real(tvoll(level),kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), tvollCPU(level), rvoll(level)
+        write(timing_unit,format_string) level, &
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
         write(*,format_string) level, &
              real(tvoll(level),kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), tvollCPU(level), rvoll(level)
         ttotalcpu=ttotalcpu+tvollCPU(level)
@@ -664,39 +685,39 @@ program amr2
     end do
     
     format_string="('total         ',1f15.3,'        ',1f15.3,'    ', e17.3)"
-    write(outunit,format_string) &
-             real(ttotal,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), ttotalCPU, rvol
+    write(timing_unit,format_string) &
+             real(ttotal,kind=8) / real(clock_rate,kind=8), ttotalCPU, rvol
     write(*,format_string) &
              real(ttotal,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), ttotalCPU, rvol
     
     write(*,*)
-    write(outunit,*)
+    write(timing_unit,*)
     
     
     format_string="('All levels:')"
     write(*,format_string)
-    write(outunit,format_string)
+    write(timing_unit,format_string)
     
     
     
     !stepgrid
     format_string="('stepgrid      ',1f15.3,'        ',1f15.3,'    ',e17.3)"
-    write(outunit,format_string) &
-         real(timeStepgrid,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeStepgridCPU
+    write(timing_unit,format_string) &
+         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
     write(*,format_string) &
          real(timeStepgrid,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeStepgridCPU
     
     !bound
     format_string="('BC/ghost cells',1f15.3,'        ',1f15.3)"
-    write(outunit,format_string) &
-         real(timeBound,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeBoundCPU
+    write(timing_unit,format_string) &
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
     write(*,format_string) &
          real(timeBound,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeBoundCPU
     
     !regridding time
     format_string="('Regridding    ',1f15.3,'        ',1f15.3,'  ')"
-    write(outunit,format_string) &
-            real(timeRegridding,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeRegriddingCPU
+    write(timing_unit,format_string) &
+            real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
     write(*,format_string) &
             real(timeRegridding,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeRegriddingCPU
 
@@ -709,13 +730,13 @@ program amr2
     
     !output time
     format_string="('Output (valout)',1f14.3,'        ',1f15.3,'  ')"
-    write(outunit,format_string) &
-            real(timeValout,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeValoutCPU
+    write(timing_unit,format_string) &
+            real(timeValout,kind=8) / real(clock_rate,kind=8), timeValoutCPU
     write(*,format_string) &
             real(timeValout,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeValoutCPU
     
     write(*,*)
-    write(outunit,*)
+    write(timing_unit,*)
     
     !Total Time
     format_string="('Total time:   ',1f15.3,'        ',1f15.3,'  ')"
@@ -725,36 +746,42 @@ program amr2
 !            cpu_finish-cpu_start
     write(*,format_string) real(timeTick,kind=CLAW_REAL)/real(clock_rate,kind=CLAW_REAL), &
             timeTickCPU
-    write(outunit,format_string) real(timeTick,kind=CLAW_REAL)/real(clock_rate,kind=CLAW_REAL), &
+    write(timing_unit,format_string) real(timeTick,kind=8)/real(clock_rate,kind=8), &
             timeTickCPU
     
     format_string="('Using',i3,' thread(s)')"
-    write(outunit,format_string) maxthreads
+    write(timing_unit,format_string) maxthreads
     write(*,format_string) maxthreads
     
     
     write(*,*)
-    write(outunit,*)
+    write(timing_unit,*)
     
     
     write(*,"('Note: The CPU times are summed over all threads.')")
-    write(outunit,"('Note: The CPU times are summed over all threads.')")
+    write(timing_unit,"('Note: The CPU times are summed over all threads.')")
     write(*,"('      Total time includes more than the subroutines listed above')")
-    write(outunit,"('      Total time includes more than the subroutines listed above')")
+    write(timing_unit,"('      Total time includes more than the subroutines listed above')")
     if (rest) then
       write(*,"('      Times for restart runs are cumulative')")
-      write(outunit,"('      Times for restart runs are cumulative')")
+      write(timing_unit,"('      Times for restart runs are cumulative')")
     endif
+
+    write(*, "('Note: timings are also recorded for each output step')")
+    write(*, "('      in the file timing.csv.')")
+    write(timing_unit, "('Note: timings are also recorded for each output step')")
+    write(timing_unit, "('      in the file timing.csv.')")
     
     
     !end of timing data
     write(*,*)
-    write(outunit,*)
+    write(timing_unit,*)
     format_string="('=========================================================================')"
-    write(outunit,format_string)
+    write(timing_unit,format_string)
     write(*,format_string)
     write(*,*)
-    write(outunit,*)
+    write(timing_unit,*)
+    close(timing_unit)
 
 #ifdef PROFILE
     call print_all_cpu_timers()

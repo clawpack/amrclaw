@@ -29,35 +29,26 @@ subroutine resize_storage(new_size,status)
 #endif
     
 
-    if (memsize < new_size) then
-        print *, "Expanding storage from ", memsize," to ", new_size
+    print *, "Expanding storage from ", memsize," to ", new_size
 
 #ifdef CUDA
-        allocate(new_storage(new_size),STAT=status, pinned=plog)
-        if (.not. plog) then
-            print *, "Warning: allocating pinned memory in resize_storage() failed"
-        endif
+    allocate(new_storage(new_size),STAT=status, pinned=plog)
+    if (.not. plog) then
+        print *, "Warning: allocating pinned memory in resize_storage() failed"
+    endif
 #else
-        allocate(new_storage(new_size),STAT=status)
+    allocate(new_storage(new_size),STAT=status)
 #endif
 
-        if (status > 0) then
-            return
-        endif
-!       new_storage(1:memsize) = storage   !old way, changed mjb sept. 2014
-        new_storage(1:memsize) = alloc     ! new way, use allocatable, not pointer       
-
-!        call move_alloc(new_storage,storage)
-        call move_alloc(new_storage,alloc)
-
-!        alloc => storage
-        memsize = new_size
-    else
-        print *,'new_size < memsize,'
-        print *,'new_size = ',new_size
-        print *,'memsize = ',memsize
-        stop
+    if (status > 0) then
+        return
     endif
+!       new_storage(1:memsize) = storage   !old way, changed mjb sept. 2014
+    new_storage(1:memsize) = alloc     ! new way, use allocatable, not pointer       
+
+    call move_alloc(new_storage,alloc)
+
+    memsize = new_size
     
     return
     

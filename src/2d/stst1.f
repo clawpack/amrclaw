@@ -21,6 +21,11 @@ c    to avoid boundary cases.
 c ::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::::::
 c
       ndfree = 1
+
+      !! now rnode and node are allocatable to allow resizing
+      call init_nodes()
+
+      ! node space allocated, now thread it
       do 10 i   = 1, maxgr
          node(nextfree,i) = i+1
  10   continue
@@ -95,7 +100,6 @@ c
       use amr_module
       !implicit real(CLAW_REAL) (a-h,o-z)
 
-      timeFlagger        = 0
       timeBufnst         = 0
       timeStepgrid       = 0
       timeStepgridCPU    = 0.d0

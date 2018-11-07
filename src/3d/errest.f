@@ -90,8 +90,6 @@ c	      zb     = rnode(cornzlo, mptr)-2*nghost*hz
      &              naux,alloc(locaxb))
               call system_clock(clock_finish, clock_rate)
               call cpu_time(cpu_finish)
-              timeSetaux = timeSetaux + clock_finish - clock_start
-              timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
 
               call auxcoarsen(alloc(locaxb),midub ,mjdub ,mkdub ,
      1                        alloc(locaxc),mi2tot,mj2tot,mk2tot,

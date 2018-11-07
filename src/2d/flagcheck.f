@@ -26,9 +26,9 @@ c
 
       do 10 j = jmin, jmax
       do 10 i = imin, imax
-        if (rectflags(i,j) .eq. goodpt) go to 10
+        if (rectflags(i,j) .le. DONTFLAG) go to 10
         if (iflags(i,j) .ne. 1) then  !point not nested. turn off
-             rectflags(i,j) = 0.
+             rectflags(i,j) = DONTFLAG
              if (nprint) then
                 write(outunit,100) i,j,mptr
  100            format("turning off point ",2i5," from grid ",i5)

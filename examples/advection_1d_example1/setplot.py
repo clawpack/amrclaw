@@ -7,11 +7,14 @@ function setplot is called to set the plot parameters.
     
 """ 
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 from clawpack.clawutil.data import ClawData
 from numpy import linspace
 probdata = ClawData()
 probdata.read('setprob.data', force=True)
-print "Parameters: u = %g, beta = %g" % (probdata.u, probdata.beta)
+print("Parameters: u = %g, beta = %g" % (probdata.u, probdata.beta))
 
 def qtrue(x,t):
     """
@@ -27,7 +30,7 @@ def qtrue(x,t):
     
 
 #--------------------------
-def setplot(plotdata):
+def setplot(plotdata=None):
 #--------------------------
     
     """ 
@@ -38,22 +41,26 @@ def setplot(plotdata):
     """ 
 
 
+    if plotdata is None:
+        from clawpack.visclaw.data import ClawPlotData
+        plotdata = ClawPlotData()
+
     plotdata.clearfigures()  # clear any old figures,axes,items data
 
     # Figure for q[0]
-    plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+    plotfigure = plotdata.new_plotfigure(name='Solution', figno=1)
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = [0,1]
-    plotaxes.ylimits = [-.5,1.3]
+    plotaxes.ylimits = [-.6,1.2]
     plotaxes.title = 'q'
 
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
     plotitem.amr_color = ['g','b','r']
-    plotitem.amr_plotstyle = ['^','s','o']
+    plotitem.amr_plotstyle = ['^-','s-','o-']
     plotitem.amr_data_show = [1,1,1]
     plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
 
@@ -63,22 +70,29 @@ def setplot(plotdata):
         x = linspace(0,1,1000)
         t = current_data.t
         q = qtrue(x,t)
-        plot(x,q,'r',label='true solution')
+        plot(x,q,'k',label='true solution')
     
     def plot_qtrue_with_legend(current_data):
         from pylab import plot, legend
         x = linspace(0,1,1000)
         t = current_data.t
         q = qtrue(x,t)
-        plot(x,q,'r',label='true solution')
-        legend(loc='lower right')
+        plot(x,q,'k',label='true solution')
+        try:
+            from clawpack.visclaw import legend_tools
+            labels = ['Level 1','Level 2', 'Level 3','True solution']
+            legend_tools.add_legend(labels, colors=['g','b','r','k'],
+                        markers=['^','s','o',''], linestyles=['','','','-'],
+                        loc='lower right')
+        except:
+            legend(loc='lower right')
 
     plotaxes.afteraxes = plot_qtrue_with_legend
 
     # ------------------------------------------
     # Figure with each level plotted separately:
 
-    plotfigure = plotdata.new_plotfigure(name='AMR Levels', figno=2)
+    plotfigure = plotdata.new_plotfigure(name='By AMR Level', figno=2)
     plotfigure.kwargs = {'figsize':(8,10)}
 
 
@@ -94,7 +108,7 @@ def setplot(plotdata):
         plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
         plotitem.plot_var = 0
         plotitem.amr_color = ['g','b','r']
-        plotitem.amr_plotstyle = ['^','s','o']
+        plotitem.amr_plotstyle = ['^-','s-','o-']
         plotitem.amr_data_show = [0,0,0]
         plotitem.amr_data_show[level-1] = 1  # show only one level
 
@@ -110,7 +124,7 @@ def setplot(plotdata):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = 'auto'
-    plotaxes.title = 'Pressure'
+    plotaxes.title = 'Solution'
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
     plotitem.plotstyle = 'b-'

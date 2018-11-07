@@ -16,6 +16,8 @@ c
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
       integer clock_start, clock_finish, clock_rate
       real(kind=8) cpu_start,cpu_finish
+      integer   tick_clock_finish, tick_clock_rate  
+
 
 c
 c :::::::::::::::::::::::::::: TICK :::::::::::::::::::::::::::::
@@ -44,6 +46,8 @@ c          each step) to keep track of when that level should
 c          have its error estimated and finer levels should be regridded.
 c ::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::
 c
+
+      call system_clock(tick_clock_start,tick_clock_rate)
 
       ncycle         = nstart
       call setbestsrc()     ! need at very start of run, including restart

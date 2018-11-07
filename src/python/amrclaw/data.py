@@ -86,6 +86,9 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         self.data_write('refinement_ratios_t')
         self.data_write()  # writes blank line
 
+        if len(self.aux_type) < self._clawdata.num_aux:
+            raise ValueError("*** length of aux_type array should be " +\
+                  "same as num_aux = %i" % self._clawdata.num_aux)
         if self._clawdata.num_aux > 0:
             self.data_write('aux_type')
         self.data_write()
@@ -143,7 +146,10 @@ class RegionData(clawpack.clawutil.data.ClawData):
 
         self.data_write(value=len(self.regions),alt_name='num_regions')
         for regions in self.regions:
-            self._out_file.write(len(regions)*"%g  " % tuple(regions) +"\n")
+            # write minlevel,maxlevel as integers, remaining floats in e format:
+            self._out_file.write("%i  %i " % (regions[0], regions[1]))
+            self._out_file.write((len(regions)-2)*"%20.14e  " % tuple(regions[2:]) +"\n")
+            
         self.close_data_file()
 
 
