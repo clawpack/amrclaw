@@ -194,24 +194,20 @@ module amr_module
 
 
     ! note use of sentinel in listStart
-    !integer :: listOfGrids(maxgr),listStart(0:maxlv+1)
     integer :: listStart(0:maxlv+1)
-    !integer,parameter :: bndListSize = 8*maxgr ! old way
-    !integer :: bndList(bndListSize,2)  ! guess size, average # nbors 4? manage as linked list
     integer :: bndListSize
     integer,allocatable, dimension(:,:) :: bndList  ! new way is allocatable 
 
     real(CLAW_REAL) hxposs(maxlv), hyposs(maxlv),possk(maxlv)
 
     ! start of dynamic allocation for maxgr and associated arrays
-    integer   maxgr 
+    integer :: maxgr 
     real(CLAW_REAL), allocatable, dimension(:,:) :: rnode    ! new way, use allocatable, not pointer
     integer, allocatable, dimension(:,:) :: node
     integer, allocatable, dimension(:) :: listOfGrids
 
 
     real(CLAW_REAL) tol, tolsp
-    !integer ibuff,  mstart, ndfree, ndfree_bnd, lfine, node(nsize, maxgr), &
     integer ibuff,  mstart, ndfree, ndfree_bnd, lfine,  &
             icheck(maxlv),lstart(maxlv),newstl(maxlv), &
             listsp(maxlv),intratx(maxlv),intraty(maxlv), &
@@ -271,12 +267,9 @@ module amr_module
     type(gpu_2d_int_ptr_type), allocatable         :: cflux_hd(:)
     type(gpu_2d_int_ptr_type), allocatable, device :: cflux_dd(:)
 
-    ! These are in SoA format, namely q(i,j,ivar)
-    ! type(cpu_3d_real_ptr_type) :: grid_data(maxgr)
-
-    type(gpu_3d_real_ptr_type) :: grid_data_d(maxgr)
-    type(gpu_3d_real_ptr_type) :: grid_data_d_copy2(maxgr)
-    type(gpu_3d_real_ptr_type) :: aux_d(maxgr)
+    type(gpu_3d_real_ptr_type), allocatable :: grid_data_d(:)
+    type(gpu_3d_real_ptr_type), allocatable :: grid_data_d_copy2(:)
+    type(gpu_3d_real_ptr_type), allocatable :: aux_d(:)
 
     ! ws_len is maximum number of CUDA blocks
     ! used for each grid patch in the computation kernel

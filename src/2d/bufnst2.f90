@@ -1,7 +1,6 @@
 ! this indexing is for amrflags array, in flag2refine from 1-mbuff:mx+mbuff
 ! but here is from 1:mibuff
 #define IADD(I,J,LOCAMRFLAGS,MIBUFF) LOCAMRFLAGS+I-1+MIBUFF*(J-1)
-
 ! :::::::::::::::::::::::::: BUFNST :::::::::::::::::::::::::::::::::::
 !> After error estimation, need to tag the cell for refinement,
 !! buffer the tags, take care of level nesting, etc.
@@ -28,7 +27,7 @@
       integer mythread/0/, maxthreads/1/
       data       vtime/.false./
 
- 
+
 !$    maxthreads = omp_get_max_threads()
 !     call prepgrids(listgrids,numgrids(lcheck),lcheck)
 
@@ -68,15 +67,6 @@
          mjbuff = ny + 2*mbuff
          locamrflags = node(storeflags,mptr)
 
-!        ### is richardson used, add those flags to flags computed by spatial gradients
-!        ### (or whatever user-defined criteria used). Even if nothing else used,
-!        ### put flags into locamrflag array.
-!--         if (flag_richardson) then   
-!--            loctmp = node(store2, mptr)
-!--            call addflags(alloc(locamrflags),mibuff,mjbuff,
-!--     .           alloc(loctmp),nvar,mitot,mjtot,mptr)
-!--         endif 
-
 !     still need to reclaim error est space from spest.f 
 !     which was saved for possible errest reuse
          if (flag_richardson) then
@@ -86,48 +76,41 @@
 !     
          if (eprint .and. maxthreads .eq. 1) then ! otherwise race for printing
             write(outunit,*)" flagged points before projec2", &
-                 lcheck," grid ",mptr, " (no buff cells)"
+                lcheck," grid ",mptr, " (no buff cells)"
             do j = mjbuff-mbuff, mbuff+1, -1
                write(outunit,100)(int(alloc(IADD(i,j,locamrflags,mibuff))), &
-                    i=mbuff+1,mibuff-mbuff)
+                   i=mbuff+1,mibuff-mbuff)
             enddo
          endif
-
-!      ##  new call to flag regions: check if cells must be refined, or exceed
-!      ##  maximum refinement level for that region.  used to be included with
-!      ## flag2refine. moved here to include flags from richardson too.
-       call flagregions2(nx,ny,mbuff,rnode(cornxlo,mptr), &
-                        rnode(cornylo,mptr),dx,dy,lcheck,time, &
-                        alloc(locamrflags),goodpt,badpt)
 
 !     for this version project to each grid separately, no giant iflags
          if (lcheck+2 .le. mxnest) then
             numpro2 = 0
             call projec2(lcheck,numpro2,alloc(locamrflags), &
-                 ilo,ihi,jlo,jhi,mbuff)
+                ilo,ihi,jlo,jhi,mbuff)
 !            numpro = numpro + numpro2  not used for now. would need critical section for numpro
          endif      
 
          if (eprint .and. maxthreads .eq. 1) then
             write(outunit,*)" flagged points before buffering on level", &
-                 lcheck," grid ",mptr, " (no buff cells)"
+                lcheck," grid ",mptr, " (no buff cells)"
             do 47 j = mjbuff-mbuff, mbuff+1, -1
                write(outunit,100)(int(alloc(IADD(i,j,locamrflags,mibuff))), &
-                    i=mbuff+1,mibuff-mbuff)
+                   i=mbuff+1,mibuff-mbuff)
  100           format(80i1)
  47         continue
          endif
 !     
          if (eprint .and. maxthreads .eq. 1) then
             write(outunit,*)" flagged points after projecting to level", &
-                 lcheck, " grid ",mptr, &
-                 "(withOUT buff cells)"
+                lcheck, " grid ",mptr, &
+                "(withOUT buff cells)"
 !     .                    "(with buff cells)"
 !     buffer zone (wider ghost cell region) now set after buffering
 !     so loop over larger span of indices
             do 49 j = mjbuff-mbuff, mbuff+1, -1
                write(outunit,100)(int(alloc(IADD(i,j,locamrflags,mibuff))), &
-                    i=mbuff+1,mibuff-mbuff)
+                   i=mbuff+1,mibuff-mbuff)
  49         continue
          endif
 
@@ -139,10 +122,10 @@
 
       if (eprint .and. maxthreads .eq. 1) then
          write(outunit,*)" flagged points after buffering on level", &
-                          lcheck," grid ",mptr," (WITHOUT buff cells))"
+             lcheck," grid ",mptr," (WITHOUT buff cells))"
          do 51 j = mjbuff-mbuff, mbuff+1, -1
            write(outunit,100)(int(alloc(IADD(i,j,locamrflags,mibuff))), &
-                                 i=mbuff+1, mibuff-mbuff)
+               i=mbuff+1, mibuff-mbuff)
  51      continue
       endif
 !   
@@ -151,7 +134,7 @@
       numflagged = 0
       do 82 j = 1, mjbuff
          do 82 i = 1, mibuff
-            if (alloc(IADD(i,j,locamrflags,mibuff)) .ne. goodpt) then 
+            if (alloc(IADD(i,j,locamrflags,mibuff)) .gt. DONTFLAG) then
                numflagged=numflagged + 1
             endif
  82      continue
@@ -164,7 +147,7 @@
 !$OMP END CRITICAL(nb)
 
 ! ADD WORK THAT USED TO BE IN FLGLVL2 FOR MORE PARALLEL WORK WITHOUT JOINING AND SPAWNING AGAIN
-! in effect this is domgrid, but since variables already defined just need half of it, inserted her
+! in effect this is domgrid, but since variables already defined just need half of it, inserted here
 #if (CLAW_REAL == 8) 
       ibytesPerDP = 8      
 #else
@@ -178,7 +161,7 @@
       node(domflags_base,mptr) = locdomflags
       node(domflags2,mptr) = locdom2
       call setdomflags(mptr,alloc(locdomflags),ilo,ihi,jlo,jhi, &
-                       mbuff,lbase,lcheck,mibuff,mjbuff)
+          mbuff,lbase,lcheck,mibuff,mjbuff)
 
 
       end do
@@ -188,12 +171,10 @@
 
       if (verbosity_regrid .ge. lcheck) then
         write(outunit,*)" total flagged points counted on level ", &
-                        lcheck," is ",numbad
+            lcheck," is ",numbad
         write(outunit,*)"this may include double counting buffer cells", &
-                        " on  multiple grids"
+            " on  multiple grids"
       endif
 
       return
       end
-
-

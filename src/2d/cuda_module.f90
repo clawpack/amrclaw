@@ -5,10 +5,7 @@ module cuda_module
     use cudafor, only: cudaDeviceSetSharedMemConfig, &
         cudaSharedMemBankSizeFourByte, &
         cudaSharedMemBankSizeEightByte
-    use amr_module, only: inunit, maxgr, &
-        fflux_hh, fflux_hd, fflux_dd, &
-        cflux_hh, cflux_hd, cflux_dd, &
-        waveSpeedsX, waveSpeedsY, ws_len
+    use amr_module, only: inunit
 
     use memory_module, only: clawpack_mempool_init
     use timer_module
@@ -120,15 +117,15 @@ contains
         ! Initialize memory pool
         call clawpack_mempool_init()
 
-        allocate(fflux_hh(maxgr))
-        allocate(fflux_hd(maxgr))
-        allocate(fflux_dd(maxgr))
-        allocate(cflux_hh(maxgr))
-        allocate(cflux_hd(maxgr))
-        allocate(cflux_dd(maxgr))
+        ! allocate(fflux_hh(maxgr))
+        ! allocate(fflux_hd(maxgr))
+        ! allocate(fflux_dd(maxgr))
+        ! allocate(cflux_hh(maxgr))
+        ! allocate(cflux_hd(maxgr))
+        ! allocate(cflux_dd(maxgr))
 
-        allocate(waveSpeedsX(ws_len,maxgr))
-        allocate(waveSpeedsY(ws_len,maxgr))
+        ! allocate(waveSpeedsX(ws_len,maxgr))
+        ! allocate(waveSpeedsY(ws_len,maxgr))
     end subroutine initialize_cuda
 
     subroutine check_cuda_error(istat) 
@@ -397,15 +394,15 @@ contains
         use cudafor
         implicit none
         integer :: cudaResult
-        deallocate(fflux_hh)
-        deallocate(fflux_hd)
-        deallocate(fflux_dd)
-        deallocate(cflux_hh)
-        deallocate(cflux_hd)
-        deallocate(cflux_dd)
+        ! deallocate(fflux_hh)
+        ! deallocate(fflux_hd)
+        ! deallocate(fflux_dd)
+        ! deallocate(cflux_hh)
+        ! deallocate(cflux_hd)
+        ! deallocate(cflux_dd)
 
-        deallocate(waveSpeedsX)
-        deallocate(waveSpeedsY)
+        ! deallocate(waveSpeedsX)
+        ! deallocate(waveSpeedsY)
 
         call cudaProfilerStop()
         cudaResult = cudaDeviceReset()

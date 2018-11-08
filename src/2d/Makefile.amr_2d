@@ -46,7 +46,6 @@ COMMON_SOURCES += \
   $(AMRLIB)/cleanup.f \
   $(AMRLIB)/colate2.f \
   $(AMRLIB)/bufnst2.f90 \
-  $(AMRLIB)/spest2.f \
   $(AMRLIB)/flag2refine2.f90 \
   $(AMRLIB)/flagregions2.f90 \
   $(AMRLIB)/errest.f \
