@@ -46,6 +46,7 @@ contains
         real(kind=8) :: t1,t2
 
         ! Read adjoint specific information
+        adjoint_flagging = .false.
         levtol = 0.0d0
 
         inquire(file=adjointfile, exist=fileExists)
