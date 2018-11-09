@@ -14,7 +14,7 @@ contains
 ! ========================================================================
 
     subroutine calculate_innerproduct(q,k,mx_f,my_f,xlower_f, &
-               ylower_f,dx_f,dy_f,meqn_f,mbc_f, innerprod)
+               ylower_f,dx_f,dy_f,meqn_f,mbc_f,aux1,innerprod)
 
         use adjoint_module
 
@@ -34,6 +34,7 @@ contains
         real(kind=8) :: q_innerprod(mx_f,my_f)
         logical :: mask_forward(mx_f,my_f)
         real(kind=8) :: q_interp(meqn_f,mx_f,my_f)
+        real(kind=8) :: aux1(1-mbc_f:mx_f+mbc_f,1-mbc_f:my_f+mbc_f)
 
         logical, allocatable :: mask_adjoint(:,:)
 
@@ -106,7 +107,10 @@ contains
                         mask_adjoint, mptr_a, mask_forward)
 
                 q_innerprod = 0.d0
+
                 ! For each overlapping point, calculate inner product
+                ! When using richardson error, q contains the error 
+                ! in each term.
                 forall(i = 1:mx_f, j = 1:my_f, mask_forward(i,j))
                     q_innerprod(i,j) = abs(dot_product(q(:,i,j),q_interp(:,i,j)))
                 end forall
@@ -129,15 +133,15 @@ contains
 ! :::::     Routine to interpolate adjoint to given x,y point
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    subroutine interp_adjoint(nvar, r, q_interp, xlower_a, ylower_a, dx_a, dy_a, &
-               mx_a, my_a, xlower_f, ylower_f, dx_f, dy_f, mx_f, my_f, &
-               mask_adjoint, mptr_a, mask_forward)
+    subroutine interp_adjoint(nvar, r, q_interp, xlower_a, ylower_a, &
+              dx_a, dy_a, mx_a, my_a, xlower_f, ylower_f, dx_f, &
+              dy_f, mx_f, my_f, mask_adjoint, mptr_a, mask_forward)
 
         use adjoint_module, only : adjoints
         implicit none
 
         ! Function arguments
-        integer, intent(in) :: r, nvar, mx_a, my_a
+        integer, intent(in) :: nvar, r, mx_a, my_a
         logical, intent(in) :: mask_adjoint( &
                           1-adjoints(r)%nghost:mx_a+adjoints(r)%nghost, &
                           1-adjoints(r)%nghost:my_a+adjoints(r)%nghost)
@@ -145,11 +149,11 @@ contains
         integer, intent(in) :: mx_f, my_f, mptr_a
         real(kind=8), intent(in) :: dx_f, dx_a, dy_f, dy_a
 
-        integer :: z,k, iz, jk, mitot
-        integer :: ivar, i, j, iadd, iaddaux, loc
+        integer :: z, k, iz, jk, mitot
+        integer :: ivar, i, j, iadd, loc
         real(kind=8) :: q_interp(nvar,mx_f,my_f), denom
         real(kind=8) :: x, xhigh_a, y, yhigh_a
-        real(kind=8) :: dxz,dyk, a, b, c
+        real(kind=8) :: dxz, dyk, a, b, c
         logical :: mask_forward(mx_f,my_f)
 
         iadd(ivar,i,j)  = loc + ivar - 1 + adjoints(r)%meqn*((j-1)*mitot+i-1)
@@ -210,22 +214,23 @@ contains
 
     subroutine errf1a(rctfine,nvar,rctcrse,mptr,mi2tot,mj2tot, &
                       mitot,mjtot,rctflg,mibuff,mjbuff,auxfine, &
-                      naux)
+                      naux,auxcrse)
       use amr_module
       use adjoint_module, only: innerprod_index, &
              totnum_adjoints, adjoints, trange_start, trange_final, &
              levtol, eptr, errors, grid_num, select_snapshots
       implicit double precision (a-h,o-z)
 
- 
       dimension  rctfine(nvar,mitot,mjtot)
       dimension  rctcrse(nvar,mi2tot,mj2tot)
       dimension  rctflg(mibuff,mjbuff)
-
-      dimension  aux_crse(mi2tot,mj2tot)
       dimension  err_crse(nvar,mi2tot,mj2tot)
-      logical mask_selecta(totnum_adjoints)
+      dimension  bcrse(mitot,mjtot)
       dimension  auxfine(naux,mitot,mjtot)
+      dimension  auxcrse(naux,mi2tot,mj2tot)
+
+      logical mask_selecta(totnum_adjoints)
+      double precision  ip_temp(mi2tot,mj2tot)
 !
 !
 ! :::::::::::::::::::::: Modified from ERRF1 :::::::::::::::::::::::::
@@ -257,21 +262,24 @@ contains
       errmax = 0.0d0
       err2   = 0.0d0
       auxfine(innerprod_index,:,:) = 0.0d0
-      aux_crse = 0.0d0
+      ip_temp(:,:) = 0.0d0
 
       order  = dble(2**(iorder+1) - 2)
 !
 !     Calculating correct tol for this level
 !     nxnest is the maximum number of refinement levels, from amr_module
 !     --------------------
+!     Total error allowed in this time step
       tol_exact = tol*dt/(tfinal-t0)
+!     Error allowed at this level
       tol_exact = tol_exact/mxnest
+!     Error allowed per cell at this level
       tol_exact = tol_exact/(numcells(levm)*hx*hy)
 
       if (t0+possk(levm) .eq. time) levtol(levm) = tol_exact
 
 !
-! zero out the exterior locations so they don't affect err.est.
+! Main loop: calculate errors in forward problem
 !
       jfine = nghost+1
       do j = nghost+1, mj2tot-nghost
@@ -291,7 +299,10 @@ contains
               .or. rctflg(ifine+1,jfine) == UNSET &
               .or. rctflg(ifine,jfine+1) == UNSET &
               .or. rctflg(ifine+1,jfine+1) == UNSET) then
+
               xofi  = xleft + (dble(ifine) - .5d0)*hx
+
+!             Calculate error for each value of q
 
               do k = 1, nvar
                 term1 = rctfine(k,ifine,jfine)
@@ -318,13 +329,20 @@ contains
         jfine = jfine + 2
       enddo
 
+!     Loop over adjoint snapshots
+
+! Note: here ip_temp is a coarse version of the inner product values.
+! The fine grid inner product values will be stored in 
+! auxfine(inneproduc_index,:,:) which will be updated based 
+! on rctcrse at the end of this routine. 
+
       do k = 1,totnum_adjoints
 !         Consider only snapshots that are within the desired time range
           if (mask_selecta(k)) then
 !             set innerproduct
               call calculate_innerproduct(err_crse,k,nx/2, &
-                    ny/2,xleft,ybot,hx*2,hy*2,nvar,nghost, &
-                    aux_crse(nghost+1:mi2tot-nghost,nghost+1:mj2tot-nghost))
+                    ny/2,xleft,ybot,hx*2,hy*2,nvar,nghost,bcrse, &
+                    ip_temp(nghost+1:mi2tot-nghost,nghost+1:mj2tot-nghost))
           endif
       enddo
 
@@ -332,10 +350,13 @@ contains
         do j = nghost+1, mj2tot-nghost
           i_val = i-nghost
           j_val = j-nghost
-          errors(eptr(jg)+(i_val-1)*ny/2+j_val) = aux_crse(i,j)
+
+!         Saving calculated errors to adjoint_module to be used 
+!         for calculating tolerance in subsequent time steps
+          errors(eptr(jg)+(i_val-1)*ny/2+j_val) = ip_temp(i,j)
 
           rctcrse(1,i,j)  = DONTFLAG
-          if (aux_crse(i,j) .ge. levtol(levm)) then
+          if (ip_temp(i,j) .ge. levtol(levm)) then
 !                    ## never set rctflg to good, since flag2refine or
 !                    ## flagregions2 may have previously set it to bad
 !                    ## can only add bad pts in this routine
@@ -345,15 +366,17 @@ contains
         enddo
       enddo
 
+!     Updating fine grid inner product and flag values from coarse 
+!     temporary vectors
       jfine   = nghost+1
       do j = nghost+1, mj2tot-nghost
         ifine   = nghost+1
 
         do i = nghost+1, mi2tot-nghost
-          auxfine(innerprod_index,ifine,jfine) = aux_crse(i,j)
-          auxfine(innerprod_index,ifine+1,jfine) = aux_crse(i,j)
-          auxfine(innerprod_index,ifine,jfine+1) = aux_crse(i,j)
-          auxfine(innerprod_index,ifine+1,jfine+1) = aux_crse(i,j)
+          auxfine(innerprod_index,ifine,jfine) = ip_temp(i,j)
+          auxfine(innerprod_index,ifine+1,jfine) = ip_temp(i,j)
+          auxfine(innerprod_index,ifine,jfine+1) = ip_temp(i,j)
+          auxfine(innerprod_index,ifine+1,jfine+1) = ip_temp(i,j)
 
           if (rctcrse(1,i,j) .eq. DOFLAG) then
 !           ## never set rctflg to good, since flag2refine or
