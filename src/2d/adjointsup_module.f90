@@ -14,14 +14,14 @@ contains
 ! ========================================================================
 
     subroutine calculate_innerproduct(q,k,mx_f,my_f,xlower_f, &
-               ylower_f,dx_f,dy_f,meqn_f,mbc_f,aux1,innerprod)
+               ylower_f,dx_f,dy_f,meqn_f,mbc_f,maux_f,aux)
 
         use adjoint_module
 
         implicit none
 
         real(kind=8), intent(in) :: xlower_f,ylower_f,dx_f,dy_f
-        integer :: k,mx_f,my_f,meqn_f,mbc_f
+        integer :: k,mx_f,my_f,meqn_f,mbc_f,maux_f
         real(kind=8), intent(in) :: q(meqn_f,1-mbc_f:mx_f+mbc_f,1-mbc_f:my_f+mbc_f)
 
         integer :: mx_a, my_a, mptr_a, mbc_a
@@ -30,11 +30,10 @@ contains
         real(kind=8) :: dy_a, ylower_a, yupper_a, yupper_f
         real(kind=8) :: x1, x2, y1, y2
 
-        real(kind=8), intent(inout) :: innerprod(mx_f,my_f)
         real(kind=8) :: q_innerprod(mx_f,my_f)
         logical :: mask_forward(mx_f,my_f)
         real(kind=8) :: q_interp(meqn_f,mx_f,my_f)
-        real(kind=8) :: aux1(1-mbc_f:mx_f+mbc_f,1-mbc_f:my_f+mbc_f)
+        real(kind=8), intent(inout) :: aux(maux_f,1-mbc_f:mx_f+mbc_f,1-mbc_f:my_f+mbc_f)
 
         logical, allocatable :: mask_adjoint(:,:)
 
@@ -117,8 +116,8 @@ contains
 
                 do i=1,mx_f
                     do j=1,my_f
-                        if (q_innerprod(i,j) > innerprod(i,j)) then
-                            innerprod(i,j) = q_innerprod(i,j)
+                        if (q_innerprod(i,j) > aux(innerprod_index,i,j)) then
+                            aux(innerprod_index,i,j) = q_innerprod(i,j)
                         endif
                     enddo
                 enddo
@@ -230,7 +229,6 @@ contains
       dimension  auxcrse(naux,mi2tot,mj2tot)
 
       logical mask_selecta(totnum_adjoints)
-      double precision  ip_temp(mi2tot,mj2tot)
 !
 !
 ! :::::::::::::::::::::: Modified from ERRF1 :::::::::::::::::::::::::
@@ -262,7 +260,7 @@ contains
       errmax = 0.0d0
       err2   = 0.0d0
       auxfine(innerprod_index,:,:) = 0.0d0
-      ip_temp(:,:) = 0.0d0
+      auxcrse(innerprod_index,:,:) = 0.0d0
 
       order  = dble(2**(iorder+1) - 2)
 !
@@ -331,7 +329,7 @@ contains
 
 !     Loop over adjoint snapshots
 
-! Note: here ip_temp is a coarse version of the inner product values.
+! Note: here the coarse version of the inner product values in auxcrse are set.
 ! The fine grid inner product values will be stored in 
 ! auxfine(inneproduc_index,:,:) which will be updated based 
 ! on rctcrse at the end of this routine. 
@@ -341,8 +339,7 @@ contains
           if (mask_selecta(k)) then
 !             set innerproduct
               call calculate_innerproduct(err_crse,k,nx/2, &
-                    ny/2,xleft,ybot,hx*2,hy*2,nvar,nghost,bcrse, &
-                    ip_temp(nghost+1:mi2tot-nghost,nghost+1:mj2tot-nghost))
+                    ny/2,xleft,ybot,hx*2,hy*2,nvar,nghost,naux,auxcrse)
           endif
       enddo
 
@@ -353,10 +350,10 @@ contains
 
 !         Saving calculated errors to adjoint_module to be used 
 !         for calculating tolerance in subsequent time steps
-          errors(eptr(jg)+(i_val-1)*ny/2+j_val) = ip_temp(i,j)
+          errors(eptr(jg)+(i_val-1)*ny/2+j_val) = auxcrse(innerprod_index,i,j)
 
           rctcrse(1,i,j)  = DONTFLAG
-          if (ip_temp(i,j) .ge. levtol(levm)) then
+          if (auxcrse(innerprod_index,i,j) .ge. levtol(levm)) then
 !                    ## never set rctflg to good, since flag2refine or
 !                    ## flagregions2 may have previously set it to bad
 !                    ## can only add bad pts in this routine
@@ -373,10 +370,10 @@ contains
         ifine   = nghost+1
 
         do i = nghost+1, mi2tot-nghost
-          auxfine(innerprod_index,ifine,jfine) = ip_temp(i,j)
-          auxfine(innerprod_index,ifine+1,jfine) = ip_temp(i,j)
-          auxfine(innerprod_index,ifine,jfine+1) = ip_temp(i,j)
-          auxfine(innerprod_index,ifine+1,jfine+1) = ip_temp(i,j)
+          auxfine(innerprod_index,ifine,jfine) = auxcrse(innerprod_index,i,j)
+          auxfine(innerprod_index,ifine+1,jfine) = auxcrse(innerprod_index,i,j)
+          auxfine(innerprod_index,ifine,jfine+1) = auxcrse(innerprod_index,i,j)
+          auxfine(innerprod_index,ifine+1,jfine+1) = auxcrse(innerprod_index,i,j)
 
           if (rctcrse(1,i,j) .eq. DOFLAG) then
 !           ## never set rctflg to good, since flag2refine or
