@@ -2,7 +2,7 @@ c
 !> Takes flagged points on all grids on level lcheck
 !! and pack their (i,j) cell centered
 !! indices into the badpts array.
-!! Points in the badpts array are unique and sorted based on 
+!! Points in the badpts array are unique and sorted based on
 !! one dimensional packing of their 2D indices.
 c
 c -----------------------------------------------------------
@@ -10,11 +10,12 @@ c
       subroutine colate2 (badpts, len, lcheck, nUniquePts, lbase)
 c
       use amr_module
-      implicit  real(CLAW_REAL) (a-h,o-z)
-      real(CLAW_REAL) :: badpts(2,len)
+      implicit  double precision (a-h,o-z)
+      dimension badpts(2,len)
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
       logical db/.false./
-      integer*8 largestIntEquiv
+      integer*8 largestIntEquiv,ifac1,ifac2
+      integer   largestIntEquiv_default
 
 c
 c    index for flag array now based on integer index space, not 1:mibuff,1:mjbuff
@@ -52,7 +53,7 @@ c
 c        write(outunit,*)" colating flags on grid ",mptr
 
 c        handle each of 4 sides (in 2D)
-c        set tags to negative val. reset to positive if they have a home     
+c        set tags to negative val. reset to positive if they have a home
          ilo = node(ndilo,mptr)
          ihi = node(ndihi,mptr)
          jlo = node(ndjlo,mptr)
@@ -111,7 +112,7 @@ c             neg means no home was found. throw out
                   write(*,*)" still have neg points"
                   go to 60
              endif
-             if (alloc(iadd(i,j)) .eq. goodpt) go to 60  
+             if (alloc(iadd(i,j)) .eq. goodpt) go to 60
 c
 c    got a legit flagged point, bag it.
 c
@@ -150,11 +151,7 @@ c
 c  done colating - safe to reclam
         call reclam(locamrflags,mibuff*mjbuff)
 
-#if (CLAW_REAL == 8) 
         ibytesPerDP = 8
-#else
-        ibytesPerDP = 4
-#endif
         iflagsize =  (mibuff*mjbuff)/ibytesPerDP+1
         call reclam(node(domflags_base,mptr),iflagsize)
         call reclam(node(domflags2,mptr),iflagsize)
@@ -164,7 +161,7 @@ c
        if (mptr .ne. 0) go to 10
 
 
-      npts = index 
+      npts = index
       if (gprint) then
         write(outunit,100) npts, lcheck,len
  100    format( i9,' flagged points initially colated on level ',i4,
@@ -174,25 +171,30 @@ c
 c colate flagged points into single integer array for quicksorting
 c
 c     sorting uses one dimensional packing of 2D indices
-c     check if domain will fit  in integer*4.
-c     if not, just leave the duplicate, but rememer that efficiency 
+c     check if domain will fit  in integer*4.  (largestSingle approx 2**30)
+c     if not, just leave the duplicate, but rememer that efficiency
 c     of grids won't be correct (since divide by number of flaged pts in grid)
 c     If necessary, do whole process in integer*8 - then will have enough
 c     room, but will have to convert quicksort routine and drivesort
 c     the variable largestIntEquiv already declared integer*8 above.
-      largestIntEquiv =  iregsz(lcheck)+mbuff + 
+      ifac1 = iregsz(lcheck)
+      ifac2 = jregsz(lcheck)
+      largestIntEquiv =  ifac1+mbuff +
+     .             (ifac1+2*mbuff)*(ifac2+mbuff)
+      largestIntEquiv_default =  iregsz(lcheck)+mbuff +
      .             (iregsz(lcheck)+2*mbuff)*(jregsz(lcheck)+mbuff)
-      largestSingle = 2**30
-      if (largestIntEquiv .le. 0) then
+
+c     ! if get different answer with extra precision then bypass sorting alg.
+      if (largestIntEquiv .ne. largestIntEquiv_default) then
 c       ## sorting alg will have integer overflow
 c       ## just use all flagged points in making grids
-c       ## this means "efficiency" count will be incorrect for 
+c       ## this means "efficiency" count will be incorrect for
 c       ## this and higher levels
           nUniquePts =  npts  ! bad name - they are not unique
       else
           call drivesort(npts,badpts,lcheck,nUniquePts,mbuff)
       endif
-     
+
 
  99   return
       end

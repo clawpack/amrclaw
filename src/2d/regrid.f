@@ -35,7 +35,7 @@ c
       lfnew     = lbase
       do 10 i   = 1, mxnest
         newnumgrids(i) = 0
- 10     newstl(i) = 0
+ 10     newstl(i) = clawpack_null
       time      = rnode(timemult, lstart(lbase))
 c
  20   if (lcheck .lt. lbase) go to 50
