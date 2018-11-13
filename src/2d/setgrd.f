@@ -58,7 +58,7 @@ c  colating and making grids. But advanc called above since if using
 c  richardson, it assumes two levels of solution already exist
 c
          call grdfit(lbase,levold,nvar,naux,cut,time,start_time)
-         if (newstl(levnew) .ne. 0) lfnew = levnew
+         if (newstl(levnew) .ne. clawpack_null) lfnew = levnew
 c
 c  init new level. after each iteration. fix the data structure
 c  also reinitalize coarser grids so fine grids can be advanced
