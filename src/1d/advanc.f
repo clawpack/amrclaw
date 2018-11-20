@@ -233,15 +233,6 @@ c        # This corresponds to previous time step, but output done
 c        # now to make linear interpolation easier, since grid
 c        # now has boundary conditions filled in.
 
-c     should change the way print_gauges does io - right now is critical section
-c     no more,  each gauge has own array.
-
-      if (num_gauges > 0) then
-           call update_gauges(alloc(locnew:locnew+nvar*mitot),
-     .                       alloc(locaux:locaux+nvar*mitot),
-     .                       xlow,nvar,mitot,naux,mptr)
-         endif
-
 c
          call stepgrid(alloc(locnew),fm,fp,
      2                  mitot,nghost,
@@ -269,6 +260,15 @@ c
 c        write(outunit,969) mythread,delt, dtnew
 c969     format(" thread ",i4," updated by ",e15.7, " new dt ",e15.7)
          rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
+
+c     should change the way print_gauges does io - right now is critical section
+c     no more, each gauge has own array.
+
+      if (num_gauges > 0) then
+          call update_gauges(alloc(locnew:locnew+nvar*mitot),
+     .                       alloc(locaux:locaux+nvar*mitot),
+     .                       xlow,nvar,mitot,naux,mptr)
+      endif
 c
       return
       end

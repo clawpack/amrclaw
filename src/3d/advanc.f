@@ -249,15 +249,6 @@ c        # This corresponds to previous time step, but output done
 c        # now to make linear interpolation easier, since grid
 c        # now has boundary conditions filled in.
 
-c     should change the way print_gauges does io - right now is critical section
-
-      if (num_gauges > 0) then
-         call update_gauges(alloc(locnew:locnew+nvar*mitot*mjtot*mktot),
-     .                     alloc(locaux:locaux+nvar*mitot*mjtot*mktot),
-     .                     xlow,ylow,zlow,nvar,mitot,mjtot,mktot,
-     .                     naux,mptr)
-         endif
-
          if (dimensional_split .eq. 0) then
 c           # Unsplit method
             call stepgrid(alloc(locnew),
@@ -298,6 +289,15 @@ c           # should never get here due to check in amr2
          endif
 
          rnode(timemult,mptr)  = rnode(timemult,mptr)+delt
+
+c     should change the way print_gauges does io - right now is critical section
+
+      if (num_gauges > 0) then
+         call update_gauges(alloc(locnew:locnew+nvar*mitot*mjtot*mktot),
+     .                      alloc(locaux:locaux+nvar*mitot*mjtot*mktot),
+     .                      xlow,ylow,zlow,nvar,mitot,mjtot,mktot,
+     .                      naux,mptr)
+      endif
 c
       return
       end
