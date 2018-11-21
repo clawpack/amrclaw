@@ -65,6 +65,25 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
     xupper = xlower + mx*dx
     yupper = ylower + my*dy
 
+    ! mark ghost cells with DONTFLAG, in case they were UNSET:
+    do i=1-mbuff,mx+mbuff
+        do j=1-mbuff,0
+            amrflags(i,j) = DONTFLAG
+            enddo
+        do j=my+1,my+mbuff
+            amrflags(i,j) = DONTFLAG
+            enddo
+        enddo
+
+    do j=1-mbuff,my+mbuff
+        do i=1-mbuff,0
+            amrflags(i,j) = DONTFLAG
+            enddo
+        do i=mx+1,mx+mbuff
+            amrflags(i,j) = DONTFLAG
+            enddo
+        enddo
+
     rloop: do m=1,num_regions
         if (t < regions(m)%t_low .or. t > regions(m)%t_hi) then
             cycle rloop  ! no intersection
