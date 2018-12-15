@@ -12,6 +12,6 @@ subroutine setaux(mbc,mx,my,mz,xlower,ylower,zlower,dx,dy,dz,maux,aux)
     implicit none
     integer, intent(in) :: mbc,mx,my,mz,maux
     real(kind=8), intent(in) :: xlower,ylower,zlower,dx,dy,dz
-    real(kind=8), intent(inout) ::  aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc,1-mbc:mz+mbc)
 
 end subroutine setaux
