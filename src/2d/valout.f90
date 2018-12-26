@@ -174,7 +174,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                     i = (iadd(num_eqn, num_cells(1) + 2 * num_ghost, &
                                        num_cells(2) + 2 * num_ghost))   
 
-                    call write_slice(num_cells(1), num_cells(2),  &
+                    call write_slice2(num_cells(1), num_cells(2),  &
                                      num_ghost, num_eqn, & 
                                      alloc(iadd(1, 1, 1):i), out_unit+1)
 
@@ -400,14 +400,15 @@ contains
 end subroutine valout
 
 
-subroutine write_slice(mx,my,mbc,meqn,q,unitnum)
+subroutine write_slice2(mx,my,mbc,meqn,q,unitnum)
     implicit none
 
     integer mx,my,meqn,mbc, unitnum
     double precision q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
 
-    write(unitnum) q(1:meqn,1:mx,1:my)
-!!    write(unitnum) q
+    !! Write out ghost cells as long as Python expects ghost cells in 2d
+!!    write(unitnum) q(1:meqn,1:mx,1:my)
+    write(unitnum) q
 
 end
 
