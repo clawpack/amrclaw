@@ -172,8 +172,11 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                 case(3)
                     ! Note: We are writing out ghost cell data also
                     i = (iadd(num_eqn, num_cells(1) + 2 * num_ghost, &
-                                       num_cells(2) + 2 * num_ghost))
-                    write(out_unit + 1) alloc(iadd(1, 1, 1):i)
+                                       num_cells(2) + 2 * num_ghost))                    
+                    call write_slice(num_cells(1), num_cells(2),  &
+                                     num_ghost, num_eqn, & 
+                                     alloc(iadd(1, 1, 1):i), out_unit+1)
+!!                    write(out_unit + 1) alloc(iadd(1, 1, 1):i)
 
                 ! HDF5 output
                 case(4)
@@ -394,4 +397,14 @@ contains
 
 end subroutine valout
 
+
+subroutine write_slice(mx,my,meqn,mbc,q,unitnum)
+    implicit none
+
+    integer mx,my,meqn,mbc, unitnum
+    double precision q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
+
+    write(unitnum) q(1:meqn,1:mx,1:my)
+
+end
 
