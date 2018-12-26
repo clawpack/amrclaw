@@ -1,5 +1,6 @@
 
 OutputDir = '_output';
+OutputFlag = 'binary';
 
 PlotType = 1;                % type of plot to produce:
 			     % 1 = pseudo-color (pcolor)
