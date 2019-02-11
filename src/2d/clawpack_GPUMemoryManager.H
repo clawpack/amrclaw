@@ -92,7 +92,8 @@ public:
 
     //! The default memory hunk size to grab from the heap.
     static constexpr size_t _GB = 1024*1024*1024;
-    static constexpr size_t DefaultHunkSize = 2*_GB;
+    // static constexpr size_t DefaultHunkSize = 2*_GB;
+    static constexpr size_t DefaultHunkSize = 512*1024*1024;
 
     /**
     * \brief Given a minimum required memory block of sz bytes, this returns
