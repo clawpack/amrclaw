@@ -61,7 +61,9 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
     external allowflag
 
     ! Locals
-    integer :: i
+    integer :: i,m
+    real(kind=8) :: x_c,x_low,x_hi
+    real(kind=8) :: dqi(meqn), dq(meqn)
 
     ! Don't initialize flags, since they were already 
     ! flagged by flagregions2
@@ -77,11 +79,26 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
     ! min_level and max_level specified in any regions.
         
     x_loop: do i = 1,mx
+        !x_low = xlower + (i - 1) * dx
+        !x_c = xlower + (i - 0.5d0) * dx
+        !x_hi = xlower + i * dx
 
-        ! check only undivided difference of density:
-        if (abs(q(1,i+1) - q(1,i-1)) > tolsp) then
-            amrflags(i) = DOFLAG
-            cycle x_loop
+        ! -----------------------------------------------------------------
+            ! Only check undivided differences if flag hasn't been set yet. 
+            ! If flag == DONTFLAG then refinement is forbidden by a region, 
+            ! if flag == DOFLAG checking is not needed
+            if(amrflags(i) == UNSET) then
+                dq = 0.d0
+                dqi = abs(q(:,i+1) - q(:,i-1))
+                dq = max(dq,dqi)
+
+                ! check only undivided difference of density:
+                do m=1,1
+                    if (dq(m) > tolsp) then
+                        amrflags(i) = DOFLAG
+                        cycle x_loop
+                    endif
+                enddo
             endif
 
     enddo x_loop
