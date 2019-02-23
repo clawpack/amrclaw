@@ -29,7 +29,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/cleanup.f \
   $(AMRLIB)/colate1.f \
   $(AMRLIB)/bufnst1.f \
-  $(AMRLIB)/flag2refine2.f90 \
+  $(AMRLIB)/flag2refine1.f90 \
   $(AMRLIB)/flagregions1.f90 \
   $(AMRLIB)/gfixup.f \
   $(AMRLIB)/filval.f90 \
