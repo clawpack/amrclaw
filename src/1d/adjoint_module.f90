@@ -92,8 +92,6 @@ contains
             50 continue
 
         else
-            print *, 'Adjoint.data file does not exist.'
-            print *, 'If you are using the adjoint method, this is an error.'
             adjoint_flagging = .false.
         endif
 
