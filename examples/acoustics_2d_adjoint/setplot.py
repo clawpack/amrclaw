@@ -92,7 +92,7 @@ def setplot(plotdata):
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
     plotitem.plotstyle = 'b-'
-    plotitem.kwargs = {'linewidth': 3}
+    plotitem.kwargs = {'linewidth': 2}
     plotaxes.afteraxes = fixup_gauge
 
     # Parameters used only when creating html and/or latex hardcopy
