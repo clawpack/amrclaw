@@ -4,8 +4,8 @@ c=========================================================
       subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 c=========================================================
 c     
-c     # Set initial conditions for q.
-c     # Pulse in pressure, zero velocity
+c     # Set initial conditions for adjoint solution
+c     # Pulse in pressure, zero velocity, centered around location of interest
 c     
 c     
       implicit none

@@ -2,6 +2,7 @@
 
 """Base AMRClaw data class for writing out data parameter files."""
 
+from __future__ import print_function
 from __future__ import absolute_import
 import os
 
@@ -381,6 +382,68 @@ class GaugeData(clawpack.clawutil.data.ClawData):
 
 #  Gauge data objects
 # ==============================================================================
+
+
+# ==============================================================================
+#  Adjoint data object
+class AdjointData(clawpack.clawutil.data.ClawData):
+    r""""""
+
+    def __init__(self, use_adjoint=False, num_dim=None):
+
+        super(AdjointData,self).__init__()
+
+        self.add_attribute('use_adjoint',use_adjoint)
+        self.add_attribute('adjoint_outdir','')
+        self.add_attribute('adjoint_files',[])
+        self.add_attribute('numadjoints',0)
+        self.add_attribute('t1',None)
+        self.add_attribute('t2',None)
+        self.add_attribute('innerprod_index', None)
+
+
+    def write(self,out_file='adjoint.data',data_source='setrun.py'):
+
+        self.open_data_file(out_file,data_source)
+
+        self.data_write('use_adjoint')
+        self.data_write('adjoint_outdir')
+        self.data_write('t1')
+        self.data_write('t2')
+        self.data_write('innerprod_index')
+
+        self.set_adjoint_files()
+        self.data_write('numadjoints')
+            
+        for file in self.adjoint_files:
+            self._out_file.write("'%s'\n" % file)
+        self.close_data_file()
+
+    def set_adjoint_files(self):
+        import glob
+        from clawpack.pyclaw.fileio.binary import read_t
+
+        self.adjoint_files = []
+        if self.use_adjoint:
+            files = glob.glob(os.path.join(self.adjoint_outdir,"fort.b*"))
+            files.sort()
+            for file in files:
+                frameno = int(file[-4:])
+                #print('+++ file, frameno: ',file, frameno)
+                [t,num_eqn,nstates,num_aux,num_dim,num_ghost] \
+                    = read_t(frameno, self.adjoint_outdir)
+                if t <= self.t2:
+                    #print('+++   using this file')
+                    self.adjoint_files.append(file)
+            self.numadjoints = len(self.adjoint_files)
+            if (len(self.adjoint_files) == 0):
+                print("*** WARNING: No binary files found for adjoint output!")
+
+
+    def read_adjoint_files(self):
+        self.set_adjoint_files()
+        # read them in for Python processing...  add if we need it
+
 
 
 if __name__ == '__main__':
