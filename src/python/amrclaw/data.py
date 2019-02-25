@@ -195,7 +195,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
 
     defaults = {"file_format":"ascii", "display_format":"e15.7",
                 "q_out_fields":"all", "aux_out_fields":"none",
-                "min_time_increment":0.0}
+                "min_time_increment":0.0, "gtype":"stationary"}
 
     @property
     def gauge_numbers(self):
@@ -223,6 +223,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             output = " ".join((output,"%13.6e" % gauge[3]))
             output = " ".join((output,"%13.6e\n" % gauge[4]))
         output = "\n\n".join((output, "Output Format: %s\n" % self.file_format))
+        output = "\n\n".join((output, "Gauge type: %s\n" % self.gtype))
         output = "\t".join((output, "display: %s" % self.display_format))
         output = "\n\t".join((output, "q fields: %s" % self.q_out_fields))
         output = "\n\t".join((output, "aux fields: %s" % self.aux_out_fields))
@@ -265,7 +266,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         self.data_write()
 
         # Display format for each gauge
-        self._out_file.write("# Display format\n")
+        self._out_file.write("# Display format (1=ascii, 2=binary)\n")
         for gauge_num in self.gauge_numbers:
             self._out_file.write("%s " % self.display_format[gauge_num])
         self._out_file.write("\n\n")
@@ -275,6 +276,19 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         for gauge_num in self.gauge_numbers:
             self._out_file.write("%s " % self.min_time_increment[gauge_num])
         self._out_file.write("\n\n")
+
+        # Gauge type
+        self._out_file.write("# Gauge type (1=stationary, 2=Lagrangian)\n")
+        gtype_map = {'stationary':1, 'lagrangian': 2}
+        for gauge_num in self.gauge_numbers:
+            try:
+                gtype = gtype_map[self.gtype[gauge_num].lower()]
+            except KeyError:
+                raise ValueError("Invalid gauge type %s requested." \
+                        % self.gtype[gauge_num])
+            self._out_file.write("%s " % gtype)
+        self._out_file.write("\n")
+        self.data_write()
 
         # Which q fields to output
         self._out_file.write("# q fields\n")
@@ -332,7 +346,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
 
         > file_format = 'ascii'
 
-        this would set all gauges ot have the 'ascii' format.
+        this would set all gauges to have the 'ascii' format.
 
         """
 
