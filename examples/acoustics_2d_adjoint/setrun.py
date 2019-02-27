@@ -303,7 +303,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True
-    rundata.amrdata.flag2refine_tol = 0.02
+    rundata.amrdata.flag2refine_tol = 0.04
     
     # steps to take on each level L between regriddings of level L+1:
     amrdata.regrid_interval = 2       
