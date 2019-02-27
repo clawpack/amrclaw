@@ -30,8 +30,9 @@ Folder Organization
 
   Contains code to solve the adjoint problem.
 
-  The output times specified in this directory should agree with those for the
-  forward code.
+  The output times specified in this directory should to at least as
+  far out in time as the forward solution is desired, with sufficiently
+  dense outputs to properly capture the evolving adjoint solution.
 
 Running the Code
 --------------------
@@ -44,14 +45,14 @@ Go to the folder `adjoint` and run in a terminal::
 The code will produce two new folders: _output and _plots. 
 The first one contains all the output files, while the latter one contains the plots and interactive visualization apps.
 
-Go to the main folder `acoustics_2d_adjoint` and run in the terminal:
+Then return to this directory and 
 
     make new
     make .plots
 
-The code will produce two new folders: _output and _plots. 
-The first one contains all the output files, while the latter one contains the plots and interactive visualization apps.
-
+to run the forward solution and make plots that also show the inner product
+of the forward and adjoint solution on levels 1 and 2 (not on level 3 since 
+there is no need to flag further in this 3-level run).
 
 Alternatively, to run first the adjoint and then the forward problem a
 single script can be invoked.  
@@ -62,44 +63,41 @@ Run in the terminal::
 Running Variations
 --------------------
 
-In `setrun.py`, the following flags are currently set::
+In `setrun.py`, the following flags are currently set (in various places)::
 
-    flag_forward_adjoint = True
-    flag_richardson_adjoint = False
+    adjointdata.use_adjoint = True
 
-This indicates that flagging will be done based only on the magnitude of the
-inner product of the adjoint with the forward solution, using the tolerance
-specified by the parameter `adjoint_flag_tolerance`.
+    # Flag for refinement based on Richardson error estimater:
+    amrdata.flag_richardson = False
+    amrdata.flag_richardson_tol = 0.1
+    
+    # Flag for refinement using routine flag2refine:
+    amrdata.flag2refine = True
+    rundata.amrdata.flag2refine_tol = 0.04
 
-Alternatively, the magnitude of the inner product of the adjoint with the
-*estimated 1-step error* in the forward solution can be used to flag cells
-for refinement, by setting::
+    # time period of interest:
+    adjointdata.t1 = rundata.clawdata.t0
+    adjointdata.t2 = rundata.clawdata.tfinal
 
-    flag_forward_adjoint = False
-    flag_richardson_adjoint = True
+Setting `adjointdata.use_adjoint` to `False` will go back to using standard
+flagging based on the magnitude of undivided differences or an estimate of
+the one-step error.
 
-The same parameter `adjoint_flag_tolerance` is used to specify the level for
-flagging.  This latter option is still under development, but is intended to
+With adjoint flagging, either `amrdata.flag2refine` or
+`amrdata.flag_richardson` can be set to `True` and the associated tolerance
+is then applied to the inner product of the forward solution with the adjoint
+solution (with `flag2refine`) or with the adjoint 1-step error estimate
+(with `flag_richardson`).  
+This latter option is still under development, but is intended to
 allow specifying a tolerance based on the level of global error hoped for in
 the final solution.   See the paper cited above for more details.
 
+The time period of interest can be changed to some subset of the full run
+time.  Try changing this to see how the AMR adapts to only capture waves
+reaching Gauge 0 over the specified time period.
 
-This example can also be run with either the standard AMRClaw flagging based on 
-undivided differences (done in the `flag2refine` routine, where the
-difference exceeds the tolerance `amrdata.flag2refine_tol` in absolute value)
-or with Richardson extrapolation error flagging (in which case points are
-flagged where the 1-step error is estimated to be above the tolerance
-`amrdata.flag_richardson_tol`).
+Note that the location of interest is specified in `adjoint/qinit.f90`, where
+the functional used as initial data (at the final time) in the adjoint
+problem is set to be a small rectangle around this location.
 
-To revert to one of these older methods, in setrun.py` set::
-
-    flag_forward_adjoint = False
-    flag_richardson_adjoint = False
-
-change one of these to `True`::
-
-    amrdata.flag_richardson = False
-    amrdata.flag2refine = False
-
-and set the appropriate tolerance.
 

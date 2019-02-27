@@ -299,7 +299,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Flag for refinement based on Richardson error estimater:
     amrdata.flag_richardson = False
-    amrdata.flag_richardson_tol = 1e-5
+    amrdata.flag_richardson_tol = 0.5
     
     # Flag for refinement using routine flag2refine:
     amrdata.flag2refine = True
