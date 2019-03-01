@@ -201,7 +201,7 @@ contains
 
 ! ========================================================================
 !  Routine to compute error in forward solution for the adjoint method
-!  Editted from errf1.f
+!  Adapted from errf1.f
 !  Differences: 
 !   (i) Computes error for all of the terms in q
 !   (ii) Needs the aux array passed in, because the inner product is saved 
@@ -331,7 +331,7 @@ contains
 
 ! Note: here the coarse version of the inner product values in auxcrse are set.
 ! The fine grid inner product values will be stored in 
-! auxfine(inneproduc_index,:,:) which will be updated based 
+! auxfine(inneprod_index,:,:) which will be updated based 
 ! on rctcrse at the end of this routine. 
 
       do k = 1,totnum_adjoints
@@ -352,12 +352,10 @@ contains
 !         for calculating tolerance in subsequent time steps
           errors(eptr(jg)+(i_val-1)*ny/2+j_val) = auxcrse(innerprod_index,i,j)
 
-          rctcrse(1,i,j)  = DONTFLAG
           if (auxcrse(innerprod_index,i,j) .ge. levtol(levm)) then
-!                    ## never set rctflg to good, since flag2refine or
-!                    ## flagregions2 may have previously set it to bad
-!                    ## can only add bad pts in this routine
               rctcrse(1,i,j)  = DOFLAG
+          else
+              rctcrse(1,i,j)  = DONTFLAG
           endif
 
         enddo
@@ -376,9 +374,9 @@ contains
           auxfine(innerprod_index,ifine+1,jfine+1) = auxcrse(innerprod_index,i,j)
 
           if (rctcrse(1,i,j) .eq. DOFLAG) then
-!           ## never set rctflg to good, since flag2refine or
-!           ## flagregions2 may have previously set it to bad
-!           ## can only add bad pts in this routine
+!           ## never set rctflg to DONTFLAG, since flag2refine or
+!           ## flagregions2 may have previously set it to DOFLAG
+!           ## can only add DOFLAG pts in this routine
             rctflg(ifine,jfine)    = DOFLAG
             rctflg(ifine+1,jfine)  = DOFLAG
             rctflg(ifine,jfine+1)  = DOFLAG
