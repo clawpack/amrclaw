@@ -28,9 +28,11 @@ def setplot(plotdata):
     # -------------------
 
     plotfigure = plotdata.new_plotfigure(name='Pressure', figno=0)
+    plotfigure.kwargs = {'figsize': (10,5)}
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(121)'
     plotaxes.xlimits = [-4,8]
     plotaxes.ylimits = [-1,11]
     plotaxes.title = 'Pressure'
@@ -43,18 +45,19 @@ def setplot(plotdata):
     plotitem.pcolor_cmap = colormaps.blue_white_red
     plotitem.add_colorbar = False
     plotitem.show = True       # show on plot?
-    plotitem.pcolor_cmin = -1.5
-    plotitem.pcolor_cmax = 1.5
+    plotitem.pcolor_cmin = -1.0
+    plotitem.pcolor_cmax = 1.0
     plotitem.amr_patchedges_show = [1,1,1]
     plotitem.amr_celledges_show = [0,0,0]
     
     # Figure for inner product
     # -------------------
     
-    plotfigure = plotdata.new_plotfigure(name='Inner Product', figno=1)
+    #plotfigure = plotdata.new_plotfigure(name='Inner Product', figno=1)
     
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(122)'
     plotaxes.title = 'Inner Product'
     plotaxes.xlimits = [-4,8]
     plotaxes.ylimits = [-1,11]
@@ -68,13 +71,16 @@ def setplot(plotdata):
     plotitem.pcolor_cmap = colormaps.white_red
     plotitem.add_colorbar = False
     plotitem.show = True       # show on plot?
-    plotitem.pcolor_cmin = 0.01     # use when plotting inner product with q
-    #plotitem.pcolor_cmin = 0.0      # use when plotting inner product with error
+
+    plotitem.pcolor_cmin = 0.0      # use when plotting inner product with q
     plotitem.pcolor_cmax = 0.12    # use when plotting inner product with q
-    #plotitem.pcolor_cmax = 0.0005    # use when plotting inner product with error
+
+    #plotitem.pcolor_cmin = 0.0      # use when plotting inner product with error
+    #plotitem.pcolor_cmax = 0.005    # use when plotting inner product with error
+
     plotitem.amr_patchedges_show = [0,0,0]
     plotitem.amr_celledges_show = [0,0,0]
-    plotitem.amr_data_show = [1,1,0]
+    plotitem.amr_data_show = [1,0,0]
 
     #-----------------------------------------
     # Figures for gauges
@@ -92,7 +98,7 @@ def setplot(plotdata):
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
     plotitem.plotstyle = 'b-'
-    plotitem.kwargs = {'linewidth': 3}
+    plotitem.kwargs = {'linewidth': 2}
     plotaxes.afteraxes = fixup_gauge
 
     # Parameters used only when creating html and/or latex hardcopy

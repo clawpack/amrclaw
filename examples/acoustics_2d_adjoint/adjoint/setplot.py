@@ -30,7 +30,7 @@ def setplot(plotdata):
     # Figure for pressure
     # -------------------
 
-    plotfigure = plotdata.new_plotfigure(name='Adjoint', figno=0)
+    plotfigure = plotdata.new_plotfigure(name='Adjoint', figno=1)
     plotfigure.kwargs = {'figsize': (5.5,5)}
 
     # Set up for axes in this figure:

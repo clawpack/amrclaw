@@ -53,9 +53,13 @@ contains
         inquire(file=adjointfile, exist=fileExists)
         if (fileExists) then
 
-            adjoint_flagging = .true.
+            !adjoint_flagging = .true.
             iunit = 16
             call opendatafile(iunit,adjointfile)
+            
+            read(iunit,*) adjoint_flagging
+            if (.not. adjoint_flagging) return
+            
             read(iunit,*) adjoint_output
 
             ! time period of interest:
@@ -64,8 +68,9 @@ contains
 
             call set_time_window(t1, t2)
 
-            read(iunit,*) totnum_adjoints
             read(iunit,*) innerprod_index
+            
+            read(iunit,*) totnum_adjoints
             allocate(adj_files(totnum_adjoints))
 
             do 20 k = 1, totnum_adjoints
@@ -73,7 +78,7 @@ contains
             20  continue
             close(iunit)
 
-            if (size(adj_files) <= 0) then
+            if (adjoint_flagging .and. (size(adj_files) <= 0)) then
                 print *, 'Error: no adjoint output files found.'
                 stop
             endif
@@ -87,8 +92,6 @@ contains
             50 continue
 
         else
-            print *, 'Adjoint.data file does not exist.'
-            print *, 'If you are using the adjoint method, this is an error.'
             adjoint_flagging = .false.
         endif
 
@@ -168,11 +171,12 @@ contains
       ! Checking to see if fort.t file exists
       ladjfile = len(trim(adjfile))
       adjfile(ladjfile-4:ladjfile-4) = 't'
-      write(6,*) 'Attempting to reload data '
-      write(6,*) '  fort.t* file: ',trim(adjfile)
+      !write(6,*) 'Attempting to load adjoint data '
+      !write(6,*) '  fort.t* file: ',trim(adjfile)
       inquire(file=trim(adjfile),exist=foundFile)
       if (.not. foundFile) then
           write(*,*)" Did not find fort.t* file!"
+          write(*,*)"   ", trim(adjfile)
           stop
       endif
       open(9,file=trim(adjfile),status='old',form='formatted')
@@ -187,6 +191,7 @@ contains
       read(9, "(i6)") adjoints(k)%nghost
 
       close(9)
+      write(*,*) 'Loading adjoint data at time t = ', adjoints(k)%time
 
       ! Allocating memory for alloc array
       allocsize = 4000000
@@ -194,8 +199,8 @@ contains
 
       ! Checking to see if fort.q file exists
       adjfile(ladjfile-4:ladjfile-4) = 'q'
-      write(6,*) 'Attempting to reload data '
-      write(6,*) '  fort.q* file: ',trim(adjfile)
+      !write(6,*) 'Attempting to reload data '
+      !write(6,*) '  fort.q* file: ',trim(adjfile)
       inquire(file=trim(adjfile),exist=foundFile)
       if (.not. foundFile) then
           write(*,*)" Did not find fort.q* file!"
@@ -206,13 +211,15 @@ contains
 
       ! Checking to see if fort.b file exists
       adjfile(ladjfile-4:ladjfile-4) = 'b'
-      write(6,*) 'Attempting to reload data '
-      write(6,*) '  fort.b* file: ',trim(adjfile)
+      !write(6,*) 'Attempting to reload data '
+      !write(6,*) '  fort.b* file: ',trim(adjfile)
       inquire(file=trim(adjfile),exist=foundFile)
       if (.not. foundFile) then
           write(*,*)" Did not find fort.b* file!"
           stop
       endif
+      write(*,*) '   from file ', trim(adjfile)
+      write(*,*) ' '
       open(20,file=trim(adjfile),status='unknown',access='stream')
       rewind 20
 

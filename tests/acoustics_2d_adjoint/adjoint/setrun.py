@@ -114,8 +114,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 40
-        clawdata.tfinal = 6.0
+        clawdata.num_output_times = 30
+        clawdata.tfinal = 3.0
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -235,9 +235,8 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    rundata.gaugedata.gauges.append([0, 3.5, 0.5, 2.7, 2.85])
-    rundata.gaugedata.gauges.append([1, 2.1, 0.2, 0., 10.])
-    rundata.gaugedata.gauges.append([2, 4.2, 0.8, 0., 10.])
+    rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
+    rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
     
     # --------------
     # Checkpointing:
@@ -272,7 +271,7 @@ def setrun(claw_pkg='amrclaw'):
     amrdata = rundata.amrdata
     
     # max number of refinement levels:
-    amrdata.amr_levels_max = 2
+    amrdata.amr_levels_max = 1
     
     # List of refinement ratios at each level (length at least amr_level_max-1)
     amrdata.refinement_ratios_x = [2]
