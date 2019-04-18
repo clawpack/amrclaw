@@ -6,7 +6,9 @@ COMMON_MODULES += \
   $(CLAW)/classic/src/utility_module.f90 \
   $(AMRLIB)/amr_module.f90 \
   $(AMRLIB)/gauges_module.f90 \
-  $(AMRLIB)/regions_module.f90
+  $(AMRLIB)/regions_module.f90 \
+  $(AMRLIB)/adjoint_module.f90 \
+  $(AMRLIB)/adjointsup_module.f90 
 
 COMMON_SOURCES += \
   $(AMRLIB)/qinit.f \
@@ -100,6 +102,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/check.f \
   $(AMRLIB)/restrt.f \
   $(AMRLIB)/quick_sort1.f \
+  $(AMRLIB)/quick_sort_reals.f \
   $(AMRLIB)/opendatafile.f \
   $(AMRLIB)/addflags.f \
   $(AMRLIB)/domgrid.f \

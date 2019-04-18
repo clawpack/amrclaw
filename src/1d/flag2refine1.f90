@@ -39,6 +39,9 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
                             tolsp,q,aux,amrflags)
 
     use regions_module
+    use adjoint_module, only: totnum_adjoints, innerprod_index, &
+                              adjoint_flagging,select_snapshots, &
+                              calculate_innerproduct
     use amr_module, only : DOFLAG, UNSET
 
     implicit none
@@ -48,7 +51,7 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
     real(kind=8), intent(in) :: xlower,dx,t,tolsp
     
     real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc)
-    real(kind=8), intent(in) :: aux(maux,1-mbc:mx+mbc)
+    real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc)
     
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff)
@@ -57,13 +60,33 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
     external allowflag
 
     ! Locals
-    integer :: i,m
+    integer :: i,m,r
     real(kind=8) :: x_c,x_low,x_hi
     real(kind=8) :: dqi(meqn), dq(meqn)
 
     ! Don't initialize flags, since they were already 
     ! flagged by flagregions2
     ! amrflags = DONTFLAG
+
+    ! Adjoint method specific variables
+    logical mask_selecta(totnum_adjoints)
+
+    if(adjoint_flagging) then
+        aux(innerprod_index,:) = 0.0
+        call select_snapshots(t,mask_selecta)
+
+        ! Loop over adjoint snapshots
+        aloop: do r=1,totnum_adjoints
+
+            ! Consider only snapshots that are within the desired time range
+            if (mask_selecta(r)) then
+                ! Calculate inner product with current snapshot
+                call calculate_innerproduct(q,r,mx,xlower,dx,meqn,mbc, &
+                                           aux(innerprod_index,:))
+            endif
+
+        enddo aloop
+    endif
     
     ! Loop over interior points on this grid
     ! (i) grid cell is [x_low,x_hi], cell center at (x_c)
@@ -84,17 +107,25 @@ subroutine flag2refine1(mx,mbc,mbuff,meqn,maux,xlower,dx,t,level, &
             ! If flag == DONTFLAG then refinement is forbidden by a region, 
             ! if flag == DOFLAG checking is not needed
             if(amrflags(i) == UNSET) then
-                dq = 0.d0
-                dqi = abs(q(:,i+1) - q(:,i-1))
-                dq = max(dq,dqi)
 
-                ! default checks all components of undivided difference:
-                do m=1,meqn
-                    if (dq(m) > tolsp) then
+                if(adjoint_flagging) then
+                    if (aux(innerprod_index,i) > tolsp) then
                         amrflags(i) = DOFLAG
                         cycle x_loop
                     endif
-                enddo
+                else
+                    dq = 0.d0
+                    dqi = abs(q(:,i+1) - q(:,i-1))
+                    dq = max(dq,dqi)
+                    ! default checks all components of undivided difference:
+                    do m=1,meqn
+                        if (dq(m) > tolsp) then
+                           amrflags(i) = DOFLAG
+                           cycle x_loop
+                        endif
+                    enddo
+                endif
+
             endif
 
     enddo x_loop
