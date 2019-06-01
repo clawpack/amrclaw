@@ -180,6 +180,7 @@ module amr_module
     ! The max1d parameter should be changed if using OpenMP grid based 
     ! looping, usually set to max1d = 60
     integer, parameter :: max1d = 60 
+    !integer, parameter :: max1d = 650 
 
     integer, parameter :: maxvar = 10
     integer, parameter :: maxaux = 20
@@ -253,6 +254,7 @@ module amr_module
     integer :: timeFlagger, timeBufnst,timeTick, tick_clock_start
     real(kind=8) tvollCPU(maxlv), timeTickCPU
     real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU
+    real(kind=8) timeSetauxCPU
     real(kind=8) timeValoutCPU
 
     integer lentot,lenmax,lendim
