@@ -47,7 +47,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/ginit.f \
   $(AMRLIB)/grdfit.f \
   $(AMRLIB)/intfil.f \
-  $(AMRLIB)/moment.f \
+  $(AMRLIB)/moment.f90 \
   $(AMRLIB)/nestck.f \
   $(AMRLIB)/prepc.f \
   $(AMRLIB)/prepf.f \

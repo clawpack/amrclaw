@@ -54,6 +54,9 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
                             tolsp,q,aux,amrflags)
 
     use regions_module
+    use adjoint_module, only: totnum_adjoints,innerprod_index, &
+                              adjoint_flagging,select_snapshots
+    use adjointsup_module, only: calculate_innerproduct
     use amr_module, only : DOFLAG, UNSET
 
     implicit none
@@ -63,7 +66,7 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     real(kind=8), intent(in) :: xlower,ylower,dx,dy,t,tolsp
     
     real(kind=8), intent(in) :: q(meqn,1-mbc:mx+mbc,1-mbc:my+mbc)
-    real(kind=8), intent(in) :: aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
+    real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc,1-mbc:my+mbc)
     
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
@@ -72,13 +75,33 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     external allowflag
 
     ! Locals
-    integer :: i,j,m
+    integer :: i,j,m,r
     real(kind=8) :: x_c,y_c,x_low,y_low,x_hi,y_hi
     real(kind=8) :: dqi(meqn), dqj(meqn), dq(meqn)
+
+    ! Adjoint method specific variables
+    logical mask_selecta(totnum_adjoints)
 
     ! Don't initialize flags, since they were already 
     ! flagged by flagregions2
     ! amrflags = DONTFLAG
+
+    if(adjoint_flagging) then
+        aux(innerprod_index,:,:) = 0.0
+        call select_snapshots(t,mask_selecta)
+
+        ! Loop over adjoint snapshots
+        aloop: do r=1,totnum_adjoints
+
+            ! Consider only snapshots that are within the desired time range
+            if (mask_selecta(r)) then
+                ! Calculate inner product with current snapshot
+                call calculate_innerproduct(q,r,mx,my,xlower,   &
+                        ylower,dx,dy,meqn,mbc,maux,aux)
+            endif
+
+        enddo aloop
+    endif
     
     ! Loop over interior points on this grid
     ! (i,j) grid cell is [x_low,x_hi] x [y_low,y_hi], cell center at (x_c,y_c)
@@ -104,18 +127,27 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
             ! If flag == DONTFLAG then refinement is forbidden by a region, 
             ! if flag == DOFLAG checking is not needed
             if(amrflags(i,j) == UNSET) then
-                dq = 0.d0
-                dqi = abs(q(:,i+1,j) - q(:,i-1,j))
-                dqj = abs(q(:,i,j+1) - q(:,i,j-1))
-                dq = max(dq,dqi,dqj)
 
-                ! default checks all components of undivided difference:
-                do m=1,meqn
-                    if (dq(m) > tolsp) then
+                if(adjoint_flagging) then
+                    if (aux(innerprod_index,i,j) > tolsp) then
                         amrflags(i,j) = DOFLAG
                         cycle x_loop
                     endif
-                enddo
+                else
+                    dq = 0.d0
+                    dqi = abs(q(:,i+1,j) - q(:,i-1,j))
+                    dqj = abs(q(:,i,j+1) - q(:,i,j-1))
+                    dq = max(dq,dqi,dqj)
+
+                    ! default checks all components of undivided difference:
+                    do m=1,meqn
+                        if (dq(m) > tolsp) then
+                            amrflags(i,j) = DOFLAG
+                            cycle x_loop
+                        endif
+                    enddo
+                endif
+
             endif
 
         enddo x_loop
