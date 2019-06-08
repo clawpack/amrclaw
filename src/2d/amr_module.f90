@@ -254,7 +254,6 @@ module amr_module
     integer :: timeFlagger, timeBufnst,timeTick, tick_clock_start
     real(kind=8) tvollCPU(maxlv), timeTickCPU
     real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU
-    real(kind=8) timeSetauxCPU
     real(kind=8) timeValoutCPU
 
     integer lentot,lenmax,lendim
