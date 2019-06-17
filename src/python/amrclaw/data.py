@@ -419,7 +419,7 @@ class AdjointData(clawpack.clawutil.data.ClawData):
             # if path is relative in setrun, assume it's relative to the
             # same directory that out_file comes from
             fname = os.path.abspath(os.path.join(os.path.dirname(out_file),file))
-            self._out_file.write("'%s'\n" % file)
+            self._out_file.write("'%s'\n" % fname)
         self.close_data_file()
 
     def set_adjoint_files(self):
