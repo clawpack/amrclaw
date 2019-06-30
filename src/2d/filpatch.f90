@@ -69,7 +69,7 @@
 
 
 recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
-     nrowst,ncolst,ilo,ihi,jlo,jhi,patchOnly,msrc)
+     nrowst,ncolst,ilo,ihi,jlo,jhi,patchOnly,msrc,do_aux_copy)
 
   use amr_module, only: hxposs, hyposs, xlower, ylower, xupper, yupper
   use amr_module, only: outunit, nghost, xperdom, yperdom, spheredom
@@ -81,7 +81,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   integer, intent(in) :: level, nvar, naux, mitot, mjtot, nrowst, ncolst
   integer, intent(in) :: ilo,ihi,jlo,jhi, msrc
   real(kind=8), intent(in) :: t
-  logical  :: patchOnly
+  logical  :: patchOnly, do_aux_copy,yes_do_aux_copy
 
   ! Output
   real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
@@ -126,6 +126,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   real(kind=8) :: valcrse((ihi-ilo+3) * (jhi-jlo+3) * nvar)  
   real(kind=8) :: auxcrse((ihi-ilo+3) * (jhi-jlo+3) * naux)  
 
+  yes_do_aux_copy = .true.
+
   ! We begin by filling values for grids at level level. If all values can be
   ! filled in this way, we return;
   mitot_patch = ihi-ilo + 1 ! nrowp
@@ -142,8 +144,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   ! note that if only a patch, msrc = -1, otherwise a real grid and intfil
   ! uses its boundary list
   ! msrc either -1 (for a patch) or the real grid number
-  call intfil(valbig,mitot,mjtot,t,flaguse,nrowst,ncolst, ilo,  &
-              ihi,jlo,jhi,level,nvar,naux,msrc)
+  call intfil(valbig,aux,mitot,mjtot,t,flaguse,nrowst,ncolst, ilo,  &
+              ihi,jlo,jhi,level,nvar,naux,msrc,do_aux_copy)
  
 
 
@@ -235,9 +237,10 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
         do k = 1, lencrse, naux
            auxcrse(k) = NEEDS_TO_BE_SET ! new system checks initialization before setting aux vals
         end do
-        call setaux(nghost_patch, mitot_coarse,mjtot_coarse,  &
-             xlow_coarse, ylow_coarse,            &
-             dx_coarse,dy_coarse,naux,auxcrse)
+        ! commented out since now copy from coarser grids during intfil
+        !call setaux(nghost_patch, mitot_coarse,mjtot_coarse,  &
+        !     xlow_coarse, ylow_coarse,            &
+        !     dx_coarse,dy_coarse,naux,auxcrse)
      endif
 
      ! Fill in the edges of the coarse grid. for recursive calls, patch indices and
@@ -248,7 +251,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
              iplo,iphi,jplo,jphi,iplo,iphi,jplo,jphi,.true.)
      else
         call filrecur(level-1,nvar,valcrse,auxcrse,naux,t,mitot_coarse,mjtot_coarse,1,1,   &
-             iplo,iphi,jplo,jphi,.true.,-1)  ! when going to coarser patch, no source grid (for now at least)
+             iplo,iphi,jplo,jphi,.true.,-1,yes_do_aux_copy)  ! when going to coarser patch, no source grid (for now at least)
      endif
 
      ! convert to real for use below
@@ -325,7 +328,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
            endif
         end do
      end do
-  end if
+  end if  ! end if not set
 
   !  set bcs, whether or not recursive calls needed. set any part of patch that stuck out
   xhi_fine = xlower + (ihi + 1) * dx_fine
