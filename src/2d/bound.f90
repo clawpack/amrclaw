@@ -68,6 +68,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
   real(kind=8) :: xleft, xright, ybot, ytop, hx, hy, xl, xr, yb, yt
   real(kind=8) :: xloWithGhost,  xhiWithGhost,  yloWithGhost, yhiWithGhost
   logical      :: patchOnly
+  logical      :: do_aux_copy
 
   xleft  = rnode(cornxlo, mptr)
   xright = rnode(cornxhi, mptr)
@@ -80,6 +81,12 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
   level  = node(nestlevel, mptr)
   hx     = hxposs(level)
   hy     = hyposs(level)
+
+  ! when grid copies from same level aux already set so
+  ! no need to copy from neighboring grids
+  ! this variable will be changed inside filpatch
+  ! for recursive call to coarser levels
+  do_aux_copy = .false.
 
   xloWithGhost = xleft  - ng*hx
   xhiWithGhost = xright + ng*hx
@@ -100,7 +107,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
      call  prefilrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1, &
           ilo-ng,ilo-1,jlo,jhi,ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
   else
-     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1,ilo-ng,ilo-1,jlo,jhi,patchOnly,mptr)
+     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,ng+1,ilo-ng,ilo-1,jlo,jhi,patchOnly,mptr,do_aux_copy)
   endif
 
   ! right boundary
@@ -114,7 +121,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
           mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
   else
      call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-          mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,patchOnly,mptr)
+          mitot-ng+1,ng+1,ihi+1,ihi+ng,jlo,jhi,patchOnly,mptr,do_aux_copy)
   endif
 
   ! bottom boundary
@@ -129,7 +136,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
                       1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,                &
                       ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
   else
-     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,patchOnly,mptr)
+     call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot,1,1,ilo-ng,ihi+ng,jlo-ng,jlo-1,patchOnly,mptr,do_aux_copy)
   endif
 
 
@@ -145,7 +152,7 @@ subroutine bound(time,nvar,ng,valbig,mitot,mjtot,mptr,aux,naux)
           1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,ilo-ng,ihi+ng,jlo-ng,jhi+ng,patchOnly)
   else
      call filrecur(level,nvar,valbig,aux,naux,time,mitot,mjtot, &
-          1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,patchOnly,mptr)
+          1,mjtot-ng+1,ilo-ng,ihi+ng,jhi+1,jhi+ng,patchOnly,mptr,do_aux_copy)
   endif
 
 

@@ -1,3 +1,4 @@
+
 !
 ! ::::::::::::::::::::::: INTFIL ::::::::::::::::::::::::::::::::;
 !  INTFIL: interpolates values for a patch at the specified level and
@@ -95,217 +96,242 @@
 
 
 
-subroutine intfil(val,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,level,nvar,naux,msrc)
+subroutine intfil(val,aux,mi,mj,time,flaguse,nrowst,ncolst,ilo,ihi,jlo,jhi,   &
+     level,nvar,naux,msrc,do_aux_copy)
 
-    use amr_module, only: possk, mxnest, iregsz, jregsz, nghost, outunit, alloc
-    use amr_module, only: node, lstart, store1, store2, levelptr, timemult,gridNbor
-    use amr_module, only: rnode, ndilo, ndihi, ndjlo, ndjhi, nextfree
-    use amr_module, only: bndListNum, bndListSt
-    use amr_module, only: listStart, listOfGrids, bndList, numgrids
+  use amr_module, only: possk, mxnest, iregsz, jregsz, nghost, outunit, alloc
+  use amr_module, only: node, lstart, store1, store2, storeaux, levelptr, timemult,gridNbor
+  use amr_module, only: rnode, ndilo, ndihi, ndjlo, ndjhi, nextfree
+  use amr_module, only: bndListNum, bndListSt
+  use amr_module, only: listStart, listOfGrids, bndList, numgrids
 
-    implicit none
+  implicit none
 
-    ! Input
-    integer, intent(in) :: mi, mj, nrowst, ncolst, ilo, ihi, jlo, jhi, level, nvar, naux,msrc
-    real(kind=8), intent(in) :: time
+  ! Input
+  integer, intent(in) :: mi, mj, nrowst, ncolst, ilo, ihi, jlo, jhi, level, nvar, naux,msrc
+  real(kind=8), intent(in) :: time
 
-    ! In/Out
-    integer(kind=1), intent(in out) :: flaguse(ilo:ihi, jlo:jhi)
-    real(kind=8), intent(in out) :: val(nvar,mi,mj)
+  ! In/Out
+  integer(kind=1), intent(in out) :: flaguse(ilo:ihi, jlo:jhi)
+  real(kind=8), intent(in out) :: val(nvar,mi,mj),aux(naux,mi,mj)
 
-    ! Locals
-    integer :: imlo, jmlo, imhi, jmhi, nx, ny, mitot, mjtot
-    integer :: ixlo, ixhi, jxlo, jxhi, locold, locnew, nextSpot
-    integer :: icount, bndNum, bndLoc, levSt
-    integer :: ivar, i, j, mptr, mstart, loc, numg
-    real(kind=8) :: dt, alphac, alphai
-    logical :: t_interpolate
+  ! Locals
+  integer :: imlo, jmlo, imhi, jmhi, nx, ny, mitot, mjtot
+  integer :: ixlo, ixhi, jxlo, jxhi, locold, locnew, nextSpot
+  integer :: icount, bndNum, bndLoc, levSt, locaux, iaux, ialloc
+  integer :: ivar, i, j, mptr, mstart, loc, numg
+  real(kind=8) :: dt, alphac, alphai
+  logical :: t_interpolate,do_aux_copy
 
-    integer :: patch_rect(4)
+  integer :: patch_rect(4)
 
-    real(kind=8), parameter :: t_epsilon = 1.0d-4
+  real(kind=8), parameter :: t_epsilon = 1.0d-4
 
-    ! Formats for error statements
-    character(len=*), parameter :: missing_error = &
-            "(' time wanted ',e15.7,' not available from grid ',i4,'level',i4)"
-    character(len=*), parameter :: time_error = &
-            "(' trying to interpolate from previous time values ',/," // &
-            "' for a patch with corners ilo,ihi,jlo,jhi:'" // &
-            ",/,2x,4i10,/," // &
-            "' from source grid ',i4,' at level ',i4,/," // &
-            "' time wanted ',e24.16,' source time is ',e24.16,/," // &
-            "' alphai, t_epsilon ',2e24.16)"
+  ! Formats for error statements
+  character(len=*), parameter :: missing_error = &
+       "(' time wanted ',e15.7,' not available from grid ',i4,'level',i4)"
+  character(len=*), parameter :: time_error = &
+       "(' trying to interpolate from previous time values ',/," // &
+       "' for a patch with corners ilo,ihi,jlo,jhi:'" // &
+       ",/,2x,4i10,/," // &
+       "' from source grid ',i4,' at level ',i4,/," // &
+       "' time wanted ',e24.16,' source time is ',e24.16,/," // &
+       "' alphai, t_epsilon ',2e24.16)"
 
-    patch_rect = [ilo,ihi,jlo,jhi]
+  patch_rect = [ilo,ihi,jlo,jhi]
 
-    ! Note that we need a non-dimensionalized t epspatch_rect(1)n as it was a problem
-    ! in tsunami tests ( instead of t_epsilon   = dt / 10.d0 )
-    
-    ! Time step at this level
-    dt = possk(level)
-      
-    ! Initialize the flagging where we set things
-    flaguse = 0
+  ! Note that we need a non-dimensionalized t epspatch_rect(1)n as it was a problem
+  ! in tsunami tests ( instead of t_epsilon   = dt / 10.d0 )
 
-    ! Loop through all grids at this level, initialize to first
-!    mptr = lstart(level)
-!    do while (mptr /= 0)
+  ! Time step at this level
+  dt = possk(level)
+
+  ! Initialize the flagging where we set things
+  flaguse = 0
+
+  ! Loop through all grids at this level, initialize to first
+  !    mptr = lstart(level)
+  !    do while (mptr /= 0)
+  if (msrc .eq. -1) then
+     numg = numgrids(level)
+     levSt = listStart(level)
+  else
+     bndLoc = node(bndListSt,msrc)  ! index of first grid in bndList
+     bndNum = node(bndListNum,msrc)
+     nextSpot = node(bndListSt, msrc) ! initialize
+     numg = bndNum
+  endif
+
+  do icount = 1, numg
+
      if (msrc .eq. -1) then
-         numg = numgrids(level)
-         levSt = listStart(level)
+        mptr = listOfGrids(levSt+icount-1)
      else
-         bndLoc = node(bndListSt,msrc)  ! index of first grid in bndList
-         bndNum = node(bndListNum,msrc)
-         nextSpot = node(bndListSt, msrc) ! initialize
-         numg = bndNum
+        mptr = bndList(nextSpot,gridNbor)
      endif
 
-     do icount = 1, numg
+     ! Check if grid mptr and patch intersect
+     imlo = node(ndilo, mptr)
+     jmlo = node(ndjlo, mptr)
+     imhi = node(ndihi, mptr)
+     jmhi = node(ndjhi, mptr)
 
-         if (msrc .eq. -1) then
-            mptr = listOfGrids(levSt+icount-1)
-         else
-            mptr = bndList(nextSpot,gridNbor)
-         endif
+     nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
+     ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
 
-        ! Check if grid mptr and patch intersect
-        imlo = node(ndilo, mptr)
-        jmlo = node(ndjlo, mptr)
-        imhi = node(ndihi, mptr)
-        jmhi = node(ndjhi, mptr)
+     mitot = nx + 2 * nghost
+     mjtot = ny + 2 * nghost
 
-        nx = node(ndihi,mptr) - node(ndilo,mptr) + 1
-        ny = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
-        
-        mitot = nx + 2 * nghost
-        mjtot = ny + 2 * nghost
-        
-        ixlo = max(imlo,patch_rect(1))
-        ixhi = min(imhi,patch_rect(2))
-        jxlo = max(jmlo,patch_rect(3))
-        jxhi = min(jmhi,patch_rect(4))
+     ixlo = max(imlo,patch_rect(1))
+     ixhi = min(imhi,patch_rect(2))
+     jxlo = max(jmlo,patch_rect(3))
+     jxhi = min(jmhi,patch_rect(4))
 
-        ! Check to see if grid and patch interesect, if not continue to next
-        ! grid in the list
-        if (ixlo <= ixhi .and. jxlo <= jxhi) then
+     ! Check to see if grid and patch interesect, if not continue to next
+     ! grid in the list
+     if (ixlo <= ixhi .and. jxlo <= jxhi) then
 
-            ! grids intersect. figure out what time to use.
-            ! alphai = 1 for new time; 0 for old time
-            alphac = (rnode(timemult,mptr) - time)/dt
-            alphai = 1.d0 - alphac
+        locaux = node(storeaux,mptr)  ! for copying aux arrays too
 
-            if ((alphai < -t_epsilon) .or. (alphai > 1.d0 + t_epsilon)) then
-                write(outunit,missing_error) time, mptr, level
-                print missing_error, time, mptr, level
-                write(outunit,'(A,E24.16)') 'Line 80', dt
-                write(outunit,time_error) patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
-                print time_error, patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
-                call outtre(mstart,.false.,nvar,naux)
-                stop
-            endif
+        ! grids intersect. figure out what time to use.
+        ! alphai = 1 for new time; 0 for old time
+        alphac = (rnode(timemult,mptr) - time)/dt
+        alphai = 1.d0 - alphac
 
-            ! Check if we should interpolate in time
-            t_interpolate = .false.
-            if (abs(alphai - 1.d0) < t_epsilon) then
-                ! need no interpolation
-                loc = node(store1,mptr)
-            else if (dabs(alphai) .lt. t_epsilon) then
-                loc = node(store2,mptr)
-                if (level == mxnest) then
-                    write(outunit,'(A,E24.16)') 'Line 95', dt
-                    write(outunit,time_error) patch_rect,mptr,level,time, &
-                                              rnode(timemult,mptr),alphai,t_epsilon
-                    write(*,time_error) patch_rect,mptr,level,time, &
-                                        rnode(timemult,mptr),alphai,t_epsilon
-                    stop
-                endif
-            else
-                locold  = node(store2,mptr)
-                locnew  = node(store1,mptr)
-                t_interpolate = .true.
-
-                ! If we are at the maximum level nesting, abort
-                if (level == mxnest) then
-                    write(outunit,'(A,E24.16)') 'Line 107',dt
-                    write(outunit,time_error) patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
-                    print time_error, patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
-                    stop
-                endif
-            endif
-
-            ! Actual interpolation
-            if (.not. t_interpolate) then
-                ! No time interp. copy the solution values
-                do ivar = 1, nvar
-                    do j = jxlo, jxhi
-                        do i = ixlo, ixhi
-                            val(ivar,i-patch_rect(1)+nrowst,j-jlo+ncolst) = &
-                                alloc(iadd(ivar,i-imlo+nghost+1,j-jmlo+nghost+1))
-                            flaguse(i,j) = 1
-                        end do
-                    end do
-                end do
-            else
-                ! Linear interpolation in time
-                do ivar = 1, nvar
-                    do j = jxlo, jxhi
-                        do i = ixlo, ixhi
-                            val(ivar,i-patch_rect(1)+nrowst,j-jlo+ncolst) = &
-                                alloc(iadnew(ivar,i-imlo+nghost+1,j-jmlo+nghost+1))*alphai + &
-                                alloc(iadold(ivar,i-imlo+nghost+1,j-jmlo+nghost+1))*alphac
-                            flaguse(i,j) = 1
-                        end do
-                    end do
-                end do
-            endif
-
+        if ((alphai < -t_epsilon) .or. (alphai > 1.d0 + t_epsilon)) then
+           write(outunit,missing_error) time, mptr, level
+           print missing_error, time, mptr, level
+           write(outunit,'(A,E24.16)') 'Line 80', dt
+           write(outunit,time_error) patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
+           print time_error, patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
+           call outtre(mstart,.false.,nvar,naux)
+           stop
         endif
 
-        ! Get next grid
-!        mptr = node(levelptr, mptr)
-         if (msrc .ne. -1) then
-            nextSpot = bndList(nextSpot,nextfree)
-         endif
+        ! Check if we should interpolate in time
+        t_interpolate = .false.
+        if (abs(alphai - 1.d0) < t_epsilon) then
+           ! need no interpolation
+           loc = node(store1,mptr)
+        else if (dabs(alphai) .lt. t_epsilon) then
+           loc = node(store2,mptr)
+           if (level == mxnest) then
+              write(outunit,'(A,E24.16)') 'Line 95', dt
+              write(outunit,time_error) patch_rect,mptr,level,time, &
+                   rnode(timemult,mptr),alphai,t_epsilon
+              write(*,time_error) patch_rect,mptr,level,time, &
+                   rnode(timemult,mptr),alphai,t_epsilon
+              stop
+           endif
+        else
+           locold  = node(store2,mptr)
+           locnew  = node(store1,mptr)
+           t_interpolate = .true.
 
-    end do
+           ! If we are at the maximum level nesting, abort
+           if (level == mxnest) then
+              write(outunit,'(A,E24.16)') 'Line 107',dt
+              write(outunit,time_error) patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
+              print time_error, patch_rect,mptr,level,time,rnode(timemult,mptr),alphai,t_epsilon
+              stop
+           endif
+        endif
 
-    ! Set used array points which intersect domain boundary to be equal to 1, 
-    ! they will be set elsewhere, namely boundary conditions and periodic
-    ! domains
-    if (jhi >= jregsz(level)) then
-        flaguse(patch_rect(1):ihi, max(jregsz(level),jlo):jhi) = 1
-    endif
+        ! Actual interpolation
+        if (.not. t_interpolate) then
+           ! No time interp. copy the solution values
+           do ivar = 1, nvar
+              do j = jxlo, jxhi
+                 do i = ixlo, ixhi
+                    ialloc = iadd(ivar,i-imlo+nghost+1,j-jmlo+nghost+1)
+                    val(ivar,i-patch_rect(1)+nrowst,j-jlo+ncolst) = alloc(ialloc)
+                    flaguse(i,j) = 1
+                 end do
+              end do
+           end do
+        else
+           ! Linear interpolation in time
+           do ivar = 1, nvar
+              do j = jxlo, jxhi
+                 do i = ixlo, ixhi
+                    val(ivar,i-patch_rect(1)+nrowst,j-jlo+ncolst) = &
+                         alloc(iadnew(ivar,i-imlo+nghost+1,j-jmlo+nghost+1))*alphai + &
+                         alloc(iadold(ivar,i-imlo+nghost+1,j-jmlo+nghost+1))*alphac
+                    flaguse(i,j) = 1
+                 end do
+              end do
+           end do
+        endif
 
-    if (jlo < 0) then
-        flaguse(patch_rect(1):ihi, jlo:min(-1,ncolst + jhi - jlo )) = 1
-    endif
 
-    if (patch_rect(1) < 0) then
-        flaguse(patch_rect(1):min(-1,nrowst + ihi - patch_rect(1)), jlo:jhi) = 1
-    endif
 
-    if (ihi >= iregsz(level)) then
-        flaguse(max(iregsz(level),patch_rect(1)):ihi, jlo:jhi) = 1
-    endif
+        !if there are aux arrays set those too. only works if aux not time dependent
+        if (do_aux_copy .and. naux .gt. 0) then        
+           do j = jxlo, jxhi
+              do i = ixlo, ixhi
+                 do iaux = 1, naux
+                    ialloc = iaddaux(iaux,i-imlo+nghost+1,j-jmlo+nghost+1)
+                    aux(iaux,i-patch_rect(1)+nrowst,j-jlo+ncolst) = alloc(ialloc)
+                 end do
+              end do
+           end do
+        endif  ! should copy aux arrays
+
+     endif ! this grid intersects
+
+     ! Get next grid
+     !        mptr = node(levelptr, mptr)
+     if (msrc .ne. -1) then
+        nextSpot = bndList(nextSpot,nextfree)
+     endif
+
+  end do
+
+  ! Set used array points which intersect domain boundary to be equal to 1, 
+  ! they will be set elsewhere, namely boundary conditions and periodic
+  ! domains
+  if (jhi >= jregsz(level)) then
+     flaguse(patch_rect(1):ihi, max(jregsz(level),jlo):jhi) = 1
+  endif
+
+  if (jlo < 0) then
+     flaguse(patch_rect(1):ihi, jlo:min(-1,ncolst + jhi - jlo )) = 1
+  endif
+
+  if (patch_rect(1) < 0) then
+     flaguse(patch_rect(1):min(-1,nrowst + ihi - patch_rect(1)), jlo:jhi) = 1
+  endif
+
+  if (ihi >= iregsz(level)) then
+     flaguse(max(iregsz(level),patch_rect(1)):ihi, jlo:jhi) = 1
+  endif
 
 contains
 
-    integer pure function iadd(ivar,i,j)
-        implicit none
-        integer, intent(in) :: ivar, i, j
-        iadd = loc + ivar-1 + nvar*((j-1)*mitot+i-1)
-    end function iadd
+  integer pure function iadd(ivar,i,j)
+    implicit none
+    integer, intent(in) :: ivar, i, j
+    iadd = loc + ivar-1 + nvar*((j-1)*mitot+i-1)
+  end function iadd
 
-    integer pure function iadnew(ivar,i,j)
-        implicit none
-        integer, intent(in) :: ivar, i, j
-        iadnew = locnew + ivar-1 + nvar*((j-1)*mitot+i-1)
-    end function iadnew
+  integer pure function iaddaux(iaux,i,j)
+    implicit none
+    integer, intent(in) :: iaux, i, j
+    iaddaux = locaux + iaux-1 + naux*((j-1)*mitot+i-1)
+  end function iaddaux
 
-    integer pure function iadold(ivar,i,j)
-        implicit none
-        integer, intent(in) :: ivar, i, j
-        iadold = locold + ivar-1 + nvar*((j-1)*mitot+i-1)
-    end function iadold
+
+
+  integer pure function iadnew(ivar,i,j)
+    implicit none
+    integer, intent(in) :: ivar, i, j
+    iadnew = locnew + ivar-1 + nvar*((j-1)*mitot+i-1)
+  end function iadnew
+
+  integer pure function iadold(ivar,i,j)
+    implicit none
+    integer, intent(in) :: ivar, i, j
+    iadold = locold + ivar-1 + nvar*((j-1)*mitot+i-1)
+  end function iadold
 
 end subroutine intfil
