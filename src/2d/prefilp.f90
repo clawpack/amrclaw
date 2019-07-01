@@ -15,8 +15,9 @@
 !!     directly into the enlarged valbig array for this piece.
 !
 ! :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,  &  
-                                 nrowst,ncolst,ilo,ihi,jlo,jhi,iglo,ighi,jglo,jghi,patchOnly)
+recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,    &  
+                                 nrowst,ncolst,ilo,ihi,jlo,jhi,iglo,ighi,jglo,jghi, &
+                                 patchOnly)
 
 
 
@@ -32,6 +33,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
     ! false when called from bound, when valbig is whole grid but only filling patch.
     ! true for recursive coarse sub-patches - grid is patch
     logical  :: patchOnly  
+    logical :: do_aux_copy
 
     ! Output
     real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
@@ -62,6 +64,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
 !       (iglo,jglo) to (ighi,jghi).
 
     msrc = -1   ! iitialization indicating whether real src grid so can use faster bc list
+    do_aux_copy = .false.  ! too complciated in periodic case, just call setaux
 
     if (xperdom) then       
        ist(1)    = ilo
@@ -136,7 +139,8 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
                                        iglo,jglo)
                                        
                     call filrecur(level,nvar,valPatch,auxPatch,naux,time,mi,mj,       &
-                                  1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),.true.,msrc)
+                               1,1,i1+ishift(i),i2+ishift(i),j1+jshift(j),j2+jshift(j),  &
+                               .true.,msrc,do_aux_copy)
                     ! copy it back to proper place in valbig 
                     call patchCopyOut(nvar,valPatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,   &
                                       iglo,jglo)
@@ -173,7 +177,8 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
 
                     rect = [iwrap1,iwrap2,j1+jbump,j2+jbump]
                     call filrecur(level,nvar,scratch,scratchaux,naux,time,mi, &
-                                  mj,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump,.false.,msrc)
+                                  mj,1,1,iwrap1,iwrap2,j1+jbump,j2+jbump,.false.,msrc,  &
+                                  do_aux_copy)
 
                     ! copy back using weird mapping for spherical folding (so cant call copy subr below)
                     do ii = i1, i2
