@@ -14,8 +14,8 @@ c     include  "call.i"
       logical    vtime, dumpout/.false./, dumpchk/.false./
       logical    rest, dump_final
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
-      integer   clock_start, clock_finish, clock_rate
-      integer   tick_clock_finish, tick_clock_rate  
+      integer(kind=8) ::   clock_start, clock_finish, clock_rate
+      integer(kind=8) ::   tick_clock_finish, tick_clock_rate  
 
 
 c

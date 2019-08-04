@@ -26,7 +26,7 @@ c
 c
       use amr_module
       implicit double precision (a-h,o-z)
-      integer clock_start, clock_finish, clock_rate
+      integer(kind=8) :: clock_start, clock_finish, clock_rate
 c
 c
 c
