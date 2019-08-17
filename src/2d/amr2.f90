@@ -111,9 +111,9 @@ program amr2
     logical :: vtime, rest, output_t0    
 
     ! Timing variables
-    integer ::  ttotal
-    real(kind=8) ::ttotalcpu, cpu_start,cpu_finish 
-    integer(kind=8) :: clock_start, clock_finish, clock_rate
+    integer(kind=8) ::  ttotal
+    real(kind=8) ::ttotalcpu
+    integer(kind=8) :: clock_start, clock_finish, clock_rate, count_max
     integer, parameter :: timing_unit = 48
     character(len=512) :: timing_line, timing_substr
     character(len=*), parameter :: timing_base_name = "timing."
@@ -617,7 +617,7 @@ program amr2
     close(parmunit)
 
     ! Timing:  moved inside tick so can finish and be checkpointed
-    call cpu_time(cpu_start)
+    ! use clock_start and clock_finish here only for debug output:
     call system_clock(clock_start,clock_rate)
 
     ! --------------------------------------------------------
@@ -627,7 +627,8 @@ program amr2
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
 
-    call cpu_time(cpu_finish)
+    ! call system_clock to get clock_rate and count_max:
+    call system_clock(clock_finish,clock_rate,count_max)
 
     !output timing data
     open(timing_unit, file=timing_base_name//"txt", status='unknown',       &
@@ -650,11 +651,14 @@ program amr2
     format_string="('Level           Wall Time (seconds)    CPU Time (seconds)   Total Cell Updates')"
     write(timing_unit,format_string)
     write(*,format_string)
-    ttotalcpu=0.d0
-    ttotal=0
+    if (rest) then
+        ttotalcpu=timeTickCPU
+        ttotal=timeTick
+      else
+        ttotalcpu=0.d0
+        ttotal=0
+      endif
 
-    call system_clock(clock_finish,clock_rate)  ! just to get clock_rate
-    write(*,*) "clock_rate ",clock_rate
 
     do level=1,mxnest
         format_string="(i3,'           ',1f15.3,'        ',1f15.3,'    ', e17.3)"
@@ -714,9 +718,6 @@ program amr2
     !Total Time
     format_string="('Total time:   ',1f15.3,'        ',1f15.3,'  ')"
 
-!    write(*,format_string)  &
-!            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
-!            cpu_finish-cpu_start
     write(*,format_string) real(timeTick,kind=8)/real(clock_rate,kind=8), &
             timeTickCPU
     write(timing_unit,format_string) real(timeTick,kind=8)/real(clock_rate,kind=8), &
@@ -746,15 +747,26 @@ program amr2
     write(timing_unit, "('      in the file timing.csv.')")
     
     
-    !end of timing data
     write(*,*)
     write(timing_unit,*)
+
+    ! output clock_rate etc. useful in debugging or if negative time reported
+
+    format_string="('clock_rate = ',i10, ' per second,  count_max = ',i23)"
+    !write(*,format_string) clock_rate, count_max
+    write(timing_unit,format_string) clock_rate, count_max
+
+    format_string="('clock_start = ',i20, ',  clock_finish = ',i20)"
+    !write(*,format_string) clock_start, clock_finish
+    write(timing_unit,format_string) clock_start, clock_finish
+
     format_string="('=========================================================================')"
     write(timing_unit,format_string)
     write(*,format_string)
     write(*,*)
     write(timing_unit,*)
     close(timing_unit)
+    !end of timing data
 
     ! Done with computation, cleanup:
     lentotsave = lentot

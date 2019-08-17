@@ -13,7 +13,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     use amr_module, only: node, rnode, ndilo, ndihi, ndjlo, ndjhi
     use amr_module, only: cornxlo, cornylo, levelptr, mxnest
     use amr_module, only: timeValout, timeValoutCPU, tvoll, tvollCPU, rvoll
-    use amr_module, only: timeTick, tick_clock_start, t0
+    use amr_module, only: timeTick, tick_clock_start, t0, timeTickCPU
 
 #ifdef HDF5
     use hdf5
@@ -353,6 +353,9 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
         timeTick_overall = 0.d0
     else
         call cpu_time(t_CPU_overall)
+        ! if this is a restart, need to adjust add in time from previous run:
+        t_CPU_overall = t_CPU_overall + timeTickCPU
+
         call system_clock(tick_clock_finish,tick_clock_rate)
         timeTick_int = timeTick + tick_clock_finish - tick_clock_start
         timeTick_overall = real(timeTick_int, kind=8)/real(clock_rate,kind=8)
