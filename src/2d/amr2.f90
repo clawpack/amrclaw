@@ -90,6 +90,8 @@ program amr2
     use amr_module, only: rprint, sprint, tprint, uprint
 
     use amr_module, only: t0, tstart_thisrun
+    use amr_module, only: tick_clock_start, tick_cpu_start
+
 
     ! Data modules
     use regions_module, only: set_regions
@@ -111,9 +113,9 @@ program amr2
     logical :: vtime, rest, output_t0    
 
     ! Timing variables
-    integer(kind=8) ::  ttotal
+    integer(kind=8) :: clock_start, clock_finish, clock_rate, ttotal, count_max
     real(kind=8) ::ttotalcpu
-    integer(kind=8) :: clock_start, clock_finish, clock_rate, count_max
+    integer(kind=8) :: tick_clock_finish
     integer, parameter :: timing_unit = 48
     character(len=512) :: timing_line, timing_substr
     character(len=*), parameter :: timing_base_name = "timing."
@@ -607,6 +609,9 @@ program amr2
     print *, 'Done reading data, starting computation ...  '
     print *, ' '
 
+    ! initialize timers before calling valout:
+    call system_clock(tick_clock_start, clock_rate)
+    call cpu_time(tick_cpu_start)
 
     call outtre (mstart,printout,nvar,naux)
     write(outunit,*) "  original total mass ..."
@@ -616,9 +621,6 @@ program amr2
     endif
     close(parmunit)
 
-    ! Timing:  moved inside tick so can finish and be checkpointed
-    ! use clock_start and clock_finish here only for debug output:
-    call system_clock(clock_start,clock_rate)
 
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
@@ -627,7 +629,7 @@ program amr2
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
 
-    ! call system_clock to get clock_rate and count_max:
+    ! call system_clock to get clock_finish and count_max for debug output:
     call system_clock(clock_finish,clock_rate,count_max)
 
     !output timing data
@@ -651,15 +653,12 @@ program amr2
     format_string="('Level           Wall Time (seconds)    CPU Time (seconds)   Total Cell Updates')"
     write(timing_unit,format_string)
     write(*,format_string)
-    if (rest) then
-        ttotalcpu=timeTickCPU
-        ttotal=timeTick
-      else
-        ttotalcpu=0.d0
-        ttotal=0
-      endif
 
-
+    ! level counters are cumulative after restart, so initialize sums to zero 
+    ! even after restart to sum up time over all levels
+    ttotalcpu=0.d0
+    ttotal=0
+      
     do level=1,mxnest
         format_string="(i3,'           ',1f15.3,'        ',1f15.3,'    ', e17.3)"
         write(timing_unit,format_string) level, &
@@ -722,6 +721,7 @@ program amr2
             timeTickCPU
     write(timing_unit,format_string) real(timeTick,kind=8)/real(clock_rate,kind=8), &
             timeTickCPU
+
     
     format_string="('Using',i3,' thread(s)')"
     write(timing_unit,format_string) maxthreads
@@ -757,8 +757,8 @@ program amr2
     write(timing_unit,format_string) clock_rate, count_max
 
     format_string="('clock_start = ',i20, ',  clock_finish = ',i20)"
-    !write(*,format_string) clock_start, clock_finish
-    write(timing_unit,format_string) clock_start, clock_finish
+    !write(*,format_string) tick_clock_start, clock_finish
+    write(timing_unit,format_string) tick_clock_start, clock_finish
 
     format_string="('=========================================================================')"
     write(timing_unit,format_string)

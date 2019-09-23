@@ -16,7 +16,7 @@ c     include  "call.i"
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
       integer(kind=8) ::   clock_start, clock_finish, clock_rate
       integer(kind=8) ::   tick_clock_finish, tick_clock_rate  
-
+      real(kind=8) :: cpu_start,cpu_finish
 
 c
 c :::::::::::::::::::::::::::: TICK :::::::::::::::::::::::::::::
@@ -45,8 +45,6 @@ c          each step) to keep track of when that level should
 c          have its error estimated and finer levels should be regridded.
 c ::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::
 c
-      call system_clock(tick_clock_start,tick_clock_rate)
-      call cpu_time(tick_cpu_start)
 
 
       ncycle         = nstart
