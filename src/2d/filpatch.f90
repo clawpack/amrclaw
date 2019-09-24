@@ -98,7 +98,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mitot,mjtot, &
   real(kind=8) :: xcent_fine, xcent_coarse, ycent_fine, ycent_coarse,ratiox,ratioy,floor    
 
   !for timing
-  integer :: clock_start, clock_finish, clock_rate
+  integer(kind=8) :: clock_start, clock_finish, clock_rate
   real(kind=8) :: cpu_start, cpu_finish
 
   ! Interpolation variables
