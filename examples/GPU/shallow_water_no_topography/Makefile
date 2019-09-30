@@ -77,14 +77,15 @@ EXCLUDE_SOURCES = \
 # List of custom sources for this program:
 # ----------------------------------------
 
-MODULES = \
-  $(CLAW)/riemann/src/shallow_device_module.f90
 
 SOURCES = \
   qinit.f
 
 ifeq ($(USE_CUDA), TRUE) 
     CPP_SOURCES += stepgrid_cuda.cu
+
+    MODULES = \
+      $(CLAW)/riemann/src/GPU/shallow_device_module.f90
 else
 endif
 #-------------------------------------------------------------------

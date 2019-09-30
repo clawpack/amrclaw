@@ -348,6 +348,17 @@ def setrun(claw_pkg='amrclaw'):
     #------------------------------------------------------------------
     rundata = setadjoint(rundata)
 
+    # ---------------
+    # All parameters for GPU computing:
+    # ---------------
+
+    gpudata = rundata.gpudata
+    # which gpu you would like to use
+    # must between 0 and num_of_total_gpus-1
+    gpudata.which_gpu = 0
+
+
+
 
     #  ----- For developers -----
     # Toggle debugging print statements:

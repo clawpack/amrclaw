@@ -178,7 +178,7 @@ endif # end USE_CPP
 
 else # not using USD_CUDA
 COMMON_MODULES += \
-    $(AMRLIB)/GPU/amr_module.f90 
+    $(AMRLIB)/amr_module.f90 
 
 COMMON_SOURCES += \
     $(AMRLIB)/advanc.f90 \
