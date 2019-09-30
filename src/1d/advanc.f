@@ -238,7 +238,7 @@ c     no more,  each gauge has own array.
 
       if (num_gauges > 0) then
            call update_gauges(alloc(locnew:locnew+nvar*mitot),
-     .                       alloc(locaux:locaux+nvar*mitot),
+     .                       alloc(locaux:locaux+naux*mitot),
      .                       xlow,nvar,mitot,naux,mptr)
          endif
 

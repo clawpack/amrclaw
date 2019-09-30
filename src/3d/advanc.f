@@ -253,7 +253,7 @@ c     should change the way print_gauges does io - right now is critical section
 
       if (num_gauges > 0) then
          call update_gauges(alloc(locnew:locnew+nvar*mitot*mjtot*mktot),
-     .                     alloc(locaux:locaux+nvar*mitot*mjtot*mktot),
+     .                     alloc(locaux:locaux+naux*mitot*mjtot*mktot),
      .                     xlow,ylow,zlow,nvar,mitot,mjtot,mktot,
      .                     naux,mptr)
          endif
