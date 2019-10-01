@@ -1,0 +1,207 @@
+#list of common sources for amr 2d codes
+COMMON_MODULES += \
+  $(CLAW)/classic/src/utility_module.f90 \
+  $(AMRLIB)/gauges_module.f90 \
+  $(AMRLIB)/regions_module.f90 \
+  $(AMRLIB)/adjoint_module.f90 \
+  $(AMRLIB)/adjointsup_module.f90 
+
+
+COMMON_SOURCES += \
+  $(AMRLIB)/qinit.f \
+  $(AMRLIB)/setaux.f90 \
+  $(AMRLIB)/amr2.f90 \
+  $(AMRLIB)/bc2amr.f90 \
+  $(AMRLIB)/b4step2.f90 \
+  $(AMRLIB)/src2.f90 \
+  $(AMRLIB)/src1d.f90 \
+  $(AMRLIB)/bound.f90 \
+  $(AMRLIB)/stepgrid.f \
+  $(AMRLIB)/zeroin.f \
+  $(AMRLIB)/auxcoarsen.f \
+  $(AMRLIB)/fixcapaq.f \
+  $(AMRLIB)/estdt.f \
+  $(AMRLIB)/init_iflags.f \
+  $(AMRLIB)/igetsp.f \
+  $(AMRLIB)/reclam.f \
+  $(AMRLIB)/birect.f90 \
+  $(AMRLIB)/colate2.f \
+  $(AMRLIB)/bufnst2.f90 \
+  $(AMRLIB)/flag2refine2.f90 \
+  $(AMRLIB)/flagregions2.f90 \
+  $(AMRLIB)/errest.f \
+  $(AMRLIB)/errf1.f \
+  $(AMRLIB)/filval.f90 \
+  $(AMRLIB)/filpatch.f90 \
+  $(AMRLIB)/prefilp.f90 \
+  $(AMRLIB)/flglvl2.f \
+  $(AMRLIB)/flagger.f \
+  $(AMRLIB)/prepregstep.f \
+  $(AMRLIB)/prepbigstep.f \
+  $(AMRLIB)/grdfit2.f \
+  $(AMRLIB)/intfil.f90 \
+  $(AMRLIB)/moment.f \
+  $(AMRLIB)/nestck2.f \
+  $(AMRLIB)/projec2.f \
+  $(AMRLIB)/signs.f \
+  $(AMRLIB)/findcut.f \
+  $(AMRLIB)/smartbis.f \
+  $(AMRLIB)/putnod.f \
+  $(AMRLIB)/regrid.f \
+  $(AMRLIB)/setuse.f90 \
+  $(AMRLIB)/stst1.f \
+  $(AMRLIB)/tick.f \
+  $(AMRLIB)/trimbd.f90 \
+  $(AMRLIB)/nodget.f \
+  $(AMRLIB)/basic.f \
+  $(AMRLIB)/outval.f \
+  $(AMRLIB)/copysol.f \
+  $(AMRLIB)/outvar.f \
+  $(AMRLIB)/outtre.f \
+  $(AMRLIB)/domain.f  \
+  $(AMRLIB)/setflags.f \
+  $(AMRLIB)/shiftset2.f \
+  $(AMRLIB)/conck.f \
+  $(AMRLIB)/domshrink.f \
+  $(AMRLIB)/domprep.f \
+  $(AMRLIB)/domup.f \
+  $(AMRLIB)/domcopy.f \
+  $(AMRLIB)/coarsen.f \
+  $(AMRLIB)/intcopy.f \
+  $(AMRLIB)/preintcopy.f \
+  $(AMRLIB)/icall.f \
+  $(AMRLIB)/preicall.f \
+  $(AMRLIB)/step2.f90 \
+  $(AMRLIB)/step2x.f90 \
+  $(AMRLIB)/step2y.f90 \
+  $(AMRLIB)/flux2_dimSplit.f \
+  $(AMRLIB)/cstore.f \
+  $(AMRLIB)/valout.f90 \
+  $(AMRLIB)/check.f \
+  $(AMRLIB)/quick_sort1.f \
+  $(AMRLIB)/opendatafile.f \
+  $(AMRLIB)/addflags.f \
+  $(AMRLIB)/domgrid.f \
+  $(AMRLIB)/drivesort.f \
+  $(AMRLIB)/flagcheck.f \
+  $(AMRLIB)/setdomflags.f \
+  $(AMRLIB)/setIndices.f \
+  $(AMRLIB)/setPhysBndry.f \
+  $(AMRLIB)/setPhysBndryFlags.f \
+  $(AMRLIB)/coarseGridFlagSet.f \
+  $(AMRLIB)/griddomcopy.f \
+  $(AMRLIB)/griddomshrink.f \
+  $(AMRLIB)/griddomup.f \
+  $(AMRLIB)/baseCheck.f \
+  $(AMRLIB)/check4nans.f90 \
+  $(AMRLIB)/init_bndryList.f \
+  $(AMRLIB)/resize_bndryList.f \
+  $(AMRLIB)/restrt_alloc.f90 \
+
+
+ifeq ($(USE_CUDA),TRUE)
+COMMON_MODULES += \
+    $(AMRLIB)/GPU/cuda_module.f90 \
+    $(AMRLIB)/GPU/memory_module.f90 \
+    $(AMRLIB)/GPU/profiling_module.f90 \
+    $(AMRLIB)/GPU/reflux_module.f90 \
+    $(AMRLIB)/GPU/setprob_module.f90 \
+    $(AMRLIB)/GPU/stepgrid_module.f90 \
+    $(AMRLIB)/GPU/timer_module.f90 \
+    $(AMRLIB)/GPU/amr_module.f90 
+
+COMMON_SOURCES += \
+    $(AMRLIB)/GPU/advanc.f90 \
+    $(AMRLIB)/GPU/flux2.f90 \
+    $(AMRLIB)/GPU/fluxad.f90 \
+    $(AMRLIB)/GPU/fluxsv.f90 \
+    $(AMRLIB)/GPU/inlinelimiter.f90 \
+    $(AMRLIB)/GPU/prepc.f90 \
+    $(AMRLIB)/GPU/prepf.f90 \
+    $(AMRLIB)/GPU/putsp.f90 \
+    $(AMRLIB)/GPU/quick_sort_reals.f \
+    $(AMRLIB)/GPU/update.f90 \
+    $(AMRLIB)/GPU/gfixup.f \
+    $(AMRLIB)/GPU/ginit.f \
+    $(AMRLIB)/GPU/init_alloc.f90 \
+    $(AMRLIB)/GPU/init_nodes.f90 \
+    $(AMRLIB)/GPU/outmsh.f \
+    $(AMRLIB)/GPU/qad.f90 \
+    $(AMRLIB)/GPU/resize_alloc.f90 \
+    $(AMRLIB)/GPU/resize_nodes.f90 \
+    $(AMRLIB)/GPU/restrt.f \
+    $(AMRLIB)/GPU/restrt_nodes.f90 \
+    $(AMRLIB)/GPU/saveqc.f \
+    $(AMRLIB)/GPU/setgrd.f \
+    $(AMRLIB)/GPU/stepgrid_dimSplit.f \
+    $(AMRLIB)/GPU/upbnd.f \
+    $(AMRLIB)/GPU/cleanup.f
+
+ifeq ($(USE_CPP),TRUE)
+
+CPP_SOURCES += \
+    $(AMRLIB)/GPU/clawpack_mempool.cpp \
+    $(AMRLIB)/GPU/clawpack_MemoryManager.cpp \
+    $(AMRLIB)/GPU/clawpack_CPUPinnedMemoryManager.cpp \
+    $(AMRLIB)/GPU/clawpack_GPUMemoryManager.cpp \
+    $(AMRLIB)/GPU/solver/advance.cu \
+    $(AMRLIB)/GPU/solver/params.cu
+
+CPP_HEADERS += \
+    $(AMRLIB)/GPU/clawpack_MemoryManager.H \
+    $(AMRLIB)/GPU/clawpack_CPUPinnedMemoryManager.H \
+    $(AMRLIB)/GPU/clawpack_mempool.H \
+    $(AMRLIB)/GPU/clawpack_CUDA_helper.H \
+    $(AMRLIB)/GPU/clawpack_GPUMemoryManager.H \
+    $(AMRLIB)/GPU/amr_macros.H \
+    $(AMRLIB)/GPU/clawpack_device.H \
+    $(AMRLIB)/GPU/solver/advance.H \
+    $(AMRLIB)/GPU/solver/common.H \
+    $(AMRLIB)/GPU/solver/arrayIndex.H \
+    $(AMRLIB)/GPU/solver/params.H \
+    $(AMRLIB)/GPU/solver/real.H \
+    $(AMRLIB)/GPU/solver/reduce_Max.H \
+    $(AMRLIB)/GPU/solver/sharedMemory.H \
+    $(AMRLIB)/GPU/solver/staticArray.H \
+    $(AMRLIB)/GPU/solver/fused_solvers_headers.H \
+    $(AMRLIB)/GPU/solver/acoustics_riemann_solver.H \
+    $(AMRLIB)/GPU/solver/shallow_water_riemann_solver.H \
+    $(AMRLIB)/GPU/solver/shallow_topo_riemann_solver.H \
+    $(AMRLIB)/GPU/solver/burger_riemann_solver.H
+
+INCLUDE += $(AMRLIB)/GPU/solver
+INCLUDE += $(AMRLIB)/GPU
+endif # end USE_CPP
+
+else # not using USD_CUDA
+COMMON_MODULES += \
+    $(AMRLIB)/amr_module.f90 
+
+COMMON_SOURCES += \
+    $(AMRLIB)/advanc.f90 \
+    $(AMRLIB)/flux2.f90 \
+    $(AMRLIB)/fluxad.f90 \
+    $(AMRLIB)/fluxsv.f90 \
+    $(AMRLIB)/inlinelimiter.f90 \
+    $(AMRLIB)/prepc.f90 \
+    $(AMRLIB)/prepf.f90 \
+    $(AMRLIB)/putsp.f90 \
+    $(AMRLIB)/quick_sort_reals.f \
+    $(AMRLIB)/update.f90
+    $(AMRLIB)/gfixup.f \
+    $(AMRLIB)/ginit.f \
+    $(AMRLIB)/init_alloc.f90 \
+    $(AMRLIB)/init_nodes.f90 \
+    $(AMRLIB)/outmsh.f \
+    $(AMRLIB)/qad.f90 \
+    $(AMRLIB)/resize_alloc.f90 \
+    $(AMRLIB)/resize_nodes.f90 \
+    $(AMRLIB)/restrt.f \
+    $(AMRLIB)/restrt_nodes.f90 \
+    $(AMRLIB)/saveqc.f \
+    $(AMRLIB)/setgrd.f \
+    $(AMRLIB)/stepgrid_dimSplit.f \
+    $(AMRLIB)/upbnd.f \
+    $(AMRLIB)/cleanup.f
+
+endif # end USE_CUDA
