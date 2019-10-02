@@ -77,23 +77,24 @@ EXCLUDE_SOURCES = \
 # List of custom sources for this program:
 # ----------------------------------------
 
-MODULES = \
-  setprob_module.f90 \
-  $(CLAW)/riemann/src/acoustics_device_module.f90
 
 SOURCES = \
   qinit.f \
   $(CLAW)/riemann/src/rpt2_acoustics.f90
 
 ifeq ($(USE_CUDA), TRUE) 
-    SOURCES += $(CLAW)/riemann/src/rpn2_acoustics_gpu.f90
+    MODULES = \
+      setprob_module.f90 \
+      $(CLAW)/riemann/src/GPU/acoustics_device_module.f90
+
+    SOURCES += $(CLAW)/riemann/src/GPU/rpn2_acoustics_gpu.f90
     CPP_SOURCES += stepgrid_cuda.cu
 else
     SOURCES += $(CLAW)/riemann/src/rpn2_acoustics.f90 
 endif
 
 # case specific dependency
-$(CLAW)/riemann/src/acoustics_device_module.f90:$(CLAW)/amrclaw/src/2d/cudaclaw/arrayIndex.H
+$(CLAW)/riemann/src/GPU/acoustics_device_module.f90:$(CLAW)/amrclaw/src/2d/GPU/solver/arrayIndex.H
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:

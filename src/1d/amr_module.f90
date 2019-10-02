@@ -42,8 +42,9 @@ module amr_module
     integer, parameter :: gridNbor = 1 !use 1st col, 2nd col is nextfree - the link
 
     ! :::::::  for flagging points   
-    real(kind=8), parameter :: goodpt = 0.0
-    real(kind=8), parameter :: badpt  = 2.0
+    real(kind=8), parameter :: UNSET = -1.0
+    real(kind=8), parameter :: DONTFLAG = 0.0
+    real(kind=8), parameter :: DOFLAG  = 2.0
     real(kind=8), parameter :: badpro = 3.0
 
     real(kind=8), parameter :: NEEDS_TO_BE_SET = 10.e33
@@ -54,12 +55,10 @@ module amr_module
     integer, parameter :: maxlv = 10
     integer, parameter :: maxcl = 5000
 
-    ! The max1d parameter should be changed if using OpenMP grid based 
-    ! looping, usually set to max1d = 60
-    integer, parameter :: max1d = 60
-    !integer, parameter :: max1d = 100 
-    !integer, parameter :: max1d = 80 
-    !integer, parameter :: max1d = 500 
+    ! The max1d parameter controls the number of grid cells in 
+    ! any single grid patch before breaking up. 
+    ! Might want to set smaller to break up into more patches for OpenMP
+    integer, parameter :: max1d = 500 
 
     integer, parameter :: maxvar = 10
     integer, parameter :: maxaux = 20
@@ -122,8 +121,8 @@ module amr_module
     integer :: timeRegridding, timeUpdating, timeValout
     integer :: timeFlglvl,timeGrdfit2,timeGrdfit3,timeGrdfitAll
     integer :: timeSetaux,timeFilval,timeBound,timeStepgrid,timeFilvalTot
-    integer :: timeFlagger, timeBufnst
-    real(kind=8) tvollCPU(maxlv)
+    integer :: timeFlagger, timeBufnst, timeTick, tick_clock_start
+    real(kind=8) tvollCPU(maxlv), timeTickCPU
     real(kind=8) timeBoundCPU,timeStepgridCPU,timeSetauxCPU,timeRegriddingCPU
     real(kind=8) timeValoutCPU
 

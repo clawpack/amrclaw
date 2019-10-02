@@ -58,7 +58,7 @@ c       !old code, shift indices by 1
 c       do 60 i = ist+1, iend+1   ! since iflags used 1-based indexing
 c       do 60 i = ist, iend        ! new code into rectflags is 0 based
         do 60 i = ixlo, ixhi
-           if (rectflags(i) .eq. goodpt) then
+           if (rectflags(i) .le. DONTFLAG) then
                rectflags(i) = badpro
                numpro      = numpro + 1
                if (pprint) write(outunit,101) i,mkid

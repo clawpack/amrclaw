@@ -35,7 +35,6 @@ c get start time for more detailed timing by level
       call system_clock(clock_start,clock_rate)
       call cpu_time(cpu_start)
 
-
       hx   = hxposs(level)
       delt = possk(level)
 c     this is linear alg.
@@ -73,6 +72,8 @@ c
 
        end do
 !$OMP END PARALLEL DO
+
+
       call system_clock(clock_finishBound,clock_rate)
       call cpu_time(cpu_finishBound)
       timeBound = timeBound + clock_finishBound - clock_startBound
@@ -80,6 +81,7 @@ c
       
 c
 c save coarse level values if there is a finer level for wave fixup
+
       if (level+1 .le. mxnest) then
          if (lstart(level+1) .ne. null) then
             call saveqc(level+1,nvar,naux)
@@ -110,6 +112,7 @@ c
          mitot  = nx + 2*nghost
 c
           call par_advanc(mptr,mitot,nvar,naux,dtnew)
+
 !$OMP CRITICAL (newdt)
           dtlevnew = dmin1(dtlevnew,dtnew)
 !$OMP END CRITICAL (newdt)    
@@ -117,6 +120,7 @@ c
       end do
 !$OMP END PARALLEL DO
 c
+
       call system_clock(clock_finish,clock_rate)
       call cpu_time(cpu_finish)
       tvoll(level) = tvoll(level) + clock_finish - clock_start
@@ -166,7 +170,6 @@ c
       integer mythread/0/, maxthreads/1/
 
       double precision fp(nvar,mitot),fm(nvar,mitot)
-
 
 c
 c  :::::::::::::: PAR_ADVANC :::::::::::::::::::::::::::::::::::::::::::
@@ -218,6 +221,7 @@ c
             locsvf = node(ffluxptr,mptr)
             locsvq = locsvf + nvar*lenbc
             locx1d = locsvq + nvar*lenbc
+
          call qad(alloc(locnew),mitot,nvar,
      1             alloc(locsvf),alloc(locsvq),lenbc,
      2            intratx(level-1),hx,
@@ -250,14 +254,17 @@ c
      2               alloc(node(cfluxptr,mptr)),mitot,
      3               nvar,listsp(level),delt,hx)
       endif
+
+
          if (node(ffluxptr,mptr) .ne. 0) then
-         lenbc = 2*(nx/intratx(level-1))
+            lenbc = 2
             locsvf = node(ffluxptr,mptr)
          call fluxad(fm,fp,
      2               alloc(locsvf),mptr,mitot,nvar,
      4                  lenbc,intratx(level-1),
      5               nghost,delt,hx)
          endif
+
 c
 c        write(outunit,969) mythread,delt, dtnew
 c969     format(" thread ",i4," updated by ",e15.7, " new dt ",e15.7)

@@ -41,19 +41,21 @@ def setplot(plotdata):
     plotdata.clearfigures()  # clear any old figures,axes,items data
 
     # Figure for q[0]
-    plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+    plotfigure = plotdata.new_plotfigure(name='Solution', figno=1)
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = [0,1]
-    plotaxes.ylimits = [-.5,1.3]
+    plotaxes.ylimits = [-.6,1.2]
     plotaxes.title = 'q'
 
     # Set up for item on these axes:
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
-    plotitem.plotstyle = 'o'
-    plotitem.color = 'b'
+    plotitem.amr_color = ['g','b','r']
+    plotitem.amr_plotstyle = ['^-','s-','o-']
+    plotitem.amr_data_show = [1,1,1]
+    plotitem.amr_kwargs = [{'markersize':8},{'markersize':6},{'markersize':5}]
 
     # Plot true solution for comparison:
     def plot_qtrue(current_data):
@@ -61,10 +63,49 @@ def setplot(plotdata):
         x = linspace(0,1,1000)
         t = current_data.t
         q = qtrue(x,t)
-        plot(x,q,'r',label='true solution')
-        legend()
+        plot(x,q,'k',label='true solution')
+    
+    def plot_qtrue_with_legend(current_data):
+        from pylab import plot, legend
+        x = linspace(0,1,1000)
+        t = current_data.t
+        q = qtrue(x,t)
+        plot(x,q,'k',label='true solution')
+        try:
+            from clawpack.visclaw import legend_tools
+            labels = ['Level 1','Level 2', 'Level 3','True solution']
+            legend_tools.add_legend(labels, colors=['g','b','r','k'],
+                        markers=['^','s','o',''], linestyles=['','','','-'],
+                        loc='lower right')
+        except:
+            legend(loc='lower right')
 
-    plotaxes.afteraxes = plot_qtrue
+    plotaxes.afteraxes = plot_qtrue_with_legend
+
+    # ------------------------------------------
+    # Figure with each level plotted separately:
+
+    plotfigure = plotdata.new_plotfigure(name='By AMR Level', figno=2)
+    plotfigure.kwargs = {'figsize':(8,10)}
+
+
+    for level in range(1,4):
+        # Set up plot for this level:
+        plotaxes = plotfigure.new_plotaxes()
+        plotaxes.axescmd = 'subplot(3,1,%i)' % level
+        plotaxes.xlimits = [0,1]
+        plotaxes.ylimits = [-.5,1.3]
+        plotaxes.title = 'Level %s' % level
+        plotaxes.afteraxes = plot_qtrue
+
+        plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+        plotitem.plot_var = 0
+        plotitem.amr_color = ['g','b','r']
+        plotitem.amr_plotstyle = ['^-','s-','o-']
+        plotitem.amr_data_show = [0,0,0]
+        plotitem.amr_data_show[level-1] = 1  # show only one level
+
+
 
     #-----------------------------------------
     # Figures for gauges
@@ -76,7 +117,7 @@ def setplot(plotdata):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = 'auto'
-    plotaxes.title = 'Pressure'
+    plotaxes.title = 'Solution'
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
     plotitem.plotstyle = 'b-'

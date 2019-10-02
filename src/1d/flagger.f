@@ -4,11 +4,14 @@ c
       subroutine flagger(nvar,naux,lcheck,start_time)
 
       use amr_module
+      use adjoint_module,only:calculate_tol,eptr,errors,totnum_adjoints,
+     1     adjoints,trange_start,trange_final,adjoint_flagging,grid_num
       implicit double precision (a-h,o-z)
 
       integer omp_get_thread_num, omp_get_max_threads
       integer mythread/0/, maxthreads/1/
       integer listgrids(numgrids(lcheck)), locuse
+      logical keepflagging
 
 c ::::::::::::::::::::: FLAGGER :::::::::::::::::::::::::
 c
@@ -21,7 +24,23 @@ c
 c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 c      call prepgrids(listgrids,numgrids(lcheck),lcheck)
-         mbuff = max(nghost,ibuff+1)  
+         mbuff = max(nghost,ibuff+1)
+
+
+      if(adjoint_flagging) then
+c        allocating space for tracking error estimates
+c        (used at next regridding time to determine tolerance)
+         if (flag_richardson) then
+           allocate(errors(numcells(lcheck)/2))
+           allocate(eptr(numgrids(lcheck)))
+           errors = 0
+           eptr(1) = 0
+
+           ! new version has variable node size arrays, so need to use current size
+           allocate(grid_num(maxgr))
+         endif
+      endif
+
 c before parallel loop give grids the extra storage they need for error estimation
          do  jg = 1, numgrids(lcheck)
 c            mptr = listgrids(jg)
@@ -32,6 +51,13 @@ c            mptr = listgrids(jg)
             if (flag_richardson) then
                locbig = igetsp(mitot*nvar)
                node(tempptr,mptr) = locbig
+
+               if(adjoint_flagging) then
+                 grid_num(mptr) = jg
+                 if (jg .ne. numgrids(lcheck)) then
+                   eptr(jg+1) = eptr(jg)+(nx/2)
+                 endif
+               endif
             else 
                locbig = 0
             endif
@@ -43,7 +69,7 @@ c            mptr = listgrids(jg)
 !$OMP PARALLEL DO PRIVATE(jg,mptr,nx,mitot,locnew,locaux),
 !$OMP&            PRIVATE(time,dx,xleft,xlow,locbig),
 !$OMP&            PRIVATE(locold,mbuff,mibuff,locamrflags,i),
-!$OMP&            PRIVATE(locuse),
+!$OMP&            PRIVATE(locuse,keepflagging),
 !$OMP&            SHARED(numgrids,listgrids,lcheck,nghost,nvar,naux),
 !$OMP&            SHARED(levSt,listStart,listOfGrids),
 !$OMP&            SHARED(tolsp,alloc,node,rnode,hxposs,ibuff),
@@ -94,13 +120,30 @@ c            them in locnew
          mbuff = max(nghost,ibuff+1)  
          mibuff = nx + 2*mbuff       ! NOTE THIS NEW DIMENSIONING TO ALLOW ROOM FOR BUFFERING IN PLACE
 
-!              ##  locamrflags used for flag storage. flag2refine flags directly into it.
+!              ##  locamrflags used for flag storage.
+!              ## flagregions flags directly into it. flag2refine and
 !              ## richardson flags added to it. Then colate finished the job
                 locamrflags = node(storeflags,mptr)
                 do 20 i = 1, mibuff  ! initialize
- 20                alloc(locamrflags+i-1) = goodpt
+ 20                alloc(locamrflags+i-1) = UNSET
 
-         if (flag_gradient) then
+c      ##  new call to flag regions: check if cells must be refined, or exceed
+c      ##  maximum refinement level for that region.  used to be included with
+c      ## flag2refine. moved here to include flags from richardson too.
+       call flagregions1(nx,mbuff,rnode(cornxlo,mptr),
+     1                  dx,lcheck,time,
+     2                  alloc(locamrflags))
+
+c       ##  check if any flags remain unset
+        keepflagging = .false.
+        do i = 1, mibuff
+            if(alloc(locamrflags+i-1) == UNSET) then
+                keepflagging = .true.
+                exit
+            endif
+        enddo
+
+         if (flag_gradient .and. keepflagging) then
 
 c     # call user-supplied routine to flag any points where 
 c     # refinement is desired based on user's criterion.  
@@ -110,16 +153,33 @@ c no longer getting locbig, using "real" solution array in locnew
             call flag2refine1(nx,nghost,mbuff,nvar,naux,
      &                        xleft,dx,time,lcheck,
      &                        tolsp,alloc(locuse),
-     &                        alloc(locaux),alloc(locamrflags),
-     &                        goodpt,badpt)
+     &                        alloc(locaux),alloc(locamrflags))
              endif     
-c     
-         if (flag_richardson) then
+c
+c       ##  check if any flags remain unset
+        keepflagging = .false.
+        do i = 1, mibuff
+            if(alloc(locamrflags+i-1) == UNSET) then
+                keepflagging = .true.
+                exit
+            endif
+        enddo
+
+         if (flag_richardson .and. keepflagging) then
               call errest(nvar,naux,lcheck,mptr,nx)
          endif
 
        end do
 ! $OMP END PARALLEL DO
+
+       if(adjoint_flagging)then
+           if (flag_richardson) then
+               call calculate_tol(lcheck)
+               deallocate(errors)
+               deallocate(eptr)
+               deallocate(grid_num)
+           endif
+       endif
 
        return
        end

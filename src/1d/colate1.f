@@ -94,7 +94,7 @@ c             neg means no home was found. throw out
                   write(*,*)" still have neg points"
                   go to 60
              endif
-             if (alloc(iadd(i)) .eq. goodpt) go to 60
+             if (alloc(iadd(i)) .le. DONTFLAG) go to 60
 c
 c    got a legit flagged point, bag it.
 c

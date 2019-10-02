@@ -1,0 +1,124 @@
+Clawpack Git Status 
+Diffs can be found in /Users/brisadavis/Documents/git_folders/clawpack/amrclaw/tests/acoustics_1d_adjointproblem/regression_data/claw_git_diffs.txt
+
+Fri, 01 Jun 2018 14:51:36 PDT
+$CLAW = /Users/brisadavis/Documents/git_folders/clawpack
+$FC = gfortran
+
+
+===========
+classic
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/classic
+
+--- last commit ---
+606424b Merge pull request #80 from rjleveque/wcblast
+
+--- branch and status ---
+## master...origin/master
+ M examples/acoustics_1d_example1/setplot.py
+ M examples/acoustics_1d_example1/setrun.py
+ M examples/acoustics_1d_heterogeneous/setplot.py
+ M examples/acoustics_1d_heterogeneous/setrun.py
+ M examples/advection_1d_example1/setplot.py
+ M examples/advection_1d_example1/setrun.py
+
+
+===========
+amrclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/amrclaw
+
+--- last commit ---
+34901a3 Moving adjoint module into main 2d AMRClaw folder.
+
+--- branch and status ---
+## adjoint...bitbucket/adjoint [ahead 38]
+ M examples/acoustics_1d_adjoint/Makefile
+ M examples/acoustics_1d_adjoint/adjoint/setrun.py
+ M examples/acoustics_1d_adjoint/setaux.f
+ M examples/acoustics_1d_adjoint/setplot.py
+ M examples/acoustics_1d_adjoint/setprob.f
+MM src/1d/Makefile.amr_1d
+AM src/1d/adjoint_module.f90
+MM src/1d/amr1.f90
+M  src/1d/errest.f
+RM src/1d/flag2refine1.f90 -> src/1d/flag2refine2.f90
+MM src/1d/flagger.f
+R  src/1d_adjoint/quick_sort.f -> src/1d/quick_sort_reals.f
+M  src/1d/setaux.f90
+D  src/1d_adjoint/Makefile.adjoint_amr_1d
+D  src/1d_adjoint/adjoint_module.f90
+D  src/1d_adjoint/errest.f
+D  src/1d_adjoint/errf1.f
+D  src/1d_adjoint/flag2refine1.f90
+D  src/1d_adjoint/flagger.f
+D  src/1d_adjoint/innerprod_module.f90
+D  src/1d_adjoint/interp_adjoint.f90
+D  src/1d_adjoint/reload.f
+D  src/1d_adjoint/setaux.f90
+D  src/1d_adjoint/setprob.f90
+D  src/1d_adjoint/valout.f
+M  src/2d/flagger.f
+M  src/2d/setaux.f90
+
+
+===========
+clawutil
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/clawutil
+
+--- last commit ---
+5c6bd99 Merge pull request #122 from rjleveque/convert_readme_string
+
+--- branch and status ---
+## master...origin/master
+
+
+===========
+pyclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/pyclaw
+
+--- last commit ---
+0c54683 Merge pull request #589 from ketch/update_to_scipy_v1
+
+--- branch and status ---
+## master...origin/master
+
+
+===========
+visclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/visclaw
+
+--- last commit ---
+c2a1907 (matlab) adding functionality for creating plot for tikz output
+
+--- branch and status ---
+## master...origin/master
+
+
+===========
+riemann
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/riemann
+
+--- last commit ---
+974c08b Changing notation for consistency with dissertation.
+
+--- branch and status ---
+## adjoint
+
+
+===========
+geoclaw
+===========
+/Users/brisadavis/Documents/git_folders/clawpack/geoclaw
+
+--- last commit ---
+adb1cfb Merge branch 'adjoint' of https://github.com/BrisaDavis/geoclaw into adjoint
+
+--- branch and status ---
+## adjoint
+ M examples/tsunami/chile2010_adjoint/Makefile

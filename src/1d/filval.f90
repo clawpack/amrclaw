@@ -14,6 +14,7 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
     use amr_module, only: xlower, intratx, nghost, xperdom
     use amr_module, only: xupper, alloc
     use amr_module, only: outunit, NEEDS_TO_BE_SET, mcapa
+    use amr_module, only: iregsz
     
     !for setaux timing
     use amr_module, only: timeSetaux, timeSetauxCPU
@@ -30,13 +31,14 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
 
     ! Local storage
     integer :: refinement_ratio_x, iclo, ichi, ng
-    integer :: ivar, i, j, ico, ifine, nx
+    integer :: ivar, i, ico, ifine, nx
     real(kind=8) :: valc(nvar,mic), auxc(naux,mic)
     real(kind=8) :: dx_coarse, xl, xr, area
     real(kind=8) :: s1m, s1p, slopex, xoff
     real(kind=8) :: fliparray((mitot)*nghost*(nvar+naux))
     real(kind=8) :: setflags(mitot),maxauxdif,aux2(naux,mitot)
     integer :: mjb
+    logical :: sticksoutxfine,sticksoutxcrse
     
     !for setaux timing
     integer :: clock_start, clock_finish, clock_rate
@@ -61,8 +63,11 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
     ichi   = (ihi + 1) / refinement_ratio_x - 1 + 1
     ng     = 0
 
+    sticksoutxfine = ( (ilo .lt. 0) .or. (ihi .ge. iregsz(level)))
+    sticksoutxcrse = ((iclo .lt. 0) .or. (ichi .ge. iregsz(level-1)))
+
     if (naux == 0) then
-        if (xperdom) then
+        if (xperdom .and. sticksoutxcrse) then
             call preintcopy(valc,mic,nvar,iclo,ichi,level-1,fliparray)
         else
             call intcopy(valc,mic,nvar,iclo,ichi,level-1,1)
@@ -70,7 +75,7 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
     else  
         ! intersect grids and copy all (soln and aux)
         auxc(1,:) = NEEDS_TO_BE_SET
-        if (xperdom) then
+        if (xperdom .and. sticksoutxcrse) then
             call preicall(valc,auxc,mic,nvar,naux,iclo,ichi, &
                           level-1,fliparray)
         else
@@ -93,9 +98,9 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
            timeSetaux = timeSetaux + clock_finish - clock_start
            timeSetauxCPU = timeSetauxCPU + cpu_finish - cpu_start
     endif
+
     call bc1amr(valc,auxc,mic,nvar,naux,dx_coarse,level-1,   &
                 time,xl,xr)
-
 
 !  NOTE change in order of code.  Since the interp from coarse to fine needs the aux
 !       arrays set already, the fine copy is done first, to set up the aux arrays.
@@ -113,7 +118,7 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
 !       ## overwritten with coarse grid interpolation
         aux(1,:) = NEEDS_TO_BE_SET  ! indicates fine cells not yet set.
 
-        if (xperdom) then
+        if (xperdom.and.sticksoutxfine) then
             call preicall(val,aux,mitot,nvar,naux,ilo-nghost,ihi+nghost, &
                           level,fliparray)
         else
@@ -136,7 +141,7 @@ subroutine filval(val, mitot, dx, level, time,  mic, &
          ! by coarse grid interp.  this is needed due to reversing order of
          ! work - first copy from fine grids, then interpolate from coarse grids
         val(1,:) = NEEDS_TO_BE_SET
-        if (xperdom) then
+        if (xperdom.and.sticksoutxfine) then
             call preintcopy(val,mitot,nvar,ilo-nghost,ihi+nghost,     &
                             level,fliparray)
         else

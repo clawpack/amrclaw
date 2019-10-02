@@ -52,7 +52,12 @@ c
       ifine = nghost+1
 c
       do 30  i  = nghost+1, mi2tot-nghost
-          rflag = goodpt
+        rflag = UNSET
+c Only check errors if flag hasn't been set yet.
+c If flag == DONTFLAG then refinement is forbidden by a region,
+c if flag == DOFLAG checking is not needed
+        if(rctflg(ifine) == UNSET
+     .         .or. rctflg(ifine+1) == UNSET) then
           xofi  = xleft + (dble(ifine) - .5d0)*hx
           term1 = rctfine(1,ifine)
           term2 = rctfine(1,ifine+1)
@@ -68,8 +73,9 @@ c          write(outunit,104) term1,term2,term3,term4
 c         rctcrse(2,i,j) = est
 c
           if (est .ge. tol) then
-             rflag  = badpt
-          endif 
+             rflag  = DOFLAG
+          endif
+        endif
       rctcrse(1,i) = rflag
       ifine = ifine + 2
  30   continue
@@ -92,13 +98,15 @@ c
 c
       ifine   = nghost+1
       do 60 i = nghost+1, mi2tot-nghost
-         if (rctcrse(1,i) .eq. goodpt) go to 55
-c           ## never set rctflg to good, since flag2refine may
-c           ## have previously set it to bad
-c           ## can only add bad pts in this routine
-            rctflg(ifine)    = badpt
-            rctflg(ifine+1)  = badpt
- 55       ifine   = ifine + 2
+         if (rctcrse(1,i) .eq. DOFLAG) then
+c           ## never set rctflg to DONTFLAG,
+c           ## since flagregions or flag2refine may
+c           ## have previously set it to DOFLAG
+c           ## can only add DOFLAG pts in this routine
+            rctflg(ifine)    = DOFLAG
+            rctflg(ifine+1)  = DOFLAG
+          endif
+        ifine   = ifine + 2
  60     continue
 c
 

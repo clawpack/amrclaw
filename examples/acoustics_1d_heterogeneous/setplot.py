@@ -1,85 +1,124 @@
-def setplot(plotdata):
+
+""" 
+Set up the plot figures, axes, and items to be done for each frame.
+
+This module is imported by the plotting routines and then the
+function setplot is called to set the plot parameters.
     
-    plotdata.clearfigures()
+""" 
 
-    # Tuples of (variable name, variable number)
-    figdata = [('Pressure', 0),
-               ('Velocity', 1)]
+from __future__ import absolute_import
+from __future__ import print_function
 
-    # Draw a vertical dashed line at the interface
-    # between different media
-    def draw_interface(current_data):
-        import pylab
-        pylab.plot([0., 0.], [-1000., 1000.], 'k--')
+#--------------------------
+def setplot(plotdata=None):
+#--------------------------
     
-    # Formatting title
-    def format(current_data, var, adjoint):
-        import pylab
-        size = 28
-        t = current_data.t
-        timestr = float(t)
-        
-        if (var == 0):
-            titlestr = 'Pressure at time %s' % timestr
-        else:
-            titlestr = 'Velocity at time %s' % timestr
-        
-        pylab.title(titlestr, fontsize=size)
-        pylab.xticks(fontsize=size)
-        pylab.yticks(fontsize=size)
-        pylab.xticks([-4, -2, 0, 2], fontsize=size)
+    """ 
+    Specify what is to be plotted at each frame.
+    Input:  plotdata, an instance of clawpack.visclaw.data.ClawPlotData.
+    Output: a modified version of plotdata.
     
-    # After axis function for pressure
-    def aa_pressure(current_data):
-        draw_interface(current_data)
-        format(current_data, 0, False)
+    """ 
 
-    # After axis function for velocity
-    def aa_velocity(current_data):
-        draw_interface(current_data)
-        format(current_data, 1, False)
 
-    for varname, varid in figdata:
-        plotfigure = plotdata.new_plotfigure(name=varname, figno=varid)
-        plotfigure.kwargs = {'figsize': (11,5)}
+    if plotdata is None:
+        from clawpack.visclaw.data import ClawPlotData
+        plotdata = ClawPlotData()
 
-        plotaxes = plotfigure.new_plotaxes()
-        plotaxes.axescmd = 'axes([0.1,0.1,0.4,0.8])'
-        plotaxes.xlimits = [-5., 3.]
-        plotaxes.ylimits = [-0.5, 1.5]    # Good for both vars because of near-unit impedance
-        if (varid == 0):
-            plotaxes.afteraxes = aa_pressure
-        else:
-            plotaxes.afteraxes = aa_velocity
+    plotdata.clearfigures()  # clear any old figures,axes,items data
 
-        plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-        plotitem.plot_var = varid
-        plotitem.color = 'b'
-        plotitem.plotstyle = 'o'
+    def draw_interface_add_legend(current_data):
+        from pylab import plot
+        plot([0., 0.], [-1000., 1000.], 'k--')
+        try:
+            from clawpack.visclaw import legend_tools
+            labels = ['Level 1','Level 2', 'Level 3']
+            legend_tools.add_legend(labels, colors=['g','b','r'],
+                        markers=['^','s','o'], linestyles=['','',''],
+                        loc='upper left')
+        except:
+            pass
 
+
+    # Figure for q[0]
+    plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+    plotfigure.kwargs = {'figsize': (8,8)}
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,1,1)'   # top figure
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = [-.5,1.1]
+    plotaxes.title = 'Pressure'
+    plotaxes.afteraxes = draw_interface_add_legend
+
+    # Set up for item on these axes:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 0
+    plotitem.amr_color = ['g','b','r']
+    plotitem.amr_plotstyle = ['^-','s-','o-']
+    plotitem.amr_data_show = [1,1,1]
+    plotitem.amr_kwargs = [{'markersize':5},{'markersize':4},{'markersize':3}]
+
+    # Figure for q[1]
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,1,2)'   # bottom figure
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = [-.5,1.1]
+    plotaxes.title = 'Velocity'
+    plotaxes.afteraxes = draw_interface_add_legend
+
+    # Set up for item on these axes:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 1
+    plotitem.amr_color = ['g','b','r']
+    plotitem.amr_plotstyle = ['^-','s-','o-']
+    plotitem.amr_data_show = [1,1,1]
+    plotitem.amr_kwargs = [{'markersize':5},{'markersize':4},{'markersize':3}]
+
+    
     #-----------------------------------------
     # Figures for gauges
     #-----------------------------------------
     plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
-                                     type='each_gauge')
+                                         type='each_gauge')
     plotfigure.clf_each_gauge = True
-    
+
+                                         
     plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(211)'
     plotaxes.xlimits = 'auto'
     plotaxes.ylimits = 'auto'
     plotaxes.title = 'Pressure'
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
     plotitem.plotstyle = 'b-'
-    
+
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(212)'
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'Velocity'
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 1
+    plotitem.plotstyle = 'b-'
+
     # Parameters used only when creating html and/or latex hardcopy
     # e.g., via clawpack.visclaw.frametools.printframes:
 
-    plotdata.printfigs = True          # Whether to output figures
-    plotdata.print_format = 'png'      # What type of output format
-    plotdata.print_framenos = 'all'    # Which frames to output
-    plotdata.print_fignos = 'all'      # Which figures to print
-    plotdata.html = True               # Whether to create HTML files
-    plotdata.latex = False             # Whether to make LaTeX output
+    plotdata.printfigs = True                # print figures
+    plotdata.print_format = 'png'            # file format
+    plotdata.print_framenos = 'all'          # list of frames to print
+    plotdata.print_fignos = 'all'            # list of figures to print
+    plotdata.html = True                     # create html files of plots?
+    plotdata.html_homelink = '../README.html'
+    plotdata.latex = True                    # create latex file of plots?
+    plotdata.latex_figsperline = 2           # layout of plots
+    plotdata.latex_framesperline = 1         # layout of plots
+    plotdata.latex_makepdf = False           # also run pdflatex?
 
     return plotdata
+
+    

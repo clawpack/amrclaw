@@ -1,15 +1,18 @@
 c
 c ----------------------------------------------------------------
 c
-       logical function baseCheck(mnew,lbase,ilo,ihi)
+       logical function baseCheck(mnew,lbase,ilo,ihi,
+     .                            nvar,naux,thisBuff)
 
        use amr_module
        implicit double precision (a-h, o-z)
 
-       logical debug/.false./
+       logical debug/.true./
        integer ist(3),iend(3),ishift(3)
+       logical borderx
+       integer thisBuff
 
-c      index into alloc from iclo:ichi, not 0..leni.
+c      index into alloc from iclo:ichi and jclo:jchi, not 0..leni/j. 
        iadd(i) = locm + i - iclo
 
 c ::::::::::::::::::: baseCheck :::::::::::::::::::::::::::
@@ -28,19 +31,13 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
 
-       if (debug) write(outunit,100) mnew,ilo,ihi,lbase
- 100   format("NESTCK1 testing grid ",i5," base level ",i5,/,
-     .  " new grid from ilo:hi: ",2i12)
-
        levnew = node(nestlevel,mnew)
-c
-c initialize for potential periodicity
-c each patch divided into 3 regions (some may be empty)
-c e.g. i from (ilo,-1), (0,iregsz(level)-1),(iregsz(level),ihi)
-c except using enlarged grid (ilo-1 to ihi+1)
-c
-       call setIndices(ist,iend,ilo-1,ihi+1,
-     .                 ishift,levnew)
+       borderx = (ilo .eq. 0 .or. ihi .eq. iregsz(levnew)-1)
+       
+
+      if (debug) write(outunit,100) mnew,lbase,ilo,ihi,levnew
+ 100  format("NESTCK1 testing grid ",i5," base level ",i5,/,
+     . " new grid from ilo:hi: ",2i12," to ",2i12," at level ",i4)
 c
 c    on to initializing for the given grid and its nest checking
        levratx = 1
@@ -49,14 +46,19 @@ c    on to initializing for the given grid and its nest checking
  5     continue
 
 c widen by 1 cell (proper nesting), then project to lbase
-       iclo = ilo-1
-       ichi = ihi+1
+c this might stick out of domain, fix later
+c figure out size for scratch storage on base grid for testing
+       iclo = ilo
+       ichi = ihi
        do lev = levnew-1,lbase,-1
-          iclo = (dfloat(iclo)/intratx(lev))
-          ichi = (dfloat(ichi)/intratx(lev))
+          iclo = iclo/intratx(lev)
+          ichi = ichi/intratx(lev)
+          iclo = iclo - 1
+          ichi = ichi + 1
           if (debug) then
              write(outunit,111) lev, iclo,ichi
-111          format(10x,"at level",i5," projected coords ilo:hi:",2i10)
+111          format(10x,"at level",i5," projected coords ilo:hi:",2i10,
+     .           " jlo:hi:",2i10)
           endif
        end do
 c      high end of integer grid index truncates during the divide
@@ -66,91 +68,80 @@ c      space, we took care of that already.
        if (debug) then
           write(outunit,108) ilo-1,ihi+1
           write(outunit,109) levratx
- 108      format(" enlarged fine grid from ilo:hi:",2i12)
- 109      format(" refinement factors to base grid of ", i12)
+ 108      format(" enlarged (by 1) fine grid from ilo:hi:",2i12)
+ 109      format(" refinement factors to base grid of ", 2i12)
           write(outunit,101) iclo,ichi
- 101      format("coarsened to lbase, grid from ilo:hi: ",2i12)
+ 101      format("coarsened to lbase, grid from iclo:hi: ",2i12)
        endif
+
+       if (.not. (xperdom .and. borderx)) then
+          iclo = max(iclo,0)  ! make sure in domain boundary when checking nesting
+          ichi = min(ichi,iregsz(lbase)-1) ! subtract 1 since regsz is number of cells, so -1 is highest index
+       endif
+
 
        leni = ichi - iclo + 1
        lenrect = leni
        locm = igetsp(lenrect)
-c      initialize on projected size of new grid. used to mark nesting         
-       do k = 0, lenrect-1   
-          alloc(locm + k) = 0.
-       end do
+       alloc(locm:locm+lenrect-1) = 0.
 c
-c      corners dont count for nesting so mark as ok
-c  leave 0 for now so match older nestck
-!--        alloc(iadd(iclo,jclo)) = 1.
-!--        alloc(iadd(iclo,jchi)) = 1.
-!--        alloc(iadd(ichi,jclo)) = 1.
-!--        alloc(iadd(ichi,jchi)) = 1.
-c
-c  if mnew on domain boundary fix flags so ok.
+c  if mnew on domain boundary fix flags so ok. 
 c  fix extra border, and first/last real edge
        if (ilo .eq. 0 .and. .not. xperdom) then
-         alloc(iadd(iclo)) = 1.
-         alloc(iadd(iclo+1)) = 1.
+            alloc(iadd(iclo)) = 1.
+            alloc(iadd(iclo+1)) = 1.
        endif
        if (ihi .eq. iregsz(levnew)-1 .and. .not. xperdom) then
-         alloc(iadd(ichi)) = 1.
-         alloc(iadd(ichi-1)) = 1.
+             alloc(iadd(ichi)) = 1.
+             alloc(iadd(ichi-1)) = 1.
        endif
 
        mptr = lstart(lbase)
- 20       iblo = node(ndilo, mptr)
-          ibhi = node(ndihi, mptr)
+ 20       iblo = node(ndilo, mptr) - thisBuff
+          ibhi = node(ndihi, mptr) + thisBuff
+c
+          ! non periodic case, base level coordinates, just mark if nested.
+          if (.not. (xperdom .and. borderx)) then
+              ixlo = max(iclo,iblo)
+              ixhi = min(ichi,ibhi)
+              if (.not.(ixlo.le.ixhi)) go to 30
+              do ix = ixlo, ixhi
+                alloc(iadd(ix))=1.
+              end do
+              go to 30
+          endif
+c
+c          periodic case:  initialize for potential periodicity
+c             each patch divided into 9 regions (some may be empty)
+c             e.g. i from (ilo,-1), (0,iregsz(level)-1),(iregsz(level),ihi)
+c             except using enlarged grid (ilo-1 to ihi+1)
+c
+       call setIndices(ist,iend,iclo,ichi,
+     .                 ishift,lbase)
 
-          if (debug) then
-              write(outunit,*)
-             write(outunit,102) mptr,lbase,iblo,ibhi
- 102        format("TESTING AGAINST GRID ",i5," level ",i5,
-     .             " from ilo:hi:",2i10)
-           endif
-
-c          compare all regions of patch with one lbase grid at a time
+c          compare all regions of coarsened patch with one lbase grid at a time
            do 25 i = 1, 3
-              i1 = max(ilo-1,ist(i))
-              i2 = min(ihi+1, iend(i))
+              i1 = max(iclo,ist(i))
+              i2 = min(ichi, iend(i))
 
               if (.not. (i1 .le. i2)) go to 25
-
-              if (debug) write(outunit,103)i,i1,i2
- 103          format("region ",i10," from ilo:hi:",2i10)
 c
-c             patch not empty. project coords to level lbase
-              iplo = i1+ishift(i)
-              iphi = i2+ishift(i)
-              do lev = levnew-1,lbase,-1
-                iplo = floor(dfloat(iplo)/intratx(lev))
-                iphi = ceiling(dfloat(iphi+1)/intratx(lev) - 1)
-              end do
-              if (debug) then
-                 write(outunit,104) i,iplo,iphi
- 104             format("projected coords of region ",i15," is ",2i12)
-              endif
+c           patch (possibly periodically wrapped) not empty.
+c           see if intersects base grid. wrap coords for periodicity
+              i1_shifted = i1 + ishift(i)
+              i2_shifted = i2 + ishift(i)
 
-              ixlo = max(iplo,iblo)
-              ixhi = min(iphi,ibhi)
+              ixlo = max(i1_shifted,iblo)
+              ixhi = min(i2_shifted,ibhi)
 
               if (.not.(ixlo.le.ixhi)) go to 25
-
-              if (debug) write(outunit,105) ixlo,ixhi
- 105          format("intersected reg ",2i12)
-c FOR NOW DO NOT HANDLE PERIODIC NEST CHECKING
-          
-              if (debug) then
-                 write(outunit,106) ixlo,ixhi
-                 write(outunit,107) ishift(i)
- 106             format("SETTING FROM ",2i5)
- 107             format("shifts are ",i5)
-              endif
 c     mark intersected regions with 1
               do ix = ixlo, ixhi
-c              need to mark nesting of orig coords, not shifted 
-               alloc(iadd(ix-ishift(i)/levratx))=1.
-              end do
+c                need to mark nesting of orig coords, not coarsened shifted indices
+                 ix_unshifted = (ix - ishift(i)) ! back to unshifted coords
+                                                 ! to mark base grid nesting ok
+                 alloc(iadd(ix_unshifted)) = 1.
+               end do
 
  25       continue
 
@@ -159,8 +150,8 @@ c              need to mark nesting of orig coords, not shifted
 
 c     output for debugging
       if (debug) then
-          write(outunit,344)(int(alloc(iadd(i))), i=iclo,ichi)
- 344      format(110i1)
+              write(outunit,344)(int(alloc(iadd(i))), i=iclo,ichi)
+ 344          format(110i1)
        endif
 
 c

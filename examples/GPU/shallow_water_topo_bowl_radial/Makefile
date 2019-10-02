@@ -77,14 +77,20 @@ EXCLUDE_SOURCES = \
 # ----------------------------------------
 
 MODULES = \
-  $(CLAW)/riemann/src/shallow_topo_device_module.f90 \
   setprob_module.f90
 
 SOURCES = \
   qinit.f90 \
-  setaux.f90
+  setaux.f90 \
 
 ifeq ($(USE_CUDA), TRUE) 
+    MODULES += \
+      $(CLAW)/riemann/src/GPU/shallow_topo_device_module.f90 
+
+    SOURCES += \
+      $(CLAW)/riemann/src/GPU/rpn2_empty.f90 \
+      $(CLAW)/riemann/src/GPU/rpt2_empty.f90
+
     CPP_SOURCES += stepgrid_cuda.cu
 endif
 #-------------------------------------------------------------------

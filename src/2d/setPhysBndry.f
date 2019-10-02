@@ -23,7 +23,7 @@ c ****************************************************************
 c       set left flagged points to be ok
           do j = jlo-mbuff, jhi+mbuff
             do i = ilo-mbuff, ilo-1
-             rectflags(i,j) = goodpt
+             rectflags(i,j) = DONTFLAG
             end do
 c           1st interior cell ok if on bndry. set back to pos if flagged
             rectflags(0,j) = abs(rectflags(0,j))
@@ -34,7 +34,7 @@ c           1st interior cell ok if on bndry. set back to pos if flagged
 c       set right flagged points to be ok
           do j = jlo-mbuff, jhi+mbuff
             do i = ihi+1, ihi+mbuff
-             rectflags(i,j) = goodpt
+             rectflags(i,j) = DONTFLAG
             end do
             rectflags(ihi,j) = abs(rectflags(ihi,j))
           end do
@@ -45,7 +45,7 @@ c       set right flagged points to be ok
 c       set bottom flagged points to be ok
           do i = ilo-mbuff, ihi+mbuff
             do j = jlo-mbuff, jlo-1    
-             rectflags(i,j) = goodpt
+             rectflags(i,j) = DONTFLAG
             end do
             rectflags(i,0) = abs(rectflags(i,0))
           end do
@@ -55,7 +55,7 @@ c       set bottom flagged points to be ok
 c       set top flagged points to be ok
           do i = ilo-mbuff, ihi+mbuff
             do j = jhi+1, jhi+mbuff
-             rectflags(i,j) = goodpt
+             rectflags(i,j) = DONTFLAG
             end do
             rectflags(i,jhi) = abs(rectflags(i,jhi))
           end do

@@ -20,7 +20,7 @@ c if not periodic no need to check if outside domain
 c
 
       do 10 i = imin, imax
-        if (rectflags(i) .eq. goodpt) go to 10
+        if (rectflags(i) .le. DONTFLAG) go to 10
         if (iflags(i) .ne. 1) then  !point not nested. turn off
              rectflags(i) = 0.
              if (nprint) then
