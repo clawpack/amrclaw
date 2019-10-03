@@ -99,7 +99,7 @@ COMMON_SOURCES += \
   $(AMRLIB)/restrt_alloc.f90 \
 
 
-ifeq ($(USE_CUDA),TRUE)
+# GPU related modules
 COMMON_MODULES += \
     $(AMRLIB)/GPU/cuda_module.f90 \
     $(AMRLIB)/GPU/memory_module.f90 \
@@ -110,6 +110,7 @@ COMMON_MODULES += \
     $(AMRLIB)/GPU/timer_module.f90 \
     $(AMRLIB)/GPU/amr_module.f90 
 
+# GPU related sources
 COMMON_SOURCES += \
     $(AMRLIB)/GPU/advanc.f90 \
     $(AMRLIB)/GPU/flux2.f90 \
@@ -172,36 +173,3 @@ CPP_HEADERS += \
 INCLUDE += $(AMRLIB)/GPU/solver
 INCLUDE += $(AMRLIB)/GPU
 endif # end USE_CPP
-
-else # not using USD_CUDA
-COMMON_MODULES += \
-    $(AMRLIB)/amr_module.f90 
-
-COMMON_SOURCES += \
-    $(AMRLIB)/advanc.f90 \
-    $(AMRLIB)/flux2.f90 \
-    $(AMRLIB)/fluxad.f90 \
-    $(AMRLIB)/fluxsv.f90 \
-    $(AMRLIB)/inlinelimiter.f90 \
-    $(AMRLIB)/prepc.f90 \
-    $(AMRLIB)/prepf.f90 \
-    $(AMRLIB)/putsp.f90 \
-    $(AMRLIB)/quick_sort_reals.f \
-    $(AMRLIB)/update.f90
-    $(AMRLIB)/gfixup.f \
-    $(AMRLIB)/ginit.f \
-    $(AMRLIB)/init_alloc.f90 \
-    $(AMRLIB)/init_nodes.f90 \
-    $(AMRLIB)/outmsh.f \
-    $(AMRLIB)/qad.f90 \
-    $(AMRLIB)/resize_alloc.f90 \
-    $(AMRLIB)/resize_nodes.f90 \
-    $(AMRLIB)/restrt.f \
-    $(AMRLIB)/restrt_nodes.f90 \
-    $(AMRLIB)/saveqc.f \
-    $(AMRLIB)/setgrd.f \
-    $(AMRLIB)/stepgrid_dimSplit.f \
-    $(AMRLIB)/upbnd.f \
-    $(AMRLIB)/cleanup.f
-
-endif # end USE_CUDA
