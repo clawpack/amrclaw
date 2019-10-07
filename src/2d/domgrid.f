@@ -4,7 +4,7 @@ c
       subroutine domgrid(lbase,lcheck)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
       mbuff = max(nghost,ibuff+1)
 c
@@ -25,7 +25,11 @@ c     buffered, so to allow shrinkage, need yet one additional
 c     cell on each side to be set from base grids
       mibuff = nx + 2*mbuff
       mjbuff = ny + 2*mbuff
+#if (CLAW_REAL == 8)
       ibytesPerDP = 8
+#else
+      ibytesPerDP = 4
+#endif
 
 c   bad names, for historical reasons. they are both smae size now
       locdomflags = igetsp( (mibuff*mjbuff)/ibytesPerDP+1)

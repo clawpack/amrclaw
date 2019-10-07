@@ -4,7 +4,7 @@ c
        subroutine auxcoarsen(auxdub,midub,mjdub,auxbgc,
      1                       mi2tot,mj2tot,naux,auxtype)
       
-       implicit double precision (a-h, o-z)
+       implicit real(CLAW_REAL) (a-h, o-z)
 
        dimension     auxdub(naux,midub, mjdub)
        dimension     auxbgc(naux,mi2tot,mj2tot)

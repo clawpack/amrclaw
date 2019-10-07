@@ -3,7 +3,7 @@ c ------------------------------------------------------------
 c
        subroutine cstore(qc,nrow,ncol,nvar,qc1d,lenbc,naux,auxc,auxc1d)
 
-       implicit double precision (a-h, o-z)
+       implicit real(CLAW_REAL) (a-h, o-z)
 
        dimension qc(nvar,nrow,ncol)
        dimension qc1d(nvar,lenbc)

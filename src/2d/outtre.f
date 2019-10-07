@@ -10,7 +10,7 @@ c
       subroutine outtre(mlev,outgrd,nvar,naux)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       logical  outgrd
 
 c
@@ -54,7 +54,7 @@ c
       subroutine outlev(mlev,outgrd,nvar,naux)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       logical  outgrd
 
 c

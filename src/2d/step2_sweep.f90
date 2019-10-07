@@ -21,50 +21,41 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
     
     ! Arguments
     integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
-    real(kind=8), intent(in) :: dx,dy,dt
-    real(kind=8), intent(inout) :: cflgrid
-    real(kind=8), intent(inout) :: qold(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(in) :: dx,dy,dt
+    real(CLAW_REAL), intent(inout) :: cflgrid
+    real(CLAW_REAL), intent(inout) :: qold(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: fp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gm(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: gp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
     
     ! Local storage for flux accumulation
-    real(kind=8) :: faddm(meqn,1-mbc:maxm+mbc)
-    real(kind=8) :: faddp(meqn,1-mbc:maxm+mbc)
-    real(kind=8) :: gaddm(meqn,1-mbc:maxm+mbc,2)
-    real(kind=8) :: gaddp(meqn,1-mbc:maxm+mbc,2)
+    real(CLAW_REAL) :: faddm(meqn,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: faddp(meqn,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: gaddm(meqn,1-mbc:maxm+mbc,2)
+    real(CLAW_REAL) :: gaddp(meqn,1-mbc:maxm+mbc,2)
     
     ! Scratch storage for Sweeps and Riemann problems
-    real(kind=8) ::  q1d(meqn,1-mbc:maxm+mbc)
-    real(kind=8) :: aux1(maux,1-mbc:maxm+mbc)
-    real(kind=8) :: aux2(maux,1-mbc:maxm+mbc)
-    real(kind=8) :: aux3(maux,1-mbc:maxm+mbc)
-    real(kind=8) :: dtdx1d(1-mbc:maxm+mbc)
-    real(kind=8) :: dtdy1d(1-mbc:maxm+mbc)
+    real(CLAW_REAL) ::  q1d(meqn,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: aux1(maux,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: aux2(maux,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: aux3(maux,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: dtdx1d(1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: dtdy1d(1-mbc:maxm+mbc)
     
-    real(kind=8) ::  wave(meqn, mwaves, 1-mbc:maxm+mbc)
-    real(kind=8) ::     s(mwaves, 1-mbc:maxm + mbc)
-    real(kind=8) ::  amdq(meqn,1-mbc:maxm + mbc)
-    real(kind=8) ::  apdq(meqn,1-mbc:maxm + mbc)
-    real(kind=8) ::  cqxx(meqn,1-mbc:maxm + mbc)
-    real(kind=8) :: bmadq(meqn,1-mbc:maxm + mbc)
-    real(kind=8) :: bpadq(meqn,1-mbc:maxm + mbc)
+    real(CLAW_REAL) ::  wave(meqn, mwaves, 1-mbc:maxm+mbc)
+    real(CLAW_REAL) ::     s(mwaves, 1-mbc:maxm + mbc)
+    real(CLAW_REAL) ::  amdq(meqn,1-mbc:maxm + mbc)
+    real(CLAW_REAL) ::  apdq(meqn,1-mbc:maxm + mbc)
+    real(CLAW_REAL) ::  cqxx(meqn,1-mbc:maxm + mbc)
+    real(CLAW_REAL) :: bmadq(meqn,1-mbc:maxm + mbc)
+    real(CLAW_REAL) :: bpadq(meqn,1-mbc:maxm + mbc)
     
     ! Looping scalar storage
     integer :: i,j,thread_num
-    real(kind=8) :: dtdx,dtdy,cfl1d
+    real(CLAW_REAL) :: dtdx,dtdy,cfl1d
     
-    ! Common block storage
-    integer :: icom,jcom
-    real(kind=8) :: dtcom,dxcom,dycom,tcom
-    common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
-    
-    ! Store mesh parameters in common block
-    dxcom = dx
-    dycom = dy
-    dtcom = dt
     
     cflgrid = 0.d0
     dtdx = dt/dx
@@ -77,7 +68,7 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
     
     ! ============================================================================
     ! Perform X-Sweeps
-    !$OMP PARALLEL DO PRIVATE(j,jcom,thread_num)                  &
+    !$OMP PARALLEL DO PRIVATE(j,thread_num)                  &
     !$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdx1d) &
     !$OMP             PRIVATE(aux1,aux2,aux3)                     &
     !$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
@@ -109,9 +100,6 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
             aux3(:,1-mbc:mx+mbc) = aux(:,1-mbc:mx+mbc,j+1)
         endif
         
-        ! Store value of j along the slice into common block
-        ! *** WARNING *** This may not working with threading
-        jcom = j
 
         ! Compute modifications fadd and gadd to fluxes along this slice:
         call flux2(1,maxm,meqn,maux,mbc,mx,q1d,dtdx1d,aux1,aux2,aux3, &
@@ -140,7 +128,7 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
     ! ============================================================================
     !  y-sweeps    
     !
-    !$OMP PARALLEL DO PRIVATE(i,icom)                             &
+    !$OMP PARALLEL DO PRIVATE(i)                             &
     !$OMP             PRIVATE(faddm,faddp,gaddm,gaddp,q1d,dtdy1d) &
     !$OMP             PRIVATE(aux1,aux2,aux3)                     &
     !$OMP             PRIVATE(wave,s,amdq,apdq,cqxx,bmadq,bpadq)  &
@@ -167,9 +155,6 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dy,dt,cflgrid,fm,fp,gm,gp,
             aux3(:,1-mbc:my+mbc) = aux(:,i+1,1-mbc:my+mbc)
         endif
         
-        ! Store the value of i along this slice in the common block
-        ! *** WARNING *** This may not working with threading
-        icom = i
         
         ! Compute modifications fadd and gadd to fluxes along this slice
         call flux2(2,maxm,meqn,maux,mbc,my,q1d,dtdy1d,aux1,aux2,aux3, &

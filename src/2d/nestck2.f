@@ -38,8 +38,8 @@ c
      1                        nclust, nvar,naux)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
-      dimension  badpts(2,npts)
+      implicit real(CLAW_REAL) (a-h,o-z)
+      real(CLAW_REAL) :: badpts(2,npts)
       logical baseCheck, isNested1, isNested2
       logical projecCheck
 
@@ -62,6 +62,10 @@ c   lbase   - level which stays fixed during regridding
 c   badpts  - only the flagged pts. in this cluster (# icl)
 c :::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::::::::
 c
+        ! do i = 1, npts
+        !     print *,"badpts ", i, ": "
+        !     print *, badpts(1,i), " ", badpts(2,i)
+        ! enddo
        nestck2 = .true.
        levnew  = node(nestlevel,mnew)
        lratiox = intratx(levnew-1)

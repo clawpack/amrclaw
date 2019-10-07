@@ -25,7 +25,7 @@ c
          bndList(i,nextfree) = i+1
       end do
 
-      bndList(bndListSize,nextfree) = null
+      bndList(bndListSize,nextfree) = clawpack_null
       ndfree_bnd = 1
 
       end

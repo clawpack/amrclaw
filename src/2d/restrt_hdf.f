@@ -4,7 +4,7 @@ c
       subroutine restrt(nsteps,time,nvar)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
       logical   ee
 
@@ -237,7 +237,7 @@ c     #      HDF ROUTINES ARE USED TO READ BOTH INTEGER AND DOUBLE
 c     #      PRECISION ARRAYS.
 c=================================================================
       subroutine read_integer_vector(sd_id,idims,index,qname,iout)
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       character*6  qname
 c
 c     # HDF: Declare variables that describe datasets and HDF files.
@@ -296,7 +296,7 @@ c
 
 c==========================================================
       subroutine read_integer_array(sd_id,idim1,idim2,index,qname,iout)
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       character*6  qname
 c
 c     # HDF: Declare variables that describe datasets and HDF files.
@@ -359,7 +359,7 @@ c
 
 c==========================================================
       subroutine dump_integer_vector(sd_id,idims,qname,iout)
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       character*6  qname
 c
 c     # HDF: Declare variables that describe datasets and HDF files.
@@ -430,7 +430,7 @@ c
 
 c==========================================================
       subroutine dump_integer_array(sd_id,idim1,idim2,qname,iout)
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       character*6  qname
 c
 c     # HDF: Declare variables that describe datasets and HDF files.

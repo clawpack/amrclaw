@@ -1,0 +1,159 @@
+  max threads set to             1
+
+ amrclaw parameters:
+
+ error tol            -0.10000E+01
+ spatial error tol     0.20000E+00
+ order of integrator             2
+ error checking interval         2
+ buffer zone size                2
+ nghost                          2
+ volume ratio cutoff   0.70000E+00
+ max. refinement level           3
+ user sub. calling times 999999999
+ cfl # (if var. delt)  0.90000E+00
+
+ xupper(upper corner)  0.10000E+01
+ yupper(upper corner)  0.10000E+01
+ xlower(lower corner) -0.10000E+01
+ ylower(lower corner) -0.10000E+01
+ nx = no. cells in x dir.       50
+ ny = no. cells in y dir.       50
+ refinement ratios       
+ refinement ratios:           2    2    0
+ refinement ratios:           2    2    0
+ no. auxiliary vars.             0
+       var 
+ the subtree is
+ +---------------------------------------------------------------------------+
+ ! grid no:     1                                                            !
+ ! nestlevel=  1, time mult=    0.000000000000000E+00, level ptr =     0     !
+ ! storage locs =       8749          1  bndry locs =      52945          0  !
+ ! corners of rectangle:                                                     !
+ !           (  -1.0000000,    1.0000000)(   1.0000000,    1.0000000)        !
+ !           (  -1.0000000,   -1.0000000)(   1.0000000,   -1.0000000)        !
+ ! integer index space :                                                     !
+ !                   (       0,       49)(      49,       49)                !
+ !                   (       0,        0)(      49,        0)                !
+ ! hrow=      0.04000000000, hcol=      0.04000000000, ktime=     0.010000000!
+ +---------------------------------------------------------------------------+
+
+    1 grids at level     1 go from         0        0 to       49       49
+
+ +---------------------------------------------------------------------------+
+ ! grid no:     3                                                            !
+ ! nestlevel=  2, time mult=    0.000000000000000E+00, level ptr =     2     !
+ ! storage locs =      30349      26065  bndry locs =      54825      52129  !
+ ! corners of rectangle:                                                     !
+ !           (   0.0000000,    0.3200000)(   0.7600000,    0.3200000)        !
+ !           (   0.0000000,   -0.2800000)(   0.7600000,   -0.2800000)        !
+ ! integer index space :                                                     !
+ !                   (      50,       65)(      87,       65)                !
+ !                   (      50,       36)(      87,       36)                !
+ ! hrow=      0.02000000000, hcol=      0.02000000000, ktime=     0.005000000!
+ +---------------------------------------------------------------------------+
+ +---------------------------------------------------------------------------+
+ ! grid no:     2                                                            !
+ ! nestlevel=  2, time mult=    0.000000000000000E+00, level ptr =     0     !
+ ! storage locs =      21781      17497  bndry locs =      55825      52537  !
+ ! corners of rectangle:                                                     !
+ !           (  -0.7600000,    0.3200000)(   0.0000000,    0.3200000)        !
+ !           (  -0.7600000,   -0.2800000)(   0.0000000,   -0.2800000)        !
+ ! integer index space :                                                     !
+ !                   (      12,       65)(      49,       65)                !
+ !                   (      12,       36)(      49,       36)                !
+ ! hrow=      0.02000000000, hcol=      0.02000000000, ktime=     0.005000000!
+ +---------------------------------------------------------------------------+
+
+    2 grids at level     2 go from        12       36 to       87       65
+
+ +---------------------------------------------------------------------------+
+ ! grid no:     5                                                            !
+ ! nestlevel=  3, time mult=    0.000000000000000E+00, level ptr =     4     !
+ ! storage locs =      43381          0  bndry locs =          0      53625  !
+ ! corners of rectangle:                                                     !
+ !           (  -0.7200000,    0.2600000)(  -0.2200000,    0.2600000)        !
+ !           (  -0.7200000,   -0.2400000)(  -0.2200000,   -0.2400000)        !
+ ! integer index space :                                                     !
+ !                   (      28,      125)(      77,      125)                !
+ !                   (      28,       76)(      77,       76)                !
+ ! hrow=      0.01000000000, hcol=      0.01000000000, ktime=     0.002500000!
+ +---------------------------------------------------------------------------+
+ +---------------------------------------------------------------------------+
+ ! grid no:     4                                                            !
+ ! nestlevel=  3, time mult=    0.000000000000000E+00, level ptr =     0     !
+ ! storage locs =      34633          0  bndry locs =          0      54225  !
+ ! corners of rectangle:                                                     !
+ !           (   0.2200000,    0.2600000)(   0.7200000,    0.2600000)        !
+ !           (   0.2200000,   -0.2400000)(   0.7200000,   -0.2400000)        !
+ ! integer index space :                                                     !
+ !                   (     122,      125)(     171,      125)                !
+ !                   (     122,       76)(     171,       76)                !
+ ! hrow=      0.01000000000, hcol=      0.01000000000, ktime=     0.002500000!
+ +---------------------------------------------------------------------------+
+
+    2 grids at level     3 go from        28       76 to      171      125
+
+   original total mass ...
+time t =  0.00000E+00,  total mass =  0.125700206275061E+01  diff =  0.0000E+00
+time t =  0.10000E-01,  total mass =  0.125700206275061E+01  diff = -0.1776E-14
+time t =  0.28000E-01,  total mass =  0.125700206275061E+01  diff = -0.4219E-14
+time t =  0.46000E-01,  total mass =  0.125700206275061E+01  diff = -0.2220E-14
+time t =  0.64000E-01,  total mass =  0.125700206275061E+01  diff = -0.1998E-14
+time t =  0.82000E-01,  total mass =  0.125700206275061E+01  diff = -0.2887E-14
+time t =  0.10000E+00,  total mass =  0.125700206275061E+01  diff =  0.1332E-14
+time t =  0.11800E+00,  total mass =  0.125700206275057E+01  diff = -0.4197E-13
+time t =  0.13600E+00,  total mass =  0.125700194513862E+01  diff = -0.1176E-06
+time t =  0.15400E+00,  total mass =  0.125683036566614E+01  diff = -0.1717E-03
+time t =  0.17200E+00,  total mass =  0.125462222921152E+01  diff = -0.2380E-02
+time t =  0.19000E+00,  total mass =  0.124410831275944E+01  diff = -0.1289E-01
+time t =  0.20000E+00,  total mass =  0.122970169273546E+01  diff = -0.2730E-01
+ 
+============================== Timing Data ==============================
+ 
+Integration Time (stepgrid + BC + overhead)
+Level           Wall Time (seconds)    CPU Time (seconds)   Total Cell Updates
+  1                     0.029                  0.029            0.300E+05
+  2                     0.087                  0.087            0.866E+05
+  3                     0.368                  0.368            0.374E+06
+total                   0.484                  0.484            0.491E+06
+ 
+All levels:
+stepgrid                0.468                  0.468    
+BC/ghost cells          0.015                  0.015
+Regridding              0.018                  0.018  
+Output (valout)         0.038                  0.038  
+ 
+Total time:             0.526                  0.526  
+Using  1 thread(s)
+ 
+Note: The CPU times are summed over all threads.
+      Total time includes more than the subroutines listed above
+ 
+=========================================================================
+ 
+ 
+ 
+for level   1 average num. grids =       1.00 over          1 regridding steps
+for level   1  current num. grids =       1
+for level   2 average num. grids =       2.00 over          6 regridding steps
+for level   2  current num. grids =       2
+for level   3 average num. grids =       4.08 over         12 regridding steps
+for level   3  current num. grids =       5
+ 
+ 
+current  space usage =        78368
+maximum  space usage =       114408
+need space dimension =       116437
+
+number of cells advanced for time integration =        490560.000000
+   # cells advanced on level    1 =             30000.00
+   # cells advanced on level    2 =             86560.00
+   # cells advanced on level    3 =            374000.00
+number of cells advanced for error estimation =             0.000000
+
+ percentage of cells advanced in time  =     100.00
+ maximum Courant number seen =       0.90
+
+
+ ------  end of AMRCLAW integration --------  

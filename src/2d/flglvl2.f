@@ -25,7 +25,7 @@ c
      &                   start_time)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       integer clock_start, clock_finish, clock_rate
 c
 c
@@ -80,7 +80,7 @@ c
        subroutine freeFlags(lcheck)
 
        use amr_module
-       implicit double precision (a-h, o-z)
+       implicit real(CLAW_REAL) (a-h, o-z)
 
        mptr = lstart(lcheck)
  10          continue
@@ -94,7 +94,11 @@ c
              mibuff = nx + 2*mbuff
              mjbuff = ny + 2*mbuff
 
+#if (CLAW_REAL == 8) 
              ibytesPerDP = 8
+#else
+             ibytesPerDP = 4
+#endif
              nwords = (mibuff*mjbuff)/ibytesPerDP+1
              call reclam(locdomflags, nwords)
              call reclam(locdom2, nwords)

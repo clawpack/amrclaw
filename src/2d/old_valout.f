@@ -4,7 +4,10 @@ c
       subroutine valout (lst, lend, time, nvar, naux)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+#ifdef PROFILE
+      use profiling_module
+#endif
+      implicit real(CLAW_REAL) (a-h,o-z)
       character*10  fname1, fname2, fname3, fname4, fname5
 
 !> Output the results for a general system of conservation laws
@@ -18,7 +21,7 @@ c
       logical outaux
       integer output_aux_num 
       integer clock_start, clock_finish, clock_rate
-      real(kind=8) cpu_start, cpu_finish
+      real(CLAW_REAL) cpu_start, cpu_finish
 
 c      iadd(i,j,ivar) = loc + i - 1 + mitot*((ivar-1)*mjtot+j-1)
 c      iaddaux(i,j,ivar) = locaux + i - 1 + mitot*((ivar-1)*mjtot+j-1)
@@ -29,6 +32,9 @@ c
 
       call system_clock(clock_start,clock_rate)
       call cpu_time(cpu_start)
+#ifdef PROFILE
+      call startCudaProfiler("Output sol.", 47)
+#endif
 
 c     # how many aux components requested?
       output_aux_num = 0
@@ -257,7 +263,9 @@ c
       if (output_format == 3) then
           close(unit=matunit4)
       endif
-
+#ifdef PROFILE
+      call endCudaProfiler() 
+#endif
       call system_clock(clock_finish,clock_rate)
       call cpu_time(cpu_finish)
       timeValout = timeValout + clock_finish - clock_start

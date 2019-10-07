@@ -4,7 +4,7 @@ c
       subroutine copysol(valbig,val,nvar,mitot,mjtot,nghost,
      1                   midub,mjdub,ngbig)
 c
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
       dimension  valbig(nvar,midub,mjdub), val(nvar,mitot,mjtot)
 c

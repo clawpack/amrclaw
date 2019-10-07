@@ -14,6 +14,9 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     use amr_module, only: cornxlo, cornylo, levelptr, mxnest
     use amr_module, only: timeValout, timeValoutCPU, tvoll, tvollCPU, rvoll
     use amr_module, only: timeTick, tick_clock_start, t0
+#ifdef PROFILE
+      use profiling_module
+#endif
 
 #ifdef HDF5
     use hdf5
@@ -66,6 +69,9 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     character(len=*), parameter :: console_format = &
              "('AMRCLAW: Frame ',i4,' output files done at time t = ', d13.6,/)"
 
+#ifdef PROFILE
+      call startCudaProfiler("Output sol.", 47)
+#endif
     ! Output timing
     call system_clock(clock_start,clock_rate)
     call cpu_time(cpu_start)
@@ -375,6 +381,9 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     call cpu_time(cpu_finish)
     timeValout = timeValout + clock_finish - clock_start
     timeValoutCPU = timeValoutCPU + cpu_finish - cpu_start
+#ifdef PROFILE
+      call endCudaProfiler() 
+#endif
 
 contains
 

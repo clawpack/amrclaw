@@ -54,7 +54,7 @@ c      since it was previously SUBTRACTED from fadpp.
 c
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       external rpn2
       dimension    q1d(meqn,1-mbc:maxm+mbc)
       dimension   cqxx(meqn,1-mbc:maxm+mbc)
@@ -106,7 +106,7 @@ c     # compute maximum wave speed for checking Courant number:
          do 50 i=1,mx+1
 c          # if s>0 use dtdx1d(i) to compute CFL,
 c          # if s<0 use dtdx1d(i-1) to compute CFL:
-            cfl1d = dmax1(cfl1d, dtdx1d(i)*s(mw,i),
+            cfl1d = max(cfl1d, dtdx1d(i)*s(mw,i),
      &                          -dtdx1d(i-1)*s(mw,i))
    50       continue
 c
@@ -134,13 +134,13 @@ c        # second order corrections:
             do 119 mw=1,mwaves
 c
                if (use_fwaves) then
-                   abs_sign = dsign(1.d0,s(mw,i))
+                   abs_sign = sign(1.d0,s(mw,i))
                  else
-                   abs_sign = dabs(s(mw,i))
+                   abs_sign = abs(s(mw,i))
                  endif
 
                cqxx(m,i) = cqxx(m,i) + abs_sign
-     &             * (1.d0 - dabs(s(mw,i))*dtdxave) * wave(m,mw,i)
+     &             * (1.d0 - abs(s(mw,i))*dtdxave) * wave(m,mw,i)
 c
   119          continue
             faddm(m,i) = faddm(m,i) + 0.5d0 * cqxx(m,i)

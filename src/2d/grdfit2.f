@@ -21,7 +21,7 @@ c
      1                   start_time)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       integer clock_start, clock_finish, clock_rate
       integer clock_start1
 c
@@ -80,7 +80,7 @@ c     ##  for each cluster, fit the actual grid, set up some data structures
 c
  50   ibase   =  0
       icl     =  1
-      prvptr  =  null
+      prvptr  =  clawpack_null
 c
  70   mnew      = nodget()
 c       if (lcheck .eq. 2 .and. (mnew .ne. 6 .and. mnew .ne. 7)) go to 69 
@@ -116,7 +116,7 @@ c 2/28/02 : Added naux to argument list; needed by call to outtre in nestck
       if (.not. fit2) go to 75
 c
 c     ##  grid accepted. put in list.
-      if (newstl(levnew) .eq. null) then
+      if (newstl(levnew) .eq. clawpack_null) then
           newstl(levnew)  = mnew
       else
           node(levelptr,prvptr) = mnew

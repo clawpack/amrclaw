@@ -7,8 +7,13 @@ c
       use amr_module
       use gauges_module, only: setbestsrc, num_gauges
       use gauges_module, only: print_gauges_and_reset_nextLoc 
+#ifdef PROFILE
+      use cuda_module, only: toString
+      use profiling_module
+      use timer_module
+#endif
 
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 c     include  "call.i"
 
       logical    vtime, dumpout/.false./, dumpchk/.false./
@@ -197,7 +202,17 @@ c
 
           call system_clock(clock_start,clock_rate)
           call cpu_time(cpu_start)
+#ifdef PROFILE
+          call startCudaProfiler("regrid at level "//toString(lbase)
+     .          ,lbase)
+          call take_cpu_timer("Regridding", timer_regridding)
+          call cpu_timer_start(timer_regridding)
+#endif
           call regrid(nvar,lbase,cut,naux,start_time)
+#ifdef PROFILE
+          call cpu_timer_stop(timer_regridding)
+          call endCudaProfiler() 
+#endif
           call system_clock(clock_finish,clock_rate)
           call cpu_time(cpu_finish)
           timeRegridding = timeRegridding + clock_finish - clock_start
@@ -237,7 +252,20 @@ c
  90       continue
 
 
+#ifdef PROFILE
+          call take_cpu_timer("Advance (all levels)", 
+     &      timer_advanc_all_levels)
+          call cpu_timer_start(timer_advanc_all_levels)
+
+          call take_cpu_timer("Advance level "//toString(level), 
+     &      timer_advanc_start+level-1)
+          call cpu_timer_start(timer_advanc_start+level-1)
+#endif
           call advanc(level,nvar,dtlevnew,vtime,naux)
+#ifdef PROFILE
+          call cpu_timer_stop(timer_advanc_start+level-1)
+          call cpu_timer_stop(timer_advanc_all_levels)
+#endif
 
 c         # rjl modified 6/17/05 to print out *after* advanc and print cfl
 c         # rjl & mjb changed to cfl_level, 3/17/10
@@ -259,7 +287,7 @@ c
 c done with a level of integration. update counts, decide who next.
 c
           ntogo(level)  = ntogo(level) - 1
-          dtnew(level)  = dmin1(dtnew(level),dtlevnew)
+          dtnew(level)  = min(dtnew(level),dtlevnew)
           tlevel(level) = tlevel(level) + possk(level)
           icheck(level) = icheck(level) + 1
 c
@@ -291,10 +319,24 @@ c                   adjust time steps for this and finer levels
                  go to 60
               else
                  level = level - 1
+
                  call system_clock(clock_start,clock_rate)
+                 call cpu_time(cpu_start)
+#ifdef PROFILE
+                 call startCudaProfiler(
+     .              "update level "//toString(level),level+2)
+                 call take_cpu_timer("Updating", timer_updating)
+                 call cpu_timer_start(timer_updating)
+#endif
                  call update(level,nvar,naux)
+#ifdef PROFILE
+                 call cpu_timer_stop(timer_updating)
+                 call endCudaProfiler() 
+#endif
                  call system_clock(clock_finish,clock_rate)
+                 call cpu_time(cpu_finish)
                  timeUpdating=timeUpdating+clock_finish-clock_start
+                 timeUpdatingCPU=timeUpdatingCPU+cpu_finish-cpu_start
               endif
           go to 105
 c
@@ -305,7 +347,14 @@ c
  110      continue
           time    = time   + possk(1)
           ncycle  = ncycle + 1
+#ifdef PROFILE
+          call take_cpu_timer("conservation check", timer_conck)
+          call cpu_timer_start(timer_conck)
+#endif
           call conck(1,nvar,naux,time,rest)
+#ifdef PROFILE
+          call cpu_timer_stop(timer_conck)
+#endif
 
       if ( vtime) then
 c

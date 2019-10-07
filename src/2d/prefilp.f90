@@ -28,30 +28,30 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
     ! Input
     integer, intent(in) :: level, nvar, naux, mitot, mjtot
     integer, intent(in) :: ilo,ihi,jlo,jhi,iglo,ighi,jglo,jghi
-    real(kind=8), intent(in) :: time
+    real(CLAW_REAL), intent(in) :: time
     ! false when called from bound, when valbig is whole grid but only filling patch.
     ! true for recursive coarse sub-patches - grid is patch
     logical  :: patchOnly  
 
     ! Output
-    real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
-    real(kind=8), intent(in out) :: auxbig(naux,mitot,mjtot)
+    real(CLAW_REAL), intent(in out) :: valbig(nvar,mitot,mjtot)
+    real(CLAW_REAL), intent(in out) :: auxbig(naux,mitot,mjtot)
     
     ! Local storage
     integer :: i, j, ii, jj, ivar, ng, i1, i2, j1, j2, nrowst, ncolst
     integer :: iputst, jputst, mi, mj, locpatch, locpaux
     integer :: jbump, iwrap1, iwrap2, jwrap1, tmp, locflip, rect(4)
-    real(kind=8) :: xlwrap, ybwrap
+    real(CLAW_REAL) :: xlwrap, ybwrap
     integer ::  msrc    ! this signifies not a real grid, no bndry list with it
     ! it is possible to preprocess in the periodic case, just more complicated, so postponing
 
     integer :: ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
-    real(kind=8) :: scratch(max(mitot,mjtot)*nghost*nvar)
-    real(kind=8) :: scratchaux(max(mitot,mjtot)*nghost*naux)
+    real(CLAW_REAL) :: scratch(max(mitot,mjtot)*nghost*nvar)
+    real(CLAW_REAL) :: scratchaux(max(mitot,mjtot)*nghost*naux)
 
     ! dimension at largest possible
-    real(kind=8) :: valPatch((ihi-ilo+1) * (jhi-jlo+1) * nvar)  
-    real(kind=8) :: auxPatch((ihi-ilo+1) * (jhi-jlo+1) * naux)  
+    real(CLAW_REAL) :: valPatch((ihi-ilo+1) * (jhi-jlo+1) * nvar)  
+    real(CLAW_REAL) :: auxPatch((ihi-ilo+1) * (jhi-jlo+1) * naux)  
     
 
 !     # will divide patch  (from ilo,jlo to ihi,jhi)  into 9 possibilities (some empty): 
@@ -227,8 +227,8 @@ subroutine patchCopyOut(nvar,valpatch,mi,mj,valbig,mitot,mjtot,i1,i2,j1,j2,iglo,
     integer :: mi, mj, nvar, mitot, mjtot, i1, i2,j1, j2, iglo, ighi, jglo, jghi
 
     ! Output
-    real(kind=8), intent(in out) :: valbig(nvar,mitot,mjtot)
-    real(kind=8), intent(in out) :: valpatch(nvar,mi,mj)
+    real(CLAW_REAL), intent(in out) :: valbig(nvar,mitot,mjtot)
+    real(CLAW_REAL), intent(in out) :: valpatch(nvar,mi,mj)
 
     ! Local storage
     integer :: ist, jst 
@@ -258,8 +258,8 @@ subroutine auxCopyIn(auxPatch,mi,mj,auxbig,mitot,mjtot,naux,i1,i2,j1,j2,iglo,jgl
     integer :: mi, mj, naux, mitot, mjtot, i1, i2,j1, j2, iglo, ighi, jglo, jghi
 
     ! Output
-    real(kind=8), intent(in out) :: auxbig(naux,mitot,mjtot)
-    real(kind=8), intent(in out) :: auxPatch(naux,mi,mj)
+    real(CLAW_REAL), intent(in out) :: auxbig(naux,mitot,mjtot)
+    real(CLAW_REAL), intent(in out) :: auxPatch(naux,mi,mj)
 
     ! Local storage
     integer :: ist, jst 

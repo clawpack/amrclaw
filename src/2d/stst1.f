@@ -4,7 +4,7 @@ c
       subroutine stst1
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
 
 c
@@ -32,7 +32,7 @@ c
 c
 c the last free node will have a null pointer
  
-      node(nextfree, maxgr) = null
+      node(nextfree, maxgr) = clawpack_null
 c
 
 c     Initialize dynamic memory
@@ -61,7 +61,7 @@ c  need to manage the boundary List too
 c     do i = 1, bndListSize
 c        bndList(i,nextfree) = i+1
 c     end do
-c     bndList(bndListSize,nextfree) = null
+c     bndList(bndListSize,nextfree) = clawpack_null
 c     ndfree_bnd = 1
       call initBndryList()
 c
@@ -71,7 +71,7 @@ c
       call initTimers()   ! used to be done here, but needs to be called from restarting too when stst1 not called
 
       do 60 i   = 1, maxlv
-         tvoll(i) = 0.d0
+         tvoll(i) = 0
          iregridcount(i) = 0
          avenumgrids(i) = 0
          numgrids(i) = 0
@@ -98,7 +98,7 @@ c
       subroutine initTimers()
 
       use amr_module
-      !implicit double precision (a-h,o-z)
+      !implicit real(CLAW_REAL) (a-h,o-z)
 
       timeBufnst         = 0
       timeStepgrid       = 0

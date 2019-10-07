@@ -47,14 +47,14 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
 
     ! Subroutine arguments
     integer, intent(in) :: mx,my,level,mbuff
-    real(kind=8), intent(in) :: xlower,ylower,dx,dy,t
+    real(CLAW_REAL), intent(in) :: xlower,ylower,dx,dy,t
     
     ! Flagging
-    real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
+    real(CLAW_REAL),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
     
     ! Locals
     integer :: i,j,m,i1,i2,j1,j2
-    real(kind=8) :: x_low,y_low,x_hi,y_hi, xupper,yupper
+    real(CLAW_REAL) :: x_low,y_low,x_hi,y_hi, xupper,yupper
     integer, allocatable :: minlevel(:,:), maxlevel(:,:)
 
     allocate(minlevel(mx,my), maxlevel(mx,my))
@@ -64,6 +64,25 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
 
     xupper = xlower + mx*dx
     yupper = ylower + my*dy
+
+    ! mark ghost cells with DONTFLAG, in case they were UNSET:
+    do i=1-mbuff,mx+mbuff
+        do j=1-mbuff,0
+            amrflags(i,j) = DONTFLAG
+            enddo
+        do j=my+1,my+mbuff
+            amrflags(i,j) = DONTFLAG
+            enddo
+        enddo
+
+    do j=1-mbuff,my+mbuff
+        do i=1-mbuff,0
+            amrflags(i,j) = DONTFLAG
+            enddo
+        do i=mx+1,mx+mbuff
+            amrflags(i,j) = DONTFLAG
+            enddo
+        enddo
 
     rloop: do m=1,num_regions
         if (t < regions(m)%t_low .or. t > regions(m)%t_hi) then

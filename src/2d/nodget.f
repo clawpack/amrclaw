@@ -10,7 +10,7 @@ c
       integer function nodget()
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       integer maxgrIncrement/10000/
 
 c
@@ -19,7 +19,7 @@ c nodget =  get first free node of the linked list kept in node
 c            array. adjust pointers accordingly.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
-      if (ndfree .ne. null) go to 10
+      if (ndfree .ne. clawpack_null) go to 10
           write(outunit,100) maxgr
           write(*,100)       maxgr
 100       format(' out of nodal space - allowed ',i8,' grids')
@@ -63,14 +63,14 @@ c
       integer function nodget_bnd()
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
 c
 c ::::::::::::::::: NODGET_BND ::::::::::::::::::::::::::::::::::::;
 c nodget_bnd =  same as above but for bndry list
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
-      if (ndfree_bnd .ne. null) go to 10
+      if (ndfree_bnd .ne. clawpack_null) go to 10
           write(outunit,100) bndListSize
           write(*,100)       bndListSize
 100       format(' out of bndry space - allowed ',i5,' bndry grids')

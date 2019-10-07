@@ -4,6 +4,8 @@ c
       subroutine flagger(nvar,naux,lcheck,start_time)
 
       use amr_module
+      use adjoint_module,only:calculate_tol,eptr,errors,totnum_adjoints,
+     1     adjoints,trange_start,trange_final,adjoint_flagging,grid_num
       implicit double precision (a-h,o-z)
 
       integer omp_get_thread_num, omp_get_max_threads
@@ -22,7 +24,23 @@ c
 c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 c      call prepgrids(listgrids,numgrids(lcheck),lcheck)
-         mbuff = max(nghost,ibuff+1)  
+         mbuff = max(nghost,ibuff+1)
+
+
+      if(adjoint_flagging) then
+c        allocating space for tracking error estimates
+c        (used at next regridding time to determine tolerance)
+         if (flag_richardson) then
+           allocate(errors(numcells(lcheck)/2))
+           allocate(eptr(numgrids(lcheck)))
+           errors = 0
+           eptr(1) = 0
+
+           ! new version has variable node size arrays, so need to use current size
+           allocate(grid_num(maxgr))
+         endif
+      endif
+
 c before parallel loop give grids the extra storage they need for error estimation
          do  jg = 1, numgrids(lcheck)
 c            mptr = listgrids(jg)
@@ -33,6 +51,13 @@ c            mptr = listgrids(jg)
             if (flag_richardson) then
                locbig = igetsp(mitot*nvar)
                node(tempptr,mptr) = locbig
+
+               if(adjoint_flagging) then
+                 grid_num(mptr) = jg
+                 if (jg .ne. numgrids(lcheck)) then
+                   eptr(jg+1) = eptr(jg)+(nx/2)
+                 endif
+               endif
             else 
                locbig = 0
             endif
@@ -146,6 +171,15 @@ c       ##  check if any flags remain unset
 
        end do
 ! $OMP END PARALLEL DO
+
+       if(adjoint_flagging)then
+           if (flag_richardson) then
+               call calculate_tol(lcheck)
+               deallocate(errors)
+               deallocate(eptr)
+               deallocate(grid_num)
+           endif
+       endif
 
        return
        end

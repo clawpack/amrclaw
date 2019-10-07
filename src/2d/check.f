@@ -11,7 +11,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
       use gauges_module, only:  num_gauges
       use gauges_module, only: print_gauges_and_reset_nextLoc
 
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       integer tchkunit
       parameter (tchkunit = 13)
       character  chkname*13

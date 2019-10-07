@@ -4,7 +4,7 @@ c
       subroutine domup(iflags2,iflags,ibase,jbase,isize,jsize,lev)
 
       use amr_module
-      implicit double precision (a-h, o-z)
+      implicit real(CLAW_REAL) (a-h, o-z)
 
 
       integer(kind=1)  iflags2(0:isize+1,0:jsize+1)

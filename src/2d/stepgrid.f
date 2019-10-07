@@ -43,7 +43,7 @@ c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       external rpn2,rpt2
 
       common /comxyt/ dtcom,dxcom,dycom,tcom,icom,jcom
@@ -145,7 +145,7 @@ c
 
 !$OMP  CRITICAL (cflm)
 
-        cfl_level = dmax1(cfl_level,cflgrid)
+        cfl_level = max(cfl_level,cflgrid)
 
 !$OMP END CRITICAL (cflm)
 

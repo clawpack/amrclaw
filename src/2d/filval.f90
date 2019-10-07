@@ -14,30 +14,30 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic,          &
     ! Input
     integer, intent(in) :: mitot, mjtot, level, mic, mjc, nvar, mptr, ilo, ihi
     integer, intent(in) :: jlo, jhi, naux
-    real(kind=8), intent(in) :: dx, dy, time, xleft, xright, ybot, ytop
+    real(CLAW_REAL), intent(in) :: dx, dy, time, xleft, xright, ybot, ytop
 
     ! Output
-    real(kind=8), intent(in out) :: val(nvar,mitot,mjtot), aux(naux,mitot,mjtot)
+    real(CLAW_REAL), intent(in out) :: val(nvar,mitot,mjtot), aux(naux,mitot,mjtot)
 
     ! Local storage
     integer :: refinement_ratio_x, refinement_ratio_y, iclo, jclo, ichi, jchi, ng
     integer :: ivar, i, j, ico, jco, ifine, jfine, nx, ny
-    real(kind=8) :: valc(nvar,mic,mjc), auxc(naux,mic,mjc)
-    real(kind=8) :: dx_coarse, dy_coarse, xl, xr, yb, yt, area
-    real(kind=8) :: s1m, s1p, slopex, slopey, xoff, yoff
-    real(kind=8) :: fliparray((mitot+mjtot)*nghost*(nvar+naux))
-    real(kind=8) :: setflags(mitot,mjtot),maxauxdif,aux2(naux,mitot,mjtot)
+    real(CLAW_REAL) :: valc(nvar,mic,mjc), auxc(naux,mic,mjc)
+    real(CLAW_REAL) :: dx_coarse, dy_coarse, xl, xr, yb, yt, area
+    real(CLAW_REAL) :: s1m, s1p, slopex, slopey, xoff, yoff
+    real(CLAW_REAL) :: fliparray((mitot+mjtot)*nghost*(nvar+naux))
+    real(CLAW_REAL) :: setflags(mitot,mjtot),maxauxdif,aux2(naux,mitot,mjtot)
     integer :: mjb
     integer :: jm, im, nm 
     logical :: sticksoutxfine, sticksoutyfine,sticksoutxcrse,sticksoutycrse
     
     !for setaux timing
     integer :: clock_start, clock_finish, clock_rate
-    real(kind=8) :: cpu_start, cpu_finish
+    real(CLAW_REAL) :: cpu_start, cpu_finish
 
 
     ! External function definitions
-    real(kind=8) :: get_max_speed
+    real(CLAW_REAL) :: get_max_speed
 
 
     refinement_ratio_x = intratx(level-1)
@@ -166,11 +166,11 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic,          &
 
             ! Interpolate from coarse cells to fine grid to find depth
              do jco = 1,refinement_ratio_y
-               yoff = (real(jco,kind=8) - 0.5d0) / refinement_ratio_y - 0.5d0
+               yoff = (real(jco,kind=CLAW_REAL) - 0.5d0) / refinement_ratio_y - 0.5d0
                jfine = (j-2) * refinement_ratio_y + nghost + jco
 
                do ico = 1,refinement_ratio_x
-                 xoff = (real(ico,kind=8) - 0.5d0) / refinement_ratio_x - 0.5d0
+                 xoff = (real(ico,kind=CLAW_REAL) - 0.5d0) / refinement_ratio_x - 0.5d0
                  ifine = (i-2) * refinement_ratio_x + nghost + ico
 
                  if (setflags(ifine,jfine) .eq. NEEDS_TO_BE_SET) then
@@ -217,7 +217,7 @@ end subroutine filval
 
 subroutine dumpaux(aux,naux,mitot,mjtot)
    implicit none
-   real(kind=8) :: aux(naux,mitot,mjtot)
+   real(CLAW_REAL) :: aux(naux,mitot,mjtot)
    integer :: naux,mitot,mjtot,i,j,iaux
 
    do j = 1, mjtot 

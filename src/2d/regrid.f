@@ -4,7 +4,7 @@ c
       subroutine regrid  (nvar,lbase,cut,naux,start_time)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       integer newnumgrids(maxlv)
       integer clock_start2, clock_finish, clock_rate
 c
@@ -35,7 +35,7 @@ c
       lfnew     = lbase
       do 10 i   = 1, mxnest
         newnumgrids(i) = 0
- 10     newstl(i) = 0
+ 10     newstl(i) = clawpack_null
       time      = rnode(timemult, lstart(lbase))
 c
  20   if (lcheck .lt. lbase) go to 50
@@ -81,6 +81,9 @@ c
         call prepf(level+1,nvar,naux)
         call prepc(level,nvar)
  60   continue
+      ! fflux_hd is updated so we copy it to fflux_dd
+      fflux_dd = fflux_hd
+      cflux_dd = cflux_hd
 c
 c  reset numgrids per level, needed for omp parallelization.
 c  note that grids may have disappeared, so next loop resets to 0
@@ -132,7 +135,7 @@ c
       subroutine arrangeGrids(level, numg)
 c
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       integer listgrids(numg), cost(numg), index(numg), prevptr
 c
 c   slow sort for now, putting most expensive grids first on lstart list
@@ -163,7 +166,7 @@ c grids can stay in place, just their levelptrs need to change
           node(levelptr, prevptr) = listgrids(index(numg-i))
           prevptr = listgrids(index(numg-i))
        end do
-       node(levelptr,prevptr) = null  !signal the last grid
+       node(levelptr,prevptr) = clawpack_null  !signal the last grid
 
        return
        end

@@ -1,12 +1,17 @@
 #get the directory of this makefile
 AMRLIB:=$(CLAW)/amrclaw/src/2d
 
+ifeq ($(USE_CUDA),TRUE)
+    include $(AMRLIB)/GPU/Makefile.amr_2d.GPU
+else
 #list of common sources for amr 2d codes
 COMMON_MODULES += \
   $(CLAW)/classic/src/utility_module.f90 \
   $(AMRLIB)/amr_module.f90 \
   $(AMRLIB)/gauges_module.f90 \
-  $(AMRLIB)/regions_module.f90
+  $(AMRLIB)/regions_module.f90 \
+  $(AMRLIB)/adjoint_module.f90 \
+  $(AMRLIB)/adjointsup_module.f90 
 
 COMMON_SOURCES += \
   $(AMRLIB)/qinit.f \
@@ -121,5 +126,5 @@ COMMON_SOURCES += \
   $(AMRLIB)/resize_nodes.f90 \
   $(AMRLIB)/init_alloc.f90 \
   $(AMRLIB)/restrt_alloc.f90 \
-  $(AMRLIB)/resize_alloc.f90 \
-# $(AMRLIB)/resize_alloc_static.f90 \
+  $(AMRLIB)/resize_alloc.f90
+endif

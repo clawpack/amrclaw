@@ -4,7 +4,7 @@ c
 c     =================================================
       function zeroin(ax,bx,f,tol)        
 c     =================================================
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
       external f
 c  
 c      a zero of the function  f(x)  is computed in the interval ax,bx .
@@ -27,7 +27,7 @@ c
 c  
 c      it is assumed  that   f(ax)   and   f(bx)   have  opposite  signs
 c  without  a  check.  zeroin  returns a zero  x  in the given interval 
-c  ax,bx  to within a tolerance  4*macheps*dabs(x) + tol, where macheps 
+c  ax,bx  to within a tolerance  4*macheps*abs(x) + tol, where macheps 
 c  is the relative machine precision.          
 c
 c      this function subprogram is a slightly  modified  translation  of
@@ -56,7 +56,7 @@ c
       fc = fa 
       d = b - a          
       e = d   
-   30 if (dabs(fc) .ge. dabs(fb)) go to 40       
+   30 if (abs(fc) .ge. abs(fb)) go to 40       
       a = b   
       b = c   
       c = a   
@@ -66,15 +66,15 @@ c
 c  
 c convergence test       
 c  
-   40 tol1 = 2.d0*eps*dabs(b) + 0.5*tol          
+   40 tol1 = 2.d0*eps*abs(b) + 0.5*tol          
       xm = .5*(c - b)    
-      if (dabs(xm) .le. tol1) go to 90          
+      if (abs(xm) .le. tol1) go to 90          
       if (fb .eq. 0.d0) go to 90     
 c  
 c is bisection necessary 
 c  
-      if (dabs(e) .lt. tol1) go to 70
-      if (dabs(fa) .le. dabs(fb)) go to 70       
+      if (abs(e) .lt. tol1) go to 70
+      if (abs(fa) .le. abs(fb)) go to 70       
 c  
 c is quadratic interpolation possible          
 c  
@@ -98,12 +98,12 @@ c
 c adjust signs
 c  
    60 if (p .gt. 0.d0) q = -q        
-      p = dabs(p)         
+      p = abs(p)         
 c  
 c is interpolation acceptable       
 c  
-      if ((2.d0*p) .ge. (3.d0*xm*q - dabs(tol1*q))) go to 70 
-      if (p .ge. dabs(0.5*e*q)) go to 70        
+      if ((2.d0*p) .ge. (3.d0*xm*q - abs(tol1*q))) go to 70 
+      if (p .ge. abs(0.5*e*q)) go to 70        
       e = d   
       d = p/q 
       go to 80
@@ -117,10 +117,10 @@ c complete step
 c  
    80 a = b   
       fa = fb 
-      if (dabs(d) .gt. tol1) b = b + d          
-      if (dabs(d) .le. tol1) b = b + dsign(tol1, xm)        
+      if (abs(d) .gt. tol1) b = b + d          
+      if (abs(d) .le. tol1) b = b + sign(tol1, xm)        
       fb = f(b)          
-      if ((fb*(fc/dabs(fc))) .gt. 0.d0) go to 20 
+      if ((fb*(fc/abs(fc))) .gt. 0.d0) go to 20 
       go to 30
 c  
 c done        

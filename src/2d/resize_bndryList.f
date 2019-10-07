@@ -22,7 +22,7 @@
               bndList(i,nextfree) = i+1
           end do
 
-          bndList(new_bndListSize,nextfree) = null
+          bndList(new_bndListSize,nextfree) = clawpack_null
           ndfree_bnd = bndListSize+1
           bndListSize = new_bndListSize
 

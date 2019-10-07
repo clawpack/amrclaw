@@ -28,11 +28,11 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     integer, intent(in) :: level, nvar, naux, mx, my, nrowst, ncolst
     integer, intent(in) :: ilo,ihi,jlo,jhi
 !   integer, intent(in) :: fill_indices(4)
-    real(kind=8), intent(in) :: t
+    real(CLAW_REAL), intent(in) :: t
 
     ! Output
-    real(kind=8), intent(in out) :: valbig(nvar,mx,my)
-    real(kind=8), intent(in out) :: aux(naux,mx,my)
+    real(CLAW_REAL), intent(in out) :: valbig(nvar,mx,my)
+    real(CLAW_REAL), intent(in out) :: aux(naux,mx,my)
 
     ! Local storage
     integer :: i_fine, j_fine, i_coarse, j_coarse, n, k
@@ -40,16 +40,16 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     integer :: mx_patch, my_patch, mx_coarse, my_coarse, nghost_patch, lencrse
     integer :: refinement_ratio_x, refinement_ratio_y
     integer :: unset_indices(4)
-    real(kind=8) :: dx_fine, dy_fine, dx_coarse, dy_coarse
-    real(kind=8) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine 
+    real(CLAW_REAL) :: dx_fine, dy_fine, dx_coarse, dy_coarse
+    real(CLAW_REAL) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine 
     
     !for setaux timing
     integer :: clock_start, clock_finish, clock_rate
-    real(kind=8) :: cpu_start, cpu_finish  
+    real(CLAW_REAL) :: cpu_start, cpu_finish  
 
     ! Interpolation variables
-    real(kind=8) :: eta1, eta2, valp10, valm10, valc, valp01, valm01, dupc, dumc
-    real(kind=8) :: ducc, du, fu, dvpc, dvmc, dvcc, dv, fv, valint
+    real(CLAW_REAL) :: eta1, eta2, valp10, valm10, valc, valp01, valm01, dupc, dumc
+    real(CLAW_REAL) :: ducc, du, fu, dvpc, dvmc, dvcc, dv, fv, valint
 
     ! Cell set tracking
     logical :: set
@@ -71,12 +71,12 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     !expand on coarse grid to enclose fine
     ! ### turns out you need 3 rows, forget offset of 1 plus one on each side
     ! the +3 is to expand on coarse grid to enclose fine
-!!$    real(kind=8) :: valcrse((fill_indices(2) - fill_indices(1) + 3) &
+!!$    real(CLAW_REAL) :: valcrse((fill_indices(2) - fill_indices(1) + 3) &
 !!$                          * (fill_indices(4) - fill_indices(3) + 3) *nvar)
-!!$    real(kind=8) :: auxcrse((fill_indices(2) - fill_indices(1) + 3) &
+!!$    real(CLAW_REAL) :: auxcrse((fill_indices(2) - fill_indices(1) + 3) &
 !!$                          * (fill_indices(4) - fill_indices(3) + 3) *naux)
-    real(kind=8) :: valcrse((ihi-ilo+3) * (jhi-jlo+3) * nvar)  
-    real(kind=8) :: auxcrse((ihi-ilo+3) * (jhi-jlo+3) * naux)  
+    real(CLAW_REAL) :: valcrse((ihi-ilo+3) * (jhi-jlo+3) * nvar)  
+    real(CLAW_REAL) :: auxcrse((ihi-ilo+3) * (jhi-jlo+3) * naux)  
     ! We begin by filling values for grids at level level. If all values can be
     ! filled in this way, we return;
 !!$    mx_patch = fill_indices(2) - fill_indices(1) + 1 ! nrowp
@@ -202,13 +202,13 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
 
         do i_fine = 1,mx_patch
             i_coarse = 2 + (i_fine - (unset_indices(1) - ilo) - 1) / refinement_ratio_x
-            eta1 = (-0.5d0 + real(mod(i_fine - 1, refinement_ratio_x),kind=8)) &
-                                / real(refinement_ratio_x,kind=8)
+            eta1 = (-0.5d0 + real(mod(i_fine - 1, refinement_ratio_x),kind=CLAW_REAL)) &
+                                / real(refinement_ratio_x,kind=CLAW_REAL)
 
             do j_fine  = 1,my_patch
                 j_coarse = 2 + (j_fine - (unset_indices(3) - jlo) - 1) / refinement_ratio_y
-                eta2 = (-0.5d0 + real(mod(j_fine - 1, refinement_ratio_y),kind=8)) &
-                                    / real(refinement_ratio_y,kind=8)
+                eta2 = (-0.5d0 + real(mod(j_fine - 1, refinement_ratio_y),kind=CLAW_REAL)) &
+                                    / real(refinement_ratio_y,kind=CLAW_REAL)
 
                 if (flaguse(i_fine,j_fine) == 0) then
 

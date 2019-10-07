@@ -4,7 +4,7 @@ c
       subroutine errf1(rctfine,nvar,rctcrse,mptr,mi2tot,mj2tot,
      2                 mitot,mjtot,rctflg,mibuff,mjbuff)
       use amr_module
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 
  
       dimension  rctfine(nvar,mitot,mjtot)
@@ -104,7 +104,7 @@ c
 c  print out intermediate flagged rctcrse (for debugging)
 c
       if (eprint) then
-         err2 = dsqrt(err2/dble((mi2tot-2*nghost)*(mj2tot-2*nghost)))
+         err2 = sqrt(err2/dble((mi2tot-2*nghost)*(mj2tot-2*nghost)))
          write(outunit,103) mptr, levm, time,errmax, err2
  103     format(' grid ',i4,' level ',i4,' time ',e12.5,
      .          ' max. error = ',e15.7,' err2 = ',e15.7)

@@ -95,8 +95,10 @@ program amr1
 
     use amr_module, only: t0, tstart_thisrun
 
+    ! Data modules
     use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
+    use adjoint_module, only: read_adjoint_data
 
     implicit none
 
@@ -441,6 +443,7 @@ program amr1
         ! Non-user data files
         call set_regions()
         call set_gauges(rest, nvar)
+        call read_adjoint_data()          ! Read adjoint solution
 
     else
 
@@ -467,6 +470,7 @@ program amr1
         ! Non-user data files
         call set_regions()
         call set_gauges(rest, nvar)
+        call read_adjoint_data()          ! Read adjoint solution
 
         cflmax = 0.d0   ! otherwise use previously heckpointed val
 

@@ -5,12 +5,12 @@ c
      .                       valbgc,auxbgc,mi2tot,mj2tot)
 
        use amr_module
-       implicit double precision (a-h,o-z)
+       implicit real(CLAW_REAL) (a-h,o-z)
 
-       double precision valdub(nvar,midub,mjdub)
-       double precision auxdub(naux,midub,mjdub)
-       double precision valbgc(nvar,mi2tot,mj2tot)
-       double precision auxbgc(naux,mi2tot,mj2tot)
+       real(CLAW_REAL) valdub(nvar,midub,mjdub)
+       real(CLAW_REAL) auxdub(naux,midub,mjdub)
+       real(CLAW_REAL) valbgc(nvar,mi2tot,mj2tot)
+       real(CLAW_REAL) auxbgc(naux,mi2tot,mj2tot)
        dimension fp(nvar,mi2tot,mj2tot),gp(nvar,mi2tot,mj2tot)
        dimension fm(nvar,mi2tot,mj2tot),gm(nvar,mi2tot,mj2tot)
        

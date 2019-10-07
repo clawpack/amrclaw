@@ -10,8 +10,8 @@ c
       subroutine colate2 (badpts, len, lcheck, nUniquePts, lbase)
 c
       use amr_module
-      implicit  double precision (a-h,o-z)
-      dimension badpts(2,len)
+      implicit  real(CLAW_REAL) (a-h,o-z)
+      real(CLAW_REAL) :: badpts(2,len)
       dimension ist(3), iend(3), jst(3), jend(3), ishift(3), jshift(3)
       logical db/.false./
       integer*8 largestIntEquiv,ifac1,ifac2
@@ -151,7 +151,11 @@ c
 c  done colating - safe to reclam
         call reclam(locamrflags,mibuff*mjbuff)
 
+#if (CLAW_REAL == 8) 
         ibytesPerDP = 8
+#else
+        ibytesPerDP = 4
+#endif
         iflagsize =  (mibuff*mjbuff)/ibytesPerDP+1
         call reclam(node(domflags_base,mptr),iflagsize)
         call reclam(node(domflags2,mptr),iflagsize)

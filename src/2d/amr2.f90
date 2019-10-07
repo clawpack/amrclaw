@@ -84,16 +84,30 @@ program amr2
     use amr_module, only: timeBound,timeStepgrid, timeFlagger,timeBufnst
     use amr_module, only: timeBoundCPU,timeStepGridCPU,timeRegriddingCPU
     use amr_module, only: timeValoutCPU,timeTick,timeTickCPU
+    use amr_module, only: timeUpdatingCPU
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
     use amr_module, only: rprint, sprint, tprint, uprint
 
     use amr_module, only: t0, tstart_thisrun
+    use amr_module, only: max1d
 
+    ! Data modules
     use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
+    use adjoint_module, only: read_adjoint_data
 
+    use setprob_module, only: setprob
+#ifdef PROFILE
+    use timer_module, only: take_cpu_timer, cpu_timer_start, cpu_timer_stop, &
+        print_all_cpu_timers, timer_total_run_time
+#endif
+
+
+#ifdef CUDA
+   use cuda_module, only: initialize_cuda, finalize_cuda
+#endif
 #ifdef HDF5
     use hdf5
 #endif
@@ -105,13 +119,13 @@ program amr2
     integer :: ndim, nvar, naux, mcapa1, mindim
     integer :: nstart, nsteps, nv1, nx, ny, lentotsave, num_gauge_SAVE
     integer :: omp_get_max_threads, maxthreads
-    real(kind=8) :: time, ratmet, cut, dtinit, dt_max
+    real(CLAW_REAL) :: time, ratmet, cut, dtinit, dt_max
     logical :: vtime, rest, output_t0    
 
     ! Timing variables
     integer ::  ttotal
-    real(kind=8) ::ttotalcpu, cpu_start,cpu_finish 
-    integer :: clock_start, clock_finish, clock_rate
+    real(CLAW_REAL) ::ttotalcpu, cpu_start,cpu_finish 
+    integer :: clock_start, clock_finish, clock_rate  
     integer, parameter :: timing_unit = 48
     character(len=256) :: timing_line, timing_substr
     character(len=*), parameter :: timing_base_name = "timing."
@@ -126,7 +140,7 @@ program amr2
 #endif
 
     ! Common block variables
-    real(kind=8) :: dxmin, dymin
+    real(CLAW_REAL) :: dxmin, dymin
 
     common /comfine/ dxmin,dymin
 
@@ -204,7 +218,7 @@ program amr2
     if ((output_style == 1) .and. (nout > 0)) then
         allocate(tout(nout))
         do i=1,nout
-            tout(i) = t0 + i * (tfinal - t0) / real(nout,kind=8)
+            tout(i) = t0 + i * (tfinal - t0) / real(nout,kind=CLAW_REAL)
         enddo
     endif
 
@@ -267,6 +281,19 @@ program amr2
     read(inunit,*) mcapa1
     
     read(inunit,*) use_fwaves
+#ifdef CUDA
+    if (use_fwaves) then
+#ifndef USE_FWAVES
+       print *, 'Must turn on USE_FWAVES in Makefile when compile the code'
+       stop
+#endif
+    else
+#ifdef USE_FWAVES
+       print *, 'Must turn off USE_FWAVES in Makefile when compile the code'
+       stop
+#endif
+    endif
+#endif
     allocate(mthlim(mwaves))
     read(inunit,*) (mthlim(mw), mw=1,mwaves)
 
@@ -333,6 +360,13 @@ program amr2
     endif
 
     close(inunit)
+
+#ifdef CUDA
+    ! ==========================================================================
+    ! GPU setups
+    call initialize_cuda()
+    ! END GPU setups============================================================
+#endif
 
     ! ==========================================================================
     !  Refinement Control
@@ -486,6 +520,7 @@ program amr2
         ! Non-user data files
         call set_regions()
         call set_gauges(rest, nvar, naux)
+        call read_adjoint_data()          ! Read adjoint solution
 
     else        
 
@@ -512,6 +547,7 @@ program amr2
         ! Non-user data files
         call set_regions()
         call set_gauges(rest, nvar, naux)
+        call read_adjoint_data()          ! Read adjoint solution
 
         cflmax = 0.d0   ! otherwise use previously heckpointed val
 
@@ -565,6 +601,8 @@ program amr2
 !$   maxthreads = omp_get_max_threads() 
      write(outunit,*)" max threads set to ",maxthreads
      print *," max threads set to ",maxthreads
+     write(outunit,*)" max grid size in each direction set to ", max1d
+     print *," max grid size in each direction set to ", max1d
     
     !
     !  print out program parameters for this run
@@ -616,6 +654,10 @@ program amr2
     call cpu_time(cpu_start)
     call system_clock(clock_start,clock_rate)
 
+#ifdef PROFILE
+    call take_cpu_timer("Total run time", timer_total_run_time)
+    call cpu_timer_start(timer_total_run_time)
+#endif
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
     ! --------------------------------------------------------
@@ -623,6 +665,9 @@ program amr2
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
 
+#ifdef PROFILE
+    call cpu_timer_stop(timer_total_run_time)
+#endif
     call cpu_time(cpu_finish)
 
     !output timing data
@@ -657,7 +702,7 @@ program amr2
         write(timing_unit,format_string) level, &
              real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
         write(*,format_string) level, &
-             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
+             real(tvoll(level),kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), tvollCPU(level), rvoll(level)
         ttotalcpu=ttotalcpu+tvollCPU(level)
         ttotal=ttotal+tvoll(level)
     end do
@@ -666,7 +711,7 @@ program amr2
     write(timing_unit,format_string) &
              real(ttotal,kind=8) / real(clock_rate,kind=8), ttotalCPU, rvol
     write(*,format_string) &
-             real(ttotal,kind=8) / real(clock_rate,kind=8), ttotalCPU, rvol
+             real(ttotal,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), ttotalCPU, rvol
     
     write(*,*)
     write(timing_unit,*)
@@ -681,28 +726,35 @@ program amr2
     write(timing_unit,format_string) &
          real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
     write(*,format_string) &
-         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
+         real(timeStepgrid,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeStepgridCPU
     
     !bound
     format_string="('BC/ghost cells',1f15.3,'        ',1f15.3)"
     write(timing_unit,format_string) &
          real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
     write(*,format_string) &
-         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
+         real(timeBound,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeBoundCPU
     
     !regridding time
     format_string="('Regridding    ',1f15.3,'        ',1f15.3,'  ')"
     write(timing_unit,format_string) &
             real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
     write(*,format_string) &
-            real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
+            real(timeRegridding,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeRegriddingCPU
+
+    !updating time
+    format_string="('Updating      ',1f15.3,'        ',1f15.3,'  ')"
+    write(outunit,format_string) &
+            real(timeUpdating,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeUpdatingCPU
+    write(*,format_string) &
+            real(timeUpdating,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeUpdatingCPU
     
     !output time
     format_string="('Output (valout)',1f14.3,'        ',1f15.3,'  ')"
     write(timing_unit,format_string) &
             real(timeValout,kind=8) / real(clock_rate,kind=8), timeValoutCPU
     write(*,format_string) &
-            real(timeValout,kind=8) / real(clock_rate,kind=8), timeValoutCPU
+            real(timeValout,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), timeValoutCPU
     
     write(*,*)
     write(timing_unit,*)
@@ -711,9 +763,9 @@ program amr2
     format_string="('Total time:   ',1f15.3,'        ',1f15.3,'  ')"
 
 !    write(*,format_string)  &
-!            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
+!            real(clock_finish - clock_start,kind=CLAW_REAL) / real(clock_rate,kind=CLAW_REAL), &
 !            cpu_finish-cpu_start
-    write(*,format_string) real(timeTick,kind=8)/real(clock_rate,kind=8), &
+    write(*,format_string) real(timeTick,kind=CLAW_REAL)/real(clock_rate,kind=CLAW_REAL), &
             timeTickCPU
     write(timing_unit,format_string) real(timeTick,kind=8)/real(clock_rate,kind=8), &
             timeTickCPU
@@ -751,6 +803,10 @@ program amr2
     write(*,*)
     write(timing_unit,*)
     close(timing_unit)
+
+#ifdef PROFILE
+    call print_all_cpu_timers()
+#endif
 
     ! Done with computation, cleanup:
     lentotsave = lentot
@@ -808,5 +864,8 @@ program amr2
     ! Close output and debug files.
     close(outunit)
     close(dbugunit)
+
+    call finalize_cuda()
+
 
 end program amr2

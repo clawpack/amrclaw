@@ -18,19 +18,19 @@ subroutine flagregions(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
 
     ! Subroutine arguments
     integer, intent(in) :: mx,my,level,mbuff
-    real(kind=8), intent(in) :: xlower,ylower,dx,dy,t
+    real(CLAW_REAL), intent(in) :: xlower,ylower,dx,dy,t
     
     ! Flagging
-    real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
-    real(kind=8), intent(in) :: DONTFLAG
-    real(kind=8), intent(in) :: DOFLAG
+    real(CLAW_REAL),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
+    real(CLAW_REAL), intent(in) :: DONTFLAG
+    real(CLAW_REAL), intent(in) :: DOFLAG
     
     logical :: allowflag
     external allowflag
 
     ! Locals
     integer :: i,j,m,minlevel,maxlevel
-    real(kind=8) :: x_low,y_low,x_hi,y_hi
+    real(CLAW_REAL) :: x_low,y_low,x_hi,y_hi
 
     
     ! Loop over interior points on this grid

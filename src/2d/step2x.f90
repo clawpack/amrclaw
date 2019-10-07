@@ -24,33 +24,33 @@ subroutine step2x(maxm,meqn,maux,mbc,mx,my,qold,aux,dx,dt,cflgrid,fm,fp,rpn2)
     
     ! Arguments
     integer, intent(in) :: maxm,meqn,maux,mbc,mx,my
-    real(kind=8), intent(in) :: dx,dt
-    real(kind=8), intent(inout) :: cflgrid
-    real(kind=8), intent(inout) :: qold(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
-    real(kind=8), intent(inout) :: fp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(in) :: dx,dt
+    real(CLAW_REAL), intent(inout) :: cflgrid
+    real(CLAW_REAL), intent(inout) :: qold(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: aux(maux,1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: fm(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
+    real(CLAW_REAL), intent(inout) :: fp(meqn,1-mbc:mx+mbc, 1-mbc:my+mbc)
 
    
     ! Local storage for flux accumulation
-    real(kind=8) :: faddm(meqn,1-mbc:maxm+mbc)
-    real(kind=8) :: faddp(meqn,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: faddm(meqn,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: faddp(meqn,1-mbc:maxm+mbc)
  
 
     ! Scratch storage for Sweeps and Riemann problems
-    real(kind=8) ::  q1d(meqn,1-mbc:maxm+mbc)
-    real(kind=8) :: aux2(maux,1-mbc:maxm+mbc)
-    real(kind=8) :: dtdx1d(1-mbc:maxm+mbc)
+    real(CLAW_REAL) ::  q1d(meqn,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: aux2(maux,1-mbc:maxm+mbc)
+    real(CLAW_REAL) :: dtdx1d(1-mbc:maxm+mbc)
 
     
-    real(kind=8) ::  wave(meqn, mwaves, 1-mbc:maxm+mbc)
-    real(kind=8) ::     s(mwaves, 1-mbc:maxm + mbc)
-    real(kind=8) ::  cqxx(meqn,1-mbc:maxm + mbc)
+    real(CLAW_REAL) ::  wave(meqn, mwaves, 1-mbc:maxm+mbc)
+    real(CLAW_REAL) ::     s(mwaves, 1-mbc:maxm + mbc)
+    real(CLAW_REAL) ::  cqxx(meqn,1-mbc:maxm + mbc)
    
     
     ! Looping scalar storage
     integer :: j
-    real(kind=8) :: dtdx,cfl1d
+    real(CLAW_REAL) :: dtdx,cfl1d
     
     
     cflgrid = 0.d0

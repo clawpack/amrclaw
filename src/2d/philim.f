@@ -1,9 +1,9 @@
 c
 c
 c     =====================================================
-      double precision function philim(a,b,meth)
+      real(CLAW_REAL) function philim(a,b,meth)
 c     =====================================================
-      implicit double precision (a-h,o-z)
+      implicit real(CLAW_REAL) (a-h,o-z)
 c
 c     # Compute a limiter based on wave strengths a and b.
 c     # meth determines what limiter is used.
@@ -23,21 +23,21 @@ c
 c     --------
 c     # minmod
 c     --------
-      philim = dmax1(0.d0, dmin1(1.d0, r))
+      philim = max(0.d0, min(1.d0, r))
       return
 c
    20 continue
 c     ----------
 c     # superbee
 c     ----------
-      philim = dmax1(0.d0, dmin1(1.d0, 2.d0*r), dmin1(2.d0, r))
+      philim = max(0.d0, min(1.d0, 2.d0*r), min(2.d0, r))
       return
 c
    30 continue
 c     ----------
 c     # van Leer
 c     ----------
-      philim = (r + dabs(r)) / (1.d0 + dabs(r))
+      philim = (r + abs(r)) / (1.d0 + abs(r))
       return
 c
    40 continue
@@ -45,7 +45,7 @@ c     ------------------------------
 c     # monotinized centered 
 c     ------------------------------
       c = (1.d0 + r)/2.d0
-      philim = dmax1(0.d0, dmin1(c, 2.d0, 2.d0*r))
+      philim = max(0.d0, min(c, 2.d0, 2.d0*r))
       return
 c
    50 continue
