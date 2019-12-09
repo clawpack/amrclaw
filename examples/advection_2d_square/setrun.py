@@ -269,6 +269,7 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     amrdata = rundata.amrdata
 
+    amrdata.max1d = 120
 
     # max number of refinement levels:
     amrdata.amr_levels_max = 3
