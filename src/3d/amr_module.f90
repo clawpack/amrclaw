@@ -65,7 +65,8 @@ module amr_module
 
     ! The max1d parameter should be changed if using OpenMP grid based 
     ! looping, suggest setting max1d = 32 for 3d 
-    integer, parameter :: max1d = 32 
+    ! max1d should now be set in setrun.py
+    integer:: max1d
     !integer, parameter :: max1d = 28 
 
     integer, parameter :: maxvar = 10
