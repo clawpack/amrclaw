@@ -269,6 +269,7 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     amrdata = rundata.amrdata
 
+    # max1d controls size of grids
     amrdata.max1d = 120
 
     # max number of refinement levels:

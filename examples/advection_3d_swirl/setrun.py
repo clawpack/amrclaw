@@ -30,7 +30,7 @@ def setrun(claw_pkg='amrclaw'):
 
     assert claw_pkg.lower() == 'amrclaw',  "Expected claw_pkg = 'amrclaw'"
 
-    num_dim = 3
+    num_dim = 3 
     rundata = data.ClawRunData(claw_pkg, num_dim)
 
     #------------------------------------------------------------------
