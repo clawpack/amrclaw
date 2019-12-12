@@ -441,6 +441,7 @@ program amr1
         print *, ' '
         ! Call user routine to set up problem parameters:
         call setprob()
+        call initTimers() ! better to checkpt and reread but for now set to 0
 
         ! Non-user data files
         call set_regions()
