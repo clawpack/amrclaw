@@ -37,7 +37,7 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
       if (debug) write(outunit,100) mnew,lbase,ilo,ihi,levnew
  100  format("NESTCK1 testing grid ",i5," base level ",i5,/,
-     . " new grid from ilo:hi: ",2i12," to ",2i12," at level ",i4)
+     . " new grid from ilo:hi: (",i12," to ",i12,") at level ",i4)
 c
 c    on to initializing for the given grid and its nest checking
        levratx = 1
@@ -57,8 +57,8 @@ c figure out size for scratch storage on base grid for testing
           ichi = ichi + 1
           if (debug) then
              write(outunit,111) lev, iclo,ichi
-111          format(10x,"at level",i5," projected coords ilo:hi:",2i10,
-     .           " jlo:hi:",2i10)
+111          format(10x,"at level",i5," projected coords ilo:hi:(",
+     &              2i10,")")
           endif
        end do
 c      high end of integer grid index truncates during the divide
@@ -105,6 +105,8 @@ c
               ixlo = max(iclo,iblo)
               ixhi = min(ichi,ibhi)
               if (.not.(ixlo.le.ixhi)) go to 30
+              if (debug) write(outunit,105) ixlo,ixhi
+105           format("marking nested region from: ",2i10)
               do ix = ixlo, ixhi
                 alloc(iadd(ix))=1.
               end do

@@ -36,6 +36,7 @@ c      # for CONVEX coarsest grid at level 1, nothing to check
        levnew = node(nestlevel,mnew)
        lratiox  = intratx(levnew-1)
 
+       zeroBuff = 0 ! dont count buffer zone around grid in checking
        isNested = baseCheck(mnew,lbase,node(ndilo,mnew),
      .                      node(ndihi,mnew),nvar,naux,zeroBuff)
        if (isNested) then
