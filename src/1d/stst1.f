@@ -108,6 +108,8 @@ c
       timeRegriddingCPU  = 0.d0
       timeTick           = 0
       timeTickCPU        = 0.d0
+      timeSetaux         = 0.d0
+      timeSetauxCPU      = 0.d0
       timeUpdating       = 0
       timeValout         = 0
       timeValoutCPU      = 0.d0
