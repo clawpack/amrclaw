@@ -25,7 +25,13 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         self._clawdata = clawdata
         
         # maximum size of patch in each dimension:
-        self.add_attribute('max1d',60)
+        # match original defaults for consistency and nosetests
+        if self._clawdata.num_dim == 3:
+            self.add_attribute('max1d',32)
+        elif self._clawdata.num_dim == 2:
+            self.add_attribute('max1d',60)
+        else:
+            self.add_attribute('max1d',500)
 
         # Refinement control
         self.add_attribute('amr_levels_max',1)
