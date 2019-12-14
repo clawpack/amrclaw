@@ -24,6 +24,15 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         # Need to have a pointer to this so we can get num_dim and num_aux
         self._clawdata = clawdata
         
+        # maximum size of patch in each dimension:
+        # match original defaults for consistency and nosetests
+        if self._clawdata.num_dim == 3:
+            self.add_attribute('max1d',32)
+        elif self._clawdata.num_dim == 2:
+            self.add_attribute('max1d',60)
+        else:
+            self.add_attribute('max1d',500)
+
         # Refinement control
         self.add_attribute('amr_levels_max',1)
         self.add_attribute('refinement_ratios_x',[1])
@@ -64,6 +73,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
 
         self.open_data_file(out_file, data_source)
     
+        self.data_write('max1d')
         self.data_write('amr_levels_max')
 
         num_ratios = max(abs(self.amr_levels_max)-1, 1)

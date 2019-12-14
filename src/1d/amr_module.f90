@@ -58,7 +58,8 @@ module amr_module
     ! The max1d parameter controls the number of grid cells in 
     ! any single grid patch before breaking up. 
     ! Might want to set smaller to break up into more patches for OpenMP
-    integer, parameter :: max1d = 500 
+    ! max1d should now be set in setrun.py
+    integer:: max1d
 
     integer, parameter :: maxvar = 10
     integer, parameter :: maxaux = 20

@@ -30,17 +30,15 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 c#### common/comxyzt/dtcom,dxcom,dycom,dzcom,tcom,icom,jcom,kcom
 
-      parameter (msize=max1d+4)
-
-      parameter (mwork=msize*(46*maxvar + (maxvar+1)*maxwave
-     &                 + 9*maxaux + 3))
+      integer msize, mwork
 
       dimension q(nvar,mitot,mjtot,mktot)
       dimension fm(nvar,mitot,mjtot,mktot),fp(nvar,mitot,mjtot,mktot)
       dimension gm(nvar,mitot,mjtot,mktot),gp(nvar,mitot,mjtot,mktot)
       dimension hm(nvar,mitot,mjtot,mktot),hp(nvar,mitot,mjtot,mktot)
       dimension aux(maux,mitot,mjtot,mktot)
-      dimension work(mwork)
+      dimension work((max1d+4)*(46*maxvar+(maxvar+1)*maxwave + 
+     &               9*maxaux + 3))
 
       logical    debug,  dump
       data       debug/.false./,  dump/.false./
@@ -50,6 +48,9 @@ c     # be included in the Riemann solver, for example, if t is explicitly
 c     # needed there.
 
       tcom = time
+c
+      msize = max1d + 4
+      mwork = msize*(46*maxvar + (maxvar+1)*maxwave+9*maxaux + 3)
 
 c
 !--        if (dump .and. mptr .ne. 1) 

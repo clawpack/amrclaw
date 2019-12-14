@@ -39,12 +39,11 @@ c      # in rp2, but shouldnt matter since wave is not used in qad
 c      # and for other arrays it is only the last parameter that is wrong
 c      #  ok as long as meqn, mwaves < maxvar
 
-       parameter (max1dp1 = max1d+1)
-c      parameter (max1dp1 = (max1d+1)**2+1)
-       dimension ql(nvar,max1dp1),    qr(nvar,max1dp1)
-       dimension wave(nvar,mwaves,max1dp1), s(mwaves,max1dp1)
-       dimension amdq(nvar,max1dp1),  apdq(nvar,max1dp1)
-       dimension auxl(maux,max1dp1),  auxr(maux,max1dp1)
+       integer max1dp1 
+       dimension ql(nvar,max1d+1),    qr(nvar,max1d+1)
+       dimension wave(nvar,mwaves,max1d+1), s(mwaves,max1d+1)
+       dimension amdq(nvar,max1d+1),  apdq(nvar,max1d+1)
+       dimension auxl(maux,max1d+1),  auxr(maux,max1d+1)
 
        data qprint/.false./
 c
@@ -56,6 +55,8 @@ c      maux is the number of aux variables, which may be zero.
 c
 c      nr, nc, nf are the number of rows, columns, files
 c
+
+       max1dp1 = max1d + 1
 
        if (qprint) write(dbugunit,*)" working on grid ",mptr
        tgrid = rnode(timemult, mptr)
