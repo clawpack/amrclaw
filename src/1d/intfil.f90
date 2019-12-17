@@ -23,7 +23,7 @@ subroutine intfil(val,mi,time,flaguse,nrowst,ilo,ihi,level,nvar,naux,msrc)
     use amr_module, only: possk, mxnest, iregsz, nghost, outunit, alloc
     use amr_module, only: node, lstart, store1, store2, levelptr, timemult,gridNbor
     use amr_module, only: rnode, ndilo, ndihi, nextfree
-    use amr_module, only: bndListNum, bndListSt
+    use amr_module, only: bndListNum, bndListSt, mstart
     use amr_module, only: listStart, listOfGrids, bndList, numgrids
 
     implicit none
@@ -40,7 +40,7 @@ subroutine intfil(val,mi,time,flaguse,nrowst,ilo,ihi,level,nvar,naux,msrc)
     integer :: imlo, imhi, nx, mitot
     integer :: ixlo, ixhi, locold, locnew, nextSpot
     integer :: icount, bndNum, bndLoc, levSt
-    integer :: ivar, i, mptr, mstart, loc, numg
+    integer :: ivar, i, mptr, loc, numg
     real(kind=8) :: dt, alphac, alphai
     logical :: t_interpolate
 
