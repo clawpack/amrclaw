@@ -179,7 +179,8 @@ module amr_module
 
     ! The max1d parameter should be changed if using OpenMP grid based 
     ! looping, usually set to max1d = 60
-    integer, parameter :: max1d = 60 
+    ! max1d should now be set in setrun.py
+    integer :: max1d
 
     integer, parameter :: maxvar = 10
     integer, parameter :: maxaux = 20
@@ -246,12 +247,13 @@ module amr_module
     ! :::::  collect stats
     ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     real(kind=8)  rvoll(maxlv),evol,rvol,avenumgrids(maxlv)
-    integer ::  iregridcount(maxlv), tvoll(maxlv)
-    integer :: timeRegridding, timeUpdating, timeValout
-    integer :: timeFlglvl,timeGrdfit2,timeGrdfit3,timeGrdfitAll
-    integer :: timeBound,timeStepgrid
-    integer :: timeFlagger, timeBufnst,timeTick, tick_clock_start
-    real(kind=8) tvollCPU(maxlv), timeTickCPU
+    integer ::  iregridcount(maxlv)
+    integer(kind=8) ::  tvoll(maxlv)
+    integer(kind=8) :: timeRegridding, timeUpdating, timeValout
+    integer(kind=8) :: timeFlglvl,timeGrdfit2,timeGrdfit3,timeGrdfitAll
+    integer(kind=8) :: timeBound,timeStepgrid
+    integer(kind=8) :: timeFlagger, timeBufnst,timeTick, tick_clock_start
+    real(kind=8) tvollCPU(maxlv), timeTickCPU, tick_cpu_start
     real(kind=8) timeBoundCPU,timeStepgridCPU,timeRegriddingCPU
     real(kind=8) timeValoutCPU
 

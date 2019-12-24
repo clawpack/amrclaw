@@ -106,6 +106,31 @@ def setplot(plotdata=None):
     plotitem.plotstyle = 'b-'
 
 
+    #-----------------------------------------
+    # Plots of timing (CPU and wall time):
+
+    def make_timing_plots(plotdata):
+        from clawpack.visclaw import plot_timing_stats
+        import os,sys
+        try:
+            timing_plotdir = plotdata.plotdir + '/_timing_figures'
+            os.system('mkdir -p %s' % timing_plotdir)
+            # adjust units for plots based on problem:
+            units = {'comptime':'seconds', 'simtime':'dimensionless', 
+                     'cell':'millions'}
+            plot_timing_stats.make_plots(outdir=plotdata.outdir, 
+                                          make_pngs=True,
+                                          plotdir=timing_plotdir, 
+                                          units=units)
+        except:
+            print('*** Error making timing plots')
+
+    otherfigure = plotdata.new_otherfigure(name='timing plots',
+                    fname='_timing_figures/timing.html')
+    otherfigure.makefig = make_timing_plots
+
+    #-----------------------------------------
+
     # Parameters used only when creating html and/or latex hardcopy
     # e.g., via clawpack.visclaw.frametools.printframes:
 

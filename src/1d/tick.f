@@ -197,6 +197,9 @@ c
 
           call system_clock(clock_start,clock_rate)
           call cpu_time(cpu_start)
+c         write(*,*)"at time ",tlevel(lbase)," lbase,lfine",
+c    .              lbase,lfine," about to regrid "
+c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
           call regrid(nvar,lbase,cut,naux,start_time)
           call system_clock(clock_finish,clock_rate)
           call cpu_time(cpu_finish)
@@ -206,6 +209,7 @@ c
           call setbestsrc()     ! need at every grid change
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
 c note negative time to signal regridding output in plots
+c         write(*,*)"after regridding "
 c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
 c
 c  maybe finest level in existence has changed. reset counters.

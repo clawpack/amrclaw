@@ -298,6 +298,8 @@ program amr1
     !  Refinement Control
     call opendatafile(inunit, amrfile)
 
+    read(inunit,*) max1d  ! max size of each grid patch
+
     read(inunit,*) mxnest
     if (mxnest <= 0) then
         stop 'Error ***   mxnest (amrlevels_max) <= 0 not allowed'
@@ -439,6 +441,7 @@ program amr1
         print *, ' '
         ! Call user routine to set up problem parameters:
         call setprob()
+        call initTimers() ! better to checkpt and reread but for now set to 0
 
         ! Non-user data files
         call set_regions()

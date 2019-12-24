@@ -32,7 +32,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic,          &
     logical :: sticksoutxfine, sticksoutyfine,sticksoutxcrse,sticksoutycrse
     
     !for setaux timing
-    integer :: clock_start, clock_finish, clock_rate
+    integer(kind=8) :: clock_start, clock_finish, clock_rate
     real(kind=8) :: cpu_start, cpu_finish
 
 

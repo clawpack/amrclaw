@@ -62,6 +62,7 @@ c         coarsen by 2 in every direction
           call coarsen(valdub,midub,
      1                 valbgc,mi2tot,nvar)
 
+          cfl_level = 0.d0   ! normally set in advanc
           call stepgrid(valbgc,fm,fp,
      1                mi2tot,nghost,
      2                dt2,dtnew2,hx2,nvar,

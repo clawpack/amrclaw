@@ -30,7 +30,7 @@ def setrun(claw_pkg='amrclaw'):
 
     assert claw_pkg.lower() == 'amrclaw',  "Expected claw_pkg = 'amrclaw'"
 
-    num_dim = 3
+    num_dim = 3 
     rundata = data.ClawRunData(claw_pkg, num_dim)
 
     #------------------------------------------------------------------
@@ -276,6 +276,9 @@ def setrun(claw_pkg='amrclaw'):
     # AMR parameters:
     # ---------------
     amrdata = rundata.amrdata
+
+    # max1d controls size of grids
+    amrdata.max1d = 32
 
     # max number of refinement levels:
     amrdata.amr_levels_max = 2
