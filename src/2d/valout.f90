@@ -205,7 +205,12 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
             grid_ptr = node(levelptr, grid_ptr)
         end do
     end do
+
     close(out_unit)
+    if (output_format == 3) then
+        close(unit=out_unit + 1)
+    end if
+
 #ifdef HDF5
     if (output_format == 4) then
         call h5gclose_f(q_group, hdf_error)
@@ -316,7 +321,13 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                 grid_ptr = node(levelptr, grid_ptr)
             end do
         end do
+        
+        if ((output_format == 1) .or. (output_format == 3)) then
+            close(out_unit)
+        end if
+        
     end if
+
 #ifdef HDF5
     if (out_aux) then
         call h5gclose_f(aux_group, hdf_error)
