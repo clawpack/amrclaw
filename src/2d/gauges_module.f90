@@ -66,7 +66,7 @@ module gauges_module
         real(kind=8) :: last_time
 
         ! Output settings
-        integer :: file_format
+        integer :: file_format, gtype
         real(kind=8) :: min_time_increment
         character(len=10) :: display_format
         logical, allocatable :: q_out_vars(:)
@@ -141,11 +141,20 @@ contains
             read(UNIT, *)
             read(UNIT, *)
             read(UNIT, *) (gauges(i)%min_time_increment, i=1, num_gauges)
+            read(UNIT, *)
+            read(UNIT, *)
+            read(UNIT, *) (gauges(i)%gtype, i=1, num_gauges)
 
             ! Read in q fields
             read(UNIT, *)
             read(UNIT, *)
             do i = 1, num_gauges
+                if (gauges(i)%gtype .ne. 1) then
+                    write(6,*) '*** Lagrangian gauges not yet supported'
+                    write(6,*) '*** All gauges must have gtype==1'
+                    stop
+                endif
+                
                 allocate(gauges(i)%q_out_vars(num_eqn))
                 read(UNIT, *) gauges(i)%q_out_vars
 
@@ -252,7 +261,7 @@ contains
 !
 ! --------------------------------------------------------------------
 !
-    subroutine setbestsrc()
+    subroutine setbestsrc(igauge)
 !
 !     Called every time grids change, to set the best source grid patch
 !     for each gauge, i.e. the finest level patch that includes the gauge.
@@ -264,19 +273,35 @@ contains
         use amr_module
         implicit none
 
-        integer :: lev, mptr, i, k1, ki
+        integer, intent(in), optional :: igauge
+        integer :: lev, mptr, i, i1, i2
 
 !
 ! ##  set source grid for each loc from coarsest level to finest.
 ! ##  that way finest src grid left and old ones overwritten
 ! ##  this code uses fact that grids do not overlap
 
-! # for debugging, initialize sources to 0 then check that all set
-        mbestsrc = 0
+! ##  This modified version allows an optional igauge argument
+! ##  to only update one gauge, for Lagrangian gauges (particle tracking)
+! ##  This is not yet implemented in amrclaw, but argument added for
+! ##  consistency with the geoclaw version of this routine.
+
+        if (present(igauge)) then
+            ! only loop over one gauge
+            i1 = igauge
+            i2 = igauge
+          else
+            ! normal case of setting for all gauges
+            i1 = 1
+            i2 = num_gauges
+          endif
+
+        ! for debugging, initialize sources to 0 then check that all set
+        mbestsrc(i1:i2) = 0
 
         !! reorder loop for better performance with O(10^5) grids
         !! for each gauge find best source grid for its data
-        do 40 i = 1, num_gauges
+        do 40 i = i1,i2
 
            do 30 lev = lfine, 1, -1
               mptr = lstart(lev)
