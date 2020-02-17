@@ -126,8 +126,8 @@ def setrun(claw_pkg='amrclaw'):
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 2
-        clawdata.total_steps = 4
+        clawdata.output_step_interval = 1
+        clawdata.total_steps = 25
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
@@ -320,8 +320,41 @@ def setrun(claw_pkg='amrclaw'):
     rundata.regiondata.regions = []
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
-    rundata.regiondata.regions.append([1,1,0,1e10,0.,1.,0.,1.])
-    rundata.regiondata.regions.append([1,3,0,1e10,0.,1.,0.,0.7])
+    #rundata.regiondata.regions.append([1,1,0,1e10,0.,1.,0.,1.])
+    #rundata.regiondata.regions.append([1,3,0,1e10,0.,1.,0.,0.7])
+
+    # ---------------
+    # NEW flagregions
+    # ---------------
+
+    flagregions = rundata.flagregiondata.flagregions  # initialized to []
+
+    # now append as many flagregions as desired to this list:
+    from clawpack.amrclaw.data import FlagRegion
+
+    # The entire domain restricted to level 1 for illustration:
+    # Note that this is a rectangle specified in the new way:
+    # (other regions below will force/allow more refinement)
+    flagregion = FlagRegion(num_dim=2)
+    flagregion.name = 'Region_domain'
+    flagregion.minlevel = 1
+    flagregion.maxlevel = 1
+    flagregion.t1 = 0.
+    flagregion.t2 = 1e9
+    flagregion.spatial_region_type = 1  # Rectangle
+    flagregion.spatial_region = [0.,1.,0.,1.]  # = [x1,x2,y1,y2]
+    flagregions.append(flagregion)
+
+    # Another rectangle specified in the new way:
+    flagregion = FlagRegion(num_dim=2)
+    flagregion.name = 'Region_3levels'
+    flagregion.minlevel = 1
+    flagregion.maxlevel = 3
+    flagregion.t1 = 0.
+    flagregion.t2 = 1e9
+    flagregion.spatial_region_type = 1  # Rectangle
+    flagregion.spatial_region = [0.,1.,0.,0.7]
+    flagregions.append(flagregion)
 
 
     #  ----- For developers ----- 
