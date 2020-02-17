@@ -10,6 +10,10 @@ from __future__ import absolute_import
 import os
 import numpy as np
 
+# used to create ruled rectangle:
+from clawpack.amrclaw import region_tools 
+
+
 #------------------------------
 def setrun(claw_pkg='amrclaw'):
 #------------------------------
@@ -93,8 +97,6 @@ def setrun(claw_pkg='amrclaw'):
     
 
     # Restart from checkpoint file of a previous run?
-    # Note: If restarting, you must also change the Makefile to set:
-    #    RESTART = True
     # If restarting, t0 above should be from original run, and the
     # restart_file 'fort.chkNNNNN' specified below should be in 
     # the OUTDIR indicated in Makefile.
@@ -115,8 +117,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 1
-        clawdata.tfinal = 0.4
+        clawdata.num_output_times = 10
+        clawdata.tfinal = 1.0
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -126,8 +128,8 @@ def setrun(claw_pkg='amrclaw'):
  
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 1
-        clawdata.total_steps = 25
+        clawdata.output_step_interval = 2
+        clawdata.total_steps = 4
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
 
@@ -180,7 +182,7 @@ def setrun(claw_pkg='amrclaw'):
     # Order of accuracy:  1 => Godunov,  2 => Lax-Wendroff plus limiters
     clawdata.order = 2
     
-    # Use dimensional splitting? (not yet available for AMR)
+    # Use dimensional splitting?
     clawdata.dimensional_split = 'unsplit'
     
     # For unsplit method, transverse_waves can be 
@@ -237,8 +239,7 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
-    rundata.gaugedata.gauges.append([1, 0.65, 0.4, 0., 10.])
-    rundata.gaugedata.gauges.append([2, 0.2, 0.8, 0., 10.])
+    rundata.gaugedata.gauges.append([1, 0.6, 0.4, 0., 10.])
     
     
     # --------------
@@ -308,20 +309,18 @@ def setrun(claw_pkg='amrclaw'):
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)
-    amrdata.clustering_cutoff = 0.7  
+    amrdata.clustering_cutoff = 0.9
 
     # print info about each regridding up to this level:
     amrdata.verbosity_regrid = 3      
 
 
     # ---------------
-    # Regions:
+    # Regions:  (old style rectangles)
     # ---------------
     rundata.regiondata.regions = []
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
-    #rundata.regiondata.regions.append([1,1,0,1e10,0.,1.,0.,1.])
-    #rundata.regiondata.regions.append([1,3,0,1e10,0.,1.,0.,0.7])
 
     # ---------------
     # NEW flagregions
@@ -345,16 +344,47 @@ def setrun(claw_pkg='amrclaw'):
     flagregion.spatial_region = [0.,1.,0.,1.]  # = [x1,x2,y1,y2]
     flagregions.append(flagregion)
 
-    # Another rectangle specified in the new way:
+    # A more general ruled rectangle:
     flagregion = FlagRegion(num_dim=2)
-    flagregion.name = 'Region_3levels'
+    flagregion.name = 'Region_triangle'
     flagregion.minlevel = 1
     flagregion.maxlevel = 3
     flagregion.t1 = 0.
     flagregion.t2 = 1e9
-    flagregion.spatial_region_type = 1  # Rectangle
-    flagregion.spatial_region = [0.,1.,0.,0.7]
+    flagregion.spatial_region_type = 2  # Ruled Rectangle
+    flagregion.spatial_region_file = \
+            os.path.abspath('RuledRectangle_Triangle.data')
     flagregions.append(flagregion)
+
+    # code to make RuledRectangle_Triangle.data:
+    rr = region_tools.RuledRectangle()
+    rr.method = 1 # piecewiselinear edges between s values
+    rr.ixy = 'x'  # so s refers to x, lower & upper are limits in y
+    rr.s = np.array([0.1, 0.8])
+    rr.lower = np.array([0.2, 0.8])
+    rr.upper = np.array([0.8, 0.8])
+    rr.write('RuledRectangle_Triangle.data')
+    
+    # A trapezoid:
+    flagregion = FlagRegion(num_dim=2)
+    flagregion.name = 'Region_trapezoid'
+    flagregion.minlevel = 3
+    flagregion.maxlevel = 3
+    flagregion.t1 = 0.
+    flagregion.t2 = 1e9
+    flagregion.spatial_region_type = 2  # Ruled Rectangle
+    flagregion.spatial_region_file = \
+            os.path.abspath('RuledRectangle_Trapezoid.data')
+    flagregions.append(flagregion)
+
+    # code to make RuledRectangle_Trapezoid.data:
+    rr = region_tools.RuledRectangle()
+    rr.method = 1 # piecewiselinear edges between s values
+    rr.ixy = 'x'  # so s refers to x, lower & upper are limits in y
+    rr.s = np.array([0.2, 0.9])
+    rr.lower = np.array([0.05, 0.75])
+    rr.upper = np.array([0.15, 0.85])
+    rr.write('RuledRectangle_Trapezoid.data')
 
 
     #  ----- For developers ----- 

@@ -1,5 +1,5 @@
-# gauge_id=     1 location=(   0.6500000E+00   0.4000000E+00 ) num_eqn=  1
-# Columns: level time q(1 ... num_eqn)
+# gauge_id=     1 location=(  0.6500000000E+00  0.4000000000E+00 ) num_var=  1
+# level, time, q[  1], aux[]
    02  0.0000000E+00  0.1000000E+00
    02  0.8000000E-02  0.1000000E+00
    03  0.1600000E-01  0.1000000E+00
