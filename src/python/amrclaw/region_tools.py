@@ -247,8 +247,7 @@ class RuledRectangle(object):
         
     def make_kml(self, fname='RuledRectangle.kml', name='RuledRectangle', 
                  color='00FFFF', width=2, verbose=False):
-        #from clawpack.geoclaw import kmltools
-        import kmltools
+        from clawpack.geoclaw import kmltools
         x,y = self.vertices()
         kmltools.poly2kml((x,y), fname=fname, name=name, color=color, 
                           width=width, verbose=verbose)
