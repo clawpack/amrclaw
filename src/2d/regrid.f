@@ -30,7 +30,6 @@ c global
 c    mstart  = start of very coarsest grids.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
-      !verbosity_regrid = method(4)
       lcheck    = min0(lfine,mxnest-1)
       lfnew     = lbase
       do 10 i   = 1, mxnest

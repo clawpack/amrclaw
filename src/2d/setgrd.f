@@ -25,7 +25,6 @@ c
 c
       levnew =  2
       time   = start_time
-      !verbosity_regrid = method(4)  ! separate amr_module variable
 c
  10   if (levnew .gt. mxnest) go to 30
           levold = levnew - 1
