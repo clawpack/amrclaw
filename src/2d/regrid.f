@@ -30,7 +30,6 @@ c global
 c    mstart  = start of very coarsest grids.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
-      verbosity_regrid = method(4)
       lcheck    = min0(lfine,mxnest-1)
       lfnew     = lbase
       do 10 i   = 1, mxnest
@@ -105,10 +104,10 @@ c        balancing, but doesn't help locality
          if (ngridcount .gt. 1) call arrangeGrids(levnew,ngridcount)
 
          if (verbosity_regrid .ge. levnew) then
-           write(*,100) ngridcount,ncells,levnew
-           write(outunit,100) ngridcount,ncells,levnew
- 100       format("there are ",i6," grids with ",i10,
-     &            " cells at level ", i3)
+           write(*,100) levnew,time,ngridcount,ncells
+           write(outunit,100) levnew,time,ngridcount,ncells
+ 100       format("Regridding level ",i3," at t =",e14.6, ":",i6,
+     &            " grids with ",i11," cells")
          endif
 72     continue
 c
