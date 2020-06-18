@@ -61,8 +61,11 @@ c  parallelization
        iregridcount(1) = 1
        if (ngrids .gt. 1) call arrangeGrids(1,ngrids)
 
-       write(*,100) ngrids,ncells
- 100   format("there are ",i4," grids with ",i8," cells at level   1")
+       write(*,100) 1,start_time,ngrids,ncells
+       write(outunit,100) 1,start_time,ngrids,ncells
+ 100          format("Gridding level ",i3," at t =",e14.6, ":",i6,
+     &               " grids with ",i11," cells")
+
 
 c      set lbase to 1 here, to put domain 1 grids in lsit
 c      once and for all.  Only here, this once, (and if restarting)
