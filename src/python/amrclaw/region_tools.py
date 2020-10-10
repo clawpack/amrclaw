@@ -43,11 +43,13 @@ class RuledRectangle(object):
             x2 = self.s.max()
             y1 = self.lower.min()
             y2 = self.upper.max()
-        else:
+        elif self.ixy in [2,'y']:
             y1 = self.s.min()
             y2 = self.s.max()
             x1 = self.lower.min()
             x2 = self.upper.max()
+        else:
+            raise ValueError('Unrecognized attribute ixy = %s' % self.ixy)
         return [x1, x2, y1, y2]
 
     def slu(self):
@@ -90,9 +92,11 @@ class RuledRectangle(object):
         if self.ixy in [1,'x']:
             x = ss
             y = lu
-        else:
+        elif self.ixy in [2,'y']:
             x = lu
             y = ss
+        else:
+            raise ValueError('Unrecognized attribute ixy = %s' % self.ixy)
         return x,y
             
             
@@ -194,6 +198,9 @@ class RuledRectangle(object):
                     # indices i for which xlower <= x[i] <= xupper, so inside:
                     i, = np.where(np.logical_and(xlower <= x, x <= xupper))
                     mask[j,i] = False
+
+        else:
+            raise ValueError('Unrecognized attribute ixy = %s' % self.ixy)
                     
         if transpose_arrays:
             mask = mask.T
@@ -213,8 +220,10 @@ class RuledRectangle(object):
         # if ixy is 'x' or 'y' replace by 1 or 2 for writing:
         if self.ixy in [1,'x']:
             ixyint = 1
-        else:
+        elif self.ixy in [2,'y']:
             ixyint = 2
+        else:
+            raise ValueError('Unrecognized attribute ixy = %s' % self.ixy)
             
         header = """\n%i   ixy\n%i   method\n%g    ds\n%i    nrules""" \
             % (ixyint,self.method,self.ds,len(self.s))
