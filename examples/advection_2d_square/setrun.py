@@ -113,8 +113,8 @@ def setrun(claw_pkg='amrclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 10
-        clawdata.tfinal = 2.0
+        clawdata.num_output_times = 1
+        clawdata.tfinal = 0.2
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -268,6 +268,9 @@ def setrun(claw_pkg='amrclaw'):
     # AMR parameters:
     # ---------------
     amrdata = rundata.amrdata
+
+    # memsize is initial length of alloc array used for AMR patches
+    amrdata.memsize = 69200
 
     # max1d controls size of grids
     amrdata.max1d = 60
