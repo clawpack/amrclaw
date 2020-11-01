@@ -64,7 +64,7 @@ program amr2
     use amr_module, only: checkpt_style, checkpt_interval, tchk, nchkpt
     use amr_module, only: rstfile, check_a
 
-    use amr_module, only: max1d, maxvar, maxlv
+    use amr_module, only: max1d, maxvar, maxlv, memsize
 
     use amr_module, only: method, mthlim, use_fwaves, numgrids
     use amr_module, only: nghost, mwaves, mcapa, auxtype, dimensional_split
@@ -342,6 +342,7 @@ program amr2
     !  Refinement Control
     call opendatafile(inunit, amrfile)
 
+    read(inunit,*) memsize  ! initial size of alloc array
     read(inunit,*) max1d  ! max size of each grid patch
 
     read(inunit,*) mxnest
@@ -630,6 +631,8 @@ program amr2
 
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
+
+    write(*,*) 'Max usage of alloc array (can use for memsize): ',lendim
 
     ! call system_clock to get clock_finish and count_max for debug output:
     call system_clock(clock_finish,clock_rate,count_max)

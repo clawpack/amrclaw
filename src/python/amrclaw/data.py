@@ -29,6 +29,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         if self._clawdata.num_dim == 3:
             self.add_attribute('max1d',32)
         elif self._clawdata.num_dim == 2:
+            self.add_attribute('memsize',4000000)
             self.add_attribute('max1d',60)
         else:
             self.add_attribute('max1d',500)
@@ -73,6 +74,9 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
 
         self.open_data_file(out_file, data_source)
     
+        if self._clawdata.num_dim == 2:
+            # eventually do this also in 1d and 3d
+            self.data_write('memsize')
         self.data_write('max1d')
         self.data_write('amr_levels_max')
 
