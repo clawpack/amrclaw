@@ -64,7 +64,7 @@ program amr2
     use amr_module, only: checkpt_style, checkpt_interval, tchk, nchkpt
     use amr_module, only: rstfile, check_a
 
-    use amr_module, only: max1d, maxvar, maxlv, memsize
+    use amr_module, only: max1d, maxvar, maxlv
 
     use amr_module, only: method, mthlim, use_fwaves, numgrids
     use amr_module, only: nghost, mwaves, mcapa, auxtype, dimensional_split
@@ -84,7 +84,7 @@ program amr2
     use amr_module, only: timeBound,timeStepgrid, timeFlagger,timeBufnst
     use amr_module, only: timeBoundCPU,timeStepGridCPU,timeRegriddingCPU
     use amr_module, only: timeValoutCPU,timeTick,timeTickCPU
-    use amr_module, only: kcheck, iorder, lendim, lenmax
+    use amr_module, only: kcheck, iorder, lendim, lenmax, memsize
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
     use amr_module, only: rprint, sprint, tprint, uprint
