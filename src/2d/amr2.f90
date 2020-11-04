@@ -632,7 +632,7 @@ program amr2
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
 
-    write(*,*) 'Max usage of alloc array (can use for memsize): ',lendim
+    write(*,"('See fort.amr for more info on this run and memory usage')")
 
     ! call system_clock to get clock_finish and count_max for debug output:
     call system_clock(clock_finish,clock_rate,count_max)
@@ -803,9 +803,10 @@ program amr2
 
     write(outunit,*)
     write(outunit,*)
-    write(outunit,"('current  space usage = ',i12)") lentotsave
-    write(outunit,"('maximum  space usage = ',i12)") lenmax
-    write(outunit,"('need space dimension = ',i12,/)") lendim
+    write(outunit,"('alloc array statistics:')")
+    write(outunit,"('    current alloc usage = ',i12)") lentotsave
+    write(outunit,"('    maximum alloc usage = ',i12)") lenmax
+    write(outunit,"('required alloc memsize >= ',i12,/)") lendim
 
     write(outunit,"('number of cells advanced for time integration = ',f20.6)")&
                     rvol
