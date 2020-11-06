@@ -86,7 +86,7 @@ program amr3
     use amr_module, only: timeBound,timeStepgrid
     use amr_module, only: timeBoundCPU,timeStepgridCPU
     use amr_module, only: timeValout,timeValoutCPU
-    use amr_module, only: kcheck, iorder, lendim, lenmax
+    use amr_module, only: kcheck, iorder, lendim, lenmax, memsize
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
     use amr_module, only: rprint, sprint, tprint, uprint
@@ -330,6 +330,7 @@ program amr3
     !  Refinement Control
     call opendatafile(inunit, amrfile)
 
+    read(inunit,*) memsize  ! initial size of alloc array
     read(inunit,*) max1d  ! max size of each grid patch
 
     read(inunit,*) mxnest
@@ -623,6 +624,8 @@ program amr3
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
 
+    write(*,"('See fort.amr for more info on this run and memory usage')")
+
     call system_clock(clock_finish,clock_rate)
     call cpu_time(cpu_finish)
     
@@ -782,9 +785,10 @@ program amr3
 
     write(outunit,*)
     write(outunit,*)
-    write(outunit,"('current  space usage = ',i12)") lentotsave
-    write(outunit,"('maximum  space usage = ',i12)") lenmax
-    write(outunit,"('need space dimension = ',i12,/)") lendim
+    write(outunit,"('alloc array statistics:')")
+    write(outunit,"('    current alloc usage = ',i12)") lentotsave
+    write(outunit,"('    maximum alloc usage = ',i12)") lenmax
+    write(outunit,"('required alloc memsize >= ',i12,/)") lendim
 
     write(outunit,"('number of cells advanced for time integration = ',f20.6)")&
                     rvol
