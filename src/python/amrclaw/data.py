@@ -24,13 +24,19 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
         # Need to have a pointer to this so we can get num_dim and num_aux
         self._clawdata = clawdata
         
-        # maximum size of patch in each dimension:
-        # match original defaults for consistency and nosetests
+        # set max1d, maximum size of patch in each dimension
+        # and memsize, initial length of alloc array 
+        #    use default values so that repeated doubling gets as close as
+        #    possible to 2**30-1 = 2147483647, beyond which integer(kind=4)
+        #    indexes overflow and it would be necessary to use kind=8.
         if self._clawdata.num_dim == 3:
+            self.add_attribute('memsize',8388607)
             self.add_attribute('max1d',32)
         elif self._clawdata.num_dim == 2:
+            self.add_attribute('memsize',4194303)
             self.add_attribute('max1d',60)
         else:
+            self.add_attribute('memsize',1048575)
             self.add_attribute('max1d',500)
 
         # Refinement control
@@ -73,6 +79,7 @@ class AmrclawInputData(clawpack.clawutil.data.ClawData):
 
         self.open_data_file(out_file, data_source)
     
+        self.data_write('memsize')
         self.data_write('max1d')
         self.data_write('amr_levels_max')
 

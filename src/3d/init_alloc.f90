@@ -8,21 +8,20 @@
 ! ============================================================================
 
 
-      subroutine init_alloc()
-    
-      use amr_module
-      implicit none
+subroutine init_alloc()
 
-!      if (.not.allocated(storage)) then   ! old way, changed mjb jan. 2015
-       if (.not.allocated(alloc)) then     ! new way, use allocatable arrays, not pointers
-          memsize = 4000000
-!         allocate(storage(memsize))
-          allocate(alloc(memsize))
-!          alloc => storage
-          print *, "Storage allocated..."
-      else
-          print *, "Storage already allocated!"
-      endif
+    ! new way, use allocatable arrays, not pointers
+
+    use amr_module
+    implicit none
+
+    if (.not.allocated(alloc)) then
+        !memsize = 4000000  # Now read in from amr.data by amr3.f90
+        allocate(alloc(memsize))
+        print *, "Storage allocated..."
+    else
+        print *, "Storage already allocated!"
+    endif
     
-      end subroutine init_alloc
+end subroutine init_alloc
 

@@ -269,6 +269,9 @@ def setrun(claw_pkg='amrclaw'):
     # ---------------
     amrdata = rundata.amrdata
 
+    # memsize is initial length of alloc array used for AMR patches
+    amrdata.memsize = 100000
+
     # max1d controls size of grids
     amrdata.max1d = 60
 
