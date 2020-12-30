@@ -16,7 +16,8 @@ c
 
       dimension xfluxp(nvar,ndimx,ndimy), yfluxp(nvar,ndimx,ndimy)
       dimension xfluxm(nvar,ndimx,ndimy), yfluxm(nvar,ndimx,ndimy)
-      dimension listbc(5,maxsp)
+      !dimension listbc(5,maxsp)
+      double precision listbc(5,maxsp)
 c
 c :::::::::::::::::::: FLUXSV :::::::::::::::::::::::::
 c

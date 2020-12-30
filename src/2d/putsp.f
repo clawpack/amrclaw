@@ -19,11 +19,9 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
       if (level .eq. lfine) go to 30
 c
-      mptr  = lstart(level)
- 20      call reclam(node(cfluxptr,mptr), 5*listsp(level))
-         node(cfluxptr,mptr) = 0
-      mptr  = node(levelptr,mptr)
-      if (mptr .ne. 0) go to 20
+      ! new way - all coarse space allocated at once so
+      ! reclaim it all. 
+      call reclam(listspStart(level),5*listsp(level))
 c
  30    if (level .eq. lbase) go to 99
       mptr = lstart(level)
