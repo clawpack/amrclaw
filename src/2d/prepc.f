@@ -41,7 +41,7 @@ c
  
       !!! maxsp is enough storage for every coarse grid to have an adjustment by
       !!! a corresponding fine grid flux sum. But not all will.
-      if (maxsp .eq. 0) go to 99  ! no fine grids, so no space needed. CHECK HOW THIS IS MARKED FOR COARSE GRIDS
+      if (maxsp .eq. 0) go to 99  ! no fine grids, so no space needed. 
 c
       !space istarts here, will be shared by all coarse grids
       ! will need to save to be able to reclam storage later
