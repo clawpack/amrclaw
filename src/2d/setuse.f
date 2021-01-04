@@ -92,10 +92,10 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
 c
       use amr_module
       implicit double precision (a-h,o-z)
-      dimension listbc(5,maxsp)
+      !dimension listbc(5,maxsp)
+      double precision listbc(5,maxsp)
 
 
-      ibc = ispot
       ist  = iclo - 1
       iend = ichi + 1
       jst  = jclo - 1
@@ -209,5 +209,7 @@ c 	    write(outunit,595)ispot,(listbc(ipl,ispot),ipl=1,5)
        endif
 c
  80    continue 
+
+
        return
        end

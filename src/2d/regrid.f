@@ -76,10 +76,10 @@ c  3. merge data structures (newstl and lstart )
 c  finish storage allocation, reclaim space, etc. set up boundary
 c  flux conservation arrays
 c
-      do 60 level = lbase, lfine-1
-        call prepf(level+1,nvar,naux)
-        call prepc(level,nvar)
- 60   continue
+c     do 60 level = lbase, lfine-1
+c       call prepf(level+1,nvar,naux)
+c       call prepc(level,nvar)
+c60   continue
 c
 c  reset numgrids per level, needed for omp parallelization.
 c  note that grids may have disappeared, so next loop resets to 0
@@ -110,6 +110,11 @@ c        balancing, but doesn't help locality
      &            " grids with ",i11," cells")
          endif
 72     continue
+
+      do 60 level = lbase, lfine-1
+        call prepf(level+1,nvar,naux)
+        call prepc(level,nvar)
+ 60   continue
 c
 c      set up array of grids instead of recomputing at each step
        call makeGridList(lbase)

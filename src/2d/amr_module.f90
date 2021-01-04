@@ -209,7 +209,7 @@ module amr_module
     !integer ibuff,  mstart, ndfree, ndfree_bnd, lfine, node(nsize, maxgr), &
     integer ibuff,  mstart, ndfree, ndfree_bnd, lfine,  &
             icheck(maxlv),lstart(maxlv),newstl(maxlv), &
-            listsp(maxlv),intratx(maxlv),intraty(maxlv), &
+            listspStart(maxlv),listsp(maxlv),intratx(maxlv),intraty(maxlv), &
             kratio(maxlv), iregsz(maxlv),jregsz(maxlv), &
             iregst(maxlv),jregst(maxlv), &
             iregend(maxlv),jregend(maxlv), &

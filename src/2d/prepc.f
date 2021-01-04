@@ -26,7 +26,10 @@ c  initially so that one pass through is enough.
 c
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
+      ! initialize to 0 in case no fine grids
+      listspStart(level) = 0
       maxsp  = 0
+      listsp(level) = maxsp
       mkid   = lstart(level+1)
  10   if (mkid .eq. 0) go to 20
          ikeep  = (node(ndihi,mkid)-node(ndilo,mkid)+1)/intratx(level)
@@ -34,8 +37,22 @@ c
          maxsp  = maxsp + 2*(ikeep+jkeep)
       mkid = node(levelptr,mkid)
       go to 10
- 20   listsp(level) = maxsp
-      if (maxsp .eq. 0) go to 99
+ 20   continue
+ 
+      !!! maxsp is enough storage for every coarse grid to have an adjustment by
+      !!! a corresponding fine grid flux sum. But not all will.
+      if (maxsp .eq. 0) go to 99  ! no fine grids, so no space needed. 
+c
+      !space istarts here, will be shared by all coarse grids
+      ! will need to save to be able to reclam storage later
+      ! each grid only stores its own starting cfluxptr
+      ! add space for each coarse grid to make end of list
+      maxsp = maxsp + numgrids(level)
+      itotspace = igetsp(5*maxsp) 
+      listspStart(level) = itotspace
+      listsp(level) = maxsp
+      do 35 i = 1, 5*maxsp
+ 35      alloc(itotspace+i-1) = 0.d0
 c
       hxpar   = hxposs(level)
       hypar   = hyposs(level)
@@ -45,17 +62,16 @@ c
       jmax    = jregsz(level) - 1
 
       mpar = lstart(level)
+      ispotSum  = 0
  30   if (mpar .eq. 0) go to 99
 c
-       ispot   = 0
        ilo     = node(ndilo,mpar)
        jlo     = node(ndjlo,mpar)
        ihi     = node(ndihi,mpar)
        jhi     = node(ndjhi,mpar)
-       locbc   = igetsp(5*maxsp)
+       locbc   = itotspace + 5*ispotSum    ! grid mpar start stheir cflux storage here
+       ispot   = 0   ! then each grid starts counting from 0, only cflux is advanced.
 c      #  initialize list to 0 (0 terminator indicates end of bc list)
-       do 35 i = 1,5*maxsp
- 35      alloc(locbc+i-1) = 0.d0
        node(cfluxptr,mpar) = locbc
 c
        mkid = lstart(level+1)
@@ -150,8 +166,25 @@ c
 c  for now, leave unused space allocated to the grid. alternative is to
 c  return (maxsp-ispot) amt starting at loc node(cfluxptr,mpar)+ispot.
 c
+       !before leaving this grid, add signal that end of cflux
+       ! signal is 0 in 1st position.  Already initialized to 0
+       ! so just increment ispot
+       ispot = ispot + 1
+       ispotSum  = ispotSum  + ispot
        mpar = node(levelptr,mpar)
        go to 30
 c
- 99    return
+ 99   continue
+
+       ! DOUBLE check dimensions, even tho is after the fact
+       ! and array already filled
+       if (ispotSum .gt. maxsp) then
+         write(*,*) "ERROR:  Should not happen that use more cflux",
+     &              "space than ",maxsp
+         write(outunit,*) "ERROR:  Should not happen that use more ",
+     &              "cflux space than ",maxsp
+         stop
+       endif
+
+       return
        end
