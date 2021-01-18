@@ -72,8 +72,8 @@ c   for fine grids touching periodic boundary on right
           if  (xperdom .and. ilo .eq. 0 .and. ichi .eq. imax) then
               kflag = 1 ! periodic in x
               call setuse(alloc(locbc),maxsp,ispot,mkid,
-     2          ilo,ihi,jlo,jhi,iclo-iregsz(level),ichi-iregsz(level),
-     3          jclo,jchi,kflag)
+     2          ilo,ihi,iclo-iregsz(level),ichi-iregsz(level),
+     3          kflag)
            endif
 
 c   for fine grids touching periodic boundary on left
