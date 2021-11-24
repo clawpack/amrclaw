@@ -22,8 +22,16 @@ c
       ! new way - all coarse space allocated at once so
       ! reclaim it all. 
       call reclam(listspStart(level),5*listsp(level))
+      ! still need to zero out coarse flux ptrs in case no
+      ! new grids at next level were created (otherwise
+      ! it would be re-created and assigned in prepc)
+      mptr = lstart(level)
+ 20      node(cfluxptr,mptr) = 0
+         mptr = node(levelptr,mptr)
+         if (mptr .ne. 0) go to 20
+      
 c
- 30    if (level .eq. lbase) go to 99
+ 30   if (level .eq. lbase) go to 99
       mptr = lstart(level)
  40       nx    = node(ndihi,mptr) - node(ndilo,mptr) + 1
           ny    = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
