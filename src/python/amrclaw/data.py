@@ -435,7 +435,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             self.expand_gauge_format_option(key)
 
         # File format
-        self._out_file.write("# File format\n")
+        self._out_file.write("# File format (1=ascii, 2=binary)\n")
         format_map = {'ascii':1, 'binary': 2}
         for gauge_num in self.gauge_numbers:
             try:
@@ -447,7 +447,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         self.data_write()
 
         # Display format for each gauge
-        self._out_file.write("# Display format (1=ascii, 2=binary)\n")
+        self._out_file.write("# Display format (for ascii files)\n")
         for gauge_num in self.gauge_numbers:
             self._out_file.write("%s " % self.display_format[gauge_num])
         self._out_file.write("\n\n")
