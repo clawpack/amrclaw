@@ -148,7 +148,7 @@ def setrun(claw_pkg='amrclaw'):
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
 
-    clawdata.output_format = 'ascii'       # 'ascii', 'binary', 'netcdf'
+    clawdata.output_format = 'ascii'      # 'ascii', 'binary32', 'binary64'
 
     clawdata.output_q_components = 'all'    # only 'all'
     clawdata.output_aux_components = 'none'  # 'all' or 'none'
