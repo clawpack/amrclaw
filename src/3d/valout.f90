@@ -34,6 +34,9 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     real(kind=8) :: lower_corner(3), delta(3)
     logical :: out_aux
     character(len=10) :: file_name(5)
+    character(len=8) :: file_format
+    real(kind=4), allocatable :: q4(:), aux4(:)
+    integer :: lenaux4
 
     ! Timing
     integer :: clock_start, clock_finish, clock_rate
@@ -59,7 +62,9 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                                            "i6,'                 ngrids'/," // &
                                            "i6,'                 naux'/,"   // &
                                            "i6,'                 ndim'/,"   // &
-                                           "i6,'                 nghost'/,/)"
+                                           "i6,'                 nghost'/," // &
+                                           "a10,'             format'/,/)"
+                                           
     character(len=*), parameter :: timing_header_format =                      &
                                                   "(' wall time (', i2,')," // &
                                                   " CPU time (', i2,'), "   // &
@@ -99,7 +104,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     ! Write out fort.q file (and fort.bXXXX or fort.bXXXX.nc files if necessary)
     ! Here we let fort.q be out_unit and the the other two be out_unit + 1
     open(unit=out_unit, file=file_name(1), status='unknown', form='formatted')
-    if (output_format == 3) then
+    if (output_format == 2 .or. output_format == 3) then
         open(unit=out_unit + 1, file=file_name(4), status="unknown",    &
              access='stream')
     else if (output_format == 4) then
@@ -133,19 +138,22 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                             delta(1), delta(2), delta(3)
 
             ! Output grids
-            select case(output_format)
-                ! ASCII output
-                case(1)
-                    ! Round off if nearly zero
-                    forall (m = 1:num_eqn,                              &
-                            i=num_ghost + 1:num_cells(1) + num_ghost,   &
-                            j=num_ghost + 1:num_cells(2) + num_ghost,   &
-                            k=num_ghost + 1:num_cells(3) + num_ghost,   &
-                            abs(alloc(iadd(m, i, j, k))) < 1d-90)
+            
+            
+            ! Round off if nearly zero 
+            ! (Do this for all output_format's)
+            forall (m = 1:num_eqn,                              &
+                    i=num_ghost + 1:num_cells(1) + num_ghost,   &
+                    j=num_ghost + 1:num_cells(2) + num_ghost,   &
+                    k=num_ghost + 1:num_cells(3) + num_ghost,   &
+                    abs(alloc(iadd(m, i, j, k))) < 1d-90)
 
-                        alloc(iadd(m, i, j, k)) = 0.d0
-                    end forall
+                alloc(iadd(m, i, j, k)) = 0.d0
+            end forall
 
+            if (output_format == 1) then
+                    ! ascii output
+                    
                     do k = num_ghost + 1, num_cells(3) + num_ghost
                         do j = num_ghost + 1, num_cells(2) + num_ghost
                             do i = num_ghost + 1, num_cells(1) + num_ghost
@@ -158,39 +166,52 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                     end do
                     write(out_unit, *) ' '
 
-                ! What is case 2?
-                case(2)
-                    stop "Unknown format."
+            else if (output_format==2 .or. output_format==3) then
+                ! binary32 or binary64
+                                
+                ! Note: We are writing out ghost cell data also
+                ! do we need to call bound to update ghost cells??
 
-                ! Binary output
-                case(3)
-                    ! Note: We are writing out ghost cell data also
-                    i = (iadd(num_eqn, num_cells(1) + 2 * num_ghost, &
-                                       num_cells(2) + 2 * num_ghost, &
-                                       num_cells(3) + 2 * num_ghost))
+                i = (iadd(num_eqn, num_cells(1) + 2 * num_ghost, &
+                                   num_cells(2) + 2 * num_ghost, &
+                                   num_cells(3) + 2 * num_ghost))
+                                   
+                if (output_format == 2) then
+                    ! binary32 (shorten to 4-byte)
+                    allocate(q4(num_eqn * (num_cells(1) + 2 * num_ghost)   &
+                                        * (num_cells(2) + 2 * num_ghost) &
+                                        * (num_cells(3) + 2 * num_ghost)))
+                    q4 = real(alloc(iadd(1, 1, 1, 1):i), kind=4)
+                    write(out_unit + 1) q4
+                    deallocate(q4)
+
+                else if (output_format==3) then
+                    ! binary64 (full 8-byte)
                     write(out_unit + 1) alloc(iadd(1, 1, 1, 1):i)
-
+                endif
+                
+                
+            else if (output_format == 4) then
                 ! HDF5 output
-                case(4)
 #ifdef HDF5
-                    stop "HSF5 output not yet implemented!"
+                stop "HSF5 output not yet implemented!"
 #else
-                    print *, "ERROR:  HDF5 library is not available."
-                    print *, "  Check the documentation as to how to include"
-                    print *, "  the ability to output in HDF5 formats."
-                    stop
+                print *, "ERROR:  HDF5 library is not available."
+                print *, "  Check the documentation as to how to include"
+                print *, "  the ability to output in HDF5 formats."
+                stop
 #endif
-                case default
-                    print *, "Unsupported output format", output_format,"."
-                    stop 
+            else
+                print *, "Unsupported output format", output_format,"."
+                stop 
+            endif
 
-            end select
             grid_ptr = node(levelptr, grid_ptr)
         end do
     end do
 
     close(out_unit)
-    if (output_format == 3) then
+    if (output_format==2 .or. output_format==3) then
         close(unit=out_unit + 1)
     end if
 
@@ -201,13 +222,12 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
         if (output_format == 1) then
             open(unit=out_unit, file=file_name(3), status='unknown',        &
                  form='formatted')
-        else if (output_format == 3) then
+        else if (output_format==2 .or. output_format==3) then
             open(unit=out_unit, file=file_name(3), status='unknown',        &
                  access='stream')
         else if (output_format == 4) then
+            print *, 'output_format == 4 not supported for fort.a file'
             stop
-            ! open(unit=out_unit, file=file_name(3) // ".nc", status='unknown',  &
-            !      access='stream')
         end if
 
         do level = level_begin, level_end
@@ -259,12 +279,20 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
                         end do
                         write(out_unit, *) ' '
 
-                    ! What is case 2?
                     case(2)
-                        stop "Unknown format."
-
-                    ! Binary output
+                        ! binary32
+                        ! Note: We are writing out ghost cell data also
+                        i = (iaddaux(num_aux, num_cells(1) + 2 * num_ghost, &
+                                              num_cells(2) + 2 * num_ghost, &
+                                              num_cells(3) + 2 * num_ghost))
+                        lenaux4 = i - iaddaux(1, 1, 1, 1) + 1
+                        allocate(aux4(lenaux4))
+                        aux4 = real(alloc(iaddaux(1, 1, 1, 1):i), kind=4)
+                        write(out_unit) aux4
+                        deallocate(aux4)
+                        
                     case(3)
+                        ! binary64
                         ! Note: We are writing out ghost cell data also
                         i = (iaddaux(num_aux, num_cells(1) + 2 * num_ghost, &
                                               num_cells(2) + 2 * num_ghost, &
@@ -290,7 +318,8 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
             end do
         end do
         
-        if ((output_format == 1) .or. (output_format == 3)) then
+        if ((output_format == 1) .or. (output_format == 2) .or. &
+            (output_format == 3)) then
             close(out_unit)
         end if
         
@@ -302,8 +331,21 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
 
     ! Note:  We need to print out num_ghost too in order to strip ghost cells
     !        from q array when reading in pyclaw.io.binary
+    
+   
+    if (output_format == 1) then
+        file_format = 'ascii'
+    else if (output_format == 2) then
+        file_format = 'binary32'
+    else if (output_format == 3) then
+        file_format = 'binary64'
+    else if (output_format == 4) then
+        file_format = 'hdf'
+    endif
+    
+
     write(out_unit, t_file_format) time, num_eqn, num_grids, num_aux, 3, &
-                                   num_ghost
+                                   num_ghost, file_format
     close(out_unit)
 
     ! ==========================================================================
@@ -319,7 +361,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
     end do
     timing_line = trim(timing_line) // ")"
 
-    if (time == t0) then
+    if (abs(time - t0) < 1d-15) then
         t_CPU_overall = 0.d0
         timeTick_overall = 0.d0
       else

@@ -619,7 +619,7 @@ class AdjointData(clawpack.clawutil.data.ClawData):
 
     def set_adjoint_files(self):
         import glob
-        from clawpack.pyclaw.fileio.binary import read_t
+        from clawpack.pyclaw.fileio.ascii import read_t
 
         self.adjoint_files = []
         if self.use_adjoint:
@@ -628,7 +628,7 @@ class AdjointData(clawpack.clawutil.data.ClawData):
             for file in files:
                 frameno = int(file[-4:])
                 #print('+++ file, frameno: ',file, frameno)
-                [t,num_eqn,nstates,num_aux,num_dim,num_ghost] \
+                [t,num_eqn,nstates,num_aux,num_dim,num_ghost,file_format] \
                     = read_t(frameno, self.adjoint_outdir)
                 if t <= self.t2:
                     #print('+++   using this file')
