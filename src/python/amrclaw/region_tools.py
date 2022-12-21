@@ -27,6 +27,8 @@ class RuledRectangle(object):
                 print('*** Warning: ignoring rect since slu also given')
             assert np.diff(self.s).min() > 0, \
                 '*** s must be monotonically increasing: \n  s =  %s' % self.s
+            assert np.all(slu[:,1] <= slu[:,2]), \
+                '*** values in L column of slu array must be <= U column'
         elif rect is not None:
             # define a simple rectangle:
             x1,x2,y1,y2 = rect
@@ -69,6 +71,8 @@ class RuledRectangle(object):
         
         assert np.diff(self.s).min() > 0, \
             '*** s must be monotonically increasing: \n  s =  %s' % self.s
+        assert np.all(self.lower <= self.upper), \
+            '*** values in lower array should be <= values in upper array'
             
         if self.method == 0:
             # stacked rectangles, requires doubling up points for vertices
@@ -116,6 +120,8 @@ class RuledRectangle(object):
         """
         assert np.diff(self.s).min() > 0, \
             '*** s must be monotonically increasing: \n  s =  %s' % self.s
+        assert np.all(self.lower <= self.upper), \
+            '*** values in lower array should be <= values in upper array'
         
         transpose_arrays =  (X[0,0] == X[0,-1])
         if transpose_arrays:
@@ -253,6 +259,8 @@ class RuledRectangle(object):
         self.s = slu[:,0]
         self.lower = slu[:,1]
         self.upper = slu[:,2]
+        assert np.all(slu[:,1] <= slu[:,2]), \
+            '*** values in L column of slu array must be <= U column'
         
     def make_kml(self, fname='RuledRectangle.kml', name='RuledRectangle', 
                  color='00FFFF', width=2, verbose=False):
