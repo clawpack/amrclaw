@@ -87,11 +87,11 @@ def setrun(claw_pkg='amrclaw'):
     # Note: If restarting, you must also change the Makefile to set:
     #    RESTART = True
     # If restarting, t0 above should be from original run, and the
-    # restart_file 'fort.qNNNN' specified below should be in 
+    # restart_file 'fort.chkNNNNN' specified below should be in 
     # the OUTDIR indicated in Makefile.
 
     clawdata.restart = False               # True to restart from prior results
-    clawdata.restart_file = 'fort.q0006'   # File to use for restart data
+    clawdata.restart_file = 'fort.chk00006'   # File to use for restart data
     
     
     # -------------
