@@ -11,6 +11,7 @@ c
  
       logical foundFile
       dimension intrtx(maxlv),intrtt(maxlv)
+      integer matlabu0
 c
 c :::::::::::::::::::::::::::: RESTRT ::::::::::::::::::::::::::::::::
 c read back in the check point files written by subr. check.
@@ -39,6 +40,8 @@ c     rstfile  = 'restart.data'
       open(rstunit,file=trim(rstfile),status='old',form='unformatted')
       rewind rstunit
 
+      matlabu0 = matlabu ! value set by amr2, 0 if output_t0, else 1
+
       read(rstunit) lenmax,lendim,isize
 
 c     # need to allocate for dynamic memory:
@@ -57,6 +60,8 @@ c     # need to allocate for dynamic memory:
      1              evol,rvol,rvoll,lentot,tmass0,cflmax
 
       close(rstunit) 
+
+      matlabu = matlabu - 1 + matlabu0 ! redo previous frame if output_t0
 
       write(outunit,100) nsteps,time
       write(6,100) nsteps,time
