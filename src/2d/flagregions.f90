@@ -25,9 +25,6 @@ subroutine flagregions(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
     real(kind=8), intent(in) :: DONTFLAG
     real(kind=8), intent(in) :: DOFLAG
     
-    logical :: allowflag
-    external allowflag
-
     ! Locals
     integer :: i,j,m,minlevel,maxlevel
     real(kind=8) :: x_low,y_low,x_hi,y_hi
