@@ -387,7 +387,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         super(GaugeData,self).__init__()
         self.add_attribute('gauges',[])
 
-        for (value, default) in self.defaults.items()):
+        for (value, default) in self.defaults.items():
             self.add_attribute(value, default)
 
 
