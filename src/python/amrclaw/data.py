@@ -2,13 +2,9 @@
 
 """Base AMRClaw data class for writing out data parameter files."""
 
-from __future__ import print_function
-from __future__ import absolute_import
 import os
 
 import clawpack.clawutil.data
-import six
-from six.moves import range
 
 class AmrclawInputData(clawpack.clawutil.data.ClawData):
     r"""
@@ -391,7 +387,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         super(GaugeData,self).__init__()
         self.add_attribute('gauges',[])
 
-        for (value, default) in six.iteritems(self.defaults):
+        for (value, default) in self.defaults.items()):
             self.add_attribute(value, default)
 
 
@@ -475,7 +471,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         self._out_file.write("# q fields\n")
         for gauge_num in self.gauge_numbers:
             # Handle special values of "all" and "none"
-            if isinstance(self.q_out_fields[gauge_num], six.string_types):
+            if isinstance(self.q_out_fields[gauge_num], str):
                 if self.q_out_fields[gauge_num].lower() == 'all':
                     self._out_file.write("%s\n" % " ".join(['True'] * num_eqn))
                 elif self.q_out_fields[gauge_num].lower() == 'none': 
@@ -498,7 +494,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             self._out_file.write("# aux fields\n")
             for gauge_num in self.gauge_numbers:
                 # Handle special values of "all" and "none"
-                if isinstance(self.aux_out_fields[gauge_num], six.string_types):
+                if isinstance(self.aux_out_fields[gauge_num], str):
                     if self.aux_out_fields[gauge_num].lower() == 'all':
                         self._out_file.write("%s\n" % " ".join(['True'] * num_aux))
                     elif self.aux_out_fields[gauge_num].lower() == 'none': 
