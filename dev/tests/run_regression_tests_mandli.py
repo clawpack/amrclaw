@@ -8,10 +8,7 @@ To modify for a different app or set of tests, see the code labelled "Test 1",
 "Test 2", etc.
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
 import clawpack.clawutil.batch as batch
-from six.moves import input
 
 # from setrun_regression import setrun
 # from setplot import setplot

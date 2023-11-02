@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 
-from __future__ import absolute_import
-from __future__ import print_function
 import sys
 
 import numpy
 import matplotlib.pyplot as plt
 
 import clawpack.pyclaw.gauges as gauges
-from six.moves import range
 
 # Load all gauges
 
