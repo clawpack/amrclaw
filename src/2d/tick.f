@@ -12,7 +12,7 @@ c
 c     include  "call.i"
 
       logical    vtime, dumpout/.false./, dumpchk/.false./
-      logical    rest, dump_final
+      logical    rest, dump_final, stopFound
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
       integer(kind=8) ::   clock_start, clock_finish, clock_rate
       integer(kind=8) ::   tick_clock_finish, tick_clock_rate  
@@ -329,7 +329,22 @@ c          make sure not to exceed largest permissible dt
 
        if ((mod(ncycle,iout).eq.0) .or. dumpout) then
          call valout(1,lfine,time,nvar,naux)
+         if (abs(checkpt_style).eq.4) then
+            call check(ncycle,time,nvar,naux)
+            dumpchk = .true.
+         endif
          if (printout) call outtre(mstart,.true.,nvar,naux)
+       endif
+
+       ! new STOP feature to do immediate checkpt and exit
+       inquire(FILE="STOP.txt",exist=stopFound) 
+          if (stopFound) then      
+          write(*,*)"STOP file found. Checkpointing and Stopping"
+          write(*,*)"REMEMBER to remove file before restarting"
+          write(outunit,*)"STOP file found. Checkpointing and Stopping"
+          write(outunit,*)"REMEMBER to remove file before restarting"
+          call check(ncycle,time,nvar,naux)
+          stop
        endif
 
       go to 20
