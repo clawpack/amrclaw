@@ -17,10 +17,11 @@ c
 c whole point of this routine is to index using the integer cords, not the
 c  way its dimensioned and indexed in the calling routine setdomflags
 c
-       do 25 j = jxlo,jxhi         
-       do 25 i = ixlo,ixhi         
+       do j = jxlo,jxhi         
+       do i = ixlo,ixhi         
           iflags(i,j) = 1
- 25    continue
+       end do
+       end do
 
        return
        end

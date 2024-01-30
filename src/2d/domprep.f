@@ -17,19 +17,21 @@ c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
-      do 10 j = 0, jbase+1
-      do 10 i = 0, ibase+1
+      do j = 0, jbase+1
+      do i = 0, ibase+1
          domflags(i,j) = 0
- 10   continue
+      end do
+      end do
 
       mptr = lstart(lbase)
  15   continue
 c     domain flags appears to be 1 based indexing, so 0 a ghost cell.
 c     should change it to be 0 based, like grids, so border is at -1.
-      do 20 j = node(ndjlo,mptr) + 1, node(ndjhi,mptr) + 1
-      do 20 i = node(ndilo,mptr) + 1, node(ndihi,mptr) + 1
+      do j = node(ndjlo,mptr) + 1, node(ndjhi,mptr) + 1
+      do i = node(ndilo,mptr) + 1, node(ndihi,mptr) + 1
          domflags(i,j) = 1
- 20   continue
+      end do
+      end do
       mptr = node(levelptr, mptr)
       if (mptr .ne. 0) go to 15
 

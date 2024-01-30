@@ -133,32 +133,37 @@ c
 c  update using intrat fine points in each direction
 c
            do 35 ivar = 1, nvar
- 35           alloc(iadd(ivar,i,j)) = 0.d0
+              alloc(iadd(ivar,i,j)) = 0.d0
+ 35        continue
 c
            if (mcapa .eq. 0) then
-               do 50 jco  = 1, intraty(lget)
+               do 51 jco  = 1, intraty(lget)
                do 50 ico  = 1, intratx(lget)
                do 40 ivar = 1, nvar
                  alloc(iadd(ivar,i,j))= alloc(iadd(ivar,i,j)) + 
      1                        alloc(iaddf(ivar,iff+ico-1,jff+jco-1))
  40              continue
  50            continue
+ 51            continue
             do 60 ivar = 1, nvar
- 60          alloc(iadd(ivar,i,j)) = alloc(iadd(ivar,i,j))/totrat
+             alloc(iadd(ivar,i,j)) = alloc(iadd(ivar,i,j))/totrat
+ 60         continue
                
            else
 
-               do 51 jco  = 1, intraty(lget)
-               do 51 ico  = 1, intratx(lget)
+               do 53 jco  = 1, intraty(lget)
+               do 52 ico  = 1, intratx(lget)
                capa = alloc(iaddfaux(iff+ico-1,jff+jco-1))
                do 41 ivar = 1, nvar
                  alloc(iadd(ivar,i,j))= alloc(iadd(ivar,i,j)) + 
      1                  alloc(iaddf(ivar,iff+ico-1,jff+jco-1))*capa
  41              continue
- 51            continue
+ 52            continue
+ 53            continue
             do 61 ivar = 1, nvar
- 61          alloc(iadd(ivar,i,j)) = alloc(iadd(ivar,i,j))/
+             alloc(iadd(ivar,i,j)) = alloc(iadd(ivar,i,j))/
      1                               (totrat*alloc(iaddcaux(i,j)))
+ 61         continue
            endif
 c
             if (uprint) write(outunit,103)(alloc(iadd(ivar,i,j)),

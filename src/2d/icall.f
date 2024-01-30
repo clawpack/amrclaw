@@ -66,7 +66,7 @@ c  that have been primed with bcs to be advanced.
               ny   = jghi - jglo + 1
               mitot = nx + 2*nghost
               mjtot = ny + 2*nghost
-              do 30 j    = jxlo, jxhi
+              do 31 j    = jxlo, jxhi
               do 30 i    = ixlo, ixhi
               do 20 ivar = 1, nvar
                   ialloc  =  iadd(ivar,i-iglo+nghost+1,j-jglo+nghost+1)
@@ -77,6 +77,7 @@ c  that have been primed with bcs to be advanced.
                   aux(iaux,i-ilo+iputst,j-jlo+jputst)  =  alloc(ialloc)
  25           continue
  30           continue
+ 31           continue
           endif
           mptr = node(levelptr, mptr)
           go to 10

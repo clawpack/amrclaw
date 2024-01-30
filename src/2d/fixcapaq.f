@@ -22,29 +22,30 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       lratiox  = intratx(levc)
       lratioy  = intraty(levc)
 
-      do 10 ic = 2, mic-1
-      do 10 jc = 2, mjc-1
+      do ic = 2, mic-1
+      do jc = 2, mjc-1
 
 
        do 15 ivar = 1, nvar
 
        capaqfine = 0.d0
 
-       do 20 ico = 1, lratiox
+       do ico = 1, lratiox
        ifine = (ic-2)*lratiox + nghost + ico
-       do 20 jco = 1, lratioy
+       do jco = 1, lratioy
          jfine = (jc-2)*lratioy + nghost + jco
          capaqfine = capaqfine + aux(mcapa,ifine,jfine)*
      &                           val(ivar,ifine,jfine)
-20     continue
+       end do
+       end do
 
        dcapaq = auxc(mcapa,ic,jc)*valc(ivar,ic,jc)-
      &          capaqfine/(lratiox*lratioy)
        dcapamax = dmax1(dcapamax,dabs(dcapaq))
       
-       do 30 ico = 1, lratiox
+       do ico = 1, lratiox
        ifine = (ic-2)*lratiox + nghost + ico
-       do 30 jco = 1, lratioy
+       do jco = 1, lratioy
          jfine = (jc-2)*lratioy + nghost + jco
 
          if (setflags(ifine,jfine) .eq. NEEDS_TO_BE_SET) then 
@@ -52,11 +53,13 @@ c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
            val(ivar,ifine,jfine) = val(ivar,ifine,jfine) +
      &                             dcapaq/aux(mcapa,ifine,jfine)
          endif
-30     continue
+       end do
+       end do
 
 15     continue
 
-10     continue
+       end do
+       end do
 
 c      write(6,*)" max discrepancy ", dcapamax
 

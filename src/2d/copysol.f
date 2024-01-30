@@ -10,11 +10,13 @@ c
 c
 c copy solution into grid with different number ghsot cells
 c
-       do 10 j = nghost+1, mjtot-nghost
-       do 10 i = nghost+1, mitot-nghost
-       do 10 ivar = 1, nvar
+       do j = nghost+1, mjtot-nghost
+       do i = nghost+1, mitot-nghost
+       do ivar = 1, nvar
           valbig(ivar,i-nghost+ngbig,j-nghost+ngbig) = val(ivar,i,j)
- 10    continue
+       end do
+       end do
+       end do
 c
        return
        end

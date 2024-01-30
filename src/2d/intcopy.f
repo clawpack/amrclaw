@@ -57,11 +57,12 @@ c         # does it intersect?
               mi   = nx + 2*nghost
               mj   = ny + 2*nghost
               do 20 j    = jxlo, jxhi
-              do 20 ivar = 1, nvar
+              do 21 ivar = 1, nvar
               do 30 i    = ixlo, ixhi
                  val(ivar,iputst+i-ilo,jputst+j-jlo) =
      1               alloc(iadd(ivar,i-iglo+nghost+1,j-jglo+nghost+1))
  30           continue
+ 21           continue
  20           continue
           endif
           mptr = node(levelptr, mptr)

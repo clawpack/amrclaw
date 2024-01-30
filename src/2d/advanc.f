@@ -213,8 +213,9 @@ c
          if (level .lt. mxnest) then
              ntot   = mitot * mjtot * nvar
 cdir$ ivdep
-             do 10 i = 1, ntot
- 10            alloc(locold + i - 1) = alloc(locnew + i - 1)
+             do  i = 1, ntot
+               alloc(locold + i - 1) = alloc(locnew + i - 1)
+             end do
          endif
 c
          xlow = rnode(cornxlo,mptr) - nghost*hx

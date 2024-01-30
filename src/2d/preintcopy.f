@@ -139,19 +139,21 @@ c             write(dbugunit6,102) iwrap1,iwrap2,j1+jbump,j2+jbump
 c             copy back using weird mapping for spherical folding
               nrowst = 1   ! start filling up val at (1,1) - no additional offset
               ncolst = 1
-              do 15 ii = i1, i2
-              do 15 jj = j1, j2
+              do ii = i1, i2
+              do jj = j1, j2
 c            write(dbugunit6,100)nrowst+ii-ilo,ncolst+jj-jlo,nr-(ii-i1),
 c    1                            nc-jj+j1
  100          format(" filling loc ",2i5," with ",2i5)
 
-              do 15 ivar = 1, nvar
+              do ivar = 1, nvar
                  iindex = nr-(ii-i1)
                  jindex = nc-(jj-j1)
                  index = iadd(ivar,nr-(ii-i1),nc-(jj-j1))
                  val(ivar,nrowst+(ii-ilo),ncolst+(jj-jlo)) = 
      1                  fliparray(iadd(ivar,nr-(ii-i1),nc-(jj-j1)))
- 15           continue
+              end do
+              end do
+              end do
              
 
             endif

@@ -126,21 +126,23 @@ c
      &          aux2,aux2,wave,s,amdq,apdq)
 c
 c     # Set fadd for the donor-cell upwind method (Godunov)
-      do 40 i=1,mx+1
+      do 41 i=1,mx+1
          do 40 m=1,meqn
             faddp(m,i) = faddp(m,i) - apdq(m,i)
             faddm(m,i) = faddm(m,i) + amdq(m,i)
-   40       continue
+   40    continue
+   41 continue
 c
 c     # compute maximum wave speed for checking Courant number:
       cfl1d = 0.d0
-      do 50 mw=1,mwaves
+      do 51 mw=1,mwaves
          do 50 i=1,mx+1
 c          # if s>0 use dtdx1d(i) to compute CFL,
 c          # if s<0 use dtdx1d(i-1) to compute CFL:
             cfl1d = dmax1(cfl1d, dtdx1d(i)*s(mw,i),
      &                          -dtdx1d(i-1)*s(mw,i))
-   50       continue
+   50     continue
+   51 continue
 c
       if (method(2).eq.1) go to 130
 c
@@ -150,7 +152,7 @@ c
 c     # apply limiter to waves:
       if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 c
-      do 120 i = 1, mx+1
+      do 121 i = 1, mx+1
 c
 c        # For correction terms below, need average of dtdx in cell
 c        # i-1 and i.  Compute these and overwrite dtdx1d:
@@ -177,7 +179,8 @@ c
   119          continue
             faddm(m,i) = faddm(m,i) + 0.5d0 * cqxx(m,i)
             faddp(m,i) = faddp(m,i) + 0.5d0 * cqxx(m,i)
-  120       continue
+  120     continue
+  121  continue
 c
 c
   130  continue
@@ -186,12 +189,13 @@ c
 c
        if (method(2).gt.1 .and. method(3).eq.2) then
 c         # incorporate cqxx into amdq and apdq so that it is split also.
-          do 150 i = 1, mx+1
+          do 151 i = 1, mx+1
              do 150 m=1,meqn
                 amdq(m,i) = amdq(m,i) + cqxx(m,i)
                 apdq(m,i) = apdq(m,i) - cqxx(m,i)
-  150           continue
-          endif
+  150        continue
+  151     continue
+         endif
 c
 c
 c      # modify G fluxes for transverse propagation
@@ -204,7 +208,7 @@ c     # split the left-going flux difference into down-going and up-going:
      &          amdq,bmasdq,bpasdq)
 c
 c     # modify flux below and above by B^- A^- Delta q and  B^+ A^- Delta q:
-       do 160 i = 1, mx+1
+       do 161 i = 1, mx+1
          do 160 m=1,meqn
                gupdate = 0.5d0*dtdx1d(i-1) * bmasdq(m,i)
                gaddm(m,i-1,1) = gaddm(m,i-1,1) - gupdate
@@ -214,6 +218,7 @@ c
                gaddm(m,i-1,2) = gaddm(m,i-1,2) - gupdate
                gaddp(m,i-1,2) = gaddp(m,i-1,2) - gupdate
   160          continue
+  161          continue
 c
 c     # split the right-going flux difference into down-going and up-going:
       call rpt2(ixy,2,maxm,meqn,mwaves,maux,mbc,mx,
@@ -221,7 +226,7 @@ c     # split the right-going flux difference into down-going and up-going:
      &          apdq,bmasdq,bpasdq)
 c
 c     # modify flux below and above by B^- A^+ Delta q and  B^+ A^+ Delta q:
-       do 180 i = 1, mx+1
+       do 181 i = 1, mx+1
           do 180 m=1,meqn
                gupdate = 0.5d0*dtdx1d(i) * bmasdq(m,i)
                gaddm(m,i,1) = gaddm(m,i,1) - gupdate
@@ -230,7 +235,8 @@ c
                gupdate = 0.5d0*dtdx1d(i) * bpasdq(m,i)
                gaddm(m,i,2) = gaddm(m,i,2) - gupdate
                gaddp(m,i,2) = gaddp(m,i,2) - gupdate
-  180          continue
+  180     continue
+  181     continue
 c
   999 continue
       return

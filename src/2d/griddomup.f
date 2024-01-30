@@ -42,27 +42,30 @@ c
       lratiox = intratx(lev)
       lratioy = intraty(lev)
 
-      do 10 j = jlofine-mbuff,jhifine+mbuff
-      do 10 i = ilofine-mbuff,ihifine+mbuff
+      do j = jlofine-mbuff,jhifine+mbuff
+      do i = ilofine-mbuff,ihifine+mbuff
          iflags2(i,j) = 0
- 10   continue
+      end do
+      end do
 
 c
 c careful with buffer - cant just take coarse grid buffer and refine it
 c since have same size buffer on finer grid
-      do 20 j = jlo,jhi
+      do 21 j = jlo,jhi
       do 20 i = ilo,ihi
           ifine = i * lratiox - 1  ! subtract 1 so can add in next loop
           jfine = j * lratioy - 1
-          do 15 mj = 1, lratioy
-          do 15 mi = 1, lratiox
+          do mj = 1, lratioy
+          do mi = 1, lratiox
             iset = min(ifine+mi,ihifine+mbuff)  ! might as well include buffer, though done later
             jset = min(jfine+mj,jhifine+mbuff)  ! needed since grids dont align over many levels
             iset = max(iset,ilofine-mbuff)      ! but so expensive
             jset = max(jset,jlofine-mbuff)
             iflags2(iset,jset) = iflags(i,j)  
- 15       continue
+          end do
+          end do
  20       continue
+ 21       continue
 c
 c need to be careful due to possibly odd buffer size
 c cant just take coarse cell and do all fine fine cells within, as above loop

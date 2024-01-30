@@ -45,7 +45,8 @@ c
           ist   = node(ffluxptr,mkid)
 
           do 20 i = 1, 2*nvar*lenbc + naux*lenbc
- 20          alloc(ist+i-1) = 0.d0
+             alloc(ist+i-1) = 0.d0
+ 20       continue
           mkid = node(levelptr,mkid)
           go to 10
 

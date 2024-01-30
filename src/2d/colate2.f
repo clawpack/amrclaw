@@ -102,7 +102,7 @@ c
      .                  imin,imax,jmin,jmax,mptr)
 
 
-             do 60 j = jmin, jmax
+             do 61 j = jmin, jmax
              do 60 i = imin, imax
 
 c             neg means no home was found. throw out
@@ -141,6 +141,7 @@ c             note that previous code subtracted .5 since it used 1 based indexi
  101          format(2f6.1)
 
  60        continue
+ 61        continue
 
  65         continue
  66         continue

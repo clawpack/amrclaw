@@ -77,9 +77,9 @@ c--------
 c  side 1
 c--------
 c
-       do 10 j = nghost+1, mjtot-nghost
-       if (maux.gt.0) then
-          do 5 ma = 1,maux
+       do j = nghost+1, mjtot-nghost
+        if (maux.gt.0) then
+          do ma = 1,maux
              if (auxtype(ma).eq."xleft") then
 c                # Assuming velocity at left-face, this fix
 c                # preserves conservation in incompressible flow:
@@ -89,26 +89,29 @@ c                # Normal case -- we set the aux arrays
 c                # from the cell corresponding  to q
                  auxl(iaddaux(ma,j-nghost+1)) = aux(ma,nghost,j)
                endif
-  5          continue
-          endif
-       do 10 ivar = 1, nvar
-         ql(ivar,j-nghost+1) = valbig(ivar,nghost,j)
- 10    continue
+          end do
+        endif
+        do ivar = 1, nvar
+          ql(ivar,j-nghost+1) = valbig(ivar,nghost,j)
+        end do
+       end do
 
        lind = 0
        ncrse = (mjtot-2*nghost)/lratioy
-       do 20 jc = 1, ncrse
+       do jc = 1, ncrse
          index = index + 1
-         do 25 l = 1, lratioy
+         do l = 1, lratioy
          lind = lind + 1
          if (maux.gt.0) then
-            do 24 ma=1,maux
+            do ma=1,maux
                auxr(iaddaux(ma,lind)) = auxc1d(ma,index)
-   24          continue
-            endif
-         do 25 ivar = 1, nvar
- 25         qr(ivar,lind) = qc1d(ivar,index)
- 20    continue
+            end do
+         endif
+         do ivar = 1, nvar
+            qr(ivar,lind) = qc1d(ivar,index)
+         end do
+        end do
+       end do
     
        if (qprint) then
          write(dbugunit,*) 'side 1, ql and qr:'
@@ -134,17 +137,17 @@ c
 c we have the wave. for side 1 add into sdflxm
 c
        influx = 0
-       do 30 j = 1, nc/lratioy
+       do j = 1, nc/lratioy
           influx  = influx + 1
           jfine = (j-1)*lratioy
-          do 40 ivar = 1, nvar
-            do 50 l = 1, lratioy
+          do ivar = 1, nvar
+            do l = 1, lratioy
               svdflx(ivar,influx) = svdflx(ivar,influx) 
      .                     + amdq(ivar,jfine+l+1) * hy * delt
      .                     + apdq(ivar,jfine+l+1) * hy * delt
- 50         continue
- 40       continue
- 30    continue
+            end do
+          end do
+       end do
 
 c--------
 c  side 2
@@ -158,37 +161,40 @@ c          # skip over sides 2 and 4 in this case
            go to 299
            endif
 
-       do 210 i = nghost+1, mitot-nghost
+       do i = nghost+1, mitot-nghost
         if (maux.gt.0) then
-          do 205 ma = 1,maux
+          do ma = 1,maux
              auxr(iaddaux(ma,i-nghost)) = aux(ma,i,mjtot-nghost+1)
- 205         continue
-          endif
-        do 210 ivar = 1, nvar
+          end do 
+        endif
+        do ivar = 1, nvar
             qr(ivar,i-nghost) = valbig(ivar,i,mjtot-nghost+1)
- 210    continue
+        end do
+       end do  
 
        lind = 0
        ncrse = (mitot-2*nghost)/lratiox
-       do 220 ic = 1, ncrse
+       do ic = 1, ncrse
          index = index + 1
-         do 225 l = 1, lratiox
-         lind = lind + 1
-         if (maux.gt.0) then
-            do 224 ma=1,maux
+         do l = 1, lratiox
+          lind = lind + 1
+          if (maux.gt.0) then
+            do ma=1,maux
              if (auxtype(ma).eq."yleft") then
 c                # Assuming velocity at bottom-face, this fix
 c                # preserves conservation in incompressible flow:
                  ifine = (ic-1)*lratiox + nghost + l
                  auxl(iaddaux(ma,lind+1)) = aux(ma,ifine,mjtot-nghost+1)
-               else
+              else
                  auxl(iaddaux(ma,lind+1)) = auxc1d(ma,index)
-               endif
-  224          continue
-            endif
-         do 225 ivar = 1, nvar
- 225         ql(ivar,lind+1) = qc1d(ivar,index)
- 220    continue
+              endif
+            end do
+          endif
+          do ivar = 1, nvar
+             ql(ivar,lind+1) = qc1d(ivar,index)
+          end do
+         end do
+       end do
     
        if (qprint) then
          write(dbugunit,*) 'side 2, ql and qr:'
@@ -211,17 +217,17 @@ c                # preserves conservation in incompressible flow:
 c
 c we have the wave. for side 2. add into sdflxp
 c
-       do 230 i = 1, nr/lratiox
+       do i = 1, nr/lratiox
           influx  = influx + 1
           ifine = (i-1)*lratiox
-          do 240 ivar = 1, nvar
-            do 250 l = 1, lratiox
+          do ivar = 1, nvar
+            do l = 1, lratiox
               svdflx(ivar,influx) = svdflx(ivar,influx) 
      .                     - amdq(ivar,ifine+l+1) * hx * delt
      .                     - apdq(ivar,ifine+l+1) * hx * delt
- 250         continue
- 240       continue
- 230    continue
+            end do
+          end do 
+       end do
 
  299  continue
 
@@ -229,25 +235,26 @@ c--------
 c  side 3
 c--------
 c
-       do 310 j = nghost+1, mjtot-nghost
+       do j = nghost+1, mjtot-nghost
         if (maux.gt.0) then
-          do 305 ma = 1,maux
+          do ma = 1,maux
              auxr(iaddaux(ma,j-nghost)) = aux(ma,mitot-nghost+1,j)
- 305         continue
-          endif
-        do 310 ivar = 1, nvar
-          qr(ivar,j-nghost) = valbig(ivar,mitot-nghost+1,j)
- 310      continue
+          end do
+        endif
+        do ivar = 1, nvar
+           qr(ivar,j-nghost) = valbig(ivar,mitot-nghost+1,j)
+        end do
+       end do 
 
        lind = 0
        ncrse = (mjtot-2*nghost)/lratioy
-       do 320 jc = 1, ncrse
+       do jc = 1, ncrse
          index = index + 1
-         do 325 l = 1, lratioy
-         lind = lind + 1
-         if (maux.gt.0) then
-            do 324 ma=1,maux
-             if (auxtype(ma).eq."xleft") then
+         do l = 1, lratioy
+          lind = lind + 1
+          if (maux.gt.0) then
+            do ma=1,maux
+               if (auxtype(ma).eq."xleft") then
 c                # Assuming velocity at left-face, this fix
 c                # preserves conservation in incompressible flow:
                  jfine = (jc-1)*lratioy + nghost + l
@@ -255,11 +262,13 @@ c                # preserves conservation in incompressible flow:
                else
                  auxl(iaddaux(ma,lind+1)) = auxc1d(ma,index)
                endif
-  324          continue
-            endif
-         do 325 ivar = 1, nvar
- 325         ql(ivar,lind+1) = qc1d(ivar,index)
- 320    continue
+             end do
+          endif
+          do ivar = 1, nvar
+              ql(ivar,lind+1) = qc1d(ivar,index)
+          end do
+         end do
+       end do
     
        if (qprint) then
          write(dbugunit,*) 'side 3, ql and qr:'
@@ -272,17 +281,17 @@ c                # preserves conservation in incompressible flow:
 c
 c we have the wave. for side 3 add into sdflxp
 C
-       do 330 j = 1, nc/lratioy
+       do j = 1, nc/lratioy
           influx  = influx + 1
           jfine = (j-1)*lratioy
-          do 340 ivar = 1, nvar
-            do 350 l = 1, lratioy
+          do ivar = 1, nvar
+            do l = 1, lratioy
               svdflx(ivar,influx) = svdflx(ivar,influx) 
      .                     - amdq(ivar,jfine+l+1) * hy * delt
      .                     - apdq(ivar,jfine+l+1) * hy * delt
- 350         continue
- 340       continue
- 330    continue
+             end do
+           end do
+        end do
 
 c--------
 c  side 4
@@ -296,36 +305,39 @@ c          # skip over sides 2 and 4 in this case
            go to 499
            endif
 c
-       do 410 i = nghost+1, mitot-nghost
+       do i = nghost+1, mitot-nghost
         if (maux.gt.0) then
-          do 405 ma = 1,maux
+          do ma = 1,maux
              if (auxtype(ma).eq."yleft") then
 c                # Assuming velocity at bottom-face, this fix
 c                # preserves conservation in incompressible flow:
                  auxl(iaddaux(ma,i-nghost+1)) = aux(ma,i,nghost+1)
-               else
+              else
                  auxl(iaddaux(ma,i-nghost+1)) = aux(ma,i,nghost)
-               endif
- 405         continue
-          endif
-        do 410 ivar = 1, nvar
+              endif
+           end do
+        endif
+        do ivar = 1, nvar
           ql(ivar,i-nghost+1) = valbig(ivar,i,nghost)
- 410      continue
+        end do
+       end do
 
        lind = 0
        ncrse = (mitot-2*nghost)/lratiox
-       do 420 ic = 1, ncrse
+       do ic = 1, ncrse
          index = index + 1
-         do 425 l = 1, lratiox
-         lind = lind + 1
-         if (maux.gt.0) then
-            do 424 ma=1,maux
-               auxr(iaddaux(ma,lind)) = auxc1d(ma,index)
-  424          continue
-            endif
-         do 425 ivar = 1, nvar
- 425         qr(ivar,lind) = qc1d(ivar,index)
- 420    continue
+         do l = 1, lratiox
+          lind = lind + 1
+          if (maux.gt.0) then
+             do ma=1,maux
+                auxr(iaddaux(ma,lind)) = auxc1d(ma,index)
+             end do
+          endif
+          do ivar = 1, nvar
+              qr(ivar,lind) = qc1d(ivar,index)
+          end do
+         end do
+       end do
     
        if (qprint) then
          write(dbugunit,*) 'side 4, ql and qr:'
@@ -338,17 +350,17 @@ c                # preserves conservation in incompressible flow:
 c
 c we have the wave. for side 4. add into sdflxm
 c
-       do 430 i = 1, nr/lratiox
+       do i = 1, nr/lratiox
           influx  = influx + 1
           ifine = (i-1)*lratiox
-          do 440 ivar = 1, nvar
-            do 450 l = 1, lratiox
+          do ivar = 1, nvar
+            do l = 1, lratiox
               svdflx(ivar,influx) = svdflx(ivar,influx) 
      .                     + amdq(ivar,ifine+l+1) * hx * delt
      .                     + apdq(ivar,ifine+l+1) * hx * delt
- 450         continue
- 440       continue
- 430    continue
+             end do
+           end do
+        end do
 
  499   continue
 

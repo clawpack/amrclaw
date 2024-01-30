@@ -45,16 +45,18 @@ c
          mjtot  = ny + 2*nghost
 c
          if (mcapa .eq. 0) then
-           do 50 j  = nghost+1, mjtot-nghost
-           do 50 i  = nghost+1, mitot-nghost
+           do j  = nghost+1, mjtot-nghost
+           do i  = nghost+1, mitot-nghost
               totmass = totmass + alloc(iadd(1,i,j)) 
- 50           continue
+           end do
+           end do
           else
 c          # with capa array:
-           do 60 j  = nghost+1, mjtot-nghost
-           do 60 i  = nghost+1, mitot-nghost
+           do j  = nghost+1, mjtot-nghost
+           do i  = nghost+1, mitot-nghost
               totmass = totmass + alloc(iadd(1,i,j))*alloc(iaddaux(i,j)) 
- 60           continue
+           end do
+           end do
           endif
 c
        mptr = node(levelptr,mptr)

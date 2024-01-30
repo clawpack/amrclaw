@@ -83,9 +83,9 @@ c
 
 c       # update q with x fluxes first. all rows in y  get updated
         dtdx = dt/dx
-        do 50 j=1,mjtot
-        do 50 i=mbc+1,mitot-mbc
-        do 50 m=1,nvar
+        do j=1,mjtot
+        do i=mbc+1,mitot-mbc
+        do m=1,nvar
          if (mcapa.eq.0) then
 c
 c            # no capa array.  Standard flux differencing:
@@ -98,7 +98,9 @@ c            # with capa array.
      &          - dtdx * (fm(m,i+1,j) - fp(m,i,j)) / aux(mcapa,i,j)
          endif
 
- 50      continue
+        end do
+        end do
+        end do
 
 c                                 2.  Second step in x direction:
 
@@ -113,9 +115,9 @@ c
 c
 c       # update q
         dtdy = dt/dy
-        do 51 j=mbc+1,mjtot-mbc
-        do 51 i=mbc+1,mitot-mbc
-        do 51 m=1,nvar
+        do j=mbc+1,mjtot-mbc
+        do i=mbc+1,mitot-mbc
+        do m=1,nvar
          if (mcapa.eq.0) then
 c
 c            # no capa array.  Standard flux differencing:
@@ -127,7 +129,9 @@ c            # with capa array.
      &          - dtdy * (gm(m,i,j+1) - gp(m,i,j)) / aux(mcapa,i,j)
          endif
 
- 51      continue
+         end do
+         end do
+         end do
 c
 !--        write(outunit,1001) mptr, node(nestlevel,mptr),cflgrid
 !-- 1001   format(' Courant # of grid', i4,
@@ -145,17 +149,19 @@ c
 c     # output fluxes for debugging purposes:
       if (debug) then
          write(dbugunit,*)" fluxes for grid ",mptr
-c        do 830 j = mbc+1, mjtot-1
-            do 830 i = mbc+1, mitot-1
-         do 830 j = mbc+1, mjtot-1
+c        do j = mbc+1, mjtot-1
+            do i = mbc+1, mitot-1
+         do j = mbc+1, mjtot-1
                write(dbugunit,831) i,j,fm(1,i,j),fp(1,i,j),
      .                             gm(1,i,j),gp(1,i,j)
-               do 830 m = 2, meqn
+               do m = 2, meqn
                   write(dbugunit,832) fm(m,i,j),fp(m,i,j),
      .            gm(m,i,j),gp(m,i,j)
   831          format(2i4,4d16.6)
   832          format(8x,4d16.6)
-  830    continue
+         end do
+         end do
+         end do
       endif
 
 c

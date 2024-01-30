@@ -43,7 +43,7 @@ c
 
 c     NB this untagging alg. includes corner cells in determining proper 
 c     nesting.  not always nec., or always done
-      do 40 j = jlo-mbuff+1,jhi+mbuff-1
+      do 41 j = jlo-mbuff+1,jhi+mbuff-1
       do 40 i = ilo-mbuff+1,ihi+mbuff-1
          iflags(i,j) = iflags2(i,j)
          if (iflags2(i  ,j  ) .le. 0 .or.
@@ -56,6 +56,7 @@ c     nesting.  not always nec., or always done
           iflags(ilo-mbuff,j) = 0   ! set last border to 0 instead of leaving uninitialized
           iflags(ihi+mbuff,j) = 0
  40   continue
+ 41   continue
       do i = ilo-mbuff,ihi+mbuff   ! finish zeroing out first and last col
          iflags(i,jlo-mbuff) = 0
          iflags(i,jhi+mbuff) = 0

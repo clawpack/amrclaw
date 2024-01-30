@@ -24,9 +24,9 @@ c but wrap if periodic when put on list
 c if not periodic no need to check if outside domain
 c
 
-      do 10 j = jmin, jmax
-      do 10 i = imin, imax
-        if (rectflags(i,j) .le. DONTFLAG) go to 10
+      do j = jmin, jmax
+      do i = imin, imax
+        if (rectflags(i,j) .le. DONTFLAG) cycle
         if (iflags(i,j) .ne. 1) then  !point not nested. turn off
              rectflags(i,j) = DONTFLAG
              if (nprint) then
@@ -34,7 +34,8 @@ c
  100            format("turning off point ",2i5," from grid ",i5)
              endif
         endif
- 10   continue
+      end do
+      end do
 
       return
       end

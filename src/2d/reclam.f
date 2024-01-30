@@ -53,11 +53,12 @@ c forward merge as well, bump all down 1
 c
       lfree(iprev,2) = lfree(iprev,2)+lfree(iplace,2)
       ipp1           = iplace + 1
-         do 60 i = ipp1, lenf
+      do 60 i = ipp1, lenf
          lfree(i-1,1) = lfree(i,1)
- 60      lfree(i-1,2) = lfree(i,2)
-         lenf = lenf - 1
-         go to 99
+         lfree(i-1,2) = lfree(i,2)
+ 60   continue
+      lenf = lenf - 1
+      go to 99
 c
 c  no merges case - insert and bump future segments up to make room
 c
@@ -65,7 +66,8 @@ c
       do 80 ii = iplace, lenf
       i          = lenf + 1 - ii + iplace
       lfree(i,1) = lfree(i-1,1)
- 80   lfree(i,2) = lfree(i-1,2)
+      lfree(i,2) = lfree(i-1,2)
+ 80   continue
       lenf            = lenf + 1
       lfree(iplace,1) = index
       lfree(iplace,2) = nwords

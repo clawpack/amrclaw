@@ -61,10 +61,11 @@ c            use second array to avoid propagation
 
 c   copy back. need flags in original array, not temp scratch array
 
-       do 60 j = jlo-mbuff, jhi+mbuff
-       do 60 i = ilo-mbuff, ihi+mbuff
+       do j = jlo-mbuff, jhi+mbuff
+       do i = ilo-mbuff, ihi+mbuff
          rectflags(i,j) = copyflags(i,j)
- 60    continue
+       end do
+       end do
 
 
        return
