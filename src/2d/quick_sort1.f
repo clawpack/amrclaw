@@ -48,7 +48,8 @@ C
       U1=N
       L1=1
       DO 1  I=1,N
-    1 ORD(I)=I
+        ORD(I)=I
+    1 CONTINUE
     2 IF (U1.LE.L1) RETURN
 C
     3 L=L1

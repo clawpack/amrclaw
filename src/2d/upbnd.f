@@ -47,10 +47,11 @@ c indicated by mcapa not zero (is index of capacity fn.)
 c ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
  
-      do 10 j=1,mjtot
-      do 10 i=1,mitot
+      do j=1,mjtot
+      do i=1,mitot
          iused(i,j) = 0.
- 10   continue
+      end do
+      end do
  
       locaux = node(storeaux,mptr)
       levc   = node(nestlevel,mptr)

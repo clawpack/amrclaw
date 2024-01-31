@@ -174,7 +174,7 @@ c
      .                 ishift,jshift,lbase)
 
 c          compare all regions of coarsened patch with one lbase grid at a time
-           do 25 i = 1, 3
+           do 26 i = 1, 3
               i1 = max(iclo,ist(i))
               i2 = min(ichi, iend(i))
            do 25 j = 1, 3
@@ -207,6 +207,7 @@ c                need to mark nesting of orig coords, not coarsened shifted indi
                end do
 
  25       continue
+ 26       continue
 
  30       mptr = node(levelptr, mptr)
           if (mptr .ne. 0) go to 20
@@ -223,13 +224,14 @@ c      endif
 c
 c  if any zeroes left mnew not nested
 c
-       do 40 j = jclo, jchi
-       do 40 i = iclo, ichi
+       do j = jclo, jchi
+       do i = iclo, ichi
           if (alloc(iadd(i,j)) .eq. 0) then
              baseCheck = .false.
              go to 99
           endif
- 40    continue
+       end do
+       end do
 
 c      if made it here then grid is nested
        baseCheck = .true.

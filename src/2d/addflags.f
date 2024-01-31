@@ -22,12 +22,13 @@ c in-place buffering.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 c
 
-      do 10 j = nghost+1, mjtot-nghost
-      do 10 i = nghost+1, mitot-nghost
+      do j = nghost+1, mjtot-nghost
+      do i = nghost+1, mitot-nghost
          if (rctold(1,i,j) .gt. DONTFLAG) then
            rectflags(i,j) = DOFLAG
          endif
- 10   continue
+      end do
+      end do
 c
  99   return
       end

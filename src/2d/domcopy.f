@@ -18,10 +18,11 @@ c
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
-      do 10 j = 0, jsize+1
-      do 10 i = 0, isize+1
+      do j = 0, jsize+1
+      do i = 0, isize+1
          iflags2(i,j) = iflags(i,j)
- 10   continue
+      end do
+      end do
 c
 c  take care of periodicity again
 c

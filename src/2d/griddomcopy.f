@@ -18,10 +18,11 @@ c  (can f90 do this in one statement, without sub call?)
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
-      do 10 j = jlo-mbuff,jhi+mbuff
-      do 10 i = ilo-mbuff,ihi+mbuff
+      do j = jlo-mbuff,jhi+mbuff
+      do i = ilo-mbuff,ihi+mbuff
          i1(i,j) = i2(i,j)
- 10   continue
+      end do
+      end do
 c
       return
       end

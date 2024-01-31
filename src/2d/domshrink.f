@@ -28,8 +28,8 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
  10     continue
       endif
 
-      do 40 j = 1, jdim
-      do 40 i = 1, idim
+      do j = 1, jdim
+      do i = 1, idim
          iflags(i,j) = iflags2(i,j)
          if (iflags2(i  ,j  ) .le. 0 .or.
      1       iflags2(i+1,j  ) .le. 0 .or. iflags2(i-1,j  ) .le. 0 .or. 
@@ -38,7 +38,8 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
      4       iflags2(i+1,j-1) .le. 0 .or. iflags2(i-1,j-1) .le. 0) then
                  iflags(i,j) = 0
           endif
- 40   continue
+      end do
+      end do
 c
 c if border of domain touches a physical boundary then set domain in
 c ghost cell as well

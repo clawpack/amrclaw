@@ -49,7 +49,8 @@ c
              
 c            dont count it in real integration stats
              do 20 level=1,mxnest
- 20             rvoll(level) = 0.d0
+                rvoll(level) = 0.d0
+ 20          continue
           endif
 c
 c  flag, cluster, and make new grids. grdfit set bcs, controls flagging,

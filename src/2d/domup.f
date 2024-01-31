@@ -26,20 +26,23 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::
  5       continue
       endif
 
-      do 10 j = 0, jsize+1
-      do 10 i = 0, isize+1
+      do j = 0, jsize+1
+      do i = 0, isize+1
          iflags2(i,j) = 0
- 10   continue
+      end do
+      end do
 
-      do 20 j = 1, jbase
-      do 20 i = 1, ibase
+      do j = 1, jbase
+      do i = 1, ibase
           ifine = (i-1) * intratx(lev)
           jfine = (j-1) * intraty(lev)
-          do 25 mj = 1, intraty(lev)
-          do 25 mi = 1, intratx(lev)
+          do mj = 1, intraty(lev)
+          do mi = 1, intratx(lev)
             iflags2(ifine+mi,jfine+mj) = iflags(i,j)  
- 25       continue
- 20       continue
+          end do
+          end do
+      end do
+      end do
 c
 c  take care of periodicity again or if border of domain touches a 
 c  physical boundary then set domain in ghost cell as well

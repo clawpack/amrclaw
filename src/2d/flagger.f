@@ -128,7 +128,8 @@ c            them in locnew
              locuse = locnew ! flag based on newest vals
              if (flag_richardson) then
                do 10 i = 1, mitot*mjtot*nvar
- 10             alloc(locbig+i-1) = alloc(locnew+i-1)
+                alloc(locbig+i-1) = alloc(locnew+i-1)
+ 10            continue
              endif
 
          else   ! boundary values already in locold
@@ -137,7 +138,8 @@ c            them in locnew
              ! put back this way to agree with nosetests
              if (flag_richardson) then
                do 11 i = 1, mitot*mjtot*nvar
- 11              alloc(locbig+i-1) = alloc(locold+i-1)
+                 alloc(locbig+i-1) = alloc(locold+i-1)
+ 11            continue
              endif
          endif
 
@@ -153,7 +155,8 @@ c            them in locnew
 !              ##  Then colate finished the job
                 locamrflags = node(storeflags,mptr)
                 do 20 i = 1, mibuff*mjbuff  ! initialize
- 20                alloc(locamrflags+i-1) = UNSET
+                   alloc(locamrflags+i-1) = UNSET
+ 20             continue
 
 c      ##  new call to flag regions: check if cells must be refined, or exceed
 c      ##  maximum refinement level for that region.  used to be included with

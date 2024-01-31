@@ -77,7 +77,8 @@ c
          numgrids(i) = 0
          numcells(i) = 0
          lstart(i) = 0
- 60      icheck(i) = 0
+         icheck(i) = 0
+ 60   continue
 c
 c finish initializing spatial and counting arrays
 c

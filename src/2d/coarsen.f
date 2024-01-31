@@ -14,20 +14,22 @@ c :::::::::::::::::::::::: COARSEN ::::::::::::::::::::::::::::::::
 !! grid for error estimation.
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-       do 10 j = 1, mj2tot
+       do j = 1, mj2tot
 
-          jfine = 2*(j-1) + 1
+         jfine = 2*(j-1) + 1
 
-          do 10 i = 1, mi2tot
+         do i = 1, mi2tot
             ifine = 2*(i-1) + 1
 
-            do 10 ivar = 1, nvar
+           do ivar = 1, nvar
   
              valbgc(ivar,i,j) = (valdub(ivar,ifine,jfine) +
      &                           valdub(ivar,ifine+1,jfine)+
      &                           valdub(ivar,ifine,jfine+1) +
      &                           valdub(ivar,ifine+1,jfine+1))/4.d0
-10     continue
+           end do
+         end do
+       end do
 
        return
        end

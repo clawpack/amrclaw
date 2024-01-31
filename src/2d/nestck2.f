@@ -167,7 +167,8 @@ c
  110   numptc(icl)     = npts - ntop
        do 120 i        = icl, nclust
           nmove           = nclust + icl - i
- 120      numptc(nmove+1) = numptc(nmove)
+          numptc(nmove+1) = numptc(nmove)
+ 120   continue
        numptc(icl)     = ntop
        nclust          = nclust + 1
        nestck2         = .false.

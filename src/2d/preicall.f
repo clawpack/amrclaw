@@ -167,7 +167,7 @@ c             write(dbugunit6,102) iwrap1,iwrap2,j1+jbump,j2+jbump
 c             copy back using weird mapping for spherical folding
               nrowst = 1   ! start filling up val at (1,1) - no additional offset
               ncolst = 1
-              do 15 ii = i1, i2
+              do 14 ii = i1, i2
               do 15 jj = j1, j2
 c            write(dbugunit6,100)nrowst+ii-ilo,ncolst+jj-jlo,nr-(ii-i1),
 c    1                            nc-jj+j1
@@ -183,6 +183,7 @@ c    1                            nc-jj+j1
      1                    fliparray(iaddaux(iaux,nr-(ii-i1),nc-(jj-j1)))
  16             continue
  15           continue
+ 14           continue
              
             endif
 

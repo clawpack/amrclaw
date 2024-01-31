@@ -147,7 +147,8 @@ c           write(*,*)" new possk is ", possk(1)
 c        ## adjust time step  to hit chktime exactly, and do checkpointing
          possk(1) = chktime - time
          do 13 i = 2, mxnest
- 13         possk(i) = possk(i-1) / kratio(i-1)
+            possk(i) = possk(i-1) / kratio(i-1)
+ 13      continue
          nextchk = nextchk + 1
         dumpchk = .true.
       else
@@ -213,9 +214,11 @@ c
           endif
  70       continue
           do 80  i  = lbase, lfine
- 80          icheck(i) = 0
+             icheck(i) = 0
+ 80       continue
           do 81  i  = lbase+1, lfine
- 81          tlevel(i) = tlevel(lbase)
+             tlevel(i) = tlevel(lbase)
+ 81       continue
 c
 c          MJB: modified to check level where new grids start, which is lbase+1
           !if (verbosity_regrid.ge.lbase+1) then
@@ -317,7 +320,8 @@ c          make sure not to exceed largest permissible dt
            dtnew(1) = min(dtnew(1),dt_max)  
            possk(1) = dtnew(1)    ! propagate new timestep to hierarchy
            do 120 i = 2, mxnest
- 120         possk(i) = possk(i-1) / kratio(i-1)
+             possk(i) = possk(i-1) / kratio(i-1)
+ 120       continue
 
       endif
 

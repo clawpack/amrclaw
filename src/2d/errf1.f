@@ -41,28 +41,28 @@ c
       if (.not. (edebug)) go to 20
          write(outunit,107) mptr
  107     format(//,' coarsened grid values for grid ',i4)
-         do 10 jj = nghost+1, mj2tot-nghost
+         do jj = nghost+1, mj2tot-nghost
             j = mj2tot + 1 - jj
             write(outunit,101) (rctcrse(1,i,j),
      .                          i = nghost+1, mi2tot-nghost)
-10       continue
+         end do
          write(outunit,108) mptr
  108     format(//, ' fine grid values for grid ',i4)
-         do 15 jj = nghost+1, mjtot-nghost
+         do jj = nghost+1, mjtot-nghost
             j = mjtot + 1 - jj
             write(outunit,101) (rctfine(1,i,j),i=nghost+1,mitot-nghost)
-15       continue
+         end do 
 101      format(' ',40e11.3)
 c
 c zero out the exterior locations so they don't affect err.est.
 c
  20   continue
       jfine = nghost+1
-      do 35  j = nghost+1, mj2tot-nghost
+      do j = nghost+1, mj2tot-nghost
       yofj  = ybot + (dble(jfine) - .5d0)*hy
       ifine = nghost+1
 c
-      do 30  i  = nghost+1, mi2tot-nghost
+      do i  = nghost+1, mi2tot-nghost
           rflag = UNSET
 c Only check errors if flag hasn't been set yet.
 c If flag == DONTFLAG then refinement is forbidden by a region,
@@ -97,9 +97,9 @@ c
           endif
       rctcrse(1,i,j) = rflag
       ifine = ifine + 2
- 30   continue
+ 30   end do
       jfine = jfine + 2
- 35   continue
+ 35   end do
 c
 c  print out intermediate flagged rctcrse (for debugging)
 c
@@ -111,19 +111,19 @@ c
          if (edebug) then
            write(outunit,*) ' flagged points on coarsened grid ',
      .                      '(no ghost cells) for grid ',mptr
-           do 45 jj = nghost+1, mj2tot-nghost
+           do jj = nghost+1, mj2tot-nghost
               j = mj2tot + 1 - jj
               write(outunit,106) (nint(rctcrse(1,i,j)),
      .                            i=nghost+1,mi2tot-nghost)
 106           format(1h ,80i1)
-45         continue
+           end do
          endif
       endif
 c
       jfine   = nghost+1
-      do 70 j = nghost+1, mj2tot-nghost
+      do j = nghost+1, mj2tot-nghost
       ifine   = nghost+1
-      do 60 i = nghost+1, mi2tot-nghost
+      do i = nghost+1, mi2tot-nghost
          if (rctcrse(1,i,j) .eq. DOFLAG) then
 c           ## never set rctflg to DONTFLAG, since flagregions2 or
 c           ## flag2refine may have previously set it to DOFLAG
@@ -134,9 +134,9 @@ c           ## can only add DOFLAG pts in this routine
             rctflg(ifine+1,jfine+1)= DOFLAG
           endif
           ifine   = ifine + 2
- 60     continue
+       end do
         jfine   = jfine + 2
- 70   continue
+       end do
 c
 
       if (eprint) then

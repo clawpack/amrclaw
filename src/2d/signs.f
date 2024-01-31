@@ -27,9 +27,11 @@ c
        jlo= 1
        jhi= jdim
        do 10 i = 1, idim
- 10       iscr(i) = 0
+          iscr(i) = 0
+ 10    continue
        do 15 j = 1, jdim
- 15       jscr(j) = 0
+          jscr(j) = 0
+ 15    continue
 c
 c count all flagged points in a given row/column in one pass through
 c the points, i.e. a bin count
