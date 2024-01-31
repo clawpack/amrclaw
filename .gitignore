@@ -1,7 +1,7 @@
 *.pyc
 *.o
 *.mod
-.ouput
+.output
 .data
 .plots
 xclaw
