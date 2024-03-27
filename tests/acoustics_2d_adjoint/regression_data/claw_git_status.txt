@@ -1,98 +1,111 @@
 Clawpack Git Status 
-Diffs can be found in /Users/brisadavis/Documents/git_folders/clawpack/amrclaw/tests/acoustics_2d_forwardprob/regression_data/claw_git_diffs.txt
+Diffs can be found in /Users/rjl/git/clawpack/amrclaw/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
 
-Fri, 01 Jun 2018 12:37:28 PDT
-$CLAW = /Users/brisadavis/Documents/git_folders/clawpack
-$FC = gfortran
+Fri, 01 Sep 2023 12:35:51 PDT
+$CLAW = /Users/rjl/git/clawpack
+$FC = not set
+
+
+===========
+clawpack
+===========
+/Users/rjl/git/clawpack/
+
+--- last commit ---
+cc03572 (HEAD -> geoclaw_1d) need geoclaw_1d in __init__.py until it's merged into geoclaw proper
+
+--- branch and status ---
+## geoclaw_1d
+ M amrclaw
+ M classic
+ M clawutil
+ M geoclaw
+ M pyclaw
+ M visclaw
 
 
 ===========
 classic
 ===========
-/Users/brisadavis/Documents/git_folders/clawpack/classic
+/Users/rjl/git/clawpack/classic
 
 --- last commit ---
-606424b Merge pull request #80 from rjleveque/wcblast
+4fb4d1a (HEAD -> pytest, rjleveque/pytest) Using pytest instead of nose requires renaming to regression_test.py
 
 --- branch and status ---
-## master...origin/master
- M examples/acoustics_1d_example1/setplot.py
- M examples/acoustics_1d_example1/setrun.py
- M examples/acoustics_1d_heterogeneous/setplot.py
- M examples/acoustics_1d_heterogeneous/setrun.py
- M examples/advection_1d_example1/setplot.py
- M examples/advection_1d_example1/setrun.py
+## pytest
 
 
 ===========
 amrclaw
 ===========
-/Users/brisadavis/Documents/git_folders/clawpack/amrclaw
+/Users/rjl/git/clawpack/amrclaw
 
 --- last commit ---
-cd67a24 Merging the adjoint-error code into either the main errest.f file or into adjoint_module.f90. Also merging innerprod_module.f90 into adjoint_module.f90.
+dc5c685 (HEAD -> pytest, rjleveque/pytest) rename regression_test.py for pytest
 
 --- branch and status ---
-## adjoint...bitbucket/adjoint [ahead 34]
- M examples/acoustics_2d_adjoint/adjoint/Makefile
+## pytest
+ M tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
+ M tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt
+ M tests/acoustics_2d_adjoint/regression_data/gauge00001.txt
 
 
 ===========
 clawutil
 ===========
-/Users/brisadavis/Documents/git_folders/clawpack/clawutil
+/Users/rjl/git/clawpack/clawutil
 
 --- last commit ---
-5c6bd99 Merge pull request #122 from rjleveque/convert_readme_string
+a118b82 (HEAD -> test_save_gauge_binary, rjleveque/test_save_gauge_binary) Modify test.py so that when saving regression data, check for binary gauge file
 
 --- branch and status ---
-## master...origin/master
+## test_save_gauge_binary
 
 
 ===========
 pyclaw
 ===========
-/Users/brisadavis/Documents/git_folders/clawpack/pyclaw
+/Users/rjl/git/clawpack/pyclaw
 
 --- last commit ---
-0c54683 Merge pull request #589 from ketch/update_to_scipy_v1
+53766ffc (HEAD -> importlib, rjleveque/importlib) replace imp by importlib
 
 --- branch and status ---
-## master...origin/master
+## importlib
 
 
 ===========
 visclaw
 ===========
-/Users/brisadavis/Documents/git_folders/clawpack/visclaw
+/Users/rjl/git/clawpack/visclaw
 
 --- last commit ---
-c2a1907 (matlab) adding functionality for creating plot for tikz output
+2f5b832 (HEAD -> more_plot_attributes, rjleveque/more_plot_attributes) add time_label_fontsize to gaugetools.py
+
+--- branch and status ---
+## more_plot_attributes
+
+
+===========
+riemann
+===========
+/Users/rjl/git/clawpack/riemann
+
+--- last commit ---
+d177660 (HEAD -> master, tag: v5.9.0, tag: v5.8.2, tag: v5.8.1, rjleveque/master, origin/master, origin/HEAD) Merge pull request #163 from carlosmunozmoncayo/fix_dry_states_hlle
 
 --- branch and status ---
 ## master...origin/master
 
 
 ===========
-riemann
-===========
-/Users/brisadavis/Documents/git_folders/clawpack/riemann
-
---- last commit ---
-974c08b Changing notation for consistency with dissertation.
-
---- branch and status ---
-## adjoint
-
-
-===========
 geoclaw
 ===========
-/Users/brisadavis/Documents/git_folders/clawpack/geoclaw
+/Users/rjl/git/clawpack/geoclaw
 
 --- last commit ---
-adb1cfb Merge branch 'adjoint' of https://github.com/BrisaDavis/geoclaw into adjoint
+b6519f07 (HEAD -> pytest, rjleveque/pytest) update particles/regression_data
 
 --- branch and status ---
-## adjoint
- M examples/tsunami/chile2010_adjoint/Makefile
+## pytest
