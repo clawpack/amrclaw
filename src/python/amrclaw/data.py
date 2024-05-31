@@ -418,6 +418,12 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             if len(self.gauge_numbers) != len(set(self.gauge_numbers)):
                 raise Exception("Non unique gauge numbers specified.")
 
+        for gaugeno in self.gauge_numbers:
+            if abs(gaugeno) >= 2**31:
+                raise Exception("Gauge number %i is too large, must be < 2**31"\
+                    % gaugeno)
+
+
         # Write out gauge data file
         self.open_data_file(out_file,data_source)
         self.data_write(name='ngauges',value=len(self.gauges))
