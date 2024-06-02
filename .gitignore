@@ -1,3 +1,4 @@
+.DS_Store
 *.pyc
 *.o
 *.mod
@@ -8,6 +9,7 @@ xclaw
 xamr
 xgeoclaw
 *.html
+*.data
 _output/
 _plots/
 *~
