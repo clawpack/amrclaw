@@ -1,5 +1,10 @@
 """
 Regression tests for 2D acoustics with adjoint flagging.
+
+Note that only the forward problem is being tested, but first
+the code in adjoint/ must be run.
+Regression data for that code is in adjoint/regression_data but is not
+being tested against.
 """
 
 from __future__ import print_function
@@ -22,7 +27,7 @@ class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
         # Run adjoint problem
         adjointdir = testdir + '/adjoint'
 
-        # Running the adjoint problem
+        # Running the adjoint problem (with no testing)
         os.chdir(adjointdir)
         os.system('make -s new')
         os.system('make .output > /dev/null')
