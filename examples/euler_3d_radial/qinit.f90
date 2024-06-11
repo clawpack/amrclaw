@@ -25,7 +25,7 @@ subroutine qinit(meqn, mbc, mx, my, mz, xlower, ylower, zlower, dx, dy, dz, q, m
                 q(2, i, j, k) = 0.d0
                 q(3, i, j, k) = 0.d0
                 q(4, i, j, k) = 0.d0
-                q(5, i, j, k) = 0.d0
+                q(5, i, j, k) = rho
             end do
         end do
     end do

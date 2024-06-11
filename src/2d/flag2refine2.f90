@@ -71,9 +71,6 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
     
-    logical :: allowflag
-    external allowflag
-
     ! Locals
     integer :: i,j,m,r
     real(kind=8) :: x_c,y_c,x_low,y_low,x_hi,y_hi

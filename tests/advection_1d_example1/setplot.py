@@ -11,7 +11,7 @@ from clawpack.clawutil.data import ClawData
 from numpy import linspace
 probdata = ClawData()
 probdata.read('setprob.data', force=True)
-print "Parameters: u = %g, beta = %g" % (probdata.u, probdata.beta)
+print("Parameters: u = %g, beta = %g" % (probdata.u, probdata.beta))
 
 def qtrue(x,t):
     """

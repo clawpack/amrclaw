@@ -137,10 +137,11 @@ c   count up
 c
       numflagged = 0
       do 82 j = 1, mjbuff
-         do 82 i = 1, mibuff
+         do 81 i = 1, mibuff
             if (alloc(iadd(i,j)) .gt. DONTFLAG) then
                numflagged=numflagged + 1
             endif
+ 81      continue
  82      continue
         ! TODO: this output statement is broken?
 c     write(outunit,116) numflagged, mptr

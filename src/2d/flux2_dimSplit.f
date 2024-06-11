@@ -102,13 +102,14 @@ c     # dont delete this code yet, in case there is an issue with loop indices
 c
 c     # compute maximum wave speed for checking Courant number:
       cfl1d = 0.d0
-      do 50 mw=1,mwaves
+      do 51 mw=1,mwaves
          do 50 i=1,mx+1
 c          # if s>0 use dtdx1d(i) to compute CFL,
 c          # if s<0 use dtdx1d(i-1) to compute CFL:
             cfl1d = dmax1(cfl1d, dtdx1d(i)*s(mw,i),
      &                          -dtdx1d(i-1)*s(mw,i))
    50       continue
+   51       continue
 c
       if (method(2).eq.1) go to 130
 c
@@ -118,7 +119,7 @@ c
 c     # apply limiter to waves:
       if (limit) call limiter(maxm,meqn,mwaves,mbc,mx,wave,s,mthlim)
 c
-      do 120 i = 1, mx+1
+      do 121 i = 1, mx+1
 c
 c        # For correction terms below, need average of dtdx in cell
 c        # i-1 and i.  Compute these and overwrite dtdx1d:
@@ -146,6 +147,7 @@ c
             faddm(m,i) = faddm(m,i) + 0.5d0 * cqxx(m,i)
             faddp(m,i) = faddp(m,i) + 0.5d0 * cqxx(m,i)
   120       continue
+  121       continue
 c
 c
   130  continue

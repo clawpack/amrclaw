@@ -169,8 +169,14 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
             else if (output_format==2 .or. output_format==3) then
                 ! binary32 or binary64
                                 
-                ! Note: We are writing out ghost cell data also
-                ! do we need to call bound to update ghost cells??
+                ! Note: We are writing out ghost cell data also,
+                ! so need to update this
+                call bound(time,num_eqn,num_ghost,alloc(q_loc),     &
+                             num_cells(1) + 2*num_ghost,            &
+                             num_cells(2) + 2*num_ghost,            &
+                             num_cells(3) + 2*num_ghost,            &
+                             grid_ptr,alloc(aux_loc),num_aux)
+
 
                 i = (iadd(num_eqn, num_cells(1) + 2 * num_ghost, &
                                    num_cells(2) + 2 * num_ghost, &

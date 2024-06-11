@@ -109,15 +109,16 @@ c        test if coarsened grid mkid intersects with this grids rectflags
          if (.not.((ixlo .le. ixhi) .and. (jxlo .le. jxhi))) go to 80 
 c     
          ! has intersection
-         do 60 j = jxlo, jxhi
-         do 60 i = ixlo, ixhi
+         do j = jxlo, jxhi
+         do i = ixlo, ixhi
             if (rectflags(i,j) .le. DONTFLAG) then
                rectflags(i,j) = badpro
                numpro      = numpro + 1
                if (pprint) write(outunit,101) i,j,mkid
  101           format(' pt.',2i5,' of grid ',i5,' projected' )
             endif
- 60      continue
+         end do  
+         end do  
          go to 80            ! done with projected this fine grid in non-periodic case
       endif
 
@@ -127,7 +128,7 @@ c periodic case. compute indics on coarsened level to find grids to project to
      .                ishift,jshift,level)
 
 c     compare all regions of coarsened patch with one lbase grid at a time
-      do 25 i = 1, 3
+      do 26 i = 1, 3
          i1 = max(istc,  ist(i))
          i2 = min(iendc, iend(i))
       do 25 j = 1, 3
@@ -162,6 +163,7 @@ c           project flagged point in intersected regions
          end do
 
  25   continue
+ 26   continue
       go to 80   ! down with simple periodic case
 c
 c repeat above procedure for wrapped area if nec. if ibuff > 0

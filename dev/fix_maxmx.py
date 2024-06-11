@@ -9,10 +9,7 @@
 # Now supports wildcards in list of targetfiles.
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
 import os,sys,glob
-from six.moves import zip
 
 rootdir = '.'
 targetfiles = ['*.f*']

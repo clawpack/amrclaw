@@ -67,7 +67,8 @@ contains
         ! Locals
         integer :: i, ipos, idigit
         integer, parameter :: iunit = 7
-        character*14 ::  fileName
+        character(len=24) :: fileName
+        character(len=15) :: numstr
 
         if (.not. module_setup) then
 
@@ -101,13 +102,13 @@ contains
             nextLoc  = 1  ! next location to be filled with gauge info
 
             do i = 1, num_gauges
-               fileName = 'gaugexxxxx.txt'    ! NB different name convention too
+
                inum = igauge(i)
-               do ipos = 10,6,-1              ! do this to replace the xxxxx in the name
-                  idigit = mod(inum,10)
-                  fileName(ipos:ipos) = char(ichar('0') + idigit)
-                  inum = inum / 10
-               end do
+
+               ! convert inum to string numstr with zero padding if <5 digits
+               ! since we want format gauge00012.txt or gauge1234567.txt:
+               write (numstr,'(I0.5)') inum
+               fileName = 'gauge'//trim(numstr)//'.txt'
 
     !          status unknown since might be a restart run. might need to rewind
                if (restart) then
@@ -118,7 +119,7 @@ contains
                        position='append', form='formatted')
                   rewind OUTGAUGEUNIT
                   write(OUTGAUGEUNIT,100) igauge(i), xgauge(i), nvar
-  100             format("# gauge_id= ",i5," location=( ",1e15.7," ) num_eqn= ",i2)
+  100             format("# gauge_id= ",i0," location=( ",1e15.7," ) num_eqn= ",i2)
                   write(OUTGAUGEUNIT,101)
   101             format("# Columns: level time q(1 ... num_eqn)")
                endif
@@ -348,7 +349,8 @@ contains
       implicit none
       integer :: gaugeNum,nvar,j,inum,k,idigit,ipos,myunit
       integer :: omp_get_thread_num, mythread
-      character*14 :: fileName
+      character(len=24) :: fileName
+      character(len=15) :: numstr
 
       ! open file for gauge gaugeNum, figure out name
       ! not writing gauge number since it is in file name now
@@ -358,13 +360,11 @@ contains
       ! NB: output written in different order, losing backward compatibility
 
 
-      fileName = 'gaugexxxxx.txt'    ! NB different name convention too
       inum = igauge(gaugeNum)
-      do ipos = 10,6,-1              ! do this to replace the xxxxx in the name
-         idigit = mod(inum,10)
-         fileName(ipos:ipos) = char(ichar('0') + idigit)
-         inum = inum / 10
-      end do
+      ! convert inum to string numstr with zero padding if <5 digits
+      ! since we want format gauge00012.txt or gauge1234567.txt:
+      write (numstr,'(I0.5)') inum
+      fileName = 'gauge'//trim(numstr)//'.txt'
 
 
       mythread = 0

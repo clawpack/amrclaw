@@ -8,15 +8,12 @@ To modify for a different app or set of tests, see the code labelled "Test 1",
 "Test 2", etc.
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
 from setrun_regression import setrun
 from setplot import setplot
 from clawpack.clawutil.runclaw import runclaw
 from clawpack.visclaw.plotclaw import plotclaw
 from clawpack.clawutil.compare_regression_tests import compare_regression_tests
 import os,sys
-from six.moves import input
 
 
 def run_regression_tests(regression_dir="_regression_tests", \

@@ -47,9 +47,11 @@ subroutine trimbd(used,nrow,ncol,set,unset_rect)
     integer(kind=1) :: check
 
        utot = 0
-        do 100 j = 1,ncol
-        do 100 i = 1,nrow
-100        utot = utot + used(i,j)
+        do j = 1,ncol
+        do i = 1,nrow
+           utot = utot + used(i,j)
+        end do
+        end do
 
     if (utot .eq. nrow * ncol ) then
         set = .true.

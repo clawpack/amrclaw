@@ -51,8 +51,9 @@ c  item is totally removed.  move next items in list up one.
 c
  30   lenf = lenf - 1
       do 40 i = itake, lenf
-      lfree(i,1) = lfree(i+1,1)
- 40   lfree(i,2) = lfree(i+1,2)
+       lfree(i,1) = lfree(i+1,1)
+       lfree(i,2) = lfree(i+1,2)
+ 40   continue
       go to 99
 c
  900  write(outunit,901) nwords

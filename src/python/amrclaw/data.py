@@ -2,13 +2,9 @@
 
 """Base AMRClaw data class for writing out data parameter files."""
 
-from __future__ import print_function
-from __future__ import absolute_import
 import os
 
 import clawpack.clawutil.data
-import six
-from six.moves import range
 
 class AmrclawInputData(clawpack.clawutil.data.ClawData):
     r"""
@@ -232,7 +228,7 @@ class FlagRegion(clawpack.clawutil.data.ClawData):
             self.convert_old_region(region)
 
         
-    def convert_old_region(region):
+    def convert_old_region(self, region):
         """
         Take a list region = [minlevel, maxlevel, t1, t2, x1, x2, y1, y2]
         in the old style and convert to a new flagregion.
@@ -270,10 +266,10 @@ class FlagRegionData(clawpack.clawutil.data.ClawData):
 
         super(FlagRegionData,self).__init__()
 
-        if flagregions is None or not isinstance(regions,list):
+        if flagregions is None or not isinstance(flagregions,list):
             self.add_attribute('flagregions',[])
         else:
-            self.add_attribute('flagregions',regions)
+            self.add_attribute('flagregions',flagregions)
         self.add_attribute('num_dim',num_dim)
 
 
@@ -391,7 +387,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         super(GaugeData,self).__init__()
         self.add_attribute('gauges',[])
 
-        for (value, default) in six.iteritems(self.defaults):
+        for (value, default) in self.defaults.items():
             self.add_attribute(value, default)
 
 
@@ -421,6 +417,12 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         if len(self.gauges) > 0:
             if len(self.gauge_numbers) != len(set(self.gauge_numbers)):
                 raise Exception("Non unique gauge numbers specified.")
+
+        for gaugeno in self.gauge_numbers:
+            if abs(gaugeno) >= 2**31:
+                raise Exception("Gauge number %i is too large, must be < 2**31"\
+                    % gaugeno)
+
 
         # Write out gauge data file
         self.open_data_file(out_file,data_source)
@@ -475,7 +477,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
         self._out_file.write("# q fields\n")
         for gauge_num in self.gauge_numbers:
             # Handle special values of "all" and "none"
-            if isinstance(self.q_out_fields[gauge_num], six.string_types):
+            if isinstance(self.q_out_fields[gauge_num], str):
                 if self.q_out_fields[gauge_num].lower() == 'all':
                     self._out_file.write("%s\n" % " ".join(['True'] * num_eqn))
                 elif self.q_out_fields[gauge_num].lower() == 'none': 
@@ -498,7 +500,7 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             self._out_file.write("# aux fields\n")
             for gauge_num in self.gauge_numbers:
                 # Handle special values of "all" and "none"
-                if isinstance(self.aux_out_fields[gauge_num], six.string_types):
+                if isinstance(self.aux_out_fields[gauge_num], str):
                     if self.aux_out_fields[gauge_num].lower() == 'all':
                         self._out_file.write("%s\n" % " ".join(['True'] * num_aux))
                     elif self.aux_out_fields[gauge_num].lower() == 'none': 

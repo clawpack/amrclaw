@@ -52,7 +52,8 @@ c
       listspStart(level) = itotspace
       listsp(level) = maxsp
       do 35 i = 1, 5*maxsp
- 35      alloc(itotspace+i-1) = 0.d0
+         alloc(itotspace+i-1) = 0.d0
+ 35   continue
 c
       hxpar   = hxposs(level)
       hypar   = hyposs(level)

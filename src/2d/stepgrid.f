@@ -151,8 +151,8 @@ c       # update q
         dtdx = dt/dx
         dtdy = dt/dy
         do 50 j=mbc+1,mjtot-mbc
-        do 50 i=mbc+1,mitot-mbc
-        do 50 m=1,nvar
+        do 51 i=mbc+1,mitot-mbc
+        do 52 m=1,nvar
          if (mcapa.eq.0) then
 c
 c            # no capa array.  Standard flux differencing:
@@ -167,6 +167,8 @@ c            # with capa array.
      &          +  dtdy * (gm(m,i,j+1) - gp(m,i,j))) / aux(mcapa,i,j)
          endif
 
+ 52      continue
+ 51      continue
  50      continue
 c
 c
@@ -181,17 +183,19 @@ c
 c     # output fluxes for debugging purposes:
       if (debug) then
          write(dbugunit,*)" fluxes for grid ",mptr
-c        do 830 j = mbc+1, mjtot-1
-            do 830 i = mbc+1, mitot-1
-         do 830 j = mbc+1, mjtot-1
+c        do j = mbc+1, mjtot-1
+            do i = mbc+1, mitot-1
+         do j = mbc+1, mjtot-1
                write(dbugunit,831) i,j,fm(1,i,j),fp(1,i,j),
      .                             gm(1,i,j),gp(1,i,j)
-               do 830 m = 2, meqn
+               do m = 2, meqn
                   write(dbugunit,832) fm(m,i,j),fp(m,i,j),
      .            gm(m,i,j),gp(m,i,j)
-  831          format(2i4,4d16.6)
-  832          format(8x,4d16.6)
-  830    continue
+  831             format(2i4,4d16.6)
+  832             format(8x,4d16.6)
+               end do
+         end do
+         end do
       endif
 
 c

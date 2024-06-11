@@ -158,8 +158,9 @@ c  bump down remaining clusters to make room for the new half of one.
 c
       if (ibump .gt. nclust) go to 120
       do 90 ico         = ibump, nclust
-      nmove             = nclust - ico + ibump
- 90   numptc(nmove + 1) = numptc(nmove)
+       nmove             = nclust - ico + ibump
+       numptc(nmove + 1) = numptc(nmove)
+ 90   continue
 
  120  numptc(ibump)     = iend - ibot + 1
       nclust            = nclust + 1
