@@ -1,6 +1,55 @@
 Clawpack git diffs...
 
 ===========
+clawpack
+===========
+/Users/rjl/git/clawpack/
+
+diff --git a/amrclaw b/amrclaw
+index 3b64e95..dc5c685 160000
+--- a/amrclaw
++++ b/amrclaw
+@@ -1 +1 @@
+-Subproject commit 3b64e95d947fb60bf6ae5e7fa3952b97969230dc
++Subproject commit dc5c68529d8ea4939b774182f8da4ad793412877-dirty
+diff --git a/classic b/classic
+index 2d0f3d2..4fb4d1a 160000
+--- a/classic
++++ b/classic
+@@ -1 +1 @@
+-Subproject commit 2d0f3d2449d8bd9ea8361031c9d25f44bd1d11f9
++Subproject commit 4fb4d1a69aa64e2f1de553817330412486dc9bdf
+diff --git a/clawutil b/clawutil
+index 60c7f23..a118b82 160000
+--- a/clawutil
++++ b/clawutil
+@@ -1 +1 @@
+-Subproject commit 60c7f2397222e250b3e8e63673234aa5582700b0
++Subproject commit a118b826639313fb55684729cbe21488d1c53390
+diff --git a/geoclaw b/geoclaw
+index b005768..b6519f0 160000
+--- a/geoclaw
++++ b/geoclaw
+@@ -1 +1 @@
+-Subproject commit b005768de402bee90a8340b4ac18fab2428b3b8e
++Subproject commit b6519f07a1d23bcaf1b562414be2d8059d5e5857
+diff --git a/pyclaw b/pyclaw
+index a1c2ee0..53766ff 160000
+--- a/pyclaw
++++ b/pyclaw
+@@ -1 +1 @@
+-Subproject commit a1c2ee04a3a7264636a22eabd7d17d009a0f1d53
++Subproject commit 53766ffc914195f798da0560bebf8f1158105311
+diff --git a/visclaw b/visclaw
+index b763ccc..2f5b832 160000
+--- a/visclaw
++++ b/visclaw
+@@ -1 +1 @@
+-Subproject commit b763ccc8d8517c0090597e703b73b4409ca74fd6
++Subproject commit 2f5b832a4e5444cc059a8dc111a01633ac378616
+
+
+===========
 classic
 ===========
 /Users/rjl/git/clawpack/classic
@@ -12,6 +61,1111 @@ amrclaw
 ===========
 /Users/rjl/git/clawpack/amrclaw
 
+diff --git a/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt b/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
+index 47aaa14..2187799 100644
+--- a/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
++++ b/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
+@@ -1,174 +1,440 @@
+ Clawpack git diffs...
+ 
++===========
++clawpack
++===========
++/Users/rjl/git/clawpack/
++
++diff --git a/amrclaw b/amrclaw
++index 3b64e95..dc5c685 160000
++--- a/amrclaw
+++++ b/amrclaw
++@@ -1 +1 @@
++-Subproject commit 3b64e95d947fb60bf6ae5e7fa3952b97969230dc
+++Subproject commit dc5c68529d8ea4939b774182f8da4ad793412877-dirty
++diff --git a/classic b/classic
++index 2d0f3d2..4fb4d1a 160000
++--- a/classic
+++++ b/classic
++@@ -1 +1 @@
++-Subproject commit 2d0f3d2449d8bd9ea8361031c9d25f44bd1d11f9
+++Subproject commit 4fb4d1a69aa64e2f1de553817330412486dc9bdf
++diff --git a/clawutil b/clawutil
++index 60c7f23..a118b82 160000
++--- a/clawutil
+++++ b/clawutil
++@@ -1 +1 @@
++-Subproject commit 60c7f2397222e250b3e8e63673234aa5582700b0
+++Subproject commit a118b826639313fb55684729cbe21488d1c53390
++diff --git a/geoclaw b/geoclaw
++index b005768..b6519f0 160000
++--- a/geoclaw
+++++ b/geoclaw
++@@ -1 +1 @@
++-Subproject commit b005768de402bee90a8340b4ac18fab2428b3b8e
+++Subproject commit b6519f07a1d23bcaf1b562414be2d8059d5e5857
++diff --git a/pyclaw b/pyclaw
++index a1c2ee0..53766ff 160000
++--- a/pyclaw
+++++ b/pyclaw
++@@ -1 +1 @@
++-Subproject commit a1c2ee04a3a7264636a22eabd7d17d009a0f1d53
+++Subproject commit 53766ffc914195f798da0560bebf8f1158105311
++diff --git a/visclaw b/visclaw
++index b763ccc..2f5b832 160000
++--- a/visclaw
+++++ b/visclaw
++@@ -1 +1 @@
++-Subproject commit b763ccc8d8517c0090597e703b73b4409ca74fd6
+++Subproject commit 2f5b832a4e5444cc059a8dc111a01633ac378616
++
++
+ ===========
+ classic
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/classic
+-
+-diff --git a/examples/acoustics_1d_example1/setplot.py b/examples/acoustics_1d_example1/setplot.py
+-index fabb9a1..d0812ab 100644
+---- a/examples/acoustics_1d_example1/setplot.py
+-+++ b/examples/acoustics_1d_example1/setplot.py
+-@@ -23,6 +23,7 @@ def setplot(plotdata=None):
+-         plotdata = ClawPlotData()
+- 
+-     plotdata.clearfigures()  # clear any old figures,axes,items data
+-+    plotdata.format = 'binary'      # 'ascii', 'binary', 'netcdf'
+- 
+-     # Figure for q[0]
+-     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+-diff --git a/examples/acoustics_1d_example1/setrun.py b/examples/acoustics_1d_example1/setrun.py
+-index 0a5020a..882bd1f 100644
+---- a/examples/acoustics_1d_example1/setrun.py
+-+++ b/examples/acoustics_1d_example1/setrun.py
+-@@ -122,7 +122,7 @@ def setrun(claw_pkg='classic'):
+-         clawdata.output_t0 = True  # output at initial (or restart) time?
+-         
+- 
+--    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
+-+    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+- 
+-     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+-     clawdata.output_aux_components = 'none'  # could be list
+-diff --git a/examples/acoustics_1d_heterogeneous/setplot.py b/examples/acoustics_1d_heterogeneous/setplot.py
+-index 2eac268..3ab848a 100644
+---- a/examples/acoustics_1d_heterogeneous/setplot.py
+-+++ b/examples/acoustics_1d_heterogeneous/setplot.py
+-@@ -16,6 +16,7 @@ def setplot(plotdata=None):
+-         plotdata = ClawPlotData()
+- 
+-     plotdata.clearfigures()
+-+    plotdata.format = 'binary'
+- 
+-     # Figures corresponding to Figure 9.5 of LeVeque, "Finite Volume
+-     # Methods for Hyperbolic Problems," 2002 (though more of them)
+-diff --git a/examples/acoustics_1d_heterogeneous/setrun.py b/examples/acoustics_1d_heterogeneous/setrun.py
+-index de66fdf..0025eca 100644
+---- a/examples/acoustics_1d_heterogeneous/setrun.py
+-+++ b/examples/acoustics_1d_heterogeneous/setrun.py
+-@@ -125,7 +125,7 @@ def setrun(claw_pkg='classic'):
+-         clawdata.output_t0 = True  # output at initial (or restart) time?
+-         
+- 
+--    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
+-+    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+- 
+-     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+-     clawdata.output_aux_components = 'none'  # could be list
+-diff --git a/examples/advection_1d_example1/setplot.py b/examples/advection_1d_example1/setplot.py
+-index 9c3e84c..29555fe 100644
+---- a/examples/advection_1d_example1/setplot.py
+-+++ b/examples/advection_1d_example1/setplot.py
+-@@ -44,6 +44,7 @@ def setplot(plotdata=None):
+-         plotdata = ClawPlotData()
+- 
+-     plotdata.clearfigures()  # clear any old figures,axes,items data
+-+    plotdata.format = 'binary'
+- 
+-     # Figure for q[0]
+-     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+-diff --git a/examples/advection_1d_example1/setrun.py b/examples/advection_1d_example1/setrun.py
+-index d37602c..3ef39ab 100644
+---- a/examples/advection_1d_example1/setrun.py
+-+++ b/examples/advection_1d_example1/setrun.py
+-@@ -121,7 +121,7 @@ def setrun(claw_pkg='classic'):
+-         clawdata.output_t0 = True  # output at initial (or restart) time?
+-         
+- 
+--    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
+-+    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+- 
+-     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+-     clawdata.output_aux_components = 'none'  # could be list
++/Users/rjl/git/clawpack/classic
++
+ 
+ 
+ ===========
+ amrclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/amrclaw
++/Users/rjl/git/clawpack/amrclaw
+ 
+-diff --git a/examples/acoustics_2d_adjoint/adjoint/Makefile b/examples/acoustics_2d_adjoint/adjoint/Makefile
+-index a306d80..da38ec5 100644
+---- a/examples/acoustics_2d_adjoint/adjoint/Makefile
+-+++ b/examples/acoustics_2d_adjoint/adjoint/Makefile
+-@@ -13,7 +13,7 @@ CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
+- # ----------------------------------
++diff --git a/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt b/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
++index 47aaa14..e69de29 100644
++--- a/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
+++++ b/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
++@@ -1,174 +0,0 @@
++-Clawpack git diffs...
++-
++-===========
++-classic
++-===========
++-/Users/brisadavis/Documents/git_folders/clawpack/classic
++-
++-diff --git a/examples/acoustics_1d_example1/setplot.py b/examples/acoustics_1d_example1/setplot.py
++-index fabb9a1..d0812ab 100644
++---- a/examples/acoustics_1d_example1/setplot.py
++-+++ b/examples/acoustics_1d_example1/setplot.py
++-@@ -23,6 +23,7 @@ def setplot(plotdata=None):
++-         plotdata = ClawPlotData()
++- 
++-     plotdata.clearfigures()  # clear any old figures,axes,items data
++-+    plotdata.format = 'binary'      # 'ascii', 'binary', 'netcdf'
++- 
++-     # Figure for q[0]
++-     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
++-diff --git a/examples/acoustics_1d_example1/setrun.py b/examples/acoustics_1d_example1/setrun.py
++-index 0a5020a..882bd1f 100644
++---- a/examples/acoustics_1d_example1/setrun.py
++-+++ b/examples/acoustics_1d_example1/setrun.py
++-@@ -122,7 +122,7 @@ def setrun(claw_pkg='classic'):
++-         clawdata.output_t0 = True  # output at initial (or restart) time?
++-         
++- 
++--    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
++-+    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
++- 
++-     clawdata.output_q_components = 'all'   # could be list such as [True,True]
++-     clawdata.output_aux_components = 'none'  # could be list
++-diff --git a/examples/acoustics_1d_heterogeneous/setplot.py b/examples/acoustics_1d_heterogeneous/setplot.py
++-index 2eac268..3ab848a 100644
++---- a/examples/acoustics_1d_heterogeneous/setplot.py
++-+++ b/examples/acoustics_1d_heterogeneous/setplot.py
++-@@ -16,6 +16,7 @@ def setplot(plotdata=None):
++-         plotdata = ClawPlotData()
++- 
++-     plotdata.clearfigures()
++-+    plotdata.format = 'binary'
++- 
++-     # Figures corresponding to Figure 9.5 of LeVeque, "Finite Volume
++-     # Methods for Hyperbolic Problems," 2002 (though more of them)
++-diff --git a/examples/acoustics_1d_heterogeneous/setrun.py b/examples/acoustics_1d_heterogeneous/setrun.py
++-index de66fdf..0025eca 100644
++---- a/examples/acoustics_1d_heterogeneous/setrun.py
++-+++ b/examples/acoustics_1d_heterogeneous/setrun.py
++-@@ -125,7 +125,7 @@ def setrun(claw_pkg='classic'):
++-         clawdata.output_t0 = True  # output at initial (or restart) time?
++-         
++- 
++--    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
++-+    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
++- 
++-     clawdata.output_q_components = 'all'   # could be list such as [True,True]
++-     clawdata.output_aux_components = 'none'  # could be list
++-diff --git a/examples/advection_1d_example1/setplot.py b/examples/advection_1d_example1/setplot.py
++-index 9c3e84c..29555fe 100644
++---- a/examples/advection_1d_example1/setplot.py
++-+++ b/examples/advection_1d_example1/setplot.py
++-@@ -44,6 +44,7 @@ def setplot(plotdata=None):
++-         plotdata = ClawPlotData()
++- 
++-     plotdata.clearfigures()  # clear any old figures,axes,items data
++-+    plotdata.format = 'binary'
++- 
++-     # Figure for q[0]
++-     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
++-diff --git a/examples/advection_1d_example1/setrun.py b/examples/advection_1d_example1/setrun.py
++-index d37602c..3ef39ab 100644
++---- a/examples/advection_1d_example1/setrun.py
++-+++ b/examples/advection_1d_example1/setrun.py
++-@@ -121,7 +121,7 @@ def setrun(claw_pkg='classic'):
++-         clawdata.output_t0 = True  # output at initial (or restart) time?
++-         
++- 
++--    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
++-+    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
++- 
++-     clawdata.output_q_components = 'all'   # could be list such as [True,True]
++-     clawdata.output_aux_components = 'none'  # could be list
++-
++-
++-===========
++-amrclaw
++-===========
++-/Users/brisadavis/Documents/git_folders/clawpack/amrclaw
++-
++-diff --git a/examples/acoustics_2d_adjoint/adjoint/Makefile b/examples/acoustics_2d_adjoint/adjoint/Makefile
++-index a306d80..da38ec5 100644
++---- a/examples/acoustics_2d_adjoint/adjoint/Makefile
++-+++ b/examples/acoustics_2d_adjoint/adjoint/Makefile
++-@@ -13,7 +13,7 @@ CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
++- # ----------------------------------
++- 
++- CLAW_PKG = amrclaw                  # Clawpack package to use
++--EXE = xclaw                         # Executable to create
++-+EXE = xamr                          # Executable to create
++- SETRUN_FILE = setrun.py             # File containing function to make data
++- OUTDIR = _output                    # Directory for output
++- SETPLOT_FILE = setplot.py           # File containing function to set plots
++-
++-
++-===========
++-clawutil
++-===========
++-/Users/brisadavis/Documents/git_folders/clawpack/clawutil
++-
++-
++-
++-===========
++-pyclaw
++-===========
++-/Users/brisadavis/Documents/git_folders/clawpack/pyclaw
++-
++-
++-
++-===========
++-visclaw
++-===========
++-/Users/brisadavis/Documents/git_folders/clawpack/visclaw
++-
++-
++-
++-===========
++-riemann
++-===========
++-/Users/brisadavis/Documents/git_folders/clawpack/riemann
++-
++-
++-
++-===========
++-geoclaw
++-===========
++-/Users/brisadavis/Documents/git_folders/clawpack/geoclaw
++-
++-diff --git a/examples/tsunami/chile2010_adjoint/Makefile b/examples/tsunami/chile2010_adjoint/Makefile
++-index f4db33a..184a65e 100644
++---- a/examples/tsunami/chile2010_adjoint/Makefile
++-+++ b/examples/tsunami/chile2010_adjoint/Makefile
++-@@ -31,8 +31,10 @@ FFLAGS = -O2 -fopenmp
++- # package sources for this program:
++- # ---------------------------------
++- 
++-+ADJLIB:=$(CLAW)/amrclaw/src/2d_adjoint
++-+GEOLIB:=$(CLAW)/geoclaw/src/2d/shallow
++- ADJGEOLIB:=$(CLAW)/geoclaw/src/2d_adjoint
++--include $(ADJGEOLIB)/Makefile.adjoint_geoclaw
++-+include $(GEOLIB)/Makefile.geoclaw
++- 
++- # ---------------------------------------
++- # package sources specifically to exclude
++-@@ -49,8 +51,20 @@ EXCLUDE_SOURCES = \
++- # ----------------------------------------
++- 
++- MODULES = \
++-+  $(ADJLIB)/adjoint_module.f90 \
++-+  $(ADJGEOLIB)/innerprod_module.f90 \
++- 
++- SOURCES = \
++-+  $(ADJLIB)/setprob.f90 \
++-+  $(ADJLIB)/quick_sort.f \
++-+  $(ADJLIB)/flagger.f \
++-+  $(ADJGEOLIB)/flag2refine2.f90 \
++-+  $(ADJGEOLIB)/errf1.f \
++-+  $(ADJGEOLIB)/interp_adjoint.f \
++-+  $(ADJGEOLIB)/valout.f \
++-+  $(ADJGEOLIB)/setaux.f90 \
++-+  $(ADJGEOLIB)/reload.f \
++-+  $(ADJGEOLIB)/errest.f \
++-   $(CLAW)/riemann/src/rpn2_geoclaw.f \
++-   $(CLAW)/riemann/src/rpt2_geoclaw.f \
++-   $(CLAW)/riemann/src/geoclaw_riemann_utils.f \
++diff --git a/tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt b/tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt
++index 2cd8db1..e9c1475 100644
++--- a/tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt
+++++ b/tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt
++@@ -1,98 +1,111 @@
++ Clawpack Git Status 
++-Diffs can be found in /Users/brisadavis/Documents/git_folders/clawpack/amrclaw/tests/acoustics_2d_forwardprob/regression_data/claw_git_diffs.txt
+++Diffs can be found in /Users/rjl/git/clawpack/amrclaw/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
++ 
++-Fri, 01 Jun 2018 12:37:28 PDT
++-$CLAW = /Users/brisadavis/Documents/git_folders/clawpack
++-$FC = gfortran
+++Fri, 01 Sep 2023 12:35:51 PDT
+++$CLAW = /Users/rjl/git/clawpack
+++$FC = not set
+++
+++
+++===========
+++clawpack
+++===========
+++/Users/rjl/git/clawpack/
+++
+++--- last commit ---
+++cc03572 (HEAD -> geoclaw_1d) need geoclaw_1d in __init__.py until it's merged into geoclaw proper
+++
+++--- branch and status ---
+++## geoclaw_1d
+++ M amrclaw
+++ M classic
+++ M clawutil
+++ M geoclaw
+++ M pyclaw
+++ M visclaw
++ 
++ 
++ ===========
++ classic
++ ===========
++-/Users/brisadavis/Documents/git_folders/clawpack/classic
+++/Users/rjl/git/clawpack/classic
++ 
++ --- last commit ---
++-606424b Merge pull request #80 from rjleveque/wcblast
+++4fb4d1a (HEAD -> pytest, rjleveque/pytest) Using pytest instead of nose requires renaming to regression_test.py
++ 
++ --- branch and status ---
++-## master...origin/master
++- M examples/acoustics_1d_example1/setplot.py
++- M examples/acoustics_1d_example1/setrun.py
++- M examples/acoustics_1d_heterogeneous/setplot.py
++- M examples/acoustics_1d_heterogeneous/setrun.py
++- M examples/advection_1d_example1/setplot.py
++- M examples/advection_1d_example1/setrun.py
+++## pytest
++ 
++ 
++ ===========
++ amrclaw
++ ===========
++-/Users/brisadavis/Documents/git_folders/clawpack/amrclaw
+++/Users/rjl/git/clawpack/amrclaw
++ 
++ --- last commit ---
++-cd67a24 Merging the adjoint-error code into either the main errest.f file or into adjoint_module.f90. Also merging innerprod_module.f90 into adjoint_module.f90.
+++dc5c685 (HEAD -> pytest, rjleveque/pytest) rename regression_test.py for pytest
++ 
++ --- branch and status ---
++-## adjoint...bitbucket/adjoint [ahead 34]
++- M examples/acoustics_2d_adjoint/adjoint/Makefile
+++## pytest
+++ M tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
+++ M tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt
+++ M tests/acoustics_2d_adjoint/regression_data/gauge00001.txt
++ 
++ 
++ ===========
++ clawutil
++ ===========
++-/Users/brisadavis/Documents/git_folders/clawpack/clawutil
+++/Users/rjl/git/clawpack/clawutil
++ 
++ --- last commit ---
++-5c6bd99 Merge pull request #122 from rjleveque/convert_readme_string
+++a118b82 (HEAD -> test_save_gauge_binary, rjleveque/test_save_gauge_binary) Modify test.py so that when saving regression data, check for binary gauge file
+  
+- CLAW_PKG = amrclaw                  # Clawpack package to use
+--EXE = xclaw                         # Executable to create
+-+EXE = xamr                          # Executable to create
+- SETRUN_FILE = setrun.py             # File containing function to make data
+- OUTDIR = _output                    # Directory for output
+- SETPLOT_FILE = setplot.py           # File containing function to set plots
++ --- branch and status ---
++-## master...origin/master
+++## test_save_gauge_binary
++ 
++ 
++ ===========
++ pyclaw
++ ===========
++-/Users/brisadavis/Documents/git_folders/clawpack/pyclaw
+++/Users/rjl/git/clawpack/pyclaw
++ 
++ --- last commit ---
++-0c54683 Merge pull request #589 from ketch/update_to_scipy_v1
+++53766ffc (HEAD -> importlib, rjleveque/importlib) replace imp by importlib
++ 
++ --- branch and status ---
++-## master...origin/master
+++## importlib
++ 
++ 
++ ===========
++ visclaw
++ ===========
++-/Users/brisadavis/Documents/git_folders/clawpack/visclaw
+++/Users/rjl/git/clawpack/visclaw
++ 
++ --- last commit ---
++-c2a1907 (matlab) adding functionality for creating plot for tikz output
+++2f5b832 (HEAD -> more_plot_attributes, rjleveque/more_plot_attributes) add time_label_fontsize to gaugetools.py
++ 
++ --- branch and status ---
++-## master...origin/master
+++## more_plot_attributes
++ 
++ 
++ ===========
++ riemann
++ ===========
++-/Users/brisadavis/Documents/git_folders/clawpack/riemann
+++/Users/rjl/git/clawpack/riemann
++ 
++ --- last commit ---
++-974c08b Changing notation for consistency with dissertation.
+++d177660 (HEAD -> master, tag: v5.9.0, tag: v5.8.2, tag: v5.8.1, rjleveque/master, origin/master, origin/HEAD) Merge pull request #163 from carlosmunozmoncayo/fix_dry_states_hlle
++ 
++ --- branch and status ---
++-## adjoint
+++## master...origin/master
++ 
++ 
++ ===========
++ geoclaw
++ ===========
++-/Users/brisadavis/Documents/git_folders/clawpack/geoclaw
+++/Users/rjl/git/clawpack/geoclaw
++ 
++ --- last commit ---
++-adb1cfb Merge branch 'adjoint' of https://github.com/BrisaDavis/geoclaw into adjoint
+++b6519f07 (HEAD -> pytest, rjleveque/pytest) update particles/regression_data
++ 
++ --- branch and status ---
++-## adjoint
++- M examples/tsunami/chile2010_adjoint/Makefile
+++## pytest
++diff --git a/tests/acoustics_2d_adjoint/regression_data/gauge00001.txt b/tests/acoustics_2d_adjoint/regression_data/gauge00001.txt
++index 4ce2576..5c12c28 100644
++--- a/tests/acoustics_2d_adjoint/regression_data/gauge00001.txt
+++++ b/tests/acoustics_2d_adjoint/regression_data/gauge00001.txt
++@@ -48,6 +48,6 @@
++    01  0.2386000E+01 -0.1342826E+00 -0.5823318E-02 -0.5340567E-01
++    01  0.2494000E+01 -0.6794292E-01 -0.3945072E-02 -0.2333666E-01
++    01  0.2602000E+01 -0.5003654E-01 -0.2621845E-02 -0.1525832E-01
++-   01  0.2710000E+01 -0.4224422E-01 -0.2755046E-02 -0.1192034E-01
++-   01  0.2818000E+01 -0.3469789E-01 -0.2059077E-02 -0.8963595E-02
++-   01  0.2926000E+01 -0.2875634E-01 -0.1503129E-02 -0.6816284E-02
+++   01  0.2710000E+01 -0.4231033E-01 -0.2634308E-02 -0.1195724E-01
+++   01  0.2818000E+01 -0.3467835E-01 -0.1765736E-02 -0.9106121E-02
+++   01  0.2926000E+01 -0.2896961E-01 -0.1227968E-02 -0.6815249E-02
+ 
+ 
+ ===========
+ clawutil
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/clawutil
++/Users/rjl/git/clawpack/clawutil
+ 
+ 
+ 
+ ===========
+ pyclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/pyclaw
++/Users/rjl/git/clawpack/pyclaw
+ 
+ 
+ 
+ ===========
+ visclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/visclaw
++/Users/rjl/git/clawpack/visclaw
+ 
+ 
+ 
+ ===========
+ riemann
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/riemann
++/Users/rjl/git/clawpack/riemann
+ 
+ 
+ 
+ ===========
+ geoclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/geoclaw
+-
+-diff --git a/examples/tsunami/chile2010_adjoint/Makefile b/examples/tsunami/chile2010_adjoint/Makefile
+-index f4db33a..184a65e 100644
+---- a/examples/tsunami/chile2010_adjoint/Makefile
+-+++ b/examples/tsunami/chile2010_adjoint/Makefile
+-@@ -31,8 +31,10 @@ FFLAGS = -O2 -fopenmp
+- # package sources for this program:
+- # ---------------------------------
+- 
+-+ADJLIB:=$(CLAW)/amrclaw/src/2d_adjoint
+-+GEOLIB:=$(CLAW)/geoclaw/src/2d/shallow
+- ADJGEOLIB:=$(CLAW)/geoclaw/src/2d_adjoint
+--include $(ADJGEOLIB)/Makefile.adjoint_geoclaw
+-+include $(GEOLIB)/Makefile.geoclaw
+- 
+- # ---------------------------------------
+- # package sources specifically to exclude
+-@@ -49,8 +51,20 @@ EXCLUDE_SOURCES = \
+- # ----------------------------------------
+- 
+- MODULES = \
+-+  $(ADJLIB)/adjoint_module.f90 \
+-+  $(ADJGEOLIB)/innerprod_module.f90 \
+- 
+- SOURCES = \
+-+  $(ADJLIB)/setprob.f90 \
+-+  $(ADJLIB)/quick_sort.f \
+-+  $(ADJLIB)/flagger.f \
+-+  $(ADJGEOLIB)/flag2refine2.f90 \
+-+  $(ADJGEOLIB)/errf1.f \
+-+  $(ADJGEOLIB)/interp_adjoint.f \
+-+  $(ADJGEOLIB)/valout.f \
+-+  $(ADJGEOLIB)/setaux.f90 \
+-+  $(ADJGEOLIB)/reload.f \
+-+  $(ADJGEOLIB)/errest.f \
+-   $(CLAW)/riemann/src/rpn2_geoclaw.f \
+-   $(CLAW)/riemann/src/rpt2_geoclaw.f \
+-   $(CLAW)/riemann/src/geoclaw_riemann_utils.f \
++/Users/rjl/git/clawpack/geoclaw
++
+diff --git a/tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt b/tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt
+index 2cd8db1..e9c1475 100644
+--- a/tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt
++++ b/tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt
+@@ -1,98 +1,111 @@
+ Clawpack Git Status 
+-Diffs can be found in /Users/brisadavis/Documents/git_folders/clawpack/amrclaw/tests/acoustics_2d_forwardprob/regression_data/claw_git_diffs.txt
++Diffs can be found in /Users/rjl/git/clawpack/amrclaw/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
+ 
+-Fri, 01 Jun 2018 12:37:28 PDT
+-$CLAW = /Users/brisadavis/Documents/git_folders/clawpack
+-$FC = gfortran
++Fri, 01 Sep 2023 12:35:51 PDT
++$CLAW = /Users/rjl/git/clawpack
++$FC = not set
++
++
++===========
++clawpack
++===========
++/Users/rjl/git/clawpack/
++
++--- last commit ---
++cc03572 (HEAD -> geoclaw_1d) need geoclaw_1d in __init__.py until it's merged into geoclaw proper
++
++--- branch and status ---
++## geoclaw_1d
++ M amrclaw
++ M classic
++ M clawutil
++ M geoclaw
++ M pyclaw
++ M visclaw
+ 
+ 
+ ===========
+ classic
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/classic
++/Users/rjl/git/clawpack/classic
+ 
+ --- last commit ---
+-606424b Merge pull request #80 from rjleveque/wcblast
++4fb4d1a (HEAD -> pytest, rjleveque/pytest) Using pytest instead of nose requires renaming to regression_test.py
+ 
+ --- branch and status ---
+-## master...origin/master
+- M examples/acoustics_1d_example1/setplot.py
+- M examples/acoustics_1d_example1/setrun.py
+- M examples/acoustics_1d_heterogeneous/setplot.py
+- M examples/acoustics_1d_heterogeneous/setrun.py
+- M examples/advection_1d_example1/setplot.py
+- M examples/advection_1d_example1/setrun.py
++## pytest
+ 
+ 
+ ===========
+ amrclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/amrclaw
++/Users/rjl/git/clawpack/amrclaw
+ 
+ --- last commit ---
+-cd67a24 Merging the adjoint-error code into either the main errest.f file or into adjoint_module.f90. Also merging innerprod_module.f90 into adjoint_module.f90.
++dc5c685 (HEAD -> pytest, rjleveque/pytest) rename regression_test.py for pytest
+ 
+ --- branch and status ---
+-## adjoint...bitbucket/adjoint [ahead 34]
+- M examples/acoustics_2d_adjoint/adjoint/Makefile
++## pytest
++ M tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
++ M tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt
++ M tests/acoustics_2d_adjoint/regression_data/gauge00001.txt
+ 
+ 
+ ===========
+ clawutil
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/clawutil
++/Users/rjl/git/clawpack/clawutil
+ 
+ --- last commit ---
+-5c6bd99 Merge pull request #122 from rjleveque/convert_readme_string
++a118b82 (HEAD -> test_save_gauge_binary, rjleveque/test_save_gauge_binary) Modify test.py so that when saving regression data, check for binary gauge file
+ 
+ --- branch and status ---
+-## master...origin/master
++## test_save_gauge_binary
+ 
+ 
+ ===========
+ pyclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/pyclaw
++/Users/rjl/git/clawpack/pyclaw
+ 
+ --- last commit ---
+-0c54683 Merge pull request #589 from ketch/update_to_scipy_v1
++53766ffc (HEAD -> importlib, rjleveque/importlib) replace imp by importlib
+ 
+ --- branch and status ---
+-## master...origin/master
++## importlib
+ 
+ 
+ ===========
+ visclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/visclaw
++/Users/rjl/git/clawpack/visclaw
+ 
+ --- last commit ---
+-c2a1907 (matlab) adding functionality for creating plot for tikz output
++2f5b832 (HEAD -> more_plot_attributes, rjleveque/more_plot_attributes) add time_label_fontsize to gaugetools.py
+ 
+ --- branch and status ---
+-## master...origin/master
++## more_plot_attributes
+ 
+ 
+ ===========
+ riemann
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/riemann
++/Users/rjl/git/clawpack/riemann
+ 
+ --- last commit ---
+-974c08b Changing notation for consistency with dissertation.
++d177660 (HEAD -> master, tag: v5.9.0, tag: v5.8.2, tag: v5.8.1, rjleveque/master, origin/master, origin/HEAD) Merge pull request #163 from carlosmunozmoncayo/fix_dry_states_hlle
+ 
+ --- branch and status ---
+-## adjoint
++## master...origin/master
+ 
+ 
+ ===========
+ geoclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/geoclaw
++/Users/rjl/git/clawpack/geoclaw
+ 
+ --- last commit ---
+-adb1cfb Merge branch 'adjoint' of https://github.com/BrisaDavis/geoclaw into adjoint
++b6519f07 (HEAD -> pytest, rjleveque/pytest) update particles/regression_data
+ 
+ --- branch and status ---
+-## adjoint
+- M examples/tsunami/chile2010_adjoint/Makefile
++## pytest
+diff --git a/tests/acoustics_2d_adjoint/regression_data/gauge00001.txt b/tests/acoustics_2d_adjoint/regression_data/gauge00001.txt
+index 4ce2576..5c12c28 100644
+--- a/tests/acoustics_2d_adjoint/regression_data/gauge00001.txt
++++ b/tests/acoustics_2d_adjoint/regression_data/gauge00001.txt
+@@ -48,6 +48,6 @@
+    01  0.2386000E+01 -0.1342826E+00 -0.5823318E-02 -0.5340567E-01
+    01  0.2494000E+01 -0.6794292E-01 -0.3945072E-02 -0.2333666E-01
+    01  0.2602000E+01 -0.5003654E-01 -0.2621845E-02 -0.1525832E-01
+-   01  0.2710000E+01 -0.4224422E-01 -0.2755046E-02 -0.1192034E-01
+-   01  0.2818000E+01 -0.3469789E-01 -0.2059077E-02 -0.8963595E-02
+-   01  0.2926000E+01 -0.2875634E-01 -0.1503129E-02 -0.6816284E-02
++   01  0.2710000E+01 -0.4231033E-01 -0.2634308E-02 -0.1195724E-01
++   01  0.2818000E+01 -0.3467835E-01 -0.1765736E-02 -0.9106121E-02
++   01  0.2926000E+01 -0.2896961E-01 -0.1227968E-02 -0.6815249E-02
+diff --git a/tests/acoustics_2d_radial/regression_data/claw_git_diffs.txt b/tests/acoustics_2d_radial/regression_data/claw_git_diffs.txt
+index 5d20b91..e69de29 100644
+--- a/tests/acoustics_2d_radial/regression_data/claw_git_diffs.txt
++++ b/tests/acoustics_2d_radial/regression_data/claw_git_diffs.txt
+@@ -1,49 +0,0 @@
+-Clawpack git diffs...
+-
+-===========
+-classic
+-===========
+-/Users/rjl/git/clawpack/classic
+-
+-
+-
+-===========
+-amrclaw
+-===========
+-/Users/rjl/git/clawpack/amrclaw
+-
+-
+-
+-===========
+-clawutil
+-===========
+-/Users/rjl/git/clawpack/clawutil
+-
+-
+-
+-===========
+-pyclaw
+-===========
+-/Users/rjl/git/clawpack/pyclaw
+-
+-
+-
+-===========
+-visclaw
+-===========
+-/Users/rjl/git/clawpack/visclaw
+-
+-
+-
+-===========
+-riemann
+-===========
+-/Users/rjl/git/clawpack/riemann
+-
+-
+-
+-===========
+-geoclaw
+-===========
+-/Users/rjl/git/clawpack/geoclaw
+-
+diff --git a/tests/acoustics_2d_radial/regression_data/claw_git_status.txt b/tests/acoustics_2d_radial/regression_data/claw_git_status.txt
+index fb51b26..c94e626 100644
+--- a/tests/acoustics_2d_radial/regression_data/claw_git_status.txt
++++ b/tests/acoustics_2d_radial/regression_data/claw_git_status.txt
+@@ -1,9 +1,27 @@
+ Clawpack Git Status 
+ Diffs can be found in /Users/rjl/git/clawpack/amrclaw/tests/acoustics_2d_radial/regression_data/claw_git_diffs.txt
+ 
+-Sun, 09 Oct 2016 09:21:33 PDT
++Fri, 01 Sep 2023 12:36:40 PDT
+ $CLAW = /Users/rjl/git/clawpack
+-$FC = gfortran
++$FC = not set
++
++
++===========
++clawpack
++===========
++/Users/rjl/git/clawpack/
++
++--- last commit ---
++cc03572 (HEAD -> geoclaw_1d) need geoclaw_1d in __init__.py until it's merged into geoclaw proper
++
++--- branch and status ---
++## geoclaw_1d
++ M amrclaw
++ M classic
++ M clawutil
++ M geoclaw
++ M pyclaw
++ M visclaw
+ 
+ 
+ ===========
+@@ -12,10 +30,10 @@ classic
+ /Users/rjl/git/clawpack/classic
+ 
+ --- last commit ---
+-1789eeb added claw_git status files in 2d
++4fb4d1a (HEAD -> pytest, rjleveque/pytest) Using pytest instead of nose requires renaming to regression_test.py
+ 
+ --- branch and status ---
+-## regression_claw_git_status
++## pytest
+ 
+ 
+ ===========
+@@ -24,10 +42,18 @@ amrclaw
+ /Users/rjl/git/clawpack/amrclaw
+ 
+ --- last commit ---
+-6aada0a Merge pull request #175 from rjleveque/regression_data_copy_gauges
++dc5c685 (HEAD -> pytest, rjleveque/pytest) rename regression_test.py for pytest
+ 
+ --- branch and status ---
+-## master...origin/master
++## pytest
++ M tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
++ M tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt
++ M tests/acoustics_2d_adjoint/regression_data/gauge00001.txt
++ M tests/acoustics_2d_radial/regression_data/claw_git_diffs.txt
++ M tests/acoustics_2d_radial/regression_data/claw_git_status.txt
++ M tests/acoustics_2d_radial/regression_data/gauge00000.txt
++ M tests/acoustics_2d_radial/regression_data/gauge00001.txt
++ M tests/acoustics_2d_radial/regression_data/gauge00002.txt
+ 
+ 
+ ===========
+@@ -36,10 +62,10 @@ clawutil
+ /Users/rjl/git/clawpack/clawutil
+ 
+ --- last commit ---
+-bbc12d6 Merge pull request #105 from mandli/gauge-test-update
++a118b82 (HEAD -> test_save_gauge_binary, rjleveque/test_save_gauge_binary) Modify test.py so that when saving regression data, check for binary gauge file
+ 
+ --- branch and status ---
+-## master...origin/master
++## test_save_gauge_binary
+ 
+ 
+ ===========
+@@ -48,10 +74,10 @@ pyclaw
+ /Users/rjl/git/clawpack/pyclaw
+ 
+ --- last commit ---
+-314fd93 Merge pull request #541 from mandli/add-new-gauges
++53766ffc (HEAD -> importlib, rjleveque/importlib) replace imp by importlib
+ 
+ --- branch and status ---
+-## master...origin/master
++## importlib
+ 
+ 
+ ===========
+@@ -60,10 +86,10 @@ visclaw
+ /Users/rjl/git/clawpack/visclaw
+ 
+ --- last commit ---
+-72ee0db Merge pull request #187 from rjleveque/remove_ioff
++2f5b832 (HEAD -> more_plot_attributes, rjleveque/more_plot_attributes) add time_label_fontsize to gaugetools.py
+ 
+ --- branch and status ---
+-## master...origin/master
++## more_plot_attributes
+ 
+ 
+ ===========
+@@ -72,7 +98,7 @@ riemann
+ /Users/rjl/git/clawpack/riemann
+ 
+ --- last commit ---
+-48a46d3 Merge pull request #113 from rjleveque/shallow_roe_needs_grav
++d177660 (HEAD -> master, tag: v5.9.0, tag: v5.8.2, tag: v5.8.1, rjleveque/master, origin/master, origin/HEAD) Merge pull request #163 from carlosmunozmoncayo/fix_dry_states_hlle
+ 
+ --- branch and status ---
+ ## master...origin/master
+@@ -84,7 +110,7 @@ geoclaw
+ /Users/rjl/git/clawpack/geoclaw
+ 
+ --- last commit ---
+-7edbc79 Merge pull request #227 from rjleveque/gauge_error_message
++b6519f07 (HEAD -> pytest, rjleveque/pytest) update particles/regression_data
+ 
+ --- branch and status ---
+-## master...origin/master
++## pytest
+diff --git a/tests/acoustics_2d_radial/regression_data/gauge00000.txt b/tests/acoustics_2d_radial/regression_data/gauge00000.txt
+index e344023..f9dc401 100644
+--- a/tests/acoustics_2d_radial/regression_data/gauge00000.txt
++++ b/tests/acoustics_2d_radial/regression_data/gauge00000.txt
+@@ -1,5 +1,5 @@
+-# gauge_id=     0 location=(   0.0000000E+00   0.0000000E+00 ) num_eqn=  3
+-# Columns: level time q(1 ... num_eqn)
++# gauge_id=     0 location=(  0.0000000000E+00  0.0000000000E+00 ) num_var=  3
++# level, time, q[  1  2  3], aux[]
+    02  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+    02  0.5000000E-02  0.0000000E+00  0.0000000E+00  0.0000000E+00
+    02  0.1000000E-01  0.0000000E+00  0.0000000E+00  0.0000000E+00
+@@ -18,29 +18,29 @@
+    03  0.7750000E-01  0.0000000E+00  0.0000000E+00  0.0000000E+00
+    03  0.8200000E-01  0.0000000E+00  0.0000000E+00  0.0000000E+00
+    03  0.8650000E-01  0.0000000E+00  0.0000000E+00  0.0000000E+00
+-   03  0.9100000E-01  0.5457821E-13  0.4535950E-28 -0.1450115E-17
+-   03  0.9550000E-01  0.3013269E-11  0.1262177E-26  0.2068208E-15
+-   03  0.1000000E+00  0.1295624E-09 -0.2746498E-25  0.1308605E-13
+-   03  0.1045000E+00  0.2584008E-08 -0.7754818E-24  0.1822093E-12
+-   03  0.1090000E+00  0.3910585E-07 -0.1571643E-22  0.1592747E-10
+-   03  0.1135000E+00  0.3944045E-06 -0.1522012E-21 -0.8442456E-09
+-   03  0.1180000E+00  0.3619620E-05 -0.1773475E-20  0.1336991E-06
+-   03  0.1225000E+00  0.2347050E-04 -0.1249374E-19  0.9871381E-06
+-   03  0.1270000E+00  0.1430797E-03 -0.6437450E-19  0.1033787E-04
+-   03  0.1315000E+00  0.6923944E-03 -0.2710505E-18  0.6539284E-04
+-   03  0.1360000E+00  0.2656131E-02 -0.9893345E-18  0.2086919E-03
+-   03  0.1405000E+00  0.8780676E-02 -0.3333922E-17  0.4844156E-03
+-   03  0.1450000E+00  0.2567692E-01 -0.9324139E-17  0.1045580E-02
+-   03  0.1495000E+00  0.6661992E-01 -0.2255141E-16  0.2137248E-02
+-   03  0.1540000E+00  0.1521892E+00 -0.4423545E-16  0.3877709E-02
+-   03  0.1585000E+00  0.3041635E+00 -0.7025630E-16  0.5944875E-02
+-   03  0.1630000E+00  0.5321576E+00 -0.9540979E-16  0.6703871E-02
+-   03  0.1675000E+00  0.8270505E+00 -0.1110223E-15  0.3859577E-02
+-   03  0.1720000E+00  0.1169801E+01  0.3261280E-15 -0.2712765E-02
+-   03  0.1765000E+00  0.1542702E+01  0.3053113E-15 -0.1006593E-01
+-   03  0.1810000E+00  0.1931278E+01  0.3122502E-15 -0.1434681E-01
+-   03  0.1855000E+00  0.2321797E+01  0.2758210E-15 -0.1357496E-01
+-   03  0.1900000E+00  0.2705077E+01 -0.2411266E-15 -0.8684163E-02
+-   03  0.1925000E+00  0.2913425E+01 -0.2220446E-15 -0.5204191E-02
+-   03  0.1950000E+00  0.3117516E+01 -0.2099015E-15 -0.1869243E-02
+-   03  0.1975000E+00  0.3315506E+01 -0.1769418E-15  0.9214846E-03
++   03  0.9100000E-01  0.5458116E-13 -0.1600018E-27  0.9179182E-20
++   03  0.9550000E-01  0.3012474E-11 -0.8210190E-26  0.7797335E-17
++   03  0.1000000E+00  0.1295077E-09 -0.3120018E-24 -0.3703459E-14
++   03  0.1045000E+00  0.2582954E-08 -0.5784051E-23 -0.1641812E-12
++   03  0.1090000E+00  0.3909440E-07 -0.8178835E-22  0.1196531E-10
++   03  0.1135000E+00  0.3943273E-06 -0.7767306E-21 -0.8723840E-09
++   03  0.1180000E+00  0.3619319E-05 -0.7296113E-20  0.1335796E-06
++   03  0.1225000E+00  0.2346606E-04 -0.4337785E-19  0.9852283E-06
++   03  0.1270000E+00  0.1435933E-03 -0.2049347E-18  0.1058458E-04
++   03  0.1315000E+00  0.6837017E-03 -0.8429932E-18  0.6110486E-04
++   03  0.1360000E+00  0.2689846E-02 -0.1388015E-17  0.2255149E-03
++   03  0.1405000E+00  0.8960843E-02 -0.4711589E-17  0.5738081E-03
++   03  0.1450000E+00  0.2581315E-01 -0.1456877E-16  0.1111491E-02
++   03  0.1495000E+00  0.6605191E-01 -0.3793140E-16  0.1848807E-02
++   03  0.1540000E+00  0.1504836E+00 -0.1292433E-15  0.3018274E-02
++   03  0.1585000E+00  0.3020539E+00 -0.2116097E-15  0.4884002E-02
++   03  0.1630000E+00  0.5312349E+00 -0.2949689E-15  0.6238354E-02
++   03  0.1675000E+00  0.8279459E+00 -0.3437167E-15  0.4299948E-02
++   03  0.1720000E+00  0.1171417E+01 -0.7285839E-16 -0.1920384E-02
++   03  0.1765000E+00  0.1543691E+01 -0.9714451E-16 -0.9599474E-02
++   03  0.1810000E+00  0.1931552E+01 -0.1353084E-15 -0.1424718E-01
++   03  0.1855000E+00  0.2322145E+01 -0.1387779E-15 -0.1344213E-01
++   03  0.1900000E+00  0.2705807E+01 -0.9887924E-16 -0.8362363E-02
++   03  0.1925000E+00  0.2914240E+01 -0.5204170E-16 -0.4842806E-02
++   03  0.1950000E+00  0.3118378E+01 -0.3469447E-16 -0.1489800E-02
++   03  0.1975000E+00  0.3316446E+01 -0.2255141E-16  0.1334174E-02
+diff --git a/tests/acoustics_2d_radial/regression_data/gauge00001.txt b/tests/acoustics_2d_radial/regression_data/gauge00001.txt
+index 342ae09..fa90a24 100644
+--- a/tests/acoustics_2d_radial/regression_data/gauge00001.txt
++++ b/tests/acoustics_2d_radial/regression_data/gauge00001.txt
+@@ -1,50 +1,50 @@
+-# gauge_id=     1 location=(   0.7000000E+00   0.0000000E+00 ) num_eqn=  3
+-# Columns: level time q(1 ... num_eqn)
++# gauge_id=     1 location=(  0.7000000000E+00  0.0000000000E+00 ) num_var=  3
++# level, time, q[  1  2  3], aux[]
+    03  0.0000000E+00  0.1530270E-02  0.0000000E+00  0.0000000E+00
+-   03  0.2500000E-02  0.3389274E-02  0.1488625E-02  0.6564505E-20
+-   03  0.5000000E-02  0.7782912E-02  0.3853952E-02  0.2075231E-19
+-   03  0.7500000E-02  0.1494704E-01  0.7501528E-02  0.4319868E-19
+-   03  0.1000000E-01  0.2507086E-01  0.1261683E-01  0.8131516E-19
+-   03  0.1450000E-01  0.5081683E-01  0.2562081E-01  0.1558541E-18
+-   03  0.1900000E-01  0.8503903E-01  0.4295102E-01  0.2913793E-18
+-   03  0.2350000E-01  0.1265908E+00  0.6408780E-01  0.4065758E-18
+-   03  0.2800000E-01  0.1745795E+00  0.8856866E-01  0.5963112E-18
+-   03  0.3250000E-01  0.2279114E+00  0.1159076E+00  0.7589415E-18
+-   03  0.3700000E-01  0.2854601E+00  0.1454662E+00  0.8944668E-18
+-   03  0.4150000E-01  0.3459104E+00  0.1766470E+00 -0.3577867E-17
+-   03  0.4600000E-01  0.4078325E+00  0.2088320E+00 -0.2520770E-16
+-   03  0.5050000E-01  0.4699362E+00  0.2413402E+00 -0.1534146E-15
+-   03  0.5500000E-01  0.5309843E+00  0.2734700E+00 -0.3467821E-15
+-   03  0.5950000E-01  0.5896669E+00  0.3046011E+00  0.4923362E-15
+-   03  0.6400000E-01  0.6448639E+00  0.3340773E+00  0.8096930E-14
+-   03  0.6850000E-01  0.6953803E+00  0.3613726E+00  0.3851822E-12
+-   03  0.7300000E-01  0.7400581E+00  0.3860089E+00 -0.2353131E-10
+-   03  0.7750000E-01  0.7780768E+00  0.4074597E+00  0.4427735E-09
+-   03  0.8200000E-01  0.8090812E+00  0.4254694E+00 -0.4504734E-08
+-   03  0.8650000E-01  0.8325861E+00  0.4397943E+00  0.2489246E-07
+-   03  0.9100000E-01  0.8475417E+00  0.4498865E+00 -0.4954316E-07
+-   03  0.9550000E-01  0.8519520E+00  0.4547465E+00 -0.1257756E-06
+-   03  0.1000000E+00  0.8468650E+00  0.4548133E+00  0.3426681E-06
+-   03  0.1045000E+00  0.8360346E+00  0.4519377E+00  0.1563157E-05
+-   03  0.1090000E+00  0.8195525E+00  0.4462434E+00 -0.1141723E-05
+-   03  0.1135000E+00  0.7945986E+00  0.4362872E+00 -0.6489831E-05
+-   03  0.1180000E+00  0.7609414E+00  0.4218794E+00 -0.2345041E-04
+-   03  0.1225000E+00  0.7202687E+00  0.4038282E+00 -0.5565717E-04
+-   03  0.1270000E+00  0.6743347E+00  0.3829893E+00 -0.8980372E-04
+-   03  0.1315000E+00  0.6242608E+00  0.3599160E+00 -0.9733234E-04
+-   03  0.1360000E+00  0.5708701E+00  0.3350169E+00 -0.9080028E-04
+-   03  0.1405000E+00  0.5150661E+00  0.3087506E+00 -0.1215573E-03
+-   03  0.1450000E+00  0.4580296E+00  0.2816792E+00 -0.1492119E-03
+-   03  0.1495000E+00  0.4011378E+00  0.2543956E+00 -0.9038192E-04
+-   03  0.1540000E+00  0.3454311E+00  0.2274587E+00  0.5247940E-05
+-   03  0.1585000E+00  0.2915456E+00  0.2013769E+00 -0.5561261E-06
+-   03  0.1630000E+00  0.2403131E+00  0.1766188E+00 -0.1642506E-03
+-   03  0.1675000E+00  0.1929613E+00  0.1536641E+00 -0.4131444E-03
+-   03  0.1720000E+00  0.1506867E+00  0.1329738E+00 -0.5650929E-03
+-   03  0.1765000E+00  0.1140229E+00  0.1148662E+00 -0.4813493E-03
+-   03  0.1810000E+00  0.8307777E-01  0.9954636E-01 -0.1626304E-03
+-   03  0.1855000E+00  0.5782448E-01  0.8708797E-01  0.2631905E-03
+-   03  0.1900000E+00  0.3971416E-01  0.7814213E-01  0.6119285E-03
+-   03  0.1925000E+00  0.3356848E-01  0.7507359E-01  0.7153907E-03
+-   03  0.1950000E+00  0.3008312E-01  0.7329647E-01  0.7462819E-03
+-   03  0.1975000E+00  0.2840056E-01  0.7238463E-01  0.7182202E-03
++   03  0.2500000E-02  0.3389274E-02  0.1488625E-02  0.3134608E-19
++   03  0.5000000E-02  0.7782912E-02  0.3853952E-02  0.9659284E-19
++   03  0.7500000E-02  0.1494704E-01  0.7501528E-02  0.2110722E-18
++   03  0.1000000E-01  0.2507086E-01  0.1261683E-01  0.3798061E-18
++   03  0.1450000E-01  0.5081683E-01  0.2562081E-01  0.7986841E-18
++   03  0.1900000E-01  0.8503903E-01  0.4295102E-01  0.1307580E-17
++   03  0.2350000E-01  0.1265908E+00  0.6408780E-01  0.1947047E-17
++   03  0.2800000E-01  0.1745795E+00  0.8856866E-01  0.2714231E-17
++   03  0.3250000E-01  0.2279114E+00  0.1159076E+00  0.3535958E-17
++   03  0.3700000E-01  0.2854601E+00  0.1454662E+00  0.4404507E-17
++   03  0.4150000E-01  0.3459104E+00  0.1766470E+00  0.5205879E-17
++   03  0.4600000E-01  0.4078325E+00  0.2088320E+00  0.7047985E-17
++   03  0.5050000E-01  0.4699362E+00  0.2413402E+00  0.1165607E-15
++   03  0.5500000E-01  0.5309843E+00  0.2734700E+00  0.1158297E-14
++   03  0.5950000E-01  0.5896669E+00  0.3046011E+00  0.1933344E-14
++   03  0.6400000E-01  0.6448639E+00  0.3340773E+00 -0.4986536E-14
++   03  0.6850000E-01  0.6953803E+00  0.3613726E+00 -0.2814930E-13
++   03  0.7300000E-01  0.7400581E+00  0.3860089E+00 -0.1796463E-12
++   03  0.7750000E-01  0.7780768E+00  0.4074597E+00  0.1675704E-12
++   03  0.8200000E-01  0.8090812E+00  0.4254694E+00 -0.1276384E-10
++   03  0.8650000E-01  0.8325860E+00  0.4397943E+00  0.1263560E-09
++   03  0.9100000E-01  0.8475418E+00  0.4498865E+00 -0.7476649E-09
++   03  0.9550000E-01  0.8519522E+00  0.4547466E+00  0.1854865E-08
++   03  0.1000000E+00  0.8468643E+00  0.4548132E+00  0.1403148E-08
++   03  0.1045000E+00  0.8360314E+00  0.4519373E+00  0.9019302E-08
++   03  0.1090000E+00  0.8195544E+00  0.4462430E+00 -0.1820082E-06
++   03  0.1135000E+00  0.7946119E+00  0.4362884E+00  0.1199445E-06
++   03  0.1180000E+00  0.7609936E+00  0.4218852E+00  0.2209906E-05
++   03  0.1225000E+00  0.7203832E+00  0.4038442E+00  0.2412808E-06
++   03  0.1270000E+00  0.6744929E+00  0.3830200E+00 -0.1330051E-04
++   03  0.1315000E+00  0.6244110E+00  0.3599578E+00 -0.2626418E-04
++   03  0.1360000E+00  0.5709785E+00  0.3350570E+00 -0.4044857E-04
++   03  0.1405000E+00  0.5151000E+00  0.3087717E+00 -0.1047884E-03
++   03  0.1450000E+00  0.4579216E+00  0.2816669E+00 -0.1959998E-03
++   03  0.1495000E+00  0.4009025E+00  0.2543477E+00 -0.1921523E-03
++   03  0.1540000E+00  0.3452005E+00  0.2273890E+00 -0.8770346E-04
++   03  0.1585000E+00  0.2914130E+00  0.2013050E+00 -0.4225821E-04
++   03  0.1630000E+00  0.2402161E+00  0.1765557E+00 -0.1889788E-03
++   03  0.1675000E+00  0.1928085E+00  0.1536115E+00 -0.4685328E-03
++   03  0.1720000E+00  0.1505161E+00  0.1329367E+00 -0.6343665E-03
++   03  0.1765000E+00  0.1139820E+00  0.1148574E+00 -0.4948399E-03
++   03  0.1810000E+00  0.8323622E-01  0.9957393E-01 -0.8956901E-04
++   03  0.1855000E+00  0.5810795E-01  0.8714295E-01  0.3889771E-03
++   03  0.1900000E+00  0.3997776E-01  0.7820138E-01  0.7278040E-03
++   03  0.1925000E+00  0.3375502E-01  0.7511604E-01  0.8031299E-03
++   03  0.1950000E+00  0.3016311E-01  0.7331008E-01  0.7960780E-03
++   03  0.1975000E+00  0.2837035E-01  0.7236542E-01  0.7275494E-03
+diff --git a/tests/acoustics_2d_radial/regression_data/gauge00002.txt b/tests/acoustics_2d_radial/regression_data/gauge00002.txt
+index 795df03..cc1161f 100644
+--- a/tests/acoustics_2d_radial/regression_data/gauge00002.txt
++++ b/tests/acoustics_2d_radial/regression_data/gauge00002.txt
+@@ -1,5 +1,5 @@
+-# gauge_id=     2 location=(   0.4949747E+00   0.4949747E+00 ) num_eqn=  3
+-# Columns: level time q(1 ... num_eqn)
++# gauge_id=     2 location=(  0.4949747468E+00  0.4949747468E+00 ) num_var=  3
++# level, time, q[  1  2  3], aux[]
+    01  0.0000000E+00  0.1591803E-01  0.0000000E+00  0.0000000E+00
+    01  0.1000000E-01  0.3937197E-01  0.1140435E-01  0.1140435E-01
+    01  0.2800000E-01  0.1756309E+00  0.6289050E-01  0.6289054E-01
 
 
 ===========
