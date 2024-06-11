@@ -228,7 +228,7 @@ class FlagRegion(clawpack.clawutil.data.ClawData):
             self.convert_old_region(region)
 
         
-    def convert_old_region(region):
+    def convert_old_region(self, region):
         """
         Take a list region = [minlevel, maxlevel, t1, t2, x1, x2, y1, y2]
         in the old style and convert to a new flagregion.
@@ -266,10 +266,10 @@ class FlagRegionData(clawpack.clawutil.data.ClawData):
 
         super(FlagRegionData,self).__init__()
 
-        if flagregions is None or not isinstance(regions,list):
+        if flagregions is None or not isinstance(flagregions,list):
             self.add_attribute('flagregions',[])
         else:
-            self.add_attribute('flagregions',regions)
+            self.add_attribute('flagregions',flagregions)
         self.add_attribute('num_dim',num_dim)
 
 
