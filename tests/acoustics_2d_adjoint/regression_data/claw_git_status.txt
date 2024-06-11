@@ -1,99 +1,101 @@
 Clawpack Git Status 
-Diffs can be found in /Users/rjl/git/clawpack/amrclaw/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
+Diffs can be found in /Users/rjl/clawpack_src/clawpack_master/amrclaw/tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
 
-Fri, 01 Sep 2023 12:35:51 PDT
-$CLAW = /Users/rjl/git/clawpack
+Tue, 11 Jun 2024 11:38:16 PDT
+$CLAW = /Users/rjl/clawpack_src/clawpack_master
 $FC = not set
 
 
 ===========
 clawpack
 ===========
-/Users/rjl/git/clawpack/
+/Users/rjl/clawpack_src/clawpack_master/
 
 --- last commit ---
-cc03572 (HEAD -> geoclaw_1d) need geoclaw_1d in __init__.py until it's merged into geoclaw proper
+f14729a (HEAD -> master, origin/master, origin/HEAD) Merge pull request #253 from rgommers/build-fixes
 
 --- branch and status ---
-## geoclaw_1d
+## master...origin/master
  M amrclaw
  M classic
  M clawutil
  M geoclaw
  M pyclaw
+ M riemann
  M visclaw
 
 
 ===========
 classic
 ===========
-/Users/rjl/git/clawpack/classic
+/Users/rjl/clawpack_src/clawpack_master/classic
 
 --- last commit ---
-4fb4d1a (HEAD -> pytest, rjleveque/pytest) Using pytest instead of nose requires renaming to regression_test.py
+5f178e4 (HEAD -> master, origin/master, origin/HEAD) Merge pull request #90 from rjleveque/pytest
 
 --- branch and status ---
-## pytest
+## master...origin/master
 
 
 ===========
 amrclaw
 ===========
-/Users/rjl/git/clawpack/amrclaw
+/Users/rjl/clawpack_src/clawpack_master/amrclaw
 
 --- last commit ---
-dc5c685 (HEAD -> pytest, rjleveque/pytest) rename regression_test.py for pytest
+2d9d076 (HEAD -> master, origin/master, origin/HEAD) Merge pull request #296 from mandli/add-ci-action
 
 --- branch and status ---
-## pytest
+## master...origin/master
  M tests/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
  M tests/acoustics_2d_adjoint/regression_data/claw_git_status.txt
  M tests/acoustics_2d_adjoint/regression_data/gauge00001.txt
+ M tests/acoustics_2d_adjoint/regression_data/gauge00002.txt
 
 
 ===========
 clawutil
 ===========
-/Users/rjl/git/clawpack/clawutil
+/Users/rjl/clawpack_src/clawpack_master/clawutil
 
 --- last commit ---
-a118b82 (HEAD -> test_save_gauge_binary, rjleveque/test_save_gauge_binary) Modify test.py so that when saving regression data, check for binary gauge file
+1ee5f67 (HEAD -> master, origin/master, origin/HEAD) Merge pull request #173 from rjleveque/idiff_threshold
 
 --- branch and status ---
-## test_save_gauge_binary
+## master...origin/master
 
 
 ===========
 pyclaw
 ===========
-/Users/rjl/git/clawpack/pyclaw
+/Users/rjl/clawpack_src/clawpack_master/pyclaw
 
 --- last commit ---
-53766ffc (HEAD -> importlib, rjleveque/importlib) replace imp by importlib
+151aefa9 (HEAD -> master, origin/master, origin/HEAD) Merge pull request #712 from ketch/deal_with_warnings
 
 --- branch and status ---
-## importlib
+## master...origin/master
 
 
 ===========
 visclaw
 ===========
-/Users/rjl/git/clawpack/visclaw
+/Users/rjl/clawpack_src/clawpack_master/visclaw
 
 --- last commit ---
-2f5b832 (HEAD -> more_plot_attributes, rjleveque/more_plot_attributes) add time_label_fontsize to gaugetools.py
+2f439bb (HEAD -> master, origin/master, origin/HEAD) Merge pull request #304 from rjleveque/kml_maxlevels
 
 --- branch and status ---
-## more_plot_attributes
+## master...origin/master
 
 
 ===========
 riemann
 ===========
-/Users/rjl/git/clawpack/riemann
+/Users/rjl/clawpack_src/clawpack_master/riemann
 
 --- last commit ---
-d177660 (HEAD -> master, tag: v5.9.0, tag: v5.8.2, tag: v5.8.1, rjleveque/master, origin/master, origin/HEAD) Merge pull request #163 from carlosmunozmoncayo/fix_dry_states_hlle
+247e3e6 (HEAD -> master, origin/master, origin/HEAD) Merge pull request #174 from rjleveque/bouss_rp
 
 --- branch and status ---
 ## master...origin/master
@@ -102,10 +104,11 @@ d177660 (HEAD -> master, tag: v5.9.0, tag: v5.8.2, tag: v5.8.1, rjleveque/master
 ===========
 geoclaw
 ===========
-/Users/rjl/git/clawpack/geoclaw
+/Users/rjl/clawpack_src/clawpack_master/geoclaw
 
 --- last commit ---
-b6519f07 (HEAD -> pytest, rjleveque/pytest) update particles/regression_data
+8636c043 (HEAD -> master, origin/master, origin/HEAD) Merge pull request #616 from mandli/improve-storm-io
 
 --- branch and status ---
-## pytest
+## master...origin/master
+ M examples/bouss/petscMPIoptions
