@@ -2,7 +2,6 @@
 Regression tests for 2D acoustics.
 """
 
-from __future__ import absolute_import
 import sys
 import unittest
 
@@ -17,6 +16,12 @@ class Acoustics2DTest(test.AMRClawRegressionTest):
 
         # Write out data files
         self.load_rundata()
+
+        self.rundata.clawdata.num_output_times = 1
+        self.rundata.clawdata.tfinal = 0.2
+        self.rundata.regiondata.regions.append([1,1,0,1e10,-1.,1.,-1.,1])
+        self.rundata.regiondata.regions.append([1,3,0,1e10,-1.,1.,-.2,.2])
+
         self.write_rundata_objects()
 
         # Run code
