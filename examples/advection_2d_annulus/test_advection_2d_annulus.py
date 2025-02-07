@@ -2,9 +2,10 @@
 Regression tests for 2D advection on an annulus.
 """
 
-from __future__ import absolute_import
 import sys
 import unittest
+
+import numpy as np
 
 import clawpack.amrclaw.test as test
 
@@ -17,6 +18,13 @@ class Advection2DAnnulusTest(test.AMRClawRegressionTest):
 
         # Write out data files
         self.load_rundata()
+
+        self.rundata.clawdata.num_output_times = 1
+        self.rundata.clawdata.tfinal = 0.500000
+
+        self.rundata.regiondata.regions.append([1, 2, 0.0, 10.0, 0.2, 1.0, 0.0, 2.0 * np.pi])
+        self.rundata.regiondata.regions.append([3, 3, 0.0, 10.0, 0.5, 1.0, 0.0, 0.5 * np.pi])
+
         self.write_rundata_objects()
 
         # Run code
@@ -25,10 +33,6 @@ class Advection2DAnnulusTest(test.AMRClawRegressionTest):
         # Perform tests
         self.check_gauges(save=save, gauge_id=1)
         self.check_gauges(save=save, gauge_id=2)
-        # self.check_gauges(save=save, gauge_num=1,
-        #                   regression_data_path='regression_data_test2.txt')
-        # self.check_gauges(save=save, gauge_num=2,
-        #                   regression_data_path='regression_data_test3.txt')
 
         self.success = True
 
