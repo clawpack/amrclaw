@@ -118,7 +118,7 @@ contains
             call opendatafile(unit,'flagregions.data')
         endif
 
-        read(unit,* num_rregions
+        read(unit,*) num_rregions
         if (num_rregions == 0) then
             write(parmunit,*) '  No ruled regions specified for refinement'
             
