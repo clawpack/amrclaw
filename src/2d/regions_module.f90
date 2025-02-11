@@ -63,7 +63,7 @@ contains
                 call opendatafile(unit,'regions.data')
             endif
 
-            read(unit,"(i2)") num_regions
+            read(unit,"(i3)") num_regions
             if (num_regions == 0) then
                 write(parmunit,*) '  No regions specified for refinement'
                 
@@ -118,7 +118,7 @@ contains
             call opendatafile(unit,'flagregions.data')
         endif
 
-        read(unit,"(i2)") num_rregions
+        read(unit,"(i3)") num_rregions
         if (num_rregions == 0) then
             write(parmunit,*) '  No ruled regions specified for refinement'
             
