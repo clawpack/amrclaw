@@ -145,17 +145,17 @@ contains
             read(UNIT, *)
             read(UNIT, *) (gauges(i)%gtype, i=1, num_gauges)
 
-            do i=1,num_gauges
-               ! initialize last_time so that first gauge output will be
-               ! at time gauges(i)%t_start regardless of min_time_increment:
-               gauges(i)%last_time = gauges(i)%t_start - 1.d0 &
-                                      - gauges(i)%min_time_increment
-            enddo
 
             ! Read in q fields
             read(UNIT, *)
             read(UNIT, *)
             do i = 1, num_gauges
+
+               ! initialize last_time so that first gauge output will be
+               ! at time gauges(i)%t_start regardless of min_time_increment:
+               gauges(i)%last_time = gauges(i)%t_start - 1.d0 &
+                                      - gauges(i)%min_time_increment
+
                 if (gauges(i)%gtype .ne. 1) then
                     write(6,*) '*** Lagrangian gauges not yet supported'
                     write(6,*) '*** All gauges must have gtype==1'
