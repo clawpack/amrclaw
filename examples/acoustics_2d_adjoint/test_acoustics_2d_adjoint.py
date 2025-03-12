@@ -3,13 +3,13 @@ Regression tests for 2D acoustics with adjoint flagging.
 """
 
 import sys
-# import os
+import os
 import unittest
 
 import clawpack.amrclaw.test as test
 import clawpack.clawutil.runclaw
 
-adjoint_path = os.path.abspath(os.path.join(self.test_path, "adjoint"))
+
 
 class Acoustics2DAdjointRun(test.AMRClawRegressionTest):
 
@@ -17,7 +17,8 @@ class Acoustics2DAdjointRun(test.AMRClawRegressionTest):
 
         super(test.AMRClawRegressionTest, self).__init__(methodName=methodName)
 
-        self.test_path = adjoint_path
+        # test_path is set already, use this to set adjoint path run
+        self.test_path = os.path.abspath(os.path.join(self.test_path, "adjoint"))
 
     def runTest(self, save=False):
 
@@ -25,11 +26,11 @@ class Acoustics2DAdjointRun(test.AMRClawRegressionTest):
         # Write out data files
         self.load_rundata()
 
-        adjoint_setrun.rundata.clawdata.num_output_times = 30
-        adjoint_setrun.rundata.clawdata.tfinal = 3.0
+        self.rundata.clawdata.num_output_times = 30
+        self.rundata.clawdata.tfinal = 3.0
 
-        adjoint_setrun.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
-        adjoint_setrun.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
+        self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
+        self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
 
         self.write_rundata_objects()
 
