@@ -18,6 +18,14 @@ class Advection3DSwirlTest(test.AMRClawRegressionTest):
 
         # Write out data files
         self.load_rundata()
+
+        self.rundata.clawdata.num_output_times = 2
+        self.rundata.clawdata.tfinal = .1
+
+        self.rundata.gaugedata.gauges = []
+        self.rundata.gaugedata.gauges.append([1, 0.55, 0.4, 0.4, 0., 1e9])
+        self.rundata.gaugedata.gauges.append([2, 0.45, 0.6, 0.4, 0., 1e9])
+
         self.write_rundata_objects()
 
         # Run code
