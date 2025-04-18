@@ -16,6 +16,14 @@ class Acoustics1DTest_Homogeneous(test.AMRClawRegressionTest):
 
         # Write out data files
         self.load_rundata()
+        
+        self.rundata.clawdata.num_output_times = 1
+        self.rundata.clawdata.tfinal = 0.200000
+
+        self.rundata.gaugedata.gauges = []
+        self.rundata.gaugedata.gauges.append([0, 0.0, 0., 0.8])
+        self.rundata.gaugedata.gauges.append([1, 0.6, 0., 0.8])
+
         self.write_rundata_objects()
 
         # Run code
