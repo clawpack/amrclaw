@@ -16,6 +16,20 @@ class Advection1DTest(test.AMRClawRegressionTest):
 
         # Write out data files
         self.load_rundata()
+
+        self.rundata.clawdata.num_cells[0] = 40
+        self.rundata.clawdata.num_output_times = 1
+        self.rundata.clawdata.tfinal = 0.200000
+
+        self.rundata.gaugedata.gauges = []
+        self.rundata.gaugedata.gauges.append([0, 0.2, 0, 1e9])
+        self.rundata.gaugedata.gauges.append([1, 0.9, 0, 1e9])
+
+        self.rundata.amrdata.refinement_ratios_x = [2, 2]
+        self.rundata.amrdata.refinement_ratios_t = [2, 2]
+        self.rundata.amrdata.flag2refine_tol = 0.1
+        self.rundata.amrdata.regrid_buffer_width = 2
+
         self.write_rundata_objects()
 
         # Run code
