@@ -2,51 +2,34 @@
 Regression tests for 2D acoustics with adjoint flagging.
 """
 
+from pathlib import Path
 import sys
-import os
+import shutil
 import unittest
 
 import clawpack.amrclaw.test as test
 import clawpack.clawutil.runclaw
 
+from adjoint.test_acoustics_2d_adjoint import Acoustics2DAdjointTest 
 
-
-class Acoustics2DAdjointRun(test.AMRClawRegressionTest):
-
-    def __init__(self, methodName="runTest"):
-
-        super(test.AMRClawRegressionTest, self).__init__(methodName=methodName)
-
-        # test_path is set already, use this to set adjoint path run
-        self.test_path = os.path.abspath(os.path.join(self.test_path, "adjoint"))
-
-    def runTest(self, save=False):
-
-        
-        # Write out data files
-        self.load_rundata()
-
-        self.rundata.clawdata.num_output_times = 30
-        self.rundata.clawdata.tfinal = 3.0
-
-        self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
-        self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
-
-        self.write_rundata_objects()
-
-        
-
-class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
+class Acoustics2DAdjointFlaggingTest(test.AMRClawRegressionTest):
     r"""Basic test for a 2D acoustics adjoint-flagging forward problem test case"""
 
 
     def runTest(self, save=False):
         
         # Run adjoint problem
-        adjoint_run = Acoustics2DAdjointRun()    
         try:
+            adjoint_run = Acoustics2DAdjointTest()    
             adjoint_run.setUp()
-            adjoint_run.runTest(save=True)
+            adjoint_run.runTest()
+            
+            # Copy output to local directory
+            adjoint_output = Path(self.temp_path) / "_adjoint_output"
+
+            if Path(adjoint_output).exists():
+                shutil.rmtree(adjoint_output)
+            shutil.copytree(adjoint_run.temp_path, adjoint_output)
         finally:
             adjoint_run.tearDown()
 
@@ -69,6 +52,9 @@ class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
         self.rundata.amrdata.flag_richardson_tol = 1e-5
         self.rundata.amrdata.flag2refine_tol = 0.02
 
+        # Look for adjoint data
+        self.rundata.adjointdata.adjoint_outdir = adjoint_output
+
         self.write_rundata_objects()
 
         # Run code
@@ -79,6 +65,14 @@ class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
         self.check_gauges(save=save, gauge_id=2)
 
         self.success = True
+
+    # def tearDown(self):
+
+    #     # Remove adjoint output directory
+    #     if not self.success:
+            
+
+    #     super(Acoustics2DAdjointFlaggingTest, self).tearDown()
 
 
 
