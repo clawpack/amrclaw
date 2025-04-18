@@ -36,7 +36,7 @@ if __name__=="__main__":
     if len(sys.argv) > 1:
         if bool(sys.argv[1]):
             # Fake the setup and save out output
-            test = Advection2DSquareTest()
+            test = Acoustics2DAdjointTest()
             try:
                 test.setUp()
                 test.runTest(save=True)
