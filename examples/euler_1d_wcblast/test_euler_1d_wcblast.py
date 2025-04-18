@@ -16,6 +16,16 @@ class Euler1DTest(test.AMRClawRegressionTest):
 
         # Write out data files
         self.load_rundata()
+
+        self.rundata.clawdata.num_output_times = 2
+        self.rundata.clawdata.tfinal = 0.015
+
+        self.rundata.gaugedata.gauges = []
+        self.rundata.gaugedata.gauges.append([1, 0.3, 0, 1e9])
+        self.rundata.gaugedata.gauges.append([2, 0.85, 0, 1e9])
+
+        # amrdata.max1d = 500
+
         self.write_rundata_objects()
 
         # Run code
