@@ -2,15 +2,15 @@
 Regression tests for 1D acoustics with adjoint flagging.
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
-import sys,os
+from pathlib import Path
+import sys
+import shutil
 import unittest
 
-thisfile = os.path.realpath(__file__)
-testdir = os.path.split(thisfile)[0]
-
 import clawpack.amrclaw.test as test
+import clawpack.clawutil.runclaw
+
+from adjoint.test_acoustics_1d_adjoint_forward import Acoustics1DAdjointForwardTest 
 
 
 class Acoustics1DAdjointTest(test.AMRClawRegressionTest):
@@ -20,16 +20,33 @@ class Acoustics1DAdjointTest(test.AMRClawRegressionTest):
     def runTest(self, save=False):
         
         # Run adjoint problem
-        adjointdir = testdir + '/adjoint'
+        try:
+            adjoint_run = Acoustics1DAdjointForwardTest()    
+            adjoint_run.setUp()
+            adjoint_run.runTest()
+            
+            # Copy output to local directory
+            adjoint_output = Path(self.temp_path) / "_adjoint_output"
 
-        # Running the adjoint problem
-        os.chdir(adjointdir)
-        os.system('make -s new')
-        os.system('make .output > /dev/null')
-        os.chdir(testdir)
+            if Path(adjoint_output).exists():
+                shutil.rmtree(adjoint_output)
+            shutil.copytree(adjoint_run.temp_path, adjoint_output)
+        finally:
+            adjoint_run.tearDown()
 
         # Write out data files
         self.load_rundata()
+
+        self.rundata.clawdata.num_output_times = 1
+        self.rundata.clawdata.tfinal = 0.5
+
+        self.rundata.amrdata.flag2refine_tol = 0.05
+
+        self.rundata.gaugedata.gauges = []
+        self.rundata.gaugedata.gauges.append([0, -1.0, 0., 1e9])
+        self.rundata.gaugedata.gauges.append([1, -2.5, 0., 1e9])
+        self.rundata.gaugedata.gauges.append([2, -1.75, 0., 1e9])
+
         self.write_rundata_objects()
 
         # Run code
@@ -39,11 +56,6 @@ class Acoustics1DAdjointTest(test.AMRClawRegressionTest):
         self.check_gauges(save=save, gauge_id=0)
         self.check_gauges(save=save, gauge_id=1)
         self.check_gauges(save=save, gauge_id=2)
-
-        # self.check_gauges(save=save, gauge_num=1,
-        #                   regression_data_path='regression_data_test2.txt')
-        # self.check_gauges(save=save, gauge_num=2,
-        #                   regression_data_path='regression_data_test3.txt')
 
         self.success = True
 
