@@ -1,46 +1,42 @@
 """
-Regression tests for 2D advection on a square.
+Test for the adjoint problem for 2D acoustics
 """
 
-from __future__ import absolute_import
 import sys
 import unittest
 
 import clawpack.amrclaw.test as test
+import clawpack.amrclaw.data as data
 
-
-class Acoustics1DAdjointATest(test.AMRClawRegressionTest):
-    r"""Basic test for a 1D acoustics adjoint problem test case"""
-
+class Acoustics2DAdjointForwardTest(test.AMRClawRegressionTest):
 
     def runTest(self, save=False):
 
         # Write out data files
         self.load_rundata()
+
+        self.rundata.clawdata.num_output_times = 30
+        self.rundata.clawdata.tfinal = 3.0
+
+        self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
+        self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
+
         self.write_rundata_objects()
 
-        # Run code
         self.run_code()
 
-        # Perform tests
-        self.check_gauges(save=save, gauge_id=0)
+        # Perform Tests
         self.check_gauges(save=save, gauge_id=1)
         self.check_gauges(save=save, gauge_id=2)
 
-        # self.check_gauges(save=save, gauge_num=1,
-        #                   regression_data_path='regression_data_test2.txt')
-        # self.check_gauges(save=save, gauge_num=2,
-        #                   regression_data_path='regression_data_test3.txt')
-
         self.success = True
-
 
 
 if __name__=="__main__":
     if len(sys.argv) > 1:
         if bool(sys.argv[1]):
             # Fake the setup and save out output
-            test = Acoustics1DAdjointATest()
+            test = Acoustics2DAdjointForwardTest()
             try:
                 test.setUp()
                 test.runTest(save=True)

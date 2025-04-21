@@ -10,9 +10,9 @@ import unittest
 import clawpack.amrclaw.test as test
 import clawpack.clawutil.runclaw
 
-from adjoint.test_acoustics_2d_adjoint import Acoustics2DAdjointTest 
+from adjoint.test_acoustics_2d_adjoint_forward import Acoustics2DAdjointForwardTest 
 
-class Acoustics2DAdjointFlaggingTest(test.AMRClawRegressionTest):
+class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
     r"""Basic test for a 2D acoustics adjoint-flagging forward problem test case"""
 
 
@@ -20,7 +20,7 @@ class Acoustics2DAdjointFlaggingTest(test.AMRClawRegressionTest):
         
         # Run adjoint problem
         try:
-            adjoint_run = Acoustics2DAdjointTest()    
+            adjoint_run = Acoustics2DAdjointForwardTest()    
             adjoint_run.setUp()
             adjoint_run.runTest()
             
