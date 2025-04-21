@@ -47,6 +47,9 @@ class Acoustics1DAdjointTest(test.AMRClawRegressionTest):
         self.rundata.gaugedata.gauges.append([1, -2.5, 0., 1e9])
         self.rundata.gaugedata.gauges.append([2, -1.75, 0., 1e9])
 
+        # Look for adjoint data
+        self.rundata.adjointdata.adjoint_outdir = adjoint_output
+
         self.write_rundata_objects()
 
         # Run code

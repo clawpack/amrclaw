@@ -1,7 +1,7 @@
 Clawpack Git Status 
 Diffs can be found in /Users/mandli/Library/CloudStorage/Dropbox/src/clawpack/amrclaw/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
 
-Mon, 21 Apr 2025 10:42:57 EDT
+Mon, 21 Apr 2025 11:20:50 EDT
 $CLAW = /Users/mandli/Dropbox/src/clawpack
 $FC = not set
 
@@ -42,11 +42,14 @@ amrclaw
 /Users/mandli/Dropbox/src/clawpack/amrclaw
 
 --- last commit ---
-2218af5 (HEAD -> update-tests, mandli/update-tests) Test is working but not passing
+542de0c (HEAD -> update-tests, mandli/update-tests) 1D adjoint forward problem test passing
 
 --- branch and status ---
-## update-tests...clawpack/master [ahead 21]
+## update-tests...clawpack/master [ahead 22]
+ M examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+ M examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_status.txt
  M examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
+ M examples/acoustics_1d_adjoint/test_acoustics_1d_adjoint.py
 
 
 ===========

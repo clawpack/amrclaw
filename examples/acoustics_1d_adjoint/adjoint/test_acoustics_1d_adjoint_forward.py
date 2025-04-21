@@ -18,6 +18,8 @@ class Acoustics1DAdjointForwardTest(test.AMRClawRegressionTest):
         self.rundata.clawdata.num_output_times = 10
         self.rundata.clawdata.tfinal = 1.0
 
+        # self.rundata.clawdata.use_fwaves = False
+
         self.write_rundata_objects()
 
         self.run_code()
