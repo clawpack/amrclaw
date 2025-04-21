@@ -23,8 +23,8 @@ class Acoustics1DAdjointForwardTest(test.AMRClawRegressionTest):
         self.run_code()
 
         # Perform Tests
-        # self.check_gauges(save=save, gauge_id=1)
-        # self.check_gauges(save=save, gauge_id=2)
+        self.check_gauges(save=save, gauge_id=0)
+        self.check_gauges(save=save, gauge_id=1)
 
         self.success = True
 
@@ -33,7 +33,7 @@ if __name__=="__main__":
     if len(sys.argv) > 1:
         if bool(sys.argv[1]):
             # Fake the setup and save out output
-            test = Acoustics1DAdjointTest()
+            test = Acoustics1DAdjointForwardTest()
             try:
                 test.setUp()
                 test.runTest(save=True)

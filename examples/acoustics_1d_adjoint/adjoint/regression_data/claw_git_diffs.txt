@@ -1,0 +1,180 @@
+Clawpack git diffs...
+
+===========
+clawpack
+===========
+/Users/mandli/Dropbox/src/clawpack/
+
+diff --git a/amrclaw b/amrclaw
+index 2d9d076..2218af5 160000
+--- a/amrclaw
++++ b/amrclaw
+@@ -1 +1 @@
+-Subproject commit 2d9d07640bcd03890997a7fc250b76ef50321f1d
++Subproject commit 2218af530a3cd84344b8e9b36b47c25217593fed-dirty
+diff --git a/classic b/classic
+index 5f178e4..a4c0899 160000
+--- a/classic
++++ b/classic
+@@ -1 +1 @@
+-Subproject commit 5f178e4c8eb59d6f16f3d21c654b89033bd9be92
++Subproject commit a4c08996cb6cb4c13cf8262a1d5edd7acb9359b3
+diff --git a/clawutil b/clawutil
+index 1ee5f67..ec72bf7 160000
+--- a/clawutil
++++ b/clawutil
+@@ -1 +1 @@
+-Subproject commit 1ee5f67859fab5a71cebdb5f015a0c9d148a74b2
++Subproject commit ec72bf7de0d9f06222e3430fd518f2547ba54704-dirty
+diff --git a/geoclaw b/geoclaw
+index 3303883..cf96c78 160000
+--- a/geoclaw
++++ b/geoclaw
+@@ -1 +1 @@
+-Subproject commit 3303883f46572c58130d161986b8a87a57ca7816
++Subproject commit cf96c78d6bdbe24db79f3c0d15bd012e759b6855
+diff --git a/pyclaw b/pyclaw
+index f55b884..a978283 160000
+--- a/pyclaw
++++ b/pyclaw
+@@ -1 +1 @@
+-Subproject commit f55b88452872a7b3c4b53a16ee3065137bffa06d
++Subproject commit a978283a5bbfd2dec37344832522085bf703005e
+diff --git a/visclaw b/visclaw
+index 1fc821c..04c11f6 160000
+--- a/visclaw
++++ b/visclaw
+@@ -1 +1 @@
+-Subproject commit 1fc821c546bcac630fec12cf9edef92e01316f4d
++Subproject commit 04c11f6dc5a83fc996e1fd225dd1b77805992496
+
+
+===========
+classic
+===========
+/Users/mandli/Dropbox/src/clawpack/classic
+
+
+
+===========
+amrclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/amrclaw
+
+diff --git a/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py b/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
+index cc9d141..ef2960a 100644
+--- a/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
++++ b/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
+@@ -23,8 +23,8 @@ class Acoustics1DAdjointForwardTest(test.AMRClawRegressionTest):
+         self.run_code()
+ 
+         # Perform Tests
+-        # self.check_gauges(save=save, gauge_id=1)
+-        # self.check_gauges(save=save, gauge_id=2)
++        self.check_gauges(save=save, gauge_id=0)
++        self.check_gauges(save=save, gauge_id=1)
+ 
+         self.success = True
+ 
+@@ -33,7 +33,7 @@ if __name__=="__main__":
+     if len(sys.argv) > 1:
+         if bool(sys.argv[1]):
+             # Fake the setup and save out output
+-            test = Acoustics1DAdjointTest()
++            test = Acoustics1DAdjointForwardTest()
+             try:
+                 test.setUp()
+                 test.runTest(save=True)
+
+
+===========
+clawutil
+===========
+/Users/mandli/Dropbox/src/clawpack/clawutil
+
+diff --git a/src/python/clawutil/test.py b/src/python/clawutil/test.py
+index d43beae..7be8c9a 100644
+--- a/src/python/clawutil/test.py
++++ b/src/python/clawutil/test.py
+@@ -8,9 +8,6 @@ Sends output and result/errors to separate files to simplify checking
+ results and looking for errors.
+ """
+ 
+-from __future__ import print_function
+-
+-from __future__ import absolute_import
+ import os
+ import sys
+ import tempfile
+@@ -21,7 +18,7 @@ import inspect
+ import time
+ import glob
+ 
+-import numpy
++import numpy as np
+ 
+ import clawpack.geoclaw.util
+ import clawpack.pyclaw.gauges as gauges
+@@ -283,13 +280,13 @@ class ClawpackRegressionTest(unittest.TestCase):
+         regression_data_file = os.path.join(self.test_path, "regression_data",
+                                             file_name)
+         if save:
+-            numpy.savetxt(regression_data_file, data_sum)
++            np.savetxt(regression_data_file, data_sum)
+             claw_git_status.make_git_status_file(
+                          outdir=os.path.join(self.test_path, "regression_data"))
+ 
+-        regression_sum = numpy.loadtxt(regression_data_file)
++        regression_sum = np.loadtxt(regression_data_file)
+ 
+-        assert numpy.allclose(data_sum, regression_sum, rtol=rtol, atol=atol), \
++        assert np.allclose(data_sum, regression_sum, rtol=rtol, atol=atol), \
+             "\n  new_data: %s, \n  expected: %s"  % (data_sum, regression_sum)
+ 
+ 
+@@ -332,7 +329,7 @@ class ClawpackRegressionTest(unittest.TestCase):
+         # Compare data
+         try:
+             for n in indices:
+-                numpy.testing.assert_allclose(gauge.q[n, :],
++                np.testing.assert_allclose(gauge.q[n, :],
+                                               regression_gauge.q[n, :], 
+                                               rtol=rtol, atol=atol, 
+                                               verbose=False)
+@@ -342,7 +339,7 @@ class ClawpackRegressionTest(unittest.TestCase):
+             err_msg = "\n".join((err_msg, "  failures in fields:"))
+             failure_indices = []
+             for n in indices:
+-                if ~numpy.allclose(gauge.q[n, :], regression_gauge.q[n, :], 
++                if ~np.allclose(gauge.q[n, :], regression_gauge.q[n, :], 
+                                                           rtol=rtol, atol=atol):
+                     failure_indices.append(str(n))
+             index_str = ", ".join(failure_indices)
+
+
+===========
+pyclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/pyclaw
+
+
+
+===========
+visclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/visclaw
+
+
+
+===========
+riemann
+===========
+/Users/mandli/Dropbox/src/clawpack/riemann
+
+
+
+===========
+geoclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/geoclaw
+
