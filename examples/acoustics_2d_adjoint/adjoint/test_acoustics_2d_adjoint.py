@@ -18,6 +18,7 @@ class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
         self.rundata.clawdata.num_output_times = 30
         self.rundata.clawdata.tfinal = 3.0
 
+        self.rundata.gaugedata.gauges = []
         self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
         self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
 

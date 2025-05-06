@@ -66,15 +66,6 @@ class Acoustics2DAdjointForwardTest(test.AMRClawRegressionTest):
 
         self.success = True
 
-    # def tearDown(self):
-
-    #     # Remove adjoint output directory
-    #     if not self.success:
-            
-
-    #     super(Acoustics2DAdjointFlaggingTest, self).tearDown()
-
-
 
 if __name__=="__main__":
     if len(sys.argv) > 1:

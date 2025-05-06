@@ -1,7 +1,7 @@
 Clawpack Git Status 
-Diffs can be found in /Users/mandli/Library/CloudStorage/Dropbox/src/clawpack/amrclaw/examples/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
+Diffs can be found in /Users/mandli/Library/CloudStorage/Dropbox/src/clawpack/amrclaw/examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_diffs.txt
 
-Tue, 06 May 2025 09:49:58 EDT
+Tue, 06 May 2025 09:49:12 EDT
 $CLAW = /Users/mandli/Dropbox/src/clawpack
 $FC = not set
 
@@ -45,14 +45,8 @@ amrclaw
 
 --- branch and status ---
 ## update-tests...clawpack/master [ahead 28, behind 7]
-A  examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_diffs.txt
-A  examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_status.txt
  M examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
  D examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py
- M examples/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
- M examples/acoustics_2d_adjoint/regression_data/claw_git_status.txt
- M examples/acoustics_2d_adjoint/regression_data/gauge00001.txt
- M examples/acoustics_2d_adjoint/regression_data/gauge00002.txt
  D examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py
  M examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
  M src/python/amrclaw/compare_gauges.py
