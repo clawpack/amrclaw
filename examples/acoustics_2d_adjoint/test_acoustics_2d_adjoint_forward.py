@@ -8,7 +8,6 @@ import shutil
 import unittest
 
 import clawpack.amrclaw.test as test
-import clawpack.clawutil.runclaw
 
 from adjoint.test_acoustics_2d_adjoint import Acoustics2DAdjointTest 
 
