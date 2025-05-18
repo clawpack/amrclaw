@@ -8,7 +8,7 @@ import unittest
 import clawpack.amrclaw.test as test
 
 
-class Acoustics2DTest(test.AMRClawRegressionTest):
+class Acoustics2DRadialTest(test.AMRClawRegressionTest):
     r"""Basic test for a 2D acoustics test case"""
 
 
