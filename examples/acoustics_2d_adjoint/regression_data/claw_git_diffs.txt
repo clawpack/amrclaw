@@ -1,0 +1,1283 @@
+Clawpack git diffs...
+
+===========
+clawpack
+===========
+/Users/mandli/Dropbox/src/clawpack/
+
+diff --git a/amrclaw b/amrclaw
+index 452d485..67ffc8e 160000
+--- a/amrclaw
++++ b/amrclaw
+@@ -1 +1 @@
+-Subproject commit 452d485e4032c085d0cc96b97acd054722c38326
++Subproject commit 67ffc8e9f86874f71c28f96be73cb28b8b719dd8-dirty
+diff --git a/classic b/classic
+index 5f178e4..a4c0899 160000
+--- a/classic
++++ b/classic
+@@ -1 +1 @@
+-Subproject commit 5f178e4c8eb59d6f16f3d21c654b89033bd9be92
++Subproject commit a4c08996cb6cb4c13cf8262a1d5edd7acb9359b3
+diff --git a/clawutil b/clawutil
+index 2f7910a..ec72bf7 160000
+--- a/clawutil
++++ b/clawutil
+@@ -1 +1 @@
+-Subproject commit 2f7910a05d81e4463e201c1b92a4168fa692c2b3
++Subproject commit ec72bf7de0d9f06222e3430fd518f2547ba54704
+diff --git a/pyclaw b/pyclaw
+index 60de625..a978283 160000
+--- a/pyclaw
++++ b/pyclaw
+@@ -1 +1 @@
+-Subproject commit 60de625fb28b2e19db828d06db0cc3247109bd24
++Subproject commit a978283a5bbfd2dec37344832522085bf703005e
+diff --git a/visclaw b/visclaw
+index 44a1d2e..04c11f6 160000
+--- a/visclaw
++++ b/visclaw
+@@ -1 +1 @@
+-Subproject commit 44a1d2ea7073ab65c378e945d1bd47bb762e9a5f
++Subproject commit 04c11f6dc5a83fc996e1fd225dd1b77805992496
+
+
+===========
+classic
+===========
+/Users/mandli/Dropbox/src/clawpack/classic
+
+
+
+===========
+amrclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/amrclaw
+
+diff --git a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py b/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
+index ba0bf65..0d8ea0b 100644
+--- a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
++++ b/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
+@@ -18,6 +18,7 @@ class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
+         self.rundata.clawdata.num_output_times = 30
+         self.rundata.clawdata.tfinal = 3.0
+ 
++        self.rundata.gaugedata.gauges = []
+         self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
+         self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
+ 
+diff --git a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py b/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py
+deleted file mode 100644
+index c116022..0000000
+--- a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py
++++ /dev/null
+@@ -1,46 +0,0 @@
+-"""
+-Test for the adjoint problem for 2D acoustics
+-"""
+-
+-import sys
+-import unittest
+-
+-import clawpack.amrclaw.test as test
+-import clawpack.amrclaw.data as data
+-
+-class Acoustics2DAdjointForwardTest(test.AMRClawRegressionTest):
+-
+-    def runTest(self, save=False):
+-
+-        # Write out data files
+-        self.load_rundata()
+-
+-        self.rundata.clawdata.num_output_times = 30
+-        self.rundata.clawdata.tfinal = 3.0
+-
+-        self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
+-        self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
+-
+-        self.write_rundata_objects()
+-
+-        self.run_code()
+-
+-        # Perform Tests
+-        self.check_gauges(save=save, gauge_id=1)
+-        self.check_gauges(save=save, gauge_id=2)
+-
+-        self.success = True
+-
+-
+-if __name__=="__main__":
+-    if len(sys.argv) > 1:
+-        if bool(sys.argv[1]):
+-            # Fake the setup and save out output
+-            test = Acoustics2DAdjointForwardTest()
+-            try:
+-                test.setUp()
+-                test.runTest(save=True)
+-            finally:
+-                test.tearDown()
+-            sys.exit(0)
+-    unittest.main()
+\ No newline at end of file
+diff --git a/examples/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt b/examples/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
+index 47aaa14..e69de29 100644
+--- a/examples/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
++++ b/examples/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
+@@ -1,174 +0,0 @@
+-Clawpack git diffs...
+-
+-===========
+-classic
+-===========
+-/Users/brisadavis/Documents/git_folders/clawpack/classic
+-
+-diff --git a/examples/acoustics_1d_example1/setplot.py b/examples/acoustics_1d_example1/setplot.py
+-index fabb9a1..d0812ab 100644
+---- a/examples/acoustics_1d_example1/setplot.py
+-+++ b/examples/acoustics_1d_example1/setplot.py
+-@@ -23,6 +23,7 @@ def setplot(plotdata=None):
+-         plotdata = ClawPlotData()
+- 
+-     plotdata.clearfigures()  # clear any old figures,axes,items data
+-+    plotdata.format = 'binary'      # 'ascii', 'binary', 'netcdf'
+- 
+-     # Figure for q[0]
+-     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+-diff --git a/examples/acoustics_1d_example1/setrun.py b/examples/acoustics_1d_example1/setrun.py
+-index 0a5020a..882bd1f 100644
+---- a/examples/acoustics_1d_example1/setrun.py
+-+++ b/examples/acoustics_1d_example1/setrun.py
+-@@ -122,7 +122,7 @@ def setrun(claw_pkg='classic'):
+-         clawdata.output_t0 = True  # output at initial (or restart) time?
+-         
+- 
+--    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
+-+    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+- 
+-     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+-     clawdata.output_aux_components = 'none'  # could be list
+-diff --git a/examples/acoustics_1d_heterogeneous/setplot.py b/examples/acoustics_1d_heterogeneous/setplot.py
+-index 2eac268..3ab848a 100644
+---- a/examples/acoustics_1d_heterogeneous/setplot.py
+-+++ b/examples/acoustics_1d_heterogeneous/setplot.py
+-@@ -16,6 +16,7 @@ def setplot(plotdata=None):
+-         plotdata = ClawPlotData()
+- 
+-     plotdata.clearfigures()
+-+    plotdata.format = 'binary'
+- 
+-     # Figures corresponding to Figure 9.5 of LeVeque, "Finite Volume
+-     # Methods for Hyperbolic Problems," 2002 (though more of them)
+-diff --git a/examples/acoustics_1d_heterogeneous/setrun.py b/examples/acoustics_1d_heterogeneous/setrun.py
+-index de66fdf..0025eca 100644
+---- a/examples/acoustics_1d_heterogeneous/setrun.py
+-+++ b/examples/acoustics_1d_heterogeneous/setrun.py
+-@@ -125,7 +125,7 @@ def setrun(claw_pkg='classic'):
+-         clawdata.output_t0 = True  # output at initial (or restart) time?
+-         
+- 
+--    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
+-+    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+- 
+-     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+-     clawdata.output_aux_components = 'none'  # could be list
+-diff --git a/examples/advection_1d_example1/setplot.py b/examples/advection_1d_example1/setplot.py
+-index 9c3e84c..29555fe 100644
+---- a/examples/advection_1d_example1/setplot.py
+-+++ b/examples/advection_1d_example1/setplot.py
+-@@ -44,6 +44,7 @@ def setplot(plotdata=None):
+-         plotdata = ClawPlotData()
+- 
+-     plotdata.clearfigures()  # clear any old figures,axes,items data
+-+    plotdata.format = 'binary'
+- 
+-     # Figure for q[0]
+-     plotfigure = plotdata.new_plotfigure(name='Pressure and Velocity', figno=1)
+-diff --git a/examples/advection_1d_example1/setrun.py b/examples/advection_1d_example1/setrun.py
+-index d37602c..3ef39ab 100644
+---- a/examples/advection_1d_example1/setrun.py
+-+++ b/examples/advection_1d_example1/setrun.py
+-@@ -121,7 +121,7 @@ def setrun(claw_pkg='classic'):
+-         clawdata.output_t0 = True  # output at initial (or restart) time?
+-         
+- 
+--    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
+-+    clawdata.output_format = 'binary'      # 'ascii', 'binary', 'netcdf'
+- 
+-     clawdata.output_q_components = 'all'   # could be list such as [True,True]
+-     clawdata.output_aux_components = 'none'  # could be list
+-
+-
+-===========
+-amrclaw
+-===========
+-/Users/brisadavis/Documents/git_folders/clawpack/amrclaw
+-
+-diff --git a/examples/acoustics_2d_adjoint/adjoint/Makefile b/examples/acoustics_2d_adjoint/adjoint/Makefile
+-index a306d80..da38ec5 100644
+---- a/examples/acoustics_2d_adjoint/adjoint/Makefile
+-+++ b/examples/acoustics_2d_adjoint/adjoint/Makefile
+-@@ -13,7 +13,7 @@ CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
+- # ----------------------------------
+- 
+- CLAW_PKG = amrclaw                  # Clawpack package to use
+--EXE = xclaw                         # Executable to create
+-+EXE = xamr                          # Executable to create
+- SETRUN_FILE = setrun.py             # File containing function to make data
+- OUTDIR = _output                    # Directory for output
+- SETPLOT_FILE = setplot.py           # File containing function to set plots
+-
+-
+-===========
+-clawutil
+-===========
+-/Users/brisadavis/Documents/git_folders/clawpack/clawutil
+-
+-
+-
+-===========
+-pyclaw
+-===========
+-/Users/brisadavis/Documents/git_folders/clawpack/pyclaw
+-
+-
+-
+-===========
+-visclaw
+-===========
+-/Users/brisadavis/Documents/git_folders/clawpack/visclaw
+-
+-
+-
+-===========
+-riemann
+-===========
+-/Users/brisadavis/Documents/git_folders/clawpack/riemann
+-
+-
+-
+-===========
+-geoclaw
+-===========
+-/Users/brisadavis/Documents/git_folders/clawpack/geoclaw
+-
+-diff --git a/examples/tsunami/chile2010_adjoint/Makefile b/examples/tsunami/chile2010_adjoint/Makefile
+-index f4db33a..184a65e 100644
+---- a/examples/tsunami/chile2010_adjoint/Makefile
+-+++ b/examples/tsunami/chile2010_adjoint/Makefile
+-@@ -31,8 +31,10 @@ FFLAGS = -O2 -fopenmp
+- # package sources for this program:
+- # ---------------------------------
+- 
+-+ADJLIB:=$(CLAW)/amrclaw/src/2d_adjoint
+-+GEOLIB:=$(CLAW)/geoclaw/src/2d/shallow
+- ADJGEOLIB:=$(CLAW)/geoclaw/src/2d_adjoint
+--include $(ADJGEOLIB)/Makefile.adjoint_geoclaw
+-+include $(GEOLIB)/Makefile.geoclaw
+- 
+- # ---------------------------------------
+- # package sources specifically to exclude
+-@@ -49,8 +51,20 @@ EXCLUDE_SOURCES = \
+- # ----------------------------------------
+- 
+- MODULES = \
+-+  $(ADJLIB)/adjoint_module.f90 \
+-+  $(ADJGEOLIB)/innerprod_module.f90 \
+- 
+- SOURCES = \
+-+  $(ADJLIB)/setprob.f90 \
+-+  $(ADJLIB)/quick_sort.f \
+-+  $(ADJLIB)/flagger.f \
+-+  $(ADJGEOLIB)/flag2refine2.f90 \
+-+  $(ADJGEOLIB)/errf1.f \
+-+  $(ADJGEOLIB)/interp_adjoint.f \
+-+  $(ADJGEOLIB)/valout.f \
+-+  $(ADJGEOLIB)/setaux.f90 \
+-+  $(ADJGEOLIB)/reload.f \
+-+  $(ADJGEOLIB)/errest.f \
+-   $(CLAW)/riemann/src/rpn2_geoclaw.f \
+-   $(CLAW)/riemann/src/rpt2_geoclaw.f \
+-   $(CLAW)/riemann/src/geoclaw_riemann_utils.f \
+diff --git a/examples/acoustics_2d_adjoint/regression_data/claw_git_status.txt b/examples/acoustics_2d_adjoint/regression_data/claw_git_status.txt
+index 2cd8db1..159bcb0 100644
+--- a/examples/acoustics_2d_adjoint/regression_data/claw_git_status.txt
++++ b/examples/acoustics_2d_adjoint/regression_data/claw_git_status.txt
+@@ -1,98 +1,118 @@
+ Clawpack Git Status 
+-Diffs can be found in /Users/brisadavis/Documents/git_folders/clawpack/amrclaw/tests/acoustics_2d_forwardprob/regression_data/claw_git_diffs.txt
++Diffs can be found in /Users/mandli/Library/CloudStorage/Dropbox/src/clawpack/amrclaw/examples/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
+ 
+-Fri, 01 Jun 2018 12:37:28 PDT
+-$CLAW = /Users/brisadavis/Documents/git_folders/clawpack
+-$FC = gfortran
++Tue, 06 May 2025 09:49:58 EDT
++$CLAW = /Users/mandli/Dropbox/src/clawpack
++$FC = not set
++
++
++===========
++clawpack
++===========
++/Users/mandli/Dropbox/src/clawpack/
++
++--- last commit ---
++98ba40b (HEAD -> master, tag: v5.12.0, clawpack/master, clawpack/HEAD) Merge pull request #264 from rjleveque/v5.12.0fix
++
++--- branch and status ---
++## master...clawpack/master
++ M amrclaw
++ M classic
++ M clawutil
++ M pyclaw
++ M visclaw
+ 
+ 
+ ===========
+ classic
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/classic
++/Users/mandli/Dropbox/src/clawpack/classic
+ 
+ --- last commit ---
+-606424b Merge pull request #80 from rjleveque/wcblast
++a4c0899 (HEAD -> add-test-badge, mandli/add-test-badge) Add better description and links to README
+ 
+ --- branch and status ---
+-## master...origin/master
+- M examples/acoustics_1d_example1/setplot.py
+- M examples/acoustics_1d_example1/setrun.py
+- M examples/acoustics_1d_heterogeneous/setplot.py
+- M examples/acoustics_1d_heterogeneous/setrun.py
+- M examples/advection_1d_example1/setplot.py
+- M examples/advection_1d_example1/setrun.py
++## add-test-badge...clawpack/master [ahead 11]
+ 
+ 
+ ===========
+ amrclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/amrclaw
++/Users/mandli/Dropbox/src/clawpack/amrclaw
+ 
+ --- last commit ---
+-cd67a24 Merging the adjoint-error code into either the main errest.f file or into adjoint_module.f90. Also merging innerprod_module.f90 into adjoint_module.f90.
++67ffc8e (HEAD -> update-tests, mandli/update-tests) Roll back adjoint changes
+ 
+ --- branch and status ---
+-## adjoint...bitbucket/adjoint [ahead 34]
+- M examples/acoustics_2d_adjoint/adjoint/Makefile
++## update-tests...clawpack/master [ahead 28, behind 7]
++A  examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_diffs.txt
++A  examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_status.txt
++ M examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
++ D examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py
++ M examples/acoustics_2d_adjoint/regression_data/claw_git_diffs.txt
++ M examples/acoustics_2d_adjoint/regression_data/claw_git_status.txt
++ M examples/acoustics_2d_adjoint/regression_data/gauge00001.txt
++ M examples/acoustics_2d_adjoint/regression_data/gauge00002.txt
++ D examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py
++ M examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
++ M src/python/amrclaw/compare_gauges.py
+ 
+ 
+ ===========
+ clawutil
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/clawutil
++/Users/mandli/Dropbox/src/clawpack/clawutil
+ 
+ --- last commit ---
+-5c6bd99 Merge pull request #122 from rjleveque/convert_readme_string
++ec72bf7 (HEAD -> switch-repr-str, mandli/switch-repr-str) Clean up some of the new code and update
+ 
+ --- branch and status ---
+-## master...origin/master
++## switch-repr-str...clawpack/master [ahead 2, behind 4]
+ 
+ 
+ ===========
+ pyclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/pyclaw
++/Users/mandli/Dropbox/src/clawpack/pyclaw
+ 
+ --- last commit ---
+-0c54683 Merge pull request #589 from ketch/update_to_scipy_v1
++a978283a (HEAD -> master) Update 2D SWEs regression data (#742)
+ 
+ --- branch and status ---
+-## master...origin/master
++## master...clawpack/master [behind 1]
+ 
+ 
+ ===========
+ visclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/visclaw
++/Users/mandli/Dropbox/src/clawpack/visclaw
+ 
+ --- last commit ---
+-c2a1907 (matlab) adding functionality for creating plot for tikz output
++04c11f6 (HEAD -> master) Remove Cygwin Code (#313)
+ 
+ --- branch and status ---
+-## master...origin/master
++## master...clawpack/master [behind 2]
+ 
+ 
+ ===========
+ riemann
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/riemann
++/Users/mandli/Dropbox/src/clawpack/riemann
+ 
+ --- last commit ---
+-974c08b Changing notation for consistency with dissertation.
++c29dcab (HEAD -> master, clawpack/master, clawpack/HEAD) Merge pull request #181 from clawpack/set_fwave
+ 
+ --- branch and status ---
+-## adjoint
++## master...clawpack/master
+ 
+ 
+ ===========
+ geoclaw
+ ===========
+-/Users/brisadavis/Documents/git_folders/clawpack/geoclaw
++/Users/mandli/Dropbox/src/clawpack/geoclaw
+ 
+ --- last commit ---
+-adb1cfb Merge branch 'adjoint' of https://github.com/BrisaDavis/geoclaw into adjoint
++271bea35 (HEAD -> master, tag: v5.12.0, clawpack/master, clawpack/HEAD) Merge pull request #646 from rjleveque/fix_storm_quotes
+ 
+ --- branch and status ---
+-## adjoint
+- M examples/tsunami/chile2010_adjoint/Makefile
++## master...clawpack/master
+diff --git a/examples/acoustics_2d_adjoint/regression_data/gauge00001.txt b/examples/acoustics_2d_adjoint/regression_data/gauge00001.txt
+index 4ce2576..5134bb6 100644
+--- a/examples/acoustics_2d_adjoint/regression_data/gauge00001.txt
++++ b/examples/acoustics_2d_adjoint/regression_data/gauge00001.txt
+@@ -1,4 +1,4 @@
+-# gauge_id=     1 location=(  0.1000000000E+01  0.1000000000E+01 ) num_var=  3
++# gauge_id= 1 location=(  0.1000000000E+01  0.1000000000E+01 ) num_var=  3
+ # level, time, q[  1  2  3], aux[]
+    02  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+    02  0.5000000E-02  0.4383141E-01  0.2140644E-01  0.2833423E-04
+@@ -28,26 +28,30 @@
+    02  0.1252000E+01 -0.4586041E-01 -0.1060212E-01 -0.6189411E-03
+    02  0.1306000E+01 -0.4173261E-01 -0.9468890E-02 -0.6162592E-03
+    02  0.1360000E+01 -0.3880256E-01 -0.9388780E-02 -0.5756687E-03
+-   02  0.1414000E+01 -0.3717120E-01 -0.9268169E-02 -0.5611975E-03
+-   02  0.1468000E+01 -0.3431097E-01 -0.8989756E-02 -0.5534278E-03
+-   02  0.1522000E+01 -0.2957613E-01 -0.7198921E-02 -0.5600544E-03
+-   02  0.1576000E+01 -0.2615177E-01 -0.6352325E-02 -0.5075651E-03
+-   02  0.1630000E+01 -0.2286436E-01 -0.6431038E-02  0.9366111E-03
+-   02  0.1684000E+01  0.5588384E-03 -0.5654536E-02  0.1243460E-01
+-   02  0.1738000E+01  0.9103404E-01  0.4352978E-03  0.5649667E-01
+-   02  0.1792000E+01  0.2380888E+00  0.1142214E-01  0.1295413E+00
+-   02  0.1846000E+01  0.2963553E+00  0.1680156E-01  0.1593917E+00
+-   02  0.1900000E+01  0.2694707E+00  0.1430183E-01  0.1492190E+00
+-   02  0.1954000E+01  0.2092500E+00  0.9243114E-02  0.1202769E+00
+-   02  0.2008000E+01  0.1678151E+00  0.5956946E-02  0.1004594E+00
+-   02  0.2062000E+01  0.1341736E+00  0.4558208E-02  0.8358419E-01
+-   02  0.2116000E+01  0.6373561E-01  0.1728399E-02  0.4896916E-01
+-   02  0.2170000E+01 -0.7067626E-01 -0.6577655E-02 -0.1773099E-01
+-   02  0.2224000E+01 -0.1881933E+00 -0.1584788E-01 -0.7555672E-01
+-   01  0.2278000E+01 -0.1924439E+00 -0.1403912E-01 -0.7893993E-01
+-   01  0.2386000E+01 -0.1342826E+00 -0.5823318E-02 -0.5340567E-01
+-   01  0.2494000E+01 -0.6794292E-01 -0.3945072E-02 -0.2333666E-01
+-   01  0.2602000E+01 -0.5003654E-01 -0.2621845E-02 -0.1525832E-01
+-   01  0.2710000E+01 -0.4224422E-01 -0.2755046E-02 -0.1192034E-01
+-   01  0.2818000E+01 -0.3469789E-01 -0.2059077E-02 -0.8963595E-02
+-   01  0.2926000E+01 -0.2875634E-01 -0.1503129E-02 -0.6816284E-02
++   01  0.1414000E+01 -0.3685988E-01 -0.6115627E-02 -0.2358784E-03
++   01  0.1522000E+01 -0.2949100E-01 -0.3928539E-02 -0.8240078E-04
++   02  0.1630000E+01 -0.2376217E-01 -0.3895419E-02  0.8109350E-03
++   02  0.1684000E+01  0.5889418E-03 -0.3009304E-02  0.1259178E-01
++   02  0.1738000E+01  0.9137331E-01  0.2867607E-02  0.5682851E-01
++   02  0.1792000E+01  0.2366633E+00  0.1293929E-01  0.1300227E+00
++   02  0.1846000E+01  0.2951120E+00  0.1841100E-01  0.1599693E+00
++   02  0.1900000E+01  0.2702452E+00  0.1668536E-01  0.1497581E+00
++   02  0.1954000E+01  0.2110101E+00  0.1207767E-01  0.1208369E+00
++   02  0.2008000E+01  0.1682328E+00  0.8089096E-02  0.1010406E+00
++   02  0.2062000E+01  0.1332059E+00  0.5923906E-02  0.8406070E-01
++   02  0.2116000E+01  0.6240697E-01  0.2715327E-02  0.4942557E-01
++   02  0.2170000E+01 -0.6973829E-01 -0.4565301E-02 -0.1706231E-01
++   02  0.2224000E+01 -0.1825390E+00 -0.1169969E-01 -0.7451113E-01
++   02  0.2278000E+01 -0.2043035E+00 -0.1404276E-01 -0.8586752E-01
++   02  0.2332000E+01 -0.1796624E+00 -0.1256410E-01 -0.7512850E-01
++   02  0.2386000E+01 -0.1308410E+00 -0.9427985E-02 -0.5079563E-01
++   02  0.2440000E+01 -0.8606067E-01 -0.6959831E-02 -0.3008737E-01
++   02  0.2494000E+01 -0.6516382E-01 -0.5777214E-02 -0.2098000E-01
++   02  0.2548000E+01 -0.5550535E-01 -0.4458828E-02 -0.1848369E-01
++   02  0.2602000E+01 -0.4909371E-01 -0.3147878E-02 -0.1627034E-01
++   02  0.2656000E+01 -0.4508017E-01 -0.3380034E-02 -0.1403141E-01
++   02  0.2710000E+01 -0.4299440E-01 -0.4383072E-02 -0.1216271E-01
++   02  0.2764000E+01 -0.3983623E-01 -0.4647338E-02 -0.1096710E-01
++   02  0.2818000E+01 -0.3548682E-01 -0.4082099E-02 -0.9615801E-02
++   02  0.2872000E+01 -0.3088125E-01 -0.3268260E-02 -0.7959626E-02
++   01  0.2926000E+01 -0.2844120E-01 -0.2219187E-02 -0.6852865E-02
+diff --git a/examples/acoustics_2d_adjoint/regression_data/gauge00002.txt b/examples/acoustics_2d_adjoint/regression_data/gauge00002.txt
+index d87d614..3101e56 100644
+--- a/examples/acoustics_2d_adjoint/regression_data/gauge00002.txt
++++ b/examples/acoustics_2d_adjoint/regression_data/gauge00002.txt
+@@ -1,4 +1,4 @@
+-# gauge_id=     2 location=(  0.3500000000E+01  0.5000000000E+00 ) num_var=  3
++# gauge_id= 2 location=(  0.3500000000E+01  0.5000000000E+00 ) num_var=  3
+ # level, time, q[  1  2  3], aux[]
+    01  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+    01  0.1000000E-01  0.0000000E+00  0.0000000E+00  0.0000000E+00
+@@ -34,17 +34,17 @@
+    02  0.2116000E+01  0.1525251E+00  0.4979060E-01  0.8075930E-01
+    02  0.2170000E+01  0.2209134E+00  0.7366365E-01  0.1044166E+00
+    02  0.2224000E+01  0.2499448E+00  0.8515999E-01  0.1137136E+00
+-   02  0.2278000E+01  0.2294272E+00  0.7934498E-01  0.1052935E+00
+-   02  0.2332000E+01  0.1660863E+00  0.5986225E-01  0.8119389E-01
+-   02  0.2386000E+01  0.7232378E-01  0.2917107E-01  0.4491041E-01
+-   02  0.2440000E+01 -0.2968271E-01 -0.3754681E-02  0.5769253E-02
+-   02  0.2494000E+01 -0.1198993E+00 -0.3361393E-01 -0.2967831E-01
+-   02  0.2548000E+01 -0.1814710E+00 -0.5412202E-01 -0.5438172E-01
+-   02  0.2602000E+01 -0.2026887E+00 -0.6154282E-01 -0.6372143E-01
+-   02  0.2656000E+01 -0.1858375E+00 -0.5674223E-01 -0.5847356E-01
+-   02  0.2710000E+01 -0.1426022E+00 -0.4282727E-01 -0.4337351E-01
+-   02  0.2764000E+01 -0.8789969E-01 -0.2496886E-01 -0.2368683E-01
+-   02  0.2818000E+01 -0.4564558E-01 -0.1102551E-01 -0.8728142E-02
+-   02  0.2872000E+01 -0.2955208E-01 -0.6228946E-02 -0.3126528E-02
+-   02  0.2926000E+01 -0.3330784E-01 -0.7637269E-02 -0.4720001E-02
+-   02  0.2963000E+01 -0.3837488E-01 -0.9807928E-02 -0.6998083E-02
++   02  0.2278000E+01  0.2294272E+00  0.7934497E-01  0.1052935E+00
++   02  0.2332000E+01  0.1660867E+00  0.5986246E-01  0.8119387E-01
++   02  0.2386000E+01  0.7232065E-01  0.2916950E-01  0.4491062E-01
++   02  0.2440000E+01 -0.2967652E-01 -0.3751733E-02  0.5768801E-02
++   02  0.2494000E+01 -0.1198830E+00 -0.3360572E-01 -0.2968013E-01
++   02  0.2548000E+01 -0.1814796E+00 -0.5412584E-01 -0.5437953E-01
++   02  0.2602000E+01 -0.2027338E+00 -0.6156427E-01 -0.6370991E-01
++   02  0.2656000E+01 -0.1858346E+00 -0.5674054E-01 -0.5846396E-01
++   02  0.2710000E+01 -0.1425106E+00 -0.4277886E-01 -0.4337610E-01
++   02  0.2764000E+01 -0.8782105E-01 -0.2493031E-01 -0.2369933E-01
++   02  0.2818000E+01 -0.4571581E-01 -0.1106291E-01 -0.8732733E-02
++   02  0.2872000E+01 -0.2965364E-01 -0.6286307E-02 -0.3116210E-02
++   02  0.2926000E+01 -0.3328619E-01 -0.7633242E-02 -0.4721506E-02
++   02  0.2963000E+01 -0.3840900E-01 -0.9822807E-02 -0.7013418E-02
+diff --git a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py b/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py
+deleted file mode 100644
+index fcbfee4..0000000
+--- a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py
++++ /dev/null
+@@ -1,90 +0,0 @@
+-"""
+-Regression tests for 2D acoustics with adjoint flagging.
+-"""
+-
+-from pathlib import Path
+-import sys
+-import shutil
+-import unittest
+-
+-import clawpack.amrclaw.test as test
+-import clawpack.clawutil.runclaw
+-
+-from adjoint.test_acoustics_2d_adjoint_forward import Acoustics2DAdjointForwardTest 
+-
+-class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
+-    r"""Basic test for a 2D acoustics adjoint-flagging forward problem test case"""
+-
+-
+-    def runTest(self, save=False):
+-        
+-        # Run adjoint problem
+-        try:
+-            adjoint_run = Acoustics2DAdjointForwardTest()    
+-            adjoint_run.setUp()
+-            adjoint_run.runTest()
+-            
+-            # Copy output to local directory
+-            adjoint_output = Path(self.temp_path) / "_adjoint_output"
+-
+-            if Path(adjoint_output).exists():
+-                shutil.rmtree(adjoint_output)
+-            shutil.copytree(adjoint_run.temp_path, adjoint_output)
+-        finally:
+-            adjoint_run.tearDown()
+-
+-        # Write out data files
+-        self.load_rundata()
+-
+-        self.rundata.clawdata.num_output_times = 1
+-        self.rundata.clawdata.tfinal = 3.0
+-
+-        # Test gauges
+-        self.rundata.gaugedata.gauges = []
+-        self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 1e9])
+-        self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 1e9])
+-
+-        # AMR parameters
+-        self.rundata.amrdata.amr_levels_max = 2
+-        self.rundata.amrdata.refinement_ratios_x = [2]
+-        self.rundata.amrdata.refinement_ratios_y = [2]
+-        self.rundata.amrdata.refinement_ratios_t = [2]
+-        self.rundata.amrdata.flag_richardson_tol = 1e-5
+-        self.rundata.amrdata.flag2refine_tol = 0.02
+-
+-        # Look for adjoint data
+-        self.rundata.adjointdata.adjoint_outdir = adjoint_output
+-
+-        self.write_rundata_objects()
+-
+-        # Run code
+-        self.run_code()
+-
+-        # Perform tests
+-        self.check_gauges(save=save, gauge_id=1)
+-        self.check_gauges(save=save, gauge_id=2)
+-
+-        self.success = True
+-
+-    # def tearDown(self):
+-
+-    #     # Remove adjoint output directory
+-    #     if not self.success:
+-            
+-
+-    #     super(Acoustics2DAdjointFlaggingTest, self).tearDown()
+-
+-
+-
+-if __name__=="__main__":
+-    if len(sys.argv) > 1:
+-        if bool(sys.argv[1]):
+-            # Fake the setup and save out output
+-            test = Acoustics2DAdjointTest()
+-            try:
+-                test.setUp()
+-                test.runTest(save=True)
+-            finally:
+-                test.tearDown()
+-            sys.exit(0)
+-    unittest.main()
+diff --git a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py b/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
+index 0d3a406..4be990d 100644
+--- a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
++++ b/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
+@@ -66,15 +66,6 @@ class Acoustics2DAdjointForwardTest(test.AMRClawRegressionTest):
+ 
+         self.success = True
+ 
+-    # def tearDown(self):
+-
+-    #     # Remove adjoint output directory
+-    #     if not self.success:
+-            
+-
+-    #     super(Acoustics2DAdjointFlaggingTest, self).tearDown()
+-
+-
+ 
+ if __name__=="__main__":
+     if len(sys.argv) > 1:
+diff --git a/src/python/amrclaw/compare_gauges.py b/src/python/amrclaw/compare_gauges.py
+index 5e14b01..c68a023 100755
+--- a/src/python/amrclaw/compare_gauges.py
++++ b/src/python/amrclaw/compare_gauges.py
+@@ -1,5 +1,6 @@
+ #!/usr/bin/env python
+ 
++from pathlib import Path
+ import sys
+ 
+ import numpy
+@@ -12,43 +13,49 @@ import clawpack.pyclaw.gauges as gauges
+ def check_old_gauge_data(path, gauge_id):
+ 
+     # Load old gauge data
+-    data = numpy.loadtxt(path)
+-    old_ids = numpy.asarray(data[:, 0], dtype=int)
+-    gauge_indices = numpy.nonzero(old_ids == gauge_id)[0]
+-    q = data[gauge_indices, 3:]
++    # data = numpy.loadtxt(path)
++    # old_ids = numpy.asarray(data[:, 0], dtype=int)
++    # gauge_indices = numpy.nonzero(old_ids == gauge_id)[0]
++    # q = data[gauge_indices, 3:]
+ 
+     # Load new data
+-    gauge = gauges.GaugeSolution(gauge_id, "./regression_data/")
+-
+-    print(numpy.linalg.norm(q - gauge.q.transpose(), ord=2))
+-    print(numpy.argmax(q - gauge.q.transpose()))
++    new_gauge = gauges.GaugeSolution(gauge_id, path)
++    old_gauge = gauges.GaugeSolution(gauge_id, Path() / "regression_data")
++    num_eqn = new_gauge.q.shape[0]
+ 
+     fig = plt.figure()
+-    for i in range(gauge.q.shape[0]):
+-        axes = fig.add_subplot(1, gauge.q.shape[0], i + 1)
+-        axes.plot(q[:, i] - gauge.q[i, :])
+-        axes.set_title("q[%s, :] comparison" % i)
++    if new_gauge.t.shape == old_gauge.t.shape:
++        for i in range(num_eqn):
++            L2_norm = numpy.linalg.norm(new_gauge.q[i, :] - old_gauge.q[i, :], ord=2)
++            print(f"L2|{i}| = {L2_norm}")
++            max_norm = numpy.argmax(new_gauge.q[i, :] - old_gauge.q[i, :])
++            print(f"max|{i}| = {max_norm}")
++
++            axes = fig.add_subplot(1, num_eqn, i + 1)
++            axes.plot(new_gauge.q[i, :] - old_gauge.q[i, :])
++            axes.set_title(f"q[{i}, :] comparison")
++    else:
++        # If the gauge time points do not match just plot them
++        for i in range(num_eqn):
++            ax = fig.add_subplot(1, num_eqn, i + 1)
++            ax.plot(new_gauge.t, new_gauge.q[i, :], 'x', label='new')
++            ax.plot(old_gauge.t, old_gauge.q[i, :], '+', label='old')
++            ax.set_title(f"q[{i}, :] comparison")
+ 
+     return fig
+ 
+ if __name__ == "__main__":
+ 
+-    old_files = []
+-    gauge_ids = []
+-
+     if len(sys.argv) > 1:
+-        # Assume arguments are pairs of file locations and ids
+-        for i in range(1, len(sys.argv), 2):
+-            old_files.append(sys.argv[i])
+-            gauge_ids.append(int(sys.argv[i + 1]))
++        # First argument should be a path to new data
++        path = Path(sys.argv[1])
++        # Second+ arguments are gauge ids to compare
++        gauge_ids = [int(sys.argv[i]) for i in range(2, len(sys.argv))]
+     else:
+-        raise ValueError("Need at least one pair to compare")
+-
+-    print(old_files)
+-    print(gauge_ids)
++        raise ValueError("Need 1 path and a set of gauge ids to compare.")
+ 
+     figures = []
+-    for i in range(len(old_files)):
+-        figures.append(check_old_gauge_data(old_files[i], gauge_ids[i]))
++    for gauge_id in gauge_ids:
++        figures.append(check_old_gauge_data(path, gauge_id))
+ 
+     plt.show()
+\ No newline at end of file
+diff --git a/examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_diffs.txt b/examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+new file mode 100644
+index 0000000..af41af6
+--- /dev/null
++++ b/examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+@@ -0,0 +1,359 @@
++Clawpack git diffs...
++
++===========
++clawpack
++===========
++/Users/mandli/Dropbox/src/clawpack/
++
++diff --git a/amrclaw b/amrclaw
++index 452d485..67ffc8e 160000
++--- a/amrclaw
+++++ b/amrclaw
++@@ -1 +1 @@
++-Subproject commit 452d485e4032c085d0cc96b97acd054722c38326
+++Subproject commit 67ffc8e9f86874f71c28f96be73cb28b8b719dd8-dirty
++diff --git a/classic b/classic
++index 5f178e4..a4c0899 160000
++--- a/classic
+++++ b/classic
++@@ -1 +1 @@
++-Subproject commit 5f178e4c8eb59d6f16f3d21c654b89033bd9be92
+++Subproject commit a4c08996cb6cb4c13cf8262a1d5edd7acb9359b3
++diff --git a/clawutil b/clawutil
++index 2f7910a..ec72bf7 160000
++--- a/clawutil
+++++ b/clawutil
++@@ -1 +1 @@
++-Subproject commit 2f7910a05d81e4463e201c1b92a4168fa692c2b3
+++Subproject commit ec72bf7de0d9f06222e3430fd518f2547ba54704
++diff --git a/pyclaw b/pyclaw
++index 60de625..a978283 160000
++--- a/pyclaw
+++++ b/pyclaw
++@@ -1 +1 @@
++-Subproject commit 60de625fb28b2e19db828d06db0cc3247109bd24
+++Subproject commit a978283a5bbfd2dec37344832522085bf703005e
++diff --git a/visclaw b/visclaw
++index 44a1d2e..04c11f6 160000
++--- a/visclaw
+++++ b/visclaw
++@@ -1 +1 @@
++-Subproject commit 44a1d2ea7073ab65c378e945d1bd47bb762e9a5f
+++Subproject commit 04c11f6dc5a83fc996e1fd225dd1b77805992496
++
++
++===========
++classic
++===========
++/Users/mandli/Dropbox/src/clawpack/classic
++
++
++
++===========
++amrclaw
++===========
++/Users/mandli/Dropbox/src/clawpack/amrclaw
++
++diff --git a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py b/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
++index ba0bf65..0d8ea0b 100644
++--- a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
+++++ b/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
++@@ -18,6 +18,7 @@ class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
++         self.rundata.clawdata.num_output_times = 30
++         self.rundata.clawdata.tfinal = 3.0
++ 
+++        self.rundata.gaugedata.gauges = []
++         self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
++         self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
++ 
++diff --git a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py b/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py
++deleted file mode 100644
++index c116022..0000000
++--- a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py
+++++ /dev/null
++@@ -1,46 +0,0 @@
++-"""
++-Test for the adjoint problem for 2D acoustics
++-"""
++-
++-import sys
++-import unittest
++-
++-import clawpack.amrclaw.test as test
++-import clawpack.amrclaw.data as data
++-
++-class Acoustics2DAdjointForwardTest(test.AMRClawRegressionTest):
++-
++-    def runTest(self, save=False):
++-
++-        # Write out data files
++-        self.load_rundata()
++-
++-        self.rundata.clawdata.num_output_times = 30
++-        self.rundata.clawdata.tfinal = 3.0
++-
++-        self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
++-        self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
++-
++-        self.write_rundata_objects()
++-
++-        self.run_code()
++-
++-        # Perform Tests
++-        self.check_gauges(save=save, gauge_id=1)
++-        self.check_gauges(save=save, gauge_id=2)
++-
++-        self.success = True
++-
++-
++-if __name__=="__main__":
++-    if len(sys.argv) > 1:
++-        if bool(sys.argv[1]):
++-            # Fake the setup and save out output
++-            test = Acoustics2DAdjointForwardTest()
++-            try:
++-                test.setUp()
++-                test.runTest(save=True)
++-            finally:
++-                test.tearDown()
++-            sys.exit(0)
++-    unittest.main()
++\ No newline at end of file
++diff --git a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py b/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py
++deleted file mode 100644
++index fcbfee4..0000000
++--- a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py
+++++ /dev/null
++@@ -1,90 +0,0 @@
++-"""
++-Regression tests for 2D acoustics with adjoint flagging.
++-"""
++-
++-from pathlib import Path
++-import sys
++-import shutil
++-import unittest
++-
++-import clawpack.amrclaw.test as test
++-import clawpack.clawutil.runclaw
++-
++-from adjoint.test_acoustics_2d_adjoint_forward import Acoustics2DAdjointForwardTest 
++-
++-class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
++-    r"""Basic test for a 2D acoustics adjoint-flagging forward problem test case"""
++-
++-
++-    def runTest(self, save=False):
++-        
++-        # Run adjoint problem
++-        try:
++-            adjoint_run = Acoustics2DAdjointForwardTest()    
++-            adjoint_run.setUp()
++-            adjoint_run.runTest()
++-            
++-            # Copy output to local directory
++-            adjoint_output = Path(self.temp_path) / "_adjoint_output"
++-
++-            if Path(adjoint_output).exists():
++-                shutil.rmtree(adjoint_output)
++-            shutil.copytree(adjoint_run.temp_path, adjoint_output)
++-        finally:
++-            adjoint_run.tearDown()
++-
++-        # Write out data files
++-        self.load_rundata()
++-
++-        self.rundata.clawdata.num_output_times = 1
++-        self.rundata.clawdata.tfinal = 3.0
++-
++-        # Test gauges
++-        self.rundata.gaugedata.gauges = []
++-        self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 1e9])
++-        self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 1e9])
++-
++-        # AMR parameters
++-        self.rundata.amrdata.amr_levels_max = 2
++-        self.rundata.amrdata.refinement_ratios_x = [2]
++-        self.rundata.amrdata.refinement_ratios_y = [2]
++-        self.rundata.amrdata.refinement_ratios_t = [2]
++-        self.rundata.amrdata.flag_richardson_tol = 1e-5
++-        self.rundata.amrdata.flag2refine_tol = 0.02
++-
++-        # Look for adjoint data
++-        self.rundata.adjointdata.adjoint_outdir = adjoint_output
++-
++-        self.write_rundata_objects()
++-
++-        # Run code
++-        self.run_code()
++-
++-        # Perform tests
++-        self.check_gauges(save=save, gauge_id=1)
++-        self.check_gauges(save=save, gauge_id=2)
++-
++-        self.success = True
++-
++-    # def tearDown(self):
++-
++-    #     # Remove adjoint output directory
++-    #     if not self.success:
++-            
++-
++-    #     super(Acoustics2DAdjointFlaggingTest, self).tearDown()
++-
++-
++-
++-if __name__=="__main__":
++-    if len(sys.argv) > 1:
++-        if bool(sys.argv[1]):
++-            # Fake the setup and save out output
++-            test = Acoustics2DAdjointTest()
++-            try:
++-                test.setUp()
++-                test.runTest(save=True)
++-            finally:
++-                test.tearDown()
++-            sys.exit(0)
++-    unittest.main()
++diff --git a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py b/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
++index 0d3a406..4be990d 100644
++--- a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
+++++ b/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
++@@ -66,15 +66,6 @@ class Acoustics2DAdjointForwardTest(test.AMRClawRegressionTest):
++ 
++         self.success = True
++ 
++-    # def tearDown(self):
++-
++-    #     # Remove adjoint output directory
++-    #     if not self.success:
++-            
++-
++-    #     super(Acoustics2DAdjointFlaggingTest, self).tearDown()
++-
++-
++ 
++ if __name__=="__main__":
++     if len(sys.argv) > 1:
++diff --git a/src/python/amrclaw/compare_gauges.py b/src/python/amrclaw/compare_gauges.py
++index 5e14b01..c68a023 100755
++--- a/src/python/amrclaw/compare_gauges.py
+++++ b/src/python/amrclaw/compare_gauges.py
++@@ -1,5 +1,6 @@
++ #!/usr/bin/env python
++ 
+++from pathlib import Path
++ import sys
++ 
++ import numpy
++@@ -12,43 +13,49 @@ import clawpack.pyclaw.gauges as gauges
++ def check_old_gauge_data(path, gauge_id):
++ 
++     # Load old gauge data
++-    data = numpy.loadtxt(path)
++-    old_ids = numpy.asarray(data[:, 0], dtype=int)
++-    gauge_indices = numpy.nonzero(old_ids == gauge_id)[0]
++-    q = data[gauge_indices, 3:]
+++    # data = numpy.loadtxt(path)
+++    # old_ids = numpy.asarray(data[:, 0], dtype=int)
+++    # gauge_indices = numpy.nonzero(old_ids == gauge_id)[0]
+++    # q = data[gauge_indices, 3:]
++ 
++     # Load new data
++-    gauge = gauges.GaugeSolution(gauge_id, "./regression_data/")
++-
++-    print(numpy.linalg.norm(q - gauge.q.transpose(), ord=2))
++-    print(numpy.argmax(q - gauge.q.transpose()))
+++    new_gauge = gauges.GaugeSolution(gauge_id, path)
+++    old_gauge = gauges.GaugeSolution(gauge_id, Path() / "regression_data")
+++    num_eqn = new_gauge.q.shape[0]
++ 
++     fig = plt.figure()
++-    for i in range(gauge.q.shape[0]):
++-        axes = fig.add_subplot(1, gauge.q.shape[0], i + 1)
++-        axes.plot(q[:, i] - gauge.q[i, :])
++-        axes.set_title("q[%s, :] comparison" % i)
+++    if new_gauge.t.shape == old_gauge.t.shape:
+++        for i in range(num_eqn):
+++            L2_norm = numpy.linalg.norm(new_gauge.q[i, :] - old_gauge.q[i, :], ord=2)
+++            print(f"L2|{i}| = {L2_norm}")
+++            max_norm = numpy.argmax(new_gauge.q[i, :] - old_gauge.q[i, :])
+++            print(f"max|{i}| = {max_norm}")
+++
+++            axes = fig.add_subplot(1, num_eqn, i + 1)
+++            axes.plot(new_gauge.q[i, :] - old_gauge.q[i, :])
+++            axes.set_title(f"q[{i}, :] comparison")
+++    else:
+++        # If the gauge time points do not match just plot them
+++        for i in range(num_eqn):
+++            ax = fig.add_subplot(1, num_eqn, i + 1)
+++            ax.plot(new_gauge.t, new_gauge.q[i, :], 'x', label='new')
+++            ax.plot(old_gauge.t, old_gauge.q[i, :], '+', label='old')
+++            ax.set_title(f"q[{i}, :] comparison")
++ 
++     return fig
++ 
++ if __name__ == "__main__":
++ 
++-    old_files = []
++-    gauge_ids = []
++-
++     if len(sys.argv) > 1:
++-        # Assume arguments are pairs of file locations and ids
++-        for i in range(1, len(sys.argv), 2):
++-            old_files.append(sys.argv[i])
++-            gauge_ids.append(int(sys.argv[i + 1]))
+++        # First argument should be a path to new data
+++        path = Path(sys.argv[1])
+++        # Second+ arguments are gauge ids to compare
+++        gauge_ids = [int(sys.argv[i]) for i in range(2, len(sys.argv))]
++     else:
++-        raise ValueError("Need at least one pair to compare")
++-
++-    print(old_files)
++-    print(gauge_ids)
+++        raise ValueError("Need 1 path and a set of gauge ids to compare.")
++ 
++     figures = []
++-    for i in range(len(old_files)):
++-        figures.append(check_old_gauge_data(old_files[i], gauge_ids[i]))
+++    for gauge_id in gauge_ids:
+++        figures.append(check_old_gauge_data(path, gauge_id))
++ 
++     plt.show()
++\ No newline at end of file
++
++
++===========
++clawutil
++===========
++/Users/mandli/Dropbox/src/clawpack/clawutil
++
++
++
++===========
++pyclaw
++===========
++/Users/mandli/Dropbox/src/clawpack/pyclaw
++
++
++
++===========
++visclaw
++===========
++/Users/mandli/Dropbox/src/clawpack/visclaw
++
++
++
++===========
++riemann
++===========
++/Users/mandli/Dropbox/src/clawpack/riemann
++
++
++
++===========
++geoclaw
++===========
++/Users/mandli/Dropbox/src/clawpack/geoclaw
++
+diff --git a/examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_status.txt b/examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_status.txt
+new file mode 100644
+index 0000000..23cc2ff
+--- /dev/null
++++ b/examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_status.txt
+@@ -0,0 +1,112 @@
++Clawpack Git Status 
++Diffs can be found in /Users/mandli/Library/CloudStorage/Dropbox/src/clawpack/amrclaw/examples/acoustics_2d_adjoint/adjoint/regression_data/claw_git_diffs.txt
++
++Tue, 06 May 2025 09:49:12 EDT
++$CLAW = /Users/mandli/Dropbox/src/clawpack
++$FC = not set
++
++
++===========
++clawpack
++===========
++/Users/mandli/Dropbox/src/clawpack/
++
++--- last commit ---
++98ba40b (HEAD -> master, tag: v5.12.0, clawpack/master, clawpack/HEAD) Merge pull request #264 from rjleveque/v5.12.0fix
++
++--- branch and status ---
++## master...clawpack/master
++ M amrclaw
++ M classic
++ M clawutil
++ M pyclaw
++ M visclaw
++
++
++===========
++classic
++===========
++/Users/mandli/Dropbox/src/clawpack/classic
++
++--- last commit ---
++a4c0899 (HEAD -> add-test-badge, mandli/add-test-badge) Add better description and links to README
++
++--- branch and status ---
++## add-test-badge...clawpack/master [ahead 11]
++
++
++===========
++amrclaw
++===========
++/Users/mandli/Dropbox/src/clawpack/amrclaw
++
++--- last commit ---
++67ffc8e (HEAD -> update-tests, mandli/update-tests) Roll back adjoint changes
++
++--- branch and status ---
++## update-tests...clawpack/master [ahead 28, behind 7]
++ M examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
++ D examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py
++ D examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py
++ M examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
++ M src/python/amrclaw/compare_gauges.py
++
++
++===========
++clawutil
++===========
++/Users/mandli/Dropbox/src/clawpack/clawutil
++
++--- last commit ---
++ec72bf7 (HEAD -> switch-repr-str, mandli/switch-repr-str) Clean up some of the new code and update
++
++--- branch and status ---
++## switch-repr-str...clawpack/master [ahead 2, behind 4]
++
++
++===========
++pyclaw
++===========
++/Users/mandli/Dropbox/src/clawpack/pyclaw
++
++--- last commit ---
++a978283a (HEAD -> master) Update 2D SWEs regression data (#742)
++
++--- branch and status ---
++## master...clawpack/master [behind 1]
++
++
++===========
++visclaw
++===========
++/Users/mandli/Dropbox/src/clawpack/visclaw
++
++--- last commit ---
++04c11f6 (HEAD -> master) Remove Cygwin Code (#313)
++
++--- branch and status ---
++## master...clawpack/master [behind 2]
++
++
++===========
++riemann
++===========
++/Users/mandli/Dropbox/src/clawpack/riemann
++
++--- last commit ---
++c29dcab (HEAD -> master, clawpack/master, clawpack/HEAD) Merge pull request #181 from clawpack/set_fwave
++
++--- branch and status ---
++## master...clawpack/master
++
++
++===========
++geoclaw
++===========
++/Users/mandli/Dropbox/src/clawpack/geoclaw
++
++--- last commit ---
++271bea35 (HEAD -> master, tag: v5.12.0, clawpack/master, clawpack/HEAD) Merge pull request #646 from rjleveque/fix_storm_quotes
++
++--- branch and status ---
++## master...clawpack/master
+
+
+===========
+clawutil
+===========
+/Users/mandli/Dropbox/src/clawpack/clawutil
+
+
+
+===========
+pyclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/pyclaw
+
+
+
+===========
+visclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/visclaw
+
+
+
+===========
+riemann
+===========
+/Users/mandli/Dropbox/src/clawpack/riemann
+
+
+
+===========
+geoclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/geoclaw
+
