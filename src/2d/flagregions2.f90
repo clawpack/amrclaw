@@ -6,7 +6,7 @@
 !! Second version with outer loop on regions, should be faster.
 !!
 !! This routine may change flags only in cells that are (partially)
-!! covered by one or more regions. amrflags will be later modified 
+!! covered by one or more regions. amrflags will be later modified
 !! by Richardson extrapolation and/or flag2refine routine, as requested,
 !! which will only add DOFLAG points to cells that are still UNSET
 !!
@@ -19,7 +19,7 @@
 
 !! amrflags  = array to be flagged with either the value
 !!             DONTFLAG (no refinement needed)  or
-!!             DOFLAG   (refinement desired)    
+!!             DOFLAG   (refinement desired)
 !!
 !! \param mx number of cells in *i* direction
 !! \param my number of cells in *j* direction
@@ -31,8 +31,8 @@
 !! \param dy spacing in *j* direction
 !! \param level AMR level of this grid
 !! \param t simulation time on this grid
-!! \param amrflags array to be flagged with either the value **DONTFLAG** or **DOFLAG** for each cell. 
-!!        It is enlarged from grid size to include buffer regions around the grid. 
+!! \param amrflags array to be flagged with either the value **DONTFLAG** or **DOFLAG** for each cell.
+!!        It is enlarged from grid size to include buffer regions around the grid.
 !! \param DONTFLAG value to be assigned to amrflags for cells that need no refinement
 !! \param DOFLAG value to be assigned to amrflags for cells that do need refinement
 ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -48,18 +48,18 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
     ! Subroutine arguments
     integer, intent(in) :: mx,my,level,mbuff
     real(kind=8), intent(in) :: xlower,ylower,dx,dy,t
-    
+
     ! Flagging
     real(kind=8),intent(inout) :: amrflags(1-mbuff:mx+mbuff,1-mbuff:my+mbuff)
-    
+
     type(ruled_region_type), pointer :: rr
 
     ! Locals
     integer :: i,j,m,i1,i2,j1,j2, k,k1,k2
-    real(kind=8) :: x_low,y_low,x_hi,y_hi, xupper,yupper
+    real(kind=8) :: x_low,y_low,x_hi,y_hi, xupper,yupper, eps
     integer, allocatable :: minlevel(:,:), maxlevel(:,:)
     integer :: min_current_minlevel, min_current_maxlevel
-    
+
     real(kind=8) :: x_lower_y_low, x_lower_y_hi, x_upper_y_low, x_upper_y_hi, &
                     x_lower_s, x_upper_s, alpha_y_low, alpha_y_hi, &
                     y_lower_x_low, y_lower_x_hi, y_upper_x_low, y_upper_x_hi, &
@@ -67,7 +67,17 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
 
     !write(58,*) 'level, lower: ',level,xlower,ylower  ! +++
     allocate(minlevel(mx,my), maxlevel(mx,my))
-    
+
+    ! random small number to shift edges of region relative to cell:
+    eps = 1.2345d-7
+    ! cell must intersect region by more than eps*dx or eps*dy
+    ! from the edge in order for the cell to be considered inside the
+    ! region when setting minlevel/maxlevel for cell.
+    ! This should avoid refinement patches changing due to rounding errors
+    ! when a region edge is exactly coincident with a cell edge, usually
+    ! when they are both some nice round number.
+    ! We still need to do a similar fix for ruled rectangles!
+
     minlevel = 0
     maxlevel = 0
 
@@ -94,24 +104,24 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
         enddo
 
     ! loop on old-style regions, still supported for now:
-    
+
     rloop: do m=1,num_regions
         if (t < regions(m)%t_low .or. t > regions(m)%t_hi) then
             cycle rloop  ! no intersection
         endif
-        
+
         if (xlower >= regions(m)%x_hi .or. xupper <= regions(m)%x_low) then
             cycle rloop  ! no intersection
         else
-            i1 = max(floor((regions(m)%x_low - xlower) / dx) + 1, 1)
-            i2 = min(floor((regions(m)%x_hi -xlower) / dx) + 1, mx)
+            i1 = max(floor((regions(m)%x_low - xlower + eps*dx) / dx) + 1, 1)
+            i2 = min(floor((regions(m)%x_hi -xlower - eps*dx) / dx) + 1, mx)
         endif
 
         if (ylower >= regions(m)%y_hi .or. yupper <= regions(m)%y_low) then
             cycle rloop  ! no intersection
         else
-            j1 = max(floor((regions(m)%y_low - ylower) / dy) + 1, 1)
-            j2 = min(floor((regions(m)%y_hi - ylower) / dy) + 1, my)
+            j1 = max(floor((regions(m)%y_low - ylower + eps*dy) / dy) + 1, 1)
+            j2 = min(floor((regions(m)%y_hi - ylower - eps*dy) / dy) + 1, my)
         endif
 
         do j=j1,j2
@@ -124,34 +134,34 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
 
 
     ! Loop on new "ruled rectangle" flagregions:
-    
+
     rrloop: do m=1,num_rregions
-    
+
         rr => rregions(m)
 
         if (t < rr%t_low .or. t > rr%t_hi) then
             cycle rrloop  ! no intersection
         endif
-        
+
         ! compute intersection of patch with rr bounding box:
-        if (xlower >= rr%x2bb .or. xupper <= rr%x1bb) then
+        if (xlower > rr%x2bb+eps*dx .or. xupper < rr%x1bb-eps*dx) then
             cycle rrloop  ! no intersection
         else
-            i1 = max(floor((rr%x1bb - xlower) / dx) + 1, 1)
-            i2 = min(floor((rr%x2bb -xlower) / dx) + 1, mx)
+            i1 = max(floor((rr%x1bb - xlower + eps*dx) / dx) + 1, 1)
+            i2 = min(floor((rr%x2bb - xlower - eps*dx) / dx) + 1, mx)
         endif
 
-        if (ylower >= rr%y2bb .or. yupper <= rr%y1bb) then
+        if (ylower > rr%y2bb+eps*dy .or. yupper < rr%y1bb-eps*dy) then
             cycle rrloop  ! no intersection
         else
-            j1 = max(floor((rr%y1bb - ylower) / dy) + 1, 1)
-            j2 = min(floor((rr%y2bb - ylower) / dy) + 1, my)
+            j1 = max(floor((rr%y1bb - ylower + eps*dy) / dy) + 1, 1)
+            j2 = min(floor((rr%y2bb - ylower - eps*dy) / dy) + 1, my)
         endif
 
         !write(58,*) 'ixy, ds: ',rr%ixy, rr%ds  ! +++
         ! patch overlaps bounding box, so need to check:
-        
-        ! first check if this rregion could affect anything already set:    
+
+        ! first check if this rregion could affect anything already set:
 !        min_current_minlevel = minval(minlevel(i1:i2,j1:j2))
 !        min_current_maxlevel = minval(maxlevel(i1:i2,j1:j2))
 !        if ((min_current_minlevel >= rr%minlevel) .and. &
@@ -160,7 +170,7 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
 !                endif
 
         !write(82,*) '+++ t = ',t, ' level =', level
-        
+
         if (rr%ixy == 1) then
             ! rr%s corresponds to x, while lower,upper are in y
             ! outer loop on x, compute k1,k2 once for each col of cells
@@ -168,33 +178,33 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                 x_low = xlower + (i - 1) * dx
                 x_hi = xlower + i * dx
                 if (rr%ds > 0) then
-                    k1 = floor((x_low-rr%s(1) + 1d-6) / rr%ds) + 1
+                    k1 = floor((x_low-rr%s(1) + eps*dx) / rr%ds) + 1
                     k1 = max(k1, 1)
-                    k2 = floor((x_hi-rr%s(1) + 1d-6) / rr%ds) + 1
+                    k2 = floor((x_hi-rr%s(1) - eps*dx) / rr%ds) + 1
                     k2 = min(k2, rr%nrules-1)
                 else
                     ! rr%ds <= 0 means s point are not equally spaced
                     do k=1,rr%nrules
-                        if (x_low < rr%s(k)) exit
+                        if (x_low < rr%s(k) + eps*dx) exit
                         enddo
                     k1 = max(k-1, 1)
                     do k=1,rr%nrules
-                        if (x_hi < rr%s(k)) exit
+                        if (x_hi < rr%s(k) - eps*dx) exit
                         enddo
                     k2 = min(k-1, rr%nrules-1)
                     endif ! rr%ds <= 0
                 !write(58,*) '+++ ds = ',rr%ds,rr%nrules,k1,k2
-                    
-                    
+
+
                 jloop1: do j=j1,j2
                     y_low = ylower + (j - 1) * dy
                     y_hi = ylower + j * dy
-                    
+
                     if (rr%method == 0) then
                         ! pw constant interpolation (rectangles):
                         do k=k1,k2
-                            if ((y_hi > rr%lower(k)) .and. &
-                                (y_low < rr%upper(k))) then
+                            if ((y_hi > rr%lower(k)+eps*dy) .and. &
+                                (y_low < rr%upper(k)-eps*dy)) then
                                 minlevel(i,j) = max(minlevel(i,j), &
                                                     rr%min_level)
                                 maxlevel(i,j) = max(maxlevel(i,j), &
@@ -202,7 +212,7 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                                 cycle jloop1
                                 endif
                             enddo
-                    else 
+                    else
                         ! rr%method == 1, linear interpolation (trapezoids):
                         do k=k1,k2
                             alpha_x_low = (x_low - rr%s(k)) &
@@ -219,19 +229,19 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                                           + alpha_x_hi * rr%upper(k+1)
                             y_lower_s = min(y_lower_x_low, y_lower_x_hi)
                             y_upper_s = max(y_upper_x_low, y_upper_x_hi)
-                            if ((y_hi > y_lower_s) .and. &
-                                (y_low < y_upper_s)) then
+                            if ((y_hi > y_lower_s+eps*dy) .and. &
+                                (y_low < y_upper_s-eps*dy)) then
                                   minlevel(i,j) = max(minlevel(i,j), &
                                                       rr%min_level)
                                   maxlevel(i,j) = max(maxlevel(i,j), &
                                                       rr%max_level)
                                   cycle jloop1
                                   endif
-                             enddo  ! k                                  
+                             enddo  ! k
                         endif ! rr%method
                     enddo jloop1
                 enddo iloop1
-                
+
             else ! rr%ixy = 2
                 ! rr%s corresponds to y, while lower,upper are in x
                 ! outer loop on y, compute k1,k2 once for each row of cells
@@ -239,33 +249,33 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                     y_low = ylower + (j - 1) * dy
                     y_hi = ylower + j * dy
                     if (rr%ds > 0) then
-                        k1 = floor((y_low-rr%s(1) + 1d-6) / rr%ds) + 1
+                        k1 = floor((y_low-rr%s(1) + eps*dy) / rr%ds) + 1
                         k1 = max(k1, 1)
-                        k2 = floor((y_hi-rr%s(1) + 1d-6) / rr%ds) + 1
+                        k2 = floor((y_hi-rr%s(1) - eps*dy) / rr%ds) + 1
                         k2 = min(k2, rr%nrules-1)
                     else
                         ! rr%ds <= 0 means s point are not equally spaced
                         do k=1,rr%nrules
-                            if (y_low < rr%s(k)) exit
+                            if (y_low < rr%s(k) + eps*dy) exit
                             enddo
                         k1 = max(k-1, 1)
                         do k=1,rr%nrules
-                            if (y_hi < rr%s(k)) exit
+                            if (y_hi < rr%s(k) - eps*dy) exit
                             enddo
                         k2 = min(k-1, rr%nrules-1)
                         endif ! rr%ds <= 0
                     !write(58,*) '+++ ds = ',rr%ds,rr%nrules,k1,k2
 
-                        
+
                     iloop2: do i=i1,i2
                         x_low = xlower + (i - 1) * dx
                         x_hi = xlower + i * dx
-                        
+
                         if (rr%method == 0) then
                             ! pw constant interpolation (rectangles):
                             do k=k1,k2
-                                if ((x_hi > rr%lower(k)) .and. &
-                                    (x_low < rr%upper(k))) then
+                                if ((x_hi > rr%lower(k)+eps*dx) .and. &
+                                    (x_low < rr%upper(k)-eps*dx)) then
                                     minlevel(i,j) = max(minlevel(i,j), &
                                                         rr%min_level)
                                     maxlevel(i,j) = max(maxlevel(i,j), &
@@ -273,7 +283,7 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                                     cycle iloop2
                                     endif
                                 enddo
-                        else 
+                        else
                             ! rr%method == 1, linear interpolation (trapezoids):
                             do k=k1,k2
                                 alpha_y_low = (y_low - rr%s(k)) &
@@ -290,22 +300,22 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                                               + alpha_y_hi * rr%upper(k+1)
                                 x_lower_s = min(x_lower_y_low, x_lower_y_hi)
                                 x_upper_s = max(x_upper_y_low, x_upper_y_hi)
-                                if ((x_hi > x_lower_s) .and. &
-                                    (x_low < x_upper_s)) then
+                                if ((x_hi > x_lower_s+eps*dx) .and. &
+                                    (x_low < x_upper_s-eps*dx)) then
                                       minlevel(i,j) = max(minlevel(i,j), &
                                                           rr%min_level)
                                       maxlevel(i,j) = max(maxlevel(i,j), &
                                                           rr%max_level)
                                       cycle iloop2
                                       endif
-                              enddo  ! k                                  
+                              enddo  ! k
                             endif ! rr%method
                         enddo iloop2
                     enddo jloop2
                 endif ! rr%ixy == 2
         enddo rrloop
-    
-    
+
+
     do j=1,my
         do i=1,mx
          if (minlevel(i,j) > maxlevel(i,j)) then
@@ -327,7 +337,7 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
              endif
          endif
 
-        enddo 
-    enddo 
+        enddo
+    enddo
 
 end subroutine flagregions2
