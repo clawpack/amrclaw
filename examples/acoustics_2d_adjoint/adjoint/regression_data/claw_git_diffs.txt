@@ -1,0 +1,359 @@
+Clawpack git diffs...
+
+===========
+clawpack
+===========
+/Users/mandli/Dropbox/src/clawpack/
+
+diff --git a/amrclaw b/amrclaw
+index 452d485..67ffc8e 160000
+--- a/amrclaw
++++ b/amrclaw
+@@ -1 +1 @@
+-Subproject commit 452d485e4032c085d0cc96b97acd054722c38326
++Subproject commit 67ffc8e9f86874f71c28f96be73cb28b8b719dd8-dirty
+diff --git a/classic b/classic
+index 5f178e4..a4c0899 160000
+--- a/classic
++++ b/classic
+@@ -1 +1 @@
+-Subproject commit 5f178e4c8eb59d6f16f3d21c654b89033bd9be92
++Subproject commit a4c08996cb6cb4c13cf8262a1d5edd7acb9359b3
+diff --git a/clawutil b/clawutil
+index 2f7910a..ec72bf7 160000
+--- a/clawutil
++++ b/clawutil
+@@ -1 +1 @@
+-Subproject commit 2f7910a05d81e4463e201c1b92a4168fa692c2b3
++Subproject commit ec72bf7de0d9f06222e3430fd518f2547ba54704
+diff --git a/pyclaw b/pyclaw
+index 60de625..a978283 160000
+--- a/pyclaw
++++ b/pyclaw
+@@ -1 +1 @@
+-Subproject commit 60de625fb28b2e19db828d06db0cc3247109bd24
++Subproject commit a978283a5bbfd2dec37344832522085bf703005e
+diff --git a/visclaw b/visclaw
+index 44a1d2e..04c11f6 160000
+--- a/visclaw
++++ b/visclaw
+@@ -1 +1 @@
+-Subproject commit 44a1d2ea7073ab65c378e945d1bd47bb762e9a5f
++Subproject commit 04c11f6dc5a83fc996e1fd225dd1b77805992496
+
+
+===========
+classic
+===========
+/Users/mandli/Dropbox/src/clawpack/classic
+
+
+
+===========
+amrclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/amrclaw
+
+diff --git a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py b/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
+index ba0bf65..0d8ea0b 100644
+--- a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
++++ b/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint.py
+@@ -18,6 +18,7 @@ class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
+         self.rundata.clawdata.num_output_times = 30
+         self.rundata.clawdata.tfinal = 3.0
+ 
++        self.rundata.gaugedata.gauges = []
+         self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
+         self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
+ 
+diff --git a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py b/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py
+deleted file mode 100644
+index c116022..0000000
+--- a/examples/acoustics_2d_adjoint/adjoint/test_acoustics_2d_adjoint_forward.py
++++ /dev/null
+@@ -1,46 +0,0 @@
+-"""
+-Test for the adjoint problem for 2D acoustics
+-"""
+-
+-import sys
+-import unittest
+-
+-import clawpack.amrclaw.test as test
+-import clawpack.amrclaw.data as data
+-
+-class Acoustics2DAdjointForwardTest(test.AMRClawRegressionTest):
+-
+-    def runTest(self, save=False):
+-
+-        # Write out data files
+-        self.load_rundata()
+-
+-        self.rundata.clawdata.num_output_times = 30
+-        self.rundata.clawdata.tfinal = 3.0
+-
+-        self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 10.])
+-        self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 10.])
+-
+-        self.write_rundata_objects()
+-
+-        self.run_code()
+-
+-        # Perform Tests
+-        self.check_gauges(save=save, gauge_id=1)
+-        self.check_gauges(save=save, gauge_id=2)
+-
+-        self.success = True
+-
+-
+-if __name__=="__main__":
+-    if len(sys.argv) > 1:
+-        if bool(sys.argv[1]):
+-            # Fake the setup and save out output
+-            test = Acoustics2DAdjointForwardTest()
+-            try:
+-                test.setUp()
+-                test.runTest(save=True)
+-            finally:
+-                test.tearDown()
+-            sys.exit(0)
+-    unittest.main()
+\ No newline at end of file
+diff --git a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py b/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py
+deleted file mode 100644
+index fcbfee4..0000000
+--- a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint.py
++++ /dev/null
+@@ -1,90 +0,0 @@
+-"""
+-Regression tests for 2D acoustics with adjoint flagging.
+-"""
+-
+-from pathlib import Path
+-import sys
+-import shutil
+-import unittest
+-
+-import clawpack.amrclaw.test as test
+-import clawpack.clawutil.runclaw
+-
+-from adjoint.test_acoustics_2d_adjoint_forward import Acoustics2DAdjointForwardTest 
+-
+-class Acoustics2DAdjointTest(test.AMRClawRegressionTest):
+-    r"""Basic test for a 2D acoustics adjoint-flagging forward problem test case"""
+-
+-
+-    def runTest(self, save=False):
+-        
+-        # Run adjoint problem
+-        try:
+-            adjoint_run = Acoustics2DAdjointForwardTest()    
+-            adjoint_run.setUp()
+-            adjoint_run.runTest()
+-            
+-            # Copy output to local directory
+-            adjoint_output = Path(self.temp_path) / "_adjoint_output"
+-
+-            if Path(adjoint_output).exists():
+-                shutil.rmtree(adjoint_output)
+-            shutil.copytree(adjoint_run.temp_path, adjoint_output)
+-        finally:
+-            adjoint_run.tearDown()
+-
+-        # Write out data files
+-        self.load_rundata()
+-
+-        self.rundata.clawdata.num_output_times = 1
+-        self.rundata.clawdata.tfinal = 3.0
+-
+-        # Test gauges
+-        self.rundata.gaugedata.gauges = []
+-        self.rundata.gaugedata.gauges.append([1, 1.0, 1.0, 0., 1e9])
+-        self.rundata.gaugedata.gauges.append([2, 3.5, 0.5, 0., 1e9])
+-
+-        # AMR parameters
+-        self.rundata.amrdata.amr_levels_max = 2
+-        self.rundata.amrdata.refinement_ratios_x = [2]
+-        self.rundata.amrdata.refinement_ratios_y = [2]
+-        self.rundata.amrdata.refinement_ratios_t = [2]
+-        self.rundata.amrdata.flag_richardson_tol = 1e-5
+-        self.rundata.amrdata.flag2refine_tol = 0.02
+-
+-        # Look for adjoint data
+-        self.rundata.adjointdata.adjoint_outdir = adjoint_output
+-
+-        self.write_rundata_objects()
+-
+-        # Run code
+-        self.run_code()
+-
+-        # Perform tests
+-        self.check_gauges(save=save, gauge_id=1)
+-        self.check_gauges(save=save, gauge_id=2)
+-
+-        self.success = True
+-
+-    # def tearDown(self):
+-
+-    #     # Remove adjoint output directory
+-    #     if not self.success:
+-            
+-
+-    #     super(Acoustics2DAdjointFlaggingTest, self).tearDown()
+-
+-
+-
+-if __name__=="__main__":
+-    if len(sys.argv) > 1:
+-        if bool(sys.argv[1]):
+-            # Fake the setup and save out output
+-            test = Acoustics2DAdjointTest()
+-            try:
+-                test.setUp()
+-                test.runTest(save=True)
+-            finally:
+-                test.tearDown()
+-            sys.exit(0)
+-    unittest.main()
+diff --git a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py b/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
+index 0d3a406..4be990d 100644
+--- a/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
++++ b/examples/acoustics_2d_adjoint/test_acoustics_2d_adjoint_forward.py
+@@ -66,15 +66,6 @@ class Acoustics2DAdjointForwardTest(test.AMRClawRegressionTest):
+ 
+         self.success = True
+ 
+-    # def tearDown(self):
+-
+-    #     # Remove adjoint output directory
+-    #     if not self.success:
+-            
+-
+-    #     super(Acoustics2DAdjointFlaggingTest, self).tearDown()
+-
+-
+ 
+ if __name__=="__main__":
+     if len(sys.argv) > 1:
+diff --git a/src/python/amrclaw/compare_gauges.py b/src/python/amrclaw/compare_gauges.py
+index 5e14b01..c68a023 100755
+--- a/src/python/amrclaw/compare_gauges.py
++++ b/src/python/amrclaw/compare_gauges.py
+@@ -1,5 +1,6 @@
+ #!/usr/bin/env python
+ 
++from pathlib import Path
+ import sys
+ 
+ import numpy
+@@ -12,43 +13,49 @@ import clawpack.pyclaw.gauges as gauges
+ def check_old_gauge_data(path, gauge_id):
+ 
+     # Load old gauge data
+-    data = numpy.loadtxt(path)
+-    old_ids = numpy.asarray(data[:, 0], dtype=int)
+-    gauge_indices = numpy.nonzero(old_ids == gauge_id)[0]
+-    q = data[gauge_indices, 3:]
++    # data = numpy.loadtxt(path)
++    # old_ids = numpy.asarray(data[:, 0], dtype=int)
++    # gauge_indices = numpy.nonzero(old_ids == gauge_id)[0]
++    # q = data[gauge_indices, 3:]
+ 
+     # Load new data
+-    gauge = gauges.GaugeSolution(gauge_id, "./regression_data/")
+-
+-    print(numpy.linalg.norm(q - gauge.q.transpose(), ord=2))
+-    print(numpy.argmax(q - gauge.q.transpose()))
++    new_gauge = gauges.GaugeSolution(gauge_id, path)
++    old_gauge = gauges.GaugeSolution(gauge_id, Path() / "regression_data")
++    num_eqn = new_gauge.q.shape[0]
+ 
+     fig = plt.figure()
+-    for i in range(gauge.q.shape[0]):
+-        axes = fig.add_subplot(1, gauge.q.shape[0], i + 1)
+-        axes.plot(q[:, i] - gauge.q[i, :])
+-        axes.set_title("q[%s, :] comparison" % i)
++    if new_gauge.t.shape == old_gauge.t.shape:
++        for i in range(num_eqn):
++            L2_norm = numpy.linalg.norm(new_gauge.q[i, :] - old_gauge.q[i, :], ord=2)
++            print(f"L2|{i}| = {L2_norm}")
++            max_norm = numpy.argmax(new_gauge.q[i, :] - old_gauge.q[i, :])
++            print(f"max|{i}| = {max_norm}")
++
++            axes = fig.add_subplot(1, num_eqn, i + 1)
++            axes.plot(new_gauge.q[i, :] - old_gauge.q[i, :])
++            axes.set_title(f"q[{i}, :] comparison")
++    else:
++        # If the gauge time points do not match just plot them
++        for i in range(num_eqn):
++            ax = fig.add_subplot(1, num_eqn, i + 1)
++            ax.plot(new_gauge.t, new_gauge.q[i, :], 'x', label='new')
++            ax.plot(old_gauge.t, old_gauge.q[i, :], '+', label='old')
++            ax.set_title(f"q[{i}, :] comparison")
+ 
+     return fig
+ 
+ if __name__ == "__main__":
+ 
+-    old_files = []
+-    gauge_ids = []
+-
+     if len(sys.argv) > 1:
+-        # Assume arguments are pairs of file locations and ids
+-        for i in range(1, len(sys.argv), 2):
+-            old_files.append(sys.argv[i])
+-            gauge_ids.append(int(sys.argv[i + 1]))
++        # First argument should be a path to new data
++        path = Path(sys.argv[1])
++        # Second+ arguments are gauge ids to compare
++        gauge_ids = [int(sys.argv[i]) for i in range(2, len(sys.argv))]
+     else:
+-        raise ValueError("Need at least one pair to compare")
+-
+-    print(old_files)
+-    print(gauge_ids)
++        raise ValueError("Need 1 path and a set of gauge ids to compare.")
+ 
+     figures = []
+-    for i in range(len(old_files)):
+-        figures.append(check_old_gauge_data(old_files[i], gauge_ids[i]))
++    for gauge_id in gauge_ids:
++        figures.append(check_old_gauge_data(path, gauge_id))
+ 
+     plt.show()
+\ No newline at end of file
+
+
+===========
+clawutil
+===========
+/Users/mandli/Dropbox/src/clawpack/clawutil
+
+
+
+===========
+pyclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/pyclaw
+
+
+
+===========
+visclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/visclaw
+
+
+
+===========
+riemann
+===========
+/Users/mandli/Dropbox/src/clawpack/riemann
+
+
+
+===========
+geoclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/geoclaw
+

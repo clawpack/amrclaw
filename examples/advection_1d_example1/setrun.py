@@ -150,7 +150,7 @@ def setrun(claw_pkg='amrclaw'):
     
     # Initial time step for variable dt.  
     # (If dt_variable==0 then dt=dt_initial for all steps)
-    clawdata.dt_initial = 0.010000e-01
+    clawdata.dt_initial = 1e-2
     
     # Max time step to be allowed if variable dt used:
     clawdata.dt_max = 1.000000e+99
