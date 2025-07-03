@@ -144,18 +144,18 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
         endif
 
         ! compute intersection of patch with rr bounding box:
-        if (xlower >= rr%x2bb .or. xupper <= rr%x1bb) then
+        if (xlower > rr%x2bb+eps*dx .or. xupper < rr%x1bb-eps*dx) then
             cycle rrloop  ! no intersection
         else
-            i1 = max(floor((rr%x1bb - xlower) / dx) + 1, 1)
-            i2 = min(floor((rr%x2bb -xlower) / dx) + 1, mx)
+            i1 = max(floor((rr%x1bb - xlower + eps*dx) / dx) + 1, 1)
+            i2 = min(floor((rr%x2bb - xlower - eps*dx) / dx) + 1, mx)
         endif
 
-        if (ylower >= rr%y2bb .or. yupper <= rr%y1bb) then
+        if (ylower > rr%y2bb+eps*dy .or. yupper < rr%y1bb-eps*dy) then
             cycle rrloop  ! no intersection
         else
-            j1 = max(floor((rr%y1bb - ylower) / dy) + 1, 1)
-            j2 = min(floor((rr%y2bb - ylower) / dy) + 1, my)
+            j1 = max(floor((rr%y1bb - ylower + eps*dy) / dy) + 1, 1)
+            j2 = min(floor((rr%y2bb - ylower - eps*dy) / dy) + 1, my)
         endif
 
         !write(58,*) 'ixy, ds: ',rr%ixy, rr%ds  ! +++
@@ -178,18 +178,18 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                 x_low = xlower + (i - 1) * dx
                 x_hi = xlower + i * dx
                 if (rr%ds > 0) then
-                    k1 = floor((x_low-rr%s(1) + 1d-6) / rr%ds) + 1
+                    k1 = floor((x_low-rr%s(1) + eps*dx) / rr%ds) + 1
                     k1 = max(k1, 1)
-                    k2 = floor((x_hi-rr%s(1) + 1d-6) / rr%ds) + 1
+                    k2 = floor((x_hi-rr%s(1) - eps*dx) / rr%ds) + 1
                     k2 = min(k2, rr%nrules-1)
                 else
                     ! rr%ds <= 0 means s point are not equally spaced
                     do k=1,rr%nrules
-                        if (x_low < rr%s(k)) exit
+                        if (x_low < rr%s(k) + eps*dx) exit
                         enddo
                     k1 = max(k-1, 1)
                     do k=1,rr%nrules
-                        if (x_hi < rr%s(k)) exit
+                        if (x_hi < rr%s(k) - eps*dx) exit
                         enddo
                     k2 = min(k-1, rr%nrules-1)
                     endif ! rr%ds <= 0
@@ -203,8 +203,8 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                     if (rr%method == 0) then
                         ! pw constant interpolation (rectangles):
                         do k=k1,k2
-                            if ((y_hi > rr%lower(k)) .and. &
-                                (y_low < rr%upper(k))) then
+                            if ((y_hi > rr%lower(k)+eps*dy) .and. &
+                                (y_low < rr%upper(k)-eps*dy)) then
                                 minlevel(i,j) = max(minlevel(i,j), &
                                                     rr%min_level)
                                 maxlevel(i,j) = max(maxlevel(i,j), &
@@ -229,8 +229,8 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                                           + alpha_x_hi * rr%upper(k+1)
                             y_lower_s = min(y_lower_x_low, y_lower_x_hi)
                             y_upper_s = max(y_upper_x_low, y_upper_x_hi)
-                            if ((y_hi > y_lower_s) .and. &
-                                (y_low < y_upper_s)) then
+                            if ((y_hi > y_lower_s+eps*dy) .and. &
+                                (y_low < y_upper_s-eps*dy)) then
                                   minlevel(i,j) = max(minlevel(i,j), &
                                                       rr%min_level)
                                   maxlevel(i,j) = max(maxlevel(i,j), &
@@ -249,18 +249,18 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                     y_low = ylower + (j - 1) * dy
                     y_hi = ylower + j * dy
                     if (rr%ds > 0) then
-                        k1 = floor((y_low-rr%s(1) + 1d-6) / rr%ds) + 1
+                        k1 = floor((y_low-rr%s(1) + eps*dy) / rr%ds) + 1
                         k1 = max(k1, 1)
-                        k2 = floor((y_hi-rr%s(1) + 1d-6) / rr%ds) + 1
+                        k2 = floor((y_hi-rr%s(1) - eps*dy) / rr%ds) + 1
                         k2 = min(k2, rr%nrules-1)
                     else
                         ! rr%ds <= 0 means s point are not equally spaced
                         do k=1,rr%nrules
-                            if (y_low < rr%s(k)) exit
+                            if (y_low < rr%s(k) + eps*dy) exit
                             enddo
                         k1 = max(k-1, 1)
                         do k=1,rr%nrules
-                            if (y_hi < rr%s(k)) exit
+                            if (y_hi < rr%s(k) - eps*dy) exit
                             enddo
                         k2 = min(k-1, rr%nrules-1)
                         endif ! rr%ds <= 0
@@ -274,8 +274,8 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                         if (rr%method == 0) then
                             ! pw constant interpolation (rectangles):
                             do k=k1,k2
-                                if ((x_hi > rr%lower(k)) .and. &
-                                    (x_low < rr%upper(k))) then
+                                if ((x_hi > rr%lower(k)+eps*dx) .and. &
+                                    (x_low < rr%upper(k)-eps*dx)) then
                                     minlevel(i,j) = max(minlevel(i,j), &
                                                         rr%min_level)
                                     maxlevel(i,j) = max(maxlevel(i,j), &
@@ -300,8 +300,8 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                                               + alpha_y_hi * rr%upper(k+1)
                                 x_lower_s = min(x_lower_y_low, x_lower_y_hi)
                                 x_upper_s = max(x_upper_y_low, x_upper_y_hi)
-                                if ((x_hi > x_lower_s) .and. &
-                                    (x_low < x_upper_s)) then
+                                if ((x_hi > x_lower_s+eps*dx) .and. &
+                                    (x_low < x_upper_s-eps*dx)) then
                                       minlevel(i,j) = max(minlevel(i,j), &
                                                           rr%min_level)
                                       maxlevel(i,j) = max(maxlevel(i,j), &
