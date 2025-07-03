@@ -110,9 +110,9 @@ c
       mused  = i0next - 1                    !# space already used
       mwork1 = mwork - mused              !# remaining space (passed to step3)
 
-c 2/28/02 : Added call to b4step3.
-      call b4step3(mbc,mx,my,mz,nvar,q,
-     &             xlowmbc,ylowmbc,zlowmbc,dx,dy,dz,time,dt,maux,aux)
+c     Moved call to b4step to advanc
+c      call b4step3(mbc,mx,my,mz,nvar,q,
+c     &             xlowmbc,ylowmbc,zlowmbc,dx,dy,dz,time,dt,maux,aux)
 
 c
 c

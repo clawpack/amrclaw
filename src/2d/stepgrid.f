@@ -122,9 +122,9 @@ C       mused  = i0next - 1                    !# space already used
 C       mwork1 = mwork - mused              !# remaining space (passed to step2)
 
 c
-c
-      call b4step2(mbc,mx,my,nvar,q,
-     &             xlowmbc,ylowmbc,dx,dy,time,dt,maux,aux)
+c      This call has been moved out to advanc
+C       call b4step2(mbc,mx,my,nvar,q,
+C      &             xlowmbc,ylowmbc,dx,dy,time,dt,maux,aux)
 c
 c
 c     # take one step on the conservation law:

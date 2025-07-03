@@ -214,6 +214,8 @@ c
 
 
          locaux = node(storeaux,mptr)
+         call b4step1(nghost, nx, nvar, alloc(locnew), rnode(cornxlo,mptr), 
+     &                hx, time, dt, naux, alloc(locaux))
 c
          if (node(ffluxptr,mptr) .ne. 0) then
 

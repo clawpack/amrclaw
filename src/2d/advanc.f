@@ -198,6 +198,7 @@ c
       nx    = node(ndihi,mptr) - node(ndilo,mptr) + 1
       ny    = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
       time  = rnode(timemult,mptr)
+      dt    = possk(level)
 
 !$    mythread = omp_get_thread_num()
 
@@ -212,7 +213,7 @@ c  of old and new time solution values.
 c
          if (level .lt. mxnest) then
              ntot   = mitot * mjtot * nvar
-cdir$ ivdep
+c dir$ ivdep
              do  i = 1, ntot
                alloc(locold + i - 1) = alloc(locnew + i - 1)
              end do
@@ -226,9 +227,12 @@ c
       rvoll(level) = rvoll(level) + nx * ny
 !$OMP END CRITICAL(rv)
 
-
+c        Call b4step2 here so that time dependent arrays can be filled properly
          locaux = node(storeaux,mptr)
-c
+         call b4step2(nghost, nx, ny, nvar, alloc(locnew), 
+     &                rnode(cornxlo,mptr), rnode(cornylo,mptr), hx, hy, 
+     &                time, dt, naux, alloc(locaux))
+
          if (node(ffluxptr,mptr) .ne. 0) then
             lenbc  = 2*(nx/intratx(level-1)+ny/intraty(level-1))
             locsvf = node(ffluxptr,mptr)
