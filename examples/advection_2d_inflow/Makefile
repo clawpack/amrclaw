@@ -18,7 +18,6 @@ SETRUN_FILE = setrun.py             # File containing function to make data
 OUTDIR = _output                    # Directory for output
 SETPLOT_FILE = setplot.py           # File containing function to set plots
 PLOTDIR = _plots                    # Directory for plots
-
 OVERWRITE ?= True                   # False ==> make a copy of OUTDIR first
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
@@ -50,14 +49,20 @@ EXCLUDE_SOURCES = \
 MODULES = \
 
 SOURCES = \
-  qinit.f \
-  qtrue.f90 \
-  setprob.f \
-  bc2amr.f90 \
-  $(CLAW)/riemann/src/rpn2_advection.f90 \
-  $(CLAW)/riemann/src/rpt2_advection.f90
+	qinit.f90 \
+	qtrue.f90 \
+	setprob.f \
+	bc2amr.f90 \
+	$(CLAW)/riemann/src/rpn2_advection.f90 \
+	$(CLAW)/riemann/src/rpt2_advection.f90
+
+# Replace special source if TEST is defined
+ifdef TEST
+	EXCLUDE_SOURCES = bc2amr.f90 qinit.f90
+	SOURCES := $(subst bc2amr.f90, test_bc2amr.f, $(SOURCES))
+	SOURCES := $(subst qtrue.f90, test_qtrue.f, $(SOURCES))
+endif
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
 include $(CLAWMAKE)
-

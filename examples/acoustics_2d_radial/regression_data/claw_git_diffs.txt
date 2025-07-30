@@ -1,0 +1,647 @@
+Clawpack git diffs...
+
+===========
+clawpack
+===========
+/Users/mandli/Dropbox/src/clawpack/
+
+diff --git a/amrclaw b/amrclaw
+index 452d485..2277a19 160000
+--- a/amrclaw
++++ b/amrclaw
+@@ -1 +1 @@
+-Subproject commit 452d485e4032c085d0cc96b97acd054722c38326
++Subproject commit 2277a19370e3905eaeb98bfc4e34aeb50fad1829-dirty
+diff --git a/classic b/classic
+index 5f178e4..a4c0899 160000
+--- a/classic
++++ b/classic
+@@ -1 +1 @@
+-Subproject commit 5f178e4c8eb59d6f16f3d21c654b89033bd9be92
++Subproject commit a4c08996cb6cb4c13cf8262a1d5edd7acb9359b3
+diff --git a/geoclaw b/geoclaw
+index 271bea3..6c59113 160000
+--- a/geoclaw
++++ b/geoclaw
+@@ -1 +1 @@
+-Subproject commit 271bea35049d82217c789e41b1de2902d53583d3
++Subproject commit 6c591138b2b4f94315b4c1bc7b7a32ce7b3fa733-dirty
+diff --git a/pyclaw b/pyclaw
+index 60de625..a978283 160000
+--- a/pyclaw
++++ b/pyclaw
+@@ -1 +1 @@
+-Subproject commit 60de625fb28b2e19db828d06db0cc3247109bd24
++Subproject commit a978283a5bbfd2dec37344832522085bf703005e
+diff --git a/visclaw b/visclaw
+index 44a1d2e..04c11f6 160000
+--- a/visclaw
++++ b/visclaw
+@@ -1 +1 @@
+-Subproject commit 44a1d2ea7073ab65c378e945d1bd47bb762e9a5f
++Subproject commit 04c11f6dc5a83fc996e1fd225dd1b77805992496
+
+
+===========
+classic
+===========
+/Users/mandli/Dropbox/src/clawpack/classic
+
+
+
+===========
+amrclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/amrclaw
+
+diff --git a/examples/acoustics_2d_adjoint/setrun.py b/examples/acoustics_2d_adjoint/setrun.py
+index 26c8980..872b11a 100644
+--- a/examples/acoustics_2d_adjoint/setrun.py
++++ b/examples/acoustics_2d_adjoint/setrun.py
+@@ -357,7 +357,7 @@ def setrun(claw_pkg='amrclaw'):
+     amrdata.gprint = False      # grid bisection/clustering
+     amrdata.nprint = False      # proper nesting output
+     amrdata.pprint = False      # proj. of tagged points
+-    amrdata.rprint = False      # print regridding summary
++    amrdata.rprint = True      # print regridding summary
+     amrdata.sprint = False      # space/memory output
+     amrdata.tprint = False      # time step reporting each level
+     amrdata.uprint = False      # update/upbnd reporting
+diff --git a/examples/acoustics_2d_radial/regression_data/claw_git_diffs.txt b/examples/acoustics_2d_radial/regression_data/claw_git_diffs.txt
+index 5d20b91..e69de29 100644
+--- a/examples/acoustics_2d_radial/regression_data/claw_git_diffs.txt
++++ b/examples/acoustics_2d_radial/regression_data/claw_git_diffs.txt
+@@ -1,49 +0,0 @@
+-Clawpack git diffs...
+-
+-===========
+-classic
+-===========
+-/Users/rjl/git/clawpack/classic
+-
+-
+-
+-===========
+-amrclaw
+-===========
+-/Users/rjl/git/clawpack/amrclaw
+-
+-
+-
+-===========
+-clawutil
+-===========
+-/Users/rjl/git/clawpack/clawutil
+-
+-
+-
+-===========
+-pyclaw
+-===========
+-/Users/rjl/git/clawpack/pyclaw
+-
+-
+-
+-===========
+-visclaw
+-===========
+-/Users/rjl/git/clawpack/visclaw
+-
+-
+-
+-===========
+-riemann
+-===========
+-/Users/rjl/git/clawpack/riemann
+-
+-
+-
+-===========
+-geoclaw
+-===========
+-/Users/rjl/git/clawpack/geoclaw
+-
+diff --git a/examples/acoustics_2d_radial/regression_data/claw_git_status.txt b/examples/acoustics_2d_radial/regression_data/claw_git_status.txt
+index fb51b26..a07b6f4 100644
+--- a/examples/acoustics_2d_radial/regression_data/claw_git_status.txt
++++ b/examples/acoustics_2d_radial/regression_data/claw_git_status.txt
+@@ -1,90 +1,117 @@
+ Clawpack Git Status 
+-Diffs can be found in /Users/rjl/git/clawpack/amrclaw/tests/acoustics_2d_radial/regression_data/claw_git_diffs.txt
++Diffs can be found in /Users/mandli/Library/CloudStorage/Dropbox/src/clawpack/amrclaw/examples/acoustics_2d_radial/regression_data/claw_git_diffs.txt
+ 
+-Sun, 09 Oct 2016 09:21:33 PDT
+-$CLAW = /Users/rjl/git/clawpack
+-$FC = gfortran
++Sun, 18 May 2025 11:58:48 MDT
++$CLAW = /Users/mandli/Dropbox/src/clawpack
++$FC = not set
++
++
++===========
++clawpack
++===========
++/Users/mandli/Dropbox/src/clawpack/
++
++--- last commit ---
++98ba40b (HEAD -> master, tag: v5.12.0, clawpack/master, clawpack/HEAD) Merge pull request #264 from rjleveque/v5.12.0fix
++
++--- branch and status ---
++## master...clawpack/master
++ M amrclaw
++ M classic
++ M geoclaw
++ M pyclaw
++ M visclaw
+ 
+ 
+ ===========
+ classic
+ ===========
+-/Users/rjl/git/clawpack/classic
++/Users/mandli/Dropbox/src/clawpack/classic
+ 
+ --- last commit ---
+-1789eeb added claw_git status files in 2d
++a4c0899 (HEAD -> add-test-badge, mandli/add-test-badge) Add better description and links to README
+ 
+ --- branch and status ---
+-## regression_claw_git_status
++## add-test-badge...clawpack/master [ahead 11]
+ 
+ 
+ ===========
+ amrclaw
+ ===========
+-/Users/rjl/git/clawpack/amrclaw
++/Users/mandli/Dropbox/src/clawpack/amrclaw
+ 
+ --- last commit ---
+-6aada0a Merge pull request #175 from rjleveque/regression_data_copy_gauges
++2277a19 (HEAD -> update-tests, mandli/update-tests) Change name of acoustics 2d radial test
+ 
+ --- branch and status ---
+-## master...origin/master
++## update-tests...clawpack/master [ahead 35]
++ M examples/acoustics_2d_adjoint/setrun.py
++ M examples/acoustics_2d_radial/regression_data/claw_git_diffs.txt
++ M examples/acoustics_2d_radial/regression_data/claw_git_status.txt
++ M examples/acoustics_2d_radial/regression_data/gauge00000.txt
++ M examples/acoustics_2d_radial/regression_data/gauge00001.txt
++ M examples/acoustics_2d_radial/regression_data/gauge00002.txt
++ M examples/acoustics_2d_radial/test_acoustics_2d_radial.py
++ M src/python/amrclaw/compare_gauges.py
+ 
+ 
+ ===========
+ clawutil
+ ===========
+-/Users/rjl/git/clawpack/clawutil
++/Users/mandli/Dropbox/src/clawpack/clawutil
+ 
+ --- last commit ---
+-bbc12d6 Merge pull request #105 from mandli/gauge-test-update
++2f7910a (HEAD -> use-pytest-temp-dirs, tag: v5.12.0, clawpack/master, clawpack/HEAD, master) Merge pull request #180 from rjleveque/clawmultip
+ 
+ --- branch and status ---
+-## master...origin/master
++## use-pytest-temp-dirs...clawpack/master
+ 
+ 
+ ===========
+ pyclaw
+ ===========
+-/Users/rjl/git/clawpack/pyclaw
++/Users/mandli/Dropbox/src/clawpack/pyclaw
+ 
+ --- last commit ---
+-314fd93 Merge pull request #541 from mandli/add-new-gauges
++a978283a (HEAD -> master) Update 2D SWEs regression data (#742)
+ 
+ --- branch and status ---
+-## master...origin/master
++## master...clawpack/master [behind 1]
+ 
+ 
+ ===========
+ visclaw
+ ===========
+-/Users/rjl/git/clawpack/visclaw
++/Users/mandli/Dropbox/src/clawpack/visclaw
+ 
+ --- last commit ---
+-72ee0db Merge pull request #187 from rjleveque/remove_ioff
++04c11f6 (HEAD -> master) Remove Cygwin Code (#313)
+ 
+ --- branch and status ---
+-## master...origin/master
++## master...clawpack/master [behind 2]
+ 
+ 
+ ===========
+ riemann
+ ===========
+-/Users/rjl/git/clawpack/riemann
++/Users/mandli/Dropbox/src/clawpack/riemann
+ 
+ --- last commit ---
+-48a46d3 Merge pull request #113 from rjleveque/shallow_roe_needs_grav
++c29dcab (HEAD -> master, tag: v5.12.0, dlgeorge/master, dlgeorge/HEAD, clawpack/master, clawpack/HEAD) Merge pull request #181 from clawpack/set_fwave
+ 
+ --- branch and status ---
+-## master...origin/master
++## master...clawpack/master
+ 
+ 
+ ===========
+ geoclaw
+ ===========
+-/Users/rjl/git/clawpack/geoclaw
++/Users/mandli/Dropbox/src/clawpack/geoclaw
+ 
+ --- last commit ---
+-7edbc79 Merge pull request #227 from rjleveque/gauge_error_message
++6c591138 (HEAD -> update-pytest, mandli/update-pytest) Add time check on gauge updates
+ 
+ --- branch and status ---
+-## master...origin/master
++## update-pytest...clawpack/master [ahead 86]
++ M examples/shallow/vortex/run_tests.py
++ M src/python/geoclaw/test.py
+diff --git a/examples/acoustics_2d_radial/regression_data/gauge00000.txt b/examples/acoustics_2d_radial/regression_data/gauge00000.txt
+index e344023..cffbc7e 100644
+--- a/examples/acoustics_2d_radial/regression_data/gauge00000.txt
++++ b/examples/acoustics_2d_radial/regression_data/gauge00000.txt
+@@ -1,5 +1,5 @@
+-# gauge_id=     0 location=(   0.0000000E+00   0.0000000E+00 ) num_eqn=  3
+-# Columns: level time q(1 ... num_eqn)
++# gauge_id= 0 location=(  0.0000000000E+00  0.0000000000E+00 ) num_var=  3
++# level, time, q[  1  2  3], aux[]
+    02  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+    02  0.5000000E-02  0.0000000E+00  0.0000000E+00  0.0000000E+00
+    02  0.1000000E-01  0.0000000E+00  0.0000000E+00  0.0000000E+00
+@@ -18,29 +18,29 @@
+    03  0.7750000E-01  0.0000000E+00  0.0000000E+00  0.0000000E+00
+    03  0.8200000E-01  0.0000000E+00  0.0000000E+00  0.0000000E+00
+    03  0.8650000E-01  0.0000000E+00  0.0000000E+00  0.0000000E+00
+-   03  0.9100000E-01  0.5457821E-13  0.4535950E-28 -0.1450115E-17
+-   03  0.9550000E-01  0.3013269E-11  0.1262177E-26  0.2068208E-15
+-   03  0.1000000E+00  0.1295624E-09 -0.2746498E-25  0.1308605E-13
+-   03  0.1045000E+00  0.2584008E-08 -0.7754818E-24  0.1822093E-12
+-   03  0.1090000E+00  0.3910585E-07 -0.1571643E-22  0.1592747E-10
+-   03  0.1135000E+00  0.3944045E-06 -0.1522012E-21 -0.8442456E-09
+-   03  0.1180000E+00  0.3619620E-05 -0.1773475E-20  0.1336991E-06
+-   03  0.1225000E+00  0.2347050E-04 -0.1249374E-19  0.9871381E-06
+-   03  0.1270000E+00  0.1430797E-03 -0.6437450E-19  0.1033787E-04
+-   03  0.1315000E+00  0.6923944E-03 -0.2710505E-18  0.6539284E-04
+-   03  0.1360000E+00  0.2656131E-02 -0.9893345E-18  0.2086919E-03
+-   03  0.1405000E+00  0.8780676E-02 -0.3333922E-17  0.4844156E-03
+-   03  0.1450000E+00  0.2567692E-01 -0.9324139E-17  0.1045580E-02
+-   03  0.1495000E+00  0.6661992E-01 -0.2255141E-16  0.2137248E-02
+-   03  0.1540000E+00  0.1521892E+00 -0.4423545E-16  0.3877709E-02
+-   03  0.1585000E+00  0.3041635E+00 -0.7025630E-16  0.5944875E-02
+-   03  0.1630000E+00  0.5321576E+00 -0.9540979E-16  0.6703871E-02
+-   03  0.1675000E+00  0.8270505E+00 -0.1110223E-15  0.3859577E-02
+-   03  0.1720000E+00  0.1169801E+01  0.3261280E-15 -0.2712765E-02
+-   03  0.1765000E+00  0.1542702E+01  0.3053113E-15 -0.1006593E-01
+-   03  0.1810000E+00  0.1931278E+01  0.3122502E-15 -0.1434681E-01
+-   03  0.1855000E+00  0.2321797E+01  0.2758210E-15 -0.1357496E-01
+-   03  0.1900000E+00  0.2705077E+01 -0.2411266E-15 -0.8684163E-02
+-   03  0.1925000E+00  0.2913425E+01 -0.2220446E-15 -0.5204191E-02
+-   03  0.1950000E+00  0.3117516E+01 -0.2099015E-15 -0.1869243E-02
+-   03  0.1975000E+00  0.3315506E+01 -0.1769418E-15  0.9214846E-03
++   03  0.9100000E-01  0.5457531E-13  0.3510431E-28  0.9545217E-28
++   03  0.9550000E-01  0.3014093E-11  0.6815758E-27  0.4038968E-26
++   03  0.1000000E+00  0.1296075E-09 -0.1615587E-26  0.9693523E-25
++   03  0.1045000E+00  0.2584590E-08 -0.3101927E-24  0.1214922E-23
++   03  0.1090000E+00  0.3914902E-07 -0.8271806E-23  0.1282130E-22
++   03  0.1135000E+00  0.3922314E-06 -0.9595295E-22  0.1356576E-21
++   03  0.1180000E+00  0.3895977E-05 -0.1376429E-20 -0.1090555E-19
++   03  0.1225000E+00  0.2550519E-04 -0.1185846E-19 -0.7411538E-19
++   03  0.1270000E+00  0.1640497E-03 -0.6437450E-19 -0.4167402E-18
++   03  0.1315000E+00  0.8245422E-03 -0.2879912E-18 -0.1653408E-17
++   03  0.1360000E+00  0.3077071E-02 -0.1002887E-17 -0.5285486E-17
++   03  0.1405000E+00  0.9754356E-02 -0.3469447E-17 -0.1832302E-16
++   03  0.1450000E+00  0.2776907E-01 -0.9432559E-17 -0.5724587E-16
++   03  0.1495000E+00  0.7087632E-01 -0.2059984E-16 -0.1431147E-15
++   03  0.1540000E+00  0.1598826E+00 -0.5160802E-16 -0.2784231E-15
++   03  0.1585000E+00  0.3159271E+00 -0.8153200E-16 -0.4258746E-15
++   03  0.1630000E+00  0.5453255E+00 -0.1110223E-15 -0.5412337E-15
++   03  0.1675000E+00  0.8344281E+00 -0.1214306E-15 -0.6383782E-15
++   03  0.1720000E+00  0.1163950E+01  0.3278627E-15 -0.7233797E-15
++   03  0.1765000E+00  0.1522102E+01  0.3139849E-15 -0.7997075E-15
++   03  0.1810000E+00  0.1902145E+01  0.3330669E-15 -0.7684825E-15
++   03  0.1855000E+00  0.2294317E+01  0.3226586E-15 -0.6591949E-15
++   03  0.1900000E+00  0.2687544E+01 -0.2029626E-15 -0.5273559E-15
++   03  0.1925000E+00  0.2902950E+01 -0.2237793E-15 -0.4215378E-15
++   03  0.1950000E+00  0.3113810E+01 -0.1769418E-15 -0.2740863E-15
++   03  0.1975000E+00  0.3317478E+01 -0.1630640E-15 -0.1214306E-15
+diff --git a/examples/acoustics_2d_radial/regression_data/gauge00001.txt b/examples/acoustics_2d_radial/regression_data/gauge00001.txt
+index 342ae09..f2c66dc 100644
+--- a/examples/acoustics_2d_radial/regression_data/gauge00001.txt
++++ b/examples/acoustics_2d_radial/regression_data/gauge00001.txt
+@@ -1,50 +1,50 @@
+-# gauge_id=     1 location=(   0.7000000E+00   0.0000000E+00 ) num_eqn=  3
+-# Columns: level time q(1 ... num_eqn)
++# gauge_id= 1 location=(  0.7000000000E+00  0.0000000000E+00 ) num_var=  3
++# level, time, q[  1  2  3], aux[]
+    03  0.0000000E+00  0.1530270E-02  0.0000000E+00  0.0000000E+00
+    03  0.2500000E-02  0.3389274E-02  0.1488625E-02  0.6564505E-20
+    03  0.5000000E-02  0.7782912E-02  0.3853952E-02  0.2075231E-19
+    03  0.7500000E-02  0.1494704E-01  0.7501528E-02  0.4319868E-19
+    03  0.1000000E-01  0.2507086E-01  0.1261683E-01  0.8131516E-19
+-   03  0.1450000E-01  0.5081683E-01  0.2562081E-01  0.1558541E-18
+-   03  0.1900000E-01  0.8503903E-01  0.4295102E-01  0.2913793E-18
++   03  0.1450000E-01  0.5081683E-01  0.2562081E-01  0.1694066E-18
++   03  0.1900000E-01  0.8503903E-01  0.4295102E-01  0.2778268E-18
+    03  0.2350000E-01  0.1265908E+00  0.6408780E-01  0.4065758E-18
+-   03  0.2800000E-01  0.1745795E+00  0.8856866E-01  0.5963112E-18
+-   03  0.3250000E-01  0.2279114E+00  0.1159076E+00  0.7589415E-18
+-   03  0.3700000E-01  0.2854601E+00  0.1454662E+00  0.8944668E-18
+-   03  0.4150000E-01  0.3459104E+00  0.1766470E+00 -0.3577867E-17
+-   03  0.4600000E-01  0.4078325E+00  0.2088320E+00 -0.2520770E-16
+-   03  0.5050000E-01  0.4699362E+00  0.2413402E+00 -0.1534146E-15
+-   03  0.5500000E-01  0.5309843E+00  0.2734700E+00 -0.3467821E-15
+-   03  0.5950000E-01  0.5896669E+00  0.3046011E+00  0.4923362E-15
+-   03  0.6400000E-01  0.6448639E+00  0.3340773E+00  0.8096930E-14
+-   03  0.6850000E-01  0.6953803E+00  0.3613726E+00  0.3851822E-12
+-   03  0.7300000E-01  0.7400581E+00  0.3860089E+00 -0.2353131E-10
+-   03  0.7750000E-01  0.7780768E+00  0.4074597E+00  0.4427735E-09
+-   03  0.8200000E-01  0.8090812E+00  0.4254694E+00 -0.4504734E-08
+-   03  0.8650000E-01  0.8325861E+00  0.4397943E+00  0.2489246E-07
+-   03  0.9100000E-01  0.8475417E+00  0.4498865E+00 -0.4954316E-07
+-   03  0.9550000E-01  0.8519520E+00  0.4547465E+00 -0.1257756E-06
+-   03  0.1000000E+00  0.8468650E+00  0.4548133E+00  0.3426681E-06
+-   03  0.1045000E+00  0.8360346E+00  0.4519377E+00  0.1563157E-05
+-   03  0.1090000E+00  0.8195525E+00  0.4462434E+00 -0.1141723E-05
+-   03  0.1135000E+00  0.7945986E+00  0.4362872E+00 -0.6489831E-05
+-   03  0.1180000E+00  0.7609414E+00  0.4218794E+00 -0.2345041E-04
+-   03  0.1225000E+00  0.7202687E+00  0.4038282E+00 -0.5565717E-04
+-   03  0.1270000E+00  0.6743347E+00  0.3829893E+00 -0.8980372E-04
+-   03  0.1315000E+00  0.6242608E+00  0.3599160E+00 -0.9733234E-04
+-   03  0.1360000E+00  0.5708701E+00  0.3350169E+00 -0.9080028E-04
+-   03  0.1405000E+00  0.5150661E+00  0.3087506E+00 -0.1215573E-03
+-   03  0.1450000E+00  0.4580296E+00  0.2816792E+00 -0.1492119E-03
+-   03  0.1495000E+00  0.4011378E+00  0.2543956E+00 -0.9038192E-04
+-   03  0.1540000E+00  0.3454311E+00  0.2274587E+00  0.5247940E-05
+-   03  0.1585000E+00  0.2915456E+00  0.2013769E+00 -0.5561261E-06
+-   03  0.1630000E+00  0.2403131E+00  0.1766188E+00 -0.1642506E-03
+-   03  0.1675000E+00  0.1929613E+00  0.1536641E+00 -0.4131444E-03
+-   03  0.1720000E+00  0.1506867E+00  0.1329738E+00 -0.5650929E-03
+-   03  0.1765000E+00  0.1140229E+00  0.1148662E+00 -0.4813493E-03
+-   03  0.1810000E+00  0.8307777E-01  0.9954636E-01 -0.1626304E-03
+-   03  0.1855000E+00  0.5782448E-01  0.8708797E-01  0.2631905E-03
+-   03  0.1900000E+00  0.3971416E-01  0.7814213E-01  0.6119285E-03
+-   03  0.1925000E+00  0.3356848E-01  0.7507359E-01  0.7153907E-03
+-   03  0.1950000E+00  0.3008312E-01  0.7329647E-01  0.7462819E-03
+-   03  0.1975000E+00  0.2840056E-01  0.7238463E-01  0.7182202E-03
++   03  0.2800000E-01  0.1745795E+00  0.8856866E-01  0.5692061E-18
++   03  0.3250000E-01  0.2279114E+00  0.1159076E+00  0.7318365E-18
++   03  0.3700000E-01  0.2854601E+00  0.1454662E+00  0.5421011E-18
++   03  0.4150000E-01  0.3459104E+00  0.1766470E+00  0.1192622E-17
++   03  0.4600000E-01  0.4078325E+00  0.2088320E+00  0.1301043E-17
++   03  0.5050000E-01  0.4699362E+00  0.2413402E+00  0.2005774E-17
++   03  0.5500000E-01  0.5309843E+00  0.2734700E+00 -0.1951564E-17
++   03  0.5950000E-01  0.5896669E+00  0.3046011E+00 -0.5312591E-17
++   03  0.6400000E-01  0.6448639E+00  0.3340773E+00  0.5529431E-17
++   03  0.6850000E-01  0.6953803E+00  0.3613726E+00  0.1691355E-16
++   03  0.7300000E-01  0.7400581E+00  0.3860089E+00  0.2471981E-16
++   03  0.7750000E-01  0.7780768E+00  0.4074597E+00  0.1973248E-16
++   03  0.8200000E-01  0.8090812E+00  0.4254694E+00  0.5854692E-17
++   03  0.8650000E-01  0.8325861E+00  0.4397943E+00 -0.1691355E-16
++   03  0.9100000E-01  0.8475416E+00  0.4498865E+00 -0.1593777E-16
++   03  0.9550000E-01  0.8519517E+00  0.4547465E+00  0.1550409E-16
++   03  0.1000000E+00  0.8468657E+00  0.4548133E+00  0.2385245E-16
++   03  0.1045000E+00  0.8360378E+00  0.4519381E+00  0.1463673E-16
++   03  0.1090000E+00  0.8195502E+00  0.4462438E+00  0.7372575E-17
++   03  0.1135000E+00  0.7945855E+00  0.4362860E+00  0.2168404E-18
++   03  0.1180000E+00  0.7608938E+00  0.4218740E+00  0.3155028E-16
++   03  0.1225000E+00  0.7201549E+00  0.4038131E+00  0.5692061E-16
++   03  0.1270000E+00  0.6741499E+00  0.3829574E+00  0.8521829E-16
++   03  0.1315000E+00  0.6240571E+00  0.3598664E+00  0.6895526E-16
++   03  0.1360000E+00  0.5706764E+00  0.3349586E+00  0.3610393E-16
++   03  0.1405000E+00  0.5148116E+00  0.3086910E+00  0.2276825E-16
++   03  0.1450000E+00  0.4577248E+00  0.2816155E+00  0.3924812E-16
++   03  0.1495000E+00  0.4009554E+00  0.2543245E+00  0.6521476E-16
++   03  0.1540000E+00  0.3454378E+00  0.2273801E+00  0.5914323E-16
++   03  0.1585000E+00  0.2915326E+00  0.2012864E+00  0.3306817E-16
++   03  0.1630000E+00  0.2399690E+00  0.1765111E+00  0.3382711E-16
++   03  0.1675000E+00  0.1921373E+00  0.1535516E+00  0.6711211E-16
++   03  0.1720000E+00  0.1496109E+00  0.1328994E+00  0.9297034E-16
++   03  0.1765000E+00  0.1131930E+00  0.1148891E+00  0.8031228E-16
++   03  0.1810000E+00  0.8296547E-01  0.9970297E-01  0.5483352E-16
++   03  0.1855000E+00  0.5861170E-01  0.8736292E-01  0.5651404E-16
++   03  0.1900000E+00  0.4100150E-01  0.7815971E-01  0.6857579E-16
++   03  0.1925000E+00  0.3526205E-01  0.7539873E-01  0.5343761E-16
++   03  0.1950000E+00  0.3191963E-01  0.7382308E-01  0.3935654E-16
++   03  0.1975000E+00  0.3013686E-01  0.7298327E-01  0.2190088E-16
+diff --git a/examples/acoustics_2d_radial/regression_data/gauge00002.txt b/examples/acoustics_2d_radial/regression_data/gauge00002.txt
+index 795df03..7172c57 100644
+--- a/examples/acoustics_2d_radial/regression_data/gauge00002.txt
++++ b/examples/acoustics_2d_radial/regression_data/gauge00002.txt
+@@ -1,14 +1,14 @@
+-# gauge_id=     2 location=(   0.4949747E+00   0.4949747E+00 ) num_eqn=  3
+-# Columns: level time q(1 ... num_eqn)
++# gauge_id= 2 location=(  0.4949747468E+00  0.4949747468E+00 ) num_var=  3
++# level, time, q[  1  2  3], aux[]
+    01  0.0000000E+00  0.1591803E-01  0.0000000E+00  0.0000000E+00
+    01  0.1000000E-01  0.3937197E-01  0.1140435E-01  0.1140435E-01
+-   01  0.2800000E-01  0.1756309E+00  0.6289050E-01  0.6289054E-01
+-   01  0.4600000E-01  0.3979571E+00  0.1441697E+00  0.1441765E+00
+-   01  0.6400000E-01  0.6289406E+00  0.2309028E+00  0.2308879E+00
+-   01  0.8200000E-01  0.7902318E+00  0.2948214E+00  0.2944746E+00
+-   01  0.1000000E+00  0.8341522E+00  0.3157860E+00  0.3178199E+00
+-   01  0.1180000E+00  0.7562423E+00  0.2953969E+00  0.2972571E+00
+-   01  0.1360000E+00  0.5857338E+00  0.2409016E+00  0.2424264E+00
+-   01  0.1540000E+00  0.3691611E+00  0.1681510E+00  0.1682354E+00
+-   01  0.1720000E+00  0.1741381E+00  0.1019181E+00  0.1006962E+00
+-   01  0.1900000E+00  0.5333145E-01  0.6013787E-01  0.5817640E-01
++   01  0.2800000E-01  0.1756315E+00  0.6289077E-01  0.6289077E-01
++   01  0.4600000E-01  0.3979269E+00  0.1441616E+00  0.1441611E+00
++   01  0.6400000E-01  0.6289233E+00  0.2308928E+00  0.2308866E+00
++   01  0.8200000E-01  0.7917675E+00  0.2951954E+00  0.2952670E+00
++   01  0.1000000E+00  0.8321415E+00  0.3159597E+00  0.3166617E+00
++   01  0.1180000E+00  0.7563446E+00  0.2952573E+00  0.2973830E+00
++   01  0.1360000E+00  0.5865267E+00  0.2409570E+00  0.2426112E+00
++   01  0.1540000E+00  0.3694451E+00  0.1683327E+00  0.1684688E+00
++   01  0.1720000E+00  0.1742014E+00  0.1019187E+00  0.1007377E+00
++   01  0.1900000E+00  0.5268770E-01  0.5984496E-01  0.5808577E-01
+diff --git a/examples/acoustics_2d_radial/test_acoustics_2d_radial.py b/examples/acoustics_2d_radial/test_acoustics_2d_radial.py
+index 8d63cac..08a2901 100644
+--- a/examples/acoustics_2d_radial/test_acoustics_2d_radial.py
++++ b/examples/acoustics_2d_radial/test_acoustics_2d_radial.py
+@@ -40,7 +40,7 @@ if __name__=="__main__":
+     if len(sys.argv) > 1:
+         if bool(sys.argv[1]):
+             # Fake the setup and save out output
+-            test = Acoustics2DTest()
++            test = Acoustics2DRadialTest()
+             try:
+                 test.setUp()
+                 test.runTest(save=True)
+diff --git a/src/python/amrclaw/compare_gauges.py b/src/python/amrclaw/compare_gauges.py
+index 5e14b01..c68a023 100755
+--- a/src/python/amrclaw/compare_gauges.py
++++ b/src/python/amrclaw/compare_gauges.py
+@@ -1,5 +1,6 @@
+ #!/usr/bin/env python
+ 
++from pathlib import Path
+ import sys
+ 
+ import numpy
+@@ -12,43 +13,49 @@ import clawpack.pyclaw.gauges as gauges
+ def check_old_gauge_data(path, gauge_id):
+ 
+     # Load old gauge data
+-    data = numpy.loadtxt(path)
+-    old_ids = numpy.asarray(data[:, 0], dtype=int)
+-    gauge_indices = numpy.nonzero(old_ids == gauge_id)[0]
+-    q = data[gauge_indices, 3:]
++    # data = numpy.loadtxt(path)
++    # old_ids = numpy.asarray(data[:, 0], dtype=int)
++    # gauge_indices = numpy.nonzero(old_ids == gauge_id)[0]
++    # q = data[gauge_indices, 3:]
+ 
+     # Load new data
+-    gauge = gauges.GaugeSolution(gauge_id, "./regression_data/")
+-
+-    print(numpy.linalg.norm(q - gauge.q.transpose(), ord=2))
+-    print(numpy.argmax(q - gauge.q.transpose()))
++    new_gauge = gauges.GaugeSolution(gauge_id, path)
++    old_gauge = gauges.GaugeSolution(gauge_id, Path() / "regression_data")
++    num_eqn = new_gauge.q.shape[0]
+ 
+     fig = plt.figure()
+-    for i in range(gauge.q.shape[0]):
+-        axes = fig.add_subplot(1, gauge.q.shape[0], i + 1)
+-        axes.plot(q[:, i] - gauge.q[i, :])
+-        axes.set_title("q[%s, :] comparison" % i)
++    if new_gauge.t.shape == old_gauge.t.shape:
++        for i in range(num_eqn):
++            L2_norm = numpy.linalg.norm(new_gauge.q[i, :] - old_gauge.q[i, :], ord=2)
++            print(f"L2|{i}| = {L2_norm}")
++            max_norm = numpy.argmax(new_gauge.q[i, :] - old_gauge.q[i, :])
++            print(f"max|{i}| = {max_norm}")
++
++            axes = fig.add_subplot(1, num_eqn, i + 1)
++            axes.plot(new_gauge.q[i, :] - old_gauge.q[i, :])
++            axes.set_title(f"q[{i}, :] comparison")
++    else:
++        # If the gauge time points do not match just plot them
++        for i in range(num_eqn):
++            ax = fig.add_subplot(1, num_eqn, i + 1)
++            ax.plot(new_gauge.t, new_gauge.q[i, :], 'x', label='new')
++            ax.plot(old_gauge.t, old_gauge.q[i, :], '+', label='old')
++            ax.set_title(f"q[{i}, :] comparison")
+ 
+     return fig
+ 
+ if __name__ == "__main__":
+ 
+-    old_files = []
+-    gauge_ids = []
+-
+     if len(sys.argv) > 1:
+-        # Assume arguments are pairs of file locations and ids
+-        for i in range(1, len(sys.argv), 2):
+-            old_files.append(sys.argv[i])
+-            gauge_ids.append(int(sys.argv[i + 1]))
++        # First argument should be a path to new data
++        path = Path(sys.argv[1])
++        # Second+ arguments are gauge ids to compare
++        gauge_ids = [int(sys.argv[i]) for i in range(2, len(sys.argv))]
+     else:
+-        raise ValueError("Need at least one pair to compare")
+-
+-    print(old_files)
+-    print(gauge_ids)
++        raise ValueError("Need 1 path and a set of gauge ids to compare.")
+ 
+     figures = []
+-    for i in range(len(old_files)):
+-        figures.append(check_old_gauge_data(old_files[i], gauge_ids[i]))
++    for gauge_id in gauge_ids:
++        figures.append(check_old_gauge_data(path, gauge_id))
+ 
+     plt.show()
+\ No newline at end of file
+
+
+===========
+clawutil
+===========
+/Users/mandli/Dropbox/src/clawpack/clawutil
+
+
+
+===========
+pyclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/pyclaw
+
+
+
+===========
+visclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/visclaw
+
+
+
+===========
+riemann
+===========
+/Users/mandli/Dropbox/src/clawpack/riemann
+
+
+
+===========
+geoclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/geoclaw
+
+diff --git a/examples/shallow/vortex/run_tests.py b/examples/shallow/vortex/run_tests.py
+index d3e85048..cc5c8354 100755
+--- a/examples/shallow/vortex/run_tests.py
++++ b/examples/shallow/vortex/run_tests.py
+@@ -54,7 +54,8 @@ class VortexJob(batch.batch.Job):
+ if __name__ == '__main__':
+ 
+     jobs = []
+-    num_cells = [2**n for n in range(6, 12)]
++    # num_cells = [2**n for n in range(6, 12)]
++    num_cells = [2**n for n in range(6, 10)]
+     # num_cells = [50, 100, 200, 400, 800, 1600]
+     for rp_type in ['simple', 'geoclaw']:
+         subprocess.run(['make', 'new', f'RP={rp_type}'])
+@@ -71,4 +72,4 @@ if __name__ == '__main__':
+         print(f"Done with {rp_type}!")
+ 
+     # Run convergence script
+-    subprocess.run(['./plot_comparison.py', num_cells])
++    subprocess.run(['plot_comparison.py'])
+diff --git a/src/python/geoclaw/test.py b/src/python/geoclaw/test.py
+index 475212d3..71bca9b9 100644
+--- a/src/python/geoclaw/test.py
++++ b/src/python/geoclaw/test.py
+@@ -42,16 +42,10 @@ class GeoClawRegressionTest(clawpack.clawutil.test.ClawpackRegressionTest):
+                                   clawpack.clawutil.test.ClawpackRegressionTest)
+ 
+ 
+-    def build_executable(self, executable_name="xgeoclaw"):
+-        r"""Build executable by running `make .exe` in test directory.
++    def __init__(self, methodName="runTest"):
+ 
+-        Moves the resulting executable to the temporary directory.
+-
+-
+-        """
+-
+-        super(GeoClawRegressionTest, self).build_executable(
+-                                                executable_name=executable_name)
++        super(GeoClawRegressionTest, self).__init__(methodName=methodName)
++        self.executable_name = 'xgeoclaw'
+ 
+ 
+     def check_fgmax(self, fgno=1, save=False, **kwargs):

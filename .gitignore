@@ -10,8 +10,8 @@ xamr
 xgeoclaw
 *.html
 *.data
-_output/
-_plots/
+*_output/
+*_plots/
 *~
 
 # log files

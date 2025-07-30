@@ -1,0 +1,1602 @@
+Clawpack git diffs...
+
+===========
+clawpack
+===========
+/Users/mandli/Dropbox/src/clawpack/
+
+diff --git a/amrclaw b/amrclaw
+index 2d9d076..ee0ff1b 160000
+--- a/amrclaw
++++ b/amrclaw
+@@ -1 +1 @@
+-Subproject commit 2d9d07640bcd03890997a7fc250b76ef50321f1d
++Subproject commit ee0ff1b6a2d7d4f3f1ddc80c28d3b721aaf0f201-dirty
+diff --git a/classic b/classic
+index 5f178e4..a4c0899 160000
+--- a/classic
++++ b/classic
+@@ -1 +1 @@
+-Subproject commit 5f178e4c8eb59d6f16f3d21c654b89033bd9be92
++Subproject commit a4c08996cb6cb4c13cf8262a1d5edd7acb9359b3
+diff --git a/clawutil b/clawutil
+index 1ee5f67..ec72bf7 160000
+--- a/clawutil
++++ b/clawutil
+@@ -1 +1 @@
+-Subproject commit 1ee5f67859fab5a71cebdb5f015a0c9d148a74b2
++Subproject commit ec72bf7de0d9f06222e3430fd518f2547ba54704
+diff --git a/geoclaw b/geoclaw
+index 3303883..10125ba 160000
+--- a/geoclaw
++++ b/geoclaw
+@@ -1 +1 @@
+-Subproject commit 3303883f46572c58130d161986b8a87a57ca7816
++Subproject commit 10125ba63cd3f124af41e91f737fee2a5d6e2ba3
+diff --git a/pyclaw b/pyclaw
+index f55b884..a978283 160000
+--- a/pyclaw
++++ b/pyclaw
+@@ -1 +1 @@
+-Subproject commit f55b88452872a7b3c4b53a16ee3065137bffa06d
++Subproject commit a978283a5bbfd2dec37344832522085bf703005e
+diff --git a/visclaw b/visclaw
+index 1fc821c..04c11f6 160000
+--- a/visclaw
++++ b/visclaw
+@@ -1 +1 @@
+-Subproject commit 1fc821c546bcac630fec12cf9edef92e01316f4d
++Subproject commit 04c11f6dc5a83fc996e1fd225dd1b77805992496
+
+
+===========
+classic
+===========
+/Users/mandli/Dropbox/src/clawpack/classic
+
+
+
+===========
+amrclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/amrclaw
+
+diff --git a/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt b/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+index cef5c36..e69de29 100644
+--- a/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
++++ b/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+@@ -1,398 +0,0 @@
+-Clawpack git diffs...
+-
+-===========
+-clawpack
+-===========
+-/Users/mandli/Dropbox/src/clawpack/
+-
+-diff --git a/amrclaw b/amrclaw
+-index 2d9d076..542de0c 160000
+---- a/amrclaw
+-+++ b/amrclaw
+-@@ -1 +1 @@
+--Subproject commit 2d9d07640bcd03890997a7fc250b76ef50321f1d
+-+Subproject commit 542de0cc80d78dc2231d176b4d2c9427c8534d9f-dirty
+-diff --git a/classic b/classic
+-index 5f178e4..a4c0899 160000
+---- a/classic
+-+++ b/classic
+-@@ -1 +1 @@
+--Subproject commit 5f178e4c8eb59d6f16f3d21c654b89033bd9be92
+-+Subproject commit a4c08996cb6cb4c13cf8262a1d5edd7acb9359b3
+-diff --git a/clawutil b/clawutil
+-index 1ee5f67..ec72bf7 160000
+---- a/clawutil
+-+++ b/clawutil
+-@@ -1 +1 @@
+--Subproject commit 1ee5f67859fab5a71cebdb5f015a0c9d148a74b2
+-+Subproject commit ec72bf7de0d9f06222e3430fd518f2547ba54704-dirty
+-diff --git a/geoclaw b/geoclaw
+-index 3303883..cf96c78 160000
+---- a/geoclaw
+-+++ b/geoclaw
+-@@ -1 +1 @@
+--Subproject commit 3303883f46572c58130d161986b8a87a57ca7816
+-+Subproject commit cf96c78d6bdbe24db79f3c0d15bd012e759b6855
+-diff --git a/pyclaw b/pyclaw
+-index f55b884..a978283 160000
+---- a/pyclaw
+-+++ b/pyclaw
+-@@ -1 +1 @@
+--Subproject commit f55b88452872a7b3c4b53a16ee3065137bffa06d
+-+Subproject commit a978283a5bbfd2dec37344832522085bf703005e
+-diff --git a/visclaw b/visclaw
+-index 1fc821c..04c11f6 160000
+---- a/visclaw
+-+++ b/visclaw
+-@@ -1 +1 @@
+--Subproject commit 1fc821c546bcac630fec12cf9edef92e01316f4d
+-+Subproject commit 04c11f6dc5a83fc996e1fd225dd1b77805992496
+-
+-
+-===========
+-classic
+-===========
+-/Users/mandli/Dropbox/src/clawpack/classic
+-
+-
+-
+-===========
+-amrclaw
+-===========
+-/Users/mandli/Dropbox/src/clawpack/amrclaw
+-
+-diff --git a/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt b/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+-index 7d1375b..e69de29 100644
+---- a/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+-+++ b/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+-@@ -1,180 +0,0 @@
+--Clawpack git diffs...
+--
+--===========
+--clawpack
+--===========
+--/Users/mandli/Dropbox/src/clawpack/
+--
+--diff --git a/amrclaw b/amrclaw
+--index 2d9d076..2218af5 160000
+----- a/amrclaw
+--+++ b/amrclaw
+--@@ -1 +1 @@
+---Subproject commit 2d9d07640bcd03890997a7fc250b76ef50321f1d
+--+Subproject commit 2218af530a3cd84344b8e9b36b47c25217593fed-dirty
+--diff --git a/classic b/classic
+--index 5f178e4..a4c0899 160000
+----- a/classic
+--+++ b/classic
+--@@ -1 +1 @@
+---Subproject commit 5f178e4c8eb59d6f16f3d21c654b89033bd9be92
+--+Subproject commit a4c08996cb6cb4c13cf8262a1d5edd7acb9359b3
+--diff --git a/clawutil b/clawutil
+--index 1ee5f67..ec72bf7 160000
+----- a/clawutil
+--+++ b/clawutil
+--@@ -1 +1 @@
+---Subproject commit 1ee5f67859fab5a71cebdb5f015a0c9d148a74b2
+--+Subproject commit ec72bf7de0d9f06222e3430fd518f2547ba54704-dirty
+--diff --git a/geoclaw b/geoclaw
+--index 3303883..cf96c78 160000
+----- a/geoclaw
+--+++ b/geoclaw
+--@@ -1 +1 @@
+---Subproject commit 3303883f46572c58130d161986b8a87a57ca7816
+--+Subproject commit cf96c78d6bdbe24db79f3c0d15bd012e759b6855
+--diff --git a/pyclaw b/pyclaw
+--index f55b884..a978283 160000
+----- a/pyclaw
+--+++ b/pyclaw
+--@@ -1 +1 @@
+---Subproject commit f55b88452872a7b3c4b53a16ee3065137bffa06d
+--+Subproject commit a978283a5bbfd2dec37344832522085bf703005e
+--diff --git a/visclaw b/visclaw
+--index 1fc821c..04c11f6 160000
+----- a/visclaw
+--+++ b/visclaw
+--@@ -1 +1 @@
+---Subproject commit 1fc821c546bcac630fec12cf9edef92e01316f4d
+--+Subproject commit 04c11f6dc5a83fc996e1fd225dd1b77805992496
+--
+--
+--===========
+--classic
+--===========
+--/Users/mandli/Dropbox/src/clawpack/classic
+--
+--
+--
+--===========
+--amrclaw
+--===========
+--/Users/mandli/Dropbox/src/clawpack/amrclaw
+--
+--diff --git a/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py b/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
+--index cc9d141..ef2960a 100644
+----- a/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
+--+++ b/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
+--@@ -23,8 +23,8 @@ class Acoustics1DAdjointForwardTest(test.AMRClawRegressionTest):
+--         self.run_code()
+-- 
+--         # Perform Tests
+---        # self.check_gauges(save=save, gauge_id=1)
+---        # self.check_gauges(save=save, gauge_id=2)
+--+        self.check_gauges(save=save, gauge_id=0)
+--+        self.check_gauges(save=save, gauge_id=1)
+-- 
+--         self.success = True
+-- 
+--@@ -33,7 +33,7 @@ if __name__=="__main__":
+--     if len(sys.argv) > 1:
+--         if bool(sys.argv[1]):
+--             # Fake the setup and save out output
+---            test = Acoustics1DAdjointTest()
+--+            test = Acoustics1DAdjointForwardTest()
+--             try:
+--                 test.setUp()
+--                 test.runTest(save=True)
+--
+--
+--===========
+--clawutil
+--===========
+--/Users/mandli/Dropbox/src/clawpack/clawutil
+--
+--diff --git a/src/python/clawutil/test.py b/src/python/clawutil/test.py
+--index d43beae..7be8c9a 100644
+----- a/src/python/clawutil/test.py
+--+++ b/src/python/clawutil/test.py
+--@@ -8,9 +8,6 @@ Sends output and result/errors to separate files to simplify checking
+-- results and looking for errors.
+-- """
+-- 
+---from __future__ import print_function
+---
+---from __future__ import absolute_import
+-- import os
+-- import sys
+-- import tempfile
+--@@ -21,7 +18,7 @@ import inspect
+-- import time
+-- import glob
+-- 
+---import numpy
+--+import numpy as np
+-- 
+-- import clawpack.geoclaw.util
+-- import clawpack.pyclaw.gauges as gauges
+--@@ -283,13 +280,13 @@ class ClawpackRegressionTest(unittest.TestCase):
+--         regression_data_file = os.path.join(self.test_path, "regression_data",
+--                                             file_name)
+--         if save:
+---            numpy.savetxt(regression_data_file, data_sum)
+--+            np.savetxt(regression_data_file, data_sum)
+--             claw_git_status.make_git_status_file(
+--                          outdir=os.path.join(self.test_path, "regression_data"))
+-- 
+---        regression_sum = numpy.loadtxt(regression_data_file)
+--+        regression_sum = np.loadtxt(regression_data_file)
+-- 
+---        assert numpy.allclose(data_sum, regression_sum, rtol=rtol, atol=atol), \
+--+        assert np.allclose(data_sum, regression_sum, rtol=rtol, atol=atol), \
+--             "\n  new_data: %s, \n  expected: %s"  % (data_sum, regression_sum)
+-- 
+-- 
+--@@ -332,7 +329,7 @@ class ClawpackRegressionTest(unittest.TestCase):
+--         # Compare data
+--         try:
+--             for n in indices:
+---                numpy.testing.assert_allclose(gauge.q[n, :],
+--+                np.testing.assert_allclose(gauge.q[n, :],
+--                                               regression_gauge.q[n, :], 
+--                                               rtol=rtol, atol=atol, 
+--                                               verbose=False)
+--@@ -342,7 +339,7 @@ class ClawpackRegressionTest(unittest.TestCase):
+--             err_msg = "\n".join((err_msg, "  failures in fields:"))
+--             failure_indices = []
+--             for n in indices:
+---                if ~numpy.allclose(gauge.q[n, :], regression_gauge.q[n, :], 
+--+                if ~np.allclose(gauge.q[n, :], regression_gauge.q[n, :], 
+--                                                           rtol=rtol, atol=atol):
+--                     failure_indices.append(str(n))
+--             index_str = ", ".join(failure_indices)
+--
+--
+--===========
+--pyclaw
+--===========
+--/Users/mandli/Dropbox/src/clawpack/pyclaw
+--
+--
+--
+--===========
+--visclaw
+--===========
+--/Users/mandli/Dropbox/src/clawpack/visclaw
+--
+--
+--
+--===========
+--riemann
+--===========
+--/Users/mandli/Dropbox/src/clawpack/riemann
+--
+--
+--
+--===========
+--geoclaw
+--===========
+--/Users/mandli/Dropbox/src/clawpack/geoclaw
+--
+-diff --git a/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_status.txt b/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_status.txt
+-index e4c5b81..76c95a1 100644
+---- a/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_status.txt
+-+++ b/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_status.txt
+-@@ -1,7 +1,7 @@
+- Clawpack Git Status 
+- Diffs can be found in /Users/mandli/Library/CloudStorage/Dropbox/src/clawpack/amrclaw/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+- 
+--Mon, 21 Apr 2025 10:42:57 EDT
+-+Mon, 21 Apr 2025 11:20:50 EDT
+- $CLAW = /Users/mandli/Dropbox/src/clawpack
+- $FC = not set
+- 
+-@@ -42,11 +42,14 @@ amrclaw
+- /Users/mandli/Dropbox/src/clawpack/amrclaw
+- 
+- --- last commit ---
+--2218af5 (HEAD -> update-tests, mandli/update-tests) Test is working but not passing
+-+542de0c (HEAD -> update-tests, mandli/update-tests) 1D adjoint forward problem test passing
+- 
+- --- branch and status ---
+--## update-tests...clawpack/master [ahead 21]
+-+## update-tests...clawpack/master [ahead 22]
+-+ M examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+-+ M examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_status.txt
+-  M examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
+-+ M examples/acoustics_1d_adjoint/test_acoustics_1d_adjoint.py
+- 
+- 
+- ===========
+-diff --git a/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py b/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
+-index ef2960a..ee5e6e8 100644
+---- a/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
+-+++ b/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
+-@@ -18,6 +18,8 @@ class Acoustics1DAdjointForwardTest(test.AMRClawRegressionTest):
+-         self.rundata.clawdata.num_output_times = 10
+-         self.rundata.clawdata.tfinal = 1.0
+- 
+-+        # self.rundata.clawdata.use_fwaves = False
+-+
+-         self.write_rundata_objects()
+- 
+-         self.run_code()
+-diff --git a/examples/acoustics_1d_adjoint/test_acoustics_1d_adjoint.py b/examples/acoustics_1d_adjoint/test_acoustics_1d_adjoint.py
+-index 7dfabaa..f17864e 100644
+---- a/examples/acoustics_1d_adjoint/test_acoustics_1d_adjoint.py
+-+++ b/examples/acoustics_1d_adjoint/test_acoustics_1d_adjoint.py
+-@@ -47,6 +47,9 @@ class Acoustics1DAdjointTest(test.AMRClawRegressionTest):
+-         self.rundata.gaugedata.gauges.append([1, -2.5, 0., 1e9])
+-         self.rundata.gaugedata.gauges.append([2, -1.75, 0., 1e9])
+- 
+-+        # Look for adjoint data
+-+        self.rundata.adjointdata.adjoint_outdir = adjoint_output
+-+
+-         self.write_rundata_objects()
+- 
+-         # Run code
+-
+-
+-===========
+-clawutil
+-===========
+-/Users/mandli/Dropbox/src/clawpack/clawutil
+-
+-diff --git a/src/python/clawutil/test.py b/src/python/clawutil/test.py
+-index d43beae..7be8c9a 100644
+---- a/src/python/clawutil/test.py
+-+++ b/src/python/clawutil/test.py
+-@@ -8,9 +8,6 @@ Sends output and result/errors to separate files to simplify checking
+- results and looking for errors.
+- """
+- 
+--from __future__ import print_function
+--
+--from __future__ import absolute_import
+- import os
+- import sys
+- import tempfile
+-@@ -21,7 +18,7 @@ import inspect
+- import time
+- import glob
+- 
+--import numpy
+-+import numpy as np
+- 
+- import clawpack.geoclaw.util
+- import clawpack.pyclaw.gauges as gauges
+-@@ -283,13 +280,13 @@ class ClawpackRegressionTest(unittest.TestCase):
+-         regression_data_file = os.path.join(self.test_path, "regression_data",
+-                                             file_name)
+-         if save:
+--            numpy.savetxt(regression_data_file, data_sum)
+-+            np.savetxt(regression_data_file, data_sum)
+-             claw_git_status.make_git_status_file(
+-                          outdir=os.path.join(self.test_path, "regression_data"))
+- 
+--        regression_sum = numpy.loadtxt(regression_data_file)
+-+        regression_sum = np.loadtxt(regression_data_file)
+- 
+--        assert numpy.allclose(data_sum, regression_sum, rtol=rtol, atol=atol), \
+-+        assert np.allclose(data_sum, regression_sum, rtol=rtol, atol=atol), \
+-             "\n  new_data: %s, \n  expected: %s"  % (data_sum, regression_sum)
+- 
+- 
+-@@ -332,7 +329,7 @@ class ClawpackRegressionTest(unittest.TestCase):
+-         # Compare data
+-         try:
+-             for n in indices:
+--                numpy.testing.assert_allclose(gauge.q[n, :],
+-+                np.testing.assert_allclose(gauge.q[n, :],
+-                                               regression_gauge.q[n, :], 
+-                                               rtol=rtol, atol=atol, 
+-                                               verbose=False)
+-@@ -342,7 +339,7 @@ class ClawpackRegressionTest(unittest.TestCase):
+-             err_msg = "\n".join((err_msg, "  failures in fields:"))
+-             failure_indices = []
+-             for n in indices:
+--                if ~numpy.allclose(gauge.q[n, :], regression_gauge.q[n, :], 
+-+                if ~np.allclose(gauge.q[n, :], regression_gauge.q[n, :], 
+-                                                           rtol=rtol, atol=atol):
+-                     failure_indices.append(str(n))
+-             index_str = ", ".join(failure_indices)
+-
+-
+-===========
+-pyclaw
+-===========
+-/Users/mandli/Dropbox/src/clawpack/pyclaw
+-
+-
+-
+-===========
+-visclaw
+-===========
+-/Users/mandli/Dropbox/src/clawpack/visclaw
+-
+-
+-
+-===========
+-riemann
+-===========
+-/Users/mandli/Dropbox/src/clawpack/riemann
+-
+-
+-
+-===========
+-geoclaw
+-===========
+-/Users/mandli/Dropbox/src/clawpack/geoclaw
+-
+diff --git a/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_status.txt b/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_status.txt
+index 76c95a1..79b2e3a 100644
+--- a/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_status.txt
++++ b/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_status.txt
+@@ -1,7 +1,7 @@
+ Clawpack Git Status 
+ Diffs can be found in /Users/mandli/Library/CloudStorage/Dropbox/src/clawpack/amrclaw/examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+ 
+-Mon, 21 Apr 2025 11:20:50 EDT
++Mon, 05 May 2025 10:07:33 EDT
+ $CLAW = /Users/mandli/Dropbox/src/clawpack
+ $FC = not set
+ 
+@@ -42,14 +42,18 @@ amrclaw
+ /Users/mandli/Dropbox/src/clawpack/amrclaw
+ 
+ --- last commit ---
+-542de0c (HEAD -> update-tests, mandli/update-tests) 1D adjoint forward problem test passing
++ee0ff1b (HEAD -> update-tests, mandli/update-tests) Remove rest of test directory
+ 
+ --- branch and status ---
+-## update-tests...clawpack/master [ahead 22]
++## update-tests...clawpack/master [ahead 25]
+  M examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_diffs.txt
+  M examples/acoustics_1d_adjoint/adjoint/regression_data/claw_git_status.txt
+- M examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
++ M examples/acoustics_1d_adjoint/adjoint/regression_data/gauge00000.txt
++ M examples/acoustics_1d_adjoint/adjoint/regression_data/gauge00001.txt
++RM examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py -> examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint.py
+  M examples/acoustics_1d_adjoint/test_acoustics_1d_adjoint.py
++ M examples/acoustics_2d_adjoint/adjoint/setrun.py
++ M src/python/amrclaw/compare_gauges.py
+ 
+ 
+ ===========
+@@ -62,7 +66,6 @@ ec72bf7 (HEAD -> switch-repr-str, mandli/switch-repr-str) Clean up some of the n
+ 
+ --- branch and status ---
+ ## switch-repr-str...clawpack/master [ahead 2]
+- M src/python/clawutil/test.py
+ 
+ 
+ ===========
+@@ -107,7 +110,7 @@ geoclaw
+ /Users/mandli/Dropbox/src/clawpack/geoclaw
+ 
+ --- last commit ---
+-cf96c78d (HEAD -> OWI_integration, mandli/OWI_integration) Misc. fixes
++10125ba6 (HEAD -> update-pytest, mandli/update-pytest) Merge remote-tracking branch 'clawpack/master' into update-pytest
+ 
+ --- branch and status ---
+-## OWI_integration...cjeffr/OWI_integration [ahead 26]
++## update-pytest...clawpack/master [ahead 35]
+diff --git a/examples/acoustics_1d_adjoint/adjoint/regression_data/gauge00000.txt b/examples/acoustics_1d_adjoint/adjoint/regression_data/gauge00000.txt
+index 3ad62a4..3798ba2 100644
+--- a/examples/acoustics_1d_adjoint/adjoint/regression_data/gauge00000.txt
++++ b/examples/acoustics_1d_adjoint/adjoint/regression_data/gauge00000.txt
+@@ -4,27 +4,418 @@
+    01  0.1000000E+00  0.0000000E+00  0.0000000E+00
+    01  0.1360000E+00  0.0000000E+00  0.0000000E+00
+    01  0.1720000E+00  0.0000000E+00  0.0000000E+00
+-   01  0.2000000E+00  0.0000000E+00  0.0000000E+00
+-   01  0.2360000E+00  0.0000000E+00  0.0000000E+00
+-   01  0.2720000E+00  0.0000000E+00  0.0000000E+00
+-   01  0.3000000E+00  0.0000000E+00  0.0000000E+00
+-   01  0.3360000E+00  0.0000000E+00  0.0000000E+00
+-   01  0.3720000E+00  0.0000000E+00  0.0000000E+00
+-   01  0.4000000E+00  0.0000000E+00  0.0000000E+00
+-   01  0.4360000E+00  0.0000000E+00  0.0000000E+00
+-   01  0.4720000E+00  0.4714027E-88  0.4714027E-88
+-   01  0.5000000E+00  0.6375190E-85  0.6375190E-85
+-   01  0.5360000E+00  0.1211694E-81  0.1211694E-81
+-   01  0.5720000E+00  0.1962752E-78  0.1962752E-78
+-   01  0.6000000E+00  0.1640293E-75  0.1640293E-75
+-   01  0.6360000E+00  0.1930329E-72  0.1930329E-72
+-   01  0.6720000E+00  0.1936285E-69  0.1936285E-69
+-   01  0.7000000E+00  0.1002607E-66  0.1002607E-66
+-   01  0.7360000E+00  0.7309332E-64  0.7309332E-64
+-   01  0.7720000E+00  0.4543068E-61  0.4543068E-61
+-   01  0.8000000E+00  0.1458959E-58  0.1458959E-58
+-   01  0.8360000E+00  0.6595154E-56  0.6595154E-56
+-   01  0.8720000E+00  0.2542746E-53  0.2542746E-53
+-   01  0.9000000E+00  0.3454448E-51  0.3454448E-51
+-   01  0.9360000E+00  0.2751446E-49  0.2751446E-49
+-   01  0.9720000E+00  0.1731064E-47  0.1731064E-47
++   01  0.2080000E+00  0.0000000E+00  0.0000000E+00
++   01  0.2440000E+00  0.0000000E+00  0.0000000E+00
++   01  0.2500000E+00  0.0000000E+00  0.0000000E+00
++   01  0.2860000E+00  0.0000000E+00  0.0000000E+00
++   01  0.3220000E+00  0.0000000E+00  0.0000000E+00
++   01  0.3580000E+00  0.0000000E+00  0.0000000E+00
++   01  0.3940000E+00  0.0000000E+00  0.0000000E+00
++   01  0.4300000E+00  0.0000000E+00  0.0000000E+00
++   01  0.4660000E+00  0.5915022E-89  0.5915022E-89
++   01  0.5000000E+00  0.1198515E-85  0.1198515E-85
++   01  0.5360000E+00  0.2284243E-82  0.2284243E-82
++   01  0.5720000E+00  0.3712002E-79  0.3712002E-79
++   01  0.6080000E+00  0.5143932E-76  0.5143932E-76
++   01  0.6440000E+00  0.6079336E-73  0.6079336E-73
++   01  0.6800000E+00  0.6128480E-70  0.6128480E-70
++   01  0.7160000E+00  0.5270555E-67  0.5270555E-67
++   01  0.7500000E+00  0.3450686E-64  0.3450686E-64
++   01  0.7860000E+00  0.2161232E-61  0.2161232E-61
++   01  0.8220000E+00  0.1155565E-58  0.1155565E-58
++   01  0.8580000E+00  0.5276062E-56  0.5276062E-56
++   01  0.8940000E+00  0.2057741E-53  0.2057741E-53
++   01  0.9300000E+00  0.4863528E-51  0.4863528E-51
++   01  0.9660000E+00  0.4730202E-49  0.4730202E-49
++   01  0.1000000E+01  0.2802388E-47  0.2802388E-47
++   01  0.1036000E+01  0.1577427E-45  0.1577427E-45
++   01  0.1072000E+01  0.7677142E-44  0.7677142E-44
++   01  0.1108000E+01  0.3239053E-42  0.3239053E-42
++   01  0.1144000E+01  0.1158425E-40  0.1158425E-40
++   01  0.1180000E+01  0.3672206E-39  0.3672206E-39
++   01  0.1216000E+01  0.1020708E-37  0.1020708E-37
++   01  0.1250000E+01  0.2232602E-36  0.2232602E-36
++   01  0.1286000E+01  0.4779916E-35  0.4779916E-35
++   01  0.1322000E+01  0.9021519E-34  0.9021519E-34
++   01  0.1358000E+01  0.1506784E-32  0.1506784E-32
++   01  0.1394000E+01  0.2234019E-31  0.2234019E-31
++   01  0.1430000E+01  0.2957254E-30  0.2957254E-30
++   01  0.1466000E+01  0.3510954E-29  0.3510954E-29
++   01  0.1500000E+01  0.3403089E-28  0.3403089E-28
++   01  0.1536000E+01  0.3300349E-27  0.3300349E-27
++   01  0.1572000E+01  0.2911647E-26  0.2911647E-26
++   01  0.1608000E+01  0.2348020E-25  0.2348020E-25
++   01  0.1644000E+01  0.1737163E-24  0.1737163E-24
++   01  0.1680000E+01  0.1185691E-23  0.1185691E-23
++   01  0.1716000E+01  0.7503635E-23  0.7503635E-23
++   01  0.1750000E+01  0.4055409E-22  0.4055409E-22
++   01  0.1786000E+01  0.2237378E-21  0.2237378E-21
++   01  0.1822000E+01  0.1157964E-20  0.1157964E-20
++   01  0.1858000E+01  0.5642180E-20  0.5642180E-20
++   01  0.1894000E+01  0.2594880E-19  0.2594880E-19
++   01  0.1930000E+01  0.1130253E-18  0.1130253E-18
++   01  0.1966000E+01  0.4679810E-18  0.4679810E-18
++   01  0.2000000E+01  0.1716073E-17  0.1716073E-17
++   01  0.2036000E+01  0.6486983E-17  0.6486983E-17
++   01  0.2072000E+01  0.2349001E-16  0.2349001E-16
++   01  0.2108000E+01  0.8165239E-16  0.8165239E-16
++   01  0.2144000E+01  0.2728736E-15  0.2728736E-15
++   01  0.2180000E+01  0.8782596E-15  0.8782596E-15
++   01  0.2216000E+01  0.2728684E-14  0.2728684E-14
++   01  0.2250000E+01  0.7703718E-14  0.7703718E-14
++   01  0.2286000E+01  0.2250399E-13  0.2250399E-13
++   01  0.2322000E+01  0.6408290E-13  0.6408290E-13
++   01  0.2358000E+01  0.1798185E-12  0.1798185E-12
++   01  0.2394000E+01  0.4955316E-12  0.4955316E-12
++   01  0.2430000E+01  0.1318799E-11  0.1318799E-11
++   01  0.2466000E+01  0.3400366E-11  0.3400366E-11
++   01  0.2500000E+01  0.8122348E-11  0.8122348E-11
++   01  0.2536000E+01  0.1995264E-10  0.1995264E-10
++   01  0.2572000E+01  0.4785719E-10  0.4785719E-10
++   01  0.2608000E+01  0.1126123E-09  0.1126123E-09
++   01  0.2644000E+01  0.2585139E-09  0.2585139E-09
++   01  0.2680000E+01  0.5785094E-09  0.5785094E-09
++   01  0.2716000E+01  0.1269743E-08  0.1269743E-08
++   01  0.2750000E+01  0.2630909E-08  0.2630909E-08
++   01  0.2786000E+01  0.5608558E-08  0.5608558E-08
++   01  0.2822000E+01  0.1179413E-07  0.1179413E-07
++   01  0.2858000E+01  0.2454029E-07  0.2454029E-07
++   01  0.2894000E+01  0.5037033E-07  0.5037033E-07
++   01  0.2930000E+01  0.1020469E-06  0.1020469E-06
++   01  0.2966000E+01  0.2053498E-06  0.2053498E-06
++   01  0.3000000E+01  0.3968906E-06  0.3968906E-06
++   01  0.3036000E+01  0.7982435E-06  0.7982435E-06
++   01  0.3072000E+01  0.1608951E-05  0.1608951E-05
++   01  0.3108000E+01  0.3267253E-05  0.3267253E-05
++   01  0.3144000E+01  0.6680352E-05  0.6680352E-05
++   01  0.3180000E+01  0.1378220E-04  0.1378220E-04
++   01  0.3216000E+01  0.2883152E-04  0.2883152E-04
++   01  0.3250000E+01  0.5792421E-04  0.5792421E-04
++   01  0.3286000E+01  0.1273505E-03  0.1273505E-03
++   01  0.3322000E+01  0.2768024E-03  0.2768024E-03
++   01  0.3358000E+01  0.5989742E-03  0.5989742E-03
++   01  0.3394000E+01  0.1418699E-02  0.1418699E-02
++   01  0.3430000E+01  0.3501212E-02  0.3501212E-02
++   01  0.3466000E+01  0.7983916E-02  0.7983916E-02
++   01  0.3500000E+01  0.1546605E-01  0.1546605E-01
++   01  0.3536000E+01  0.2758956E-01  0.2758956E-01
++   01  0.3572000E+01  0.4439037E-01  0.4439037E-01
++   01  0.3608000E+01  0.6577366E-01  0.6577366E-01
++   01  0.3644000E+01  0.9115792E-01  0.9115792E-01
++   01  0.3680000E+01  0.1196222E+00  0.1196222E+00
++   01  0.3716000E+01  0.1500703E+00  0.1500703E+00
++   01  0.3750000E+01  0.1792813E+00  0.1792813E+00
++   01  0.3786000E+01  0.2085488E+00  0.2085488E+00
++   01  0.3822000E+01  0.2335246E+00  0.2335246E+00
++   01  0.3858000E+01  0.2523772E+00  0.2523772E+00
++   01  0.3894000E+01  0.2652125E+00  0.2652125E+00
++   01  0.3930000E+01  0.2725197E+00  0.2725197E+00
++   01  0.3966000E+01  0.2750393E+00  0.2750393E+00
++   01  0.4000000E+01  0.2750366E+00  0.2750366E+00
++   01  0.4036000E+01  0.2741506E+00  0.2741506E+00
++   01  0.4072000E+01  0.2705995E+00  0.2705995E+00
++   01  0.4108000E+01  0.2619259E+00  0.2619259E+00
++   01  0.4144000E+01  0.2469821E+00  0.2469821E+00
++   01  0.4180000E+01  0.2262632E+00  0.2262632E+00
++   01  0.4216000E+01  0.2009115E+00  0.2009115E+00
++   01  0.4250000E+01  0.1742342E+00  0.1742342E+00
++   01  0.4286000E+01  0.1449428E+00  0.1449428E+00
++   01  0.4322000E+01  0.1162798E+00  0.1162798E+00
++   01  0.4358000E+01  0.8950479E-01  0.8950479E-01
++   01  0.4394000E+01  0.6557091E-01  0.6557091E-01
++   01  0.4430000E+01  0.4533559E-01  0.4533559E-01
++   01  0.4466000E+01  0.2943649E-01  0.2943649E-01
++   01  0.4500000E+01  0.1851090E-01  0.1851090E-01
++   01  0.4536000E+01  0.1077496E-01  0.1077496E-01
++   01  0.4572000E+01  0.6062382E-02  0.6062382E-02
++   01  0.4608000E+01  0.3362915E-02  0.3362915E-02
++   01  0.4644000E+01  0.1864749E-02  0.1864749E-02
++   01  0.4680000E+01  0.1036333E-02  0.1036333E-02
++   01  0.4716000E+01  0.5739960E-03  0.5739960E-03
++   01  0.4750000E+01  0.3251765E-03  0.3251765E-03
++   01  0.4786000E+01  0.1764358E-03  0.1764358E-03
++   01  0.4822000E+01  0.9497334E-04  0.9497334E-04
++   01  0.4858000E+01  0.5103792E-04  0.5103792E-04
++   01  0.4894000E+01  0.2750340E-04  0.2750340E-04
++   01  0.4930000E+01  0.1486044E-04  0.1486044E-04
++   01  0.4966000E+01  0.8019999E-05  0.8019999E-05
++   01  0.5000000E+01  0.4449846E-05  0.4449846E-05
++   01  0.5036000E+01  0.2372839E-05  0.2372839E-05
++   01  0.5072000E+01  0.1259294E-05  0.1259294E-05
++   01  0.5108000E+01  0.6684120E-06  0.6684120E-06
++   01  0.5144000E+01  0.3562139E-06  0.3562139E-06
++   01  0.5180000E+01  0.1905886E-06  0.1905886E-06
++   01  0.5216000E+01  0.1019812E-06  0.1019812E-06
++   01  0.5250000E+01  0.5616663E-07  0.5616663E-07
++   01  0.5286000E+01  0.2973310E-07  0.2973310E-07
++   01  0.5322000E+01  0.1566973E-07  0.1566973E-07
++   01  0.5358000E+01  0.8262803E-08  0.8262803E-08
++   01  0.5394000E+01  0.4377472E-08  0.4377472E-08
++   01  0.5430000E+01  0.2329835E-08  0.2329835E-08
++   01  0.5466000E+01  0.1240661E-08  0.1240661E-08
++   01  0.5500000E+01  0.6802606E-09  0.6802606E-09
++   01  0.5536000E+01  0.3584460E-09  0.3584460E-09
++   01  0.5572000E+01  0.1880436E-09  0.1880436E-09
++   01  0.5608000E+01  0.9872718E-10  0.9872718E-10
++   01  0.5644000E+01  0.5209642E-10  0.5209642E-10
++   01  0.5680000E+01  0.2762818E-10  0.2762818E-10
++   01  0.5716000E+01  0.1466344E-10  0.1466344E-10
++   01  0.5750000E+01  0.8015350E-11  0.8015350E-11
++   01  0.5786000E+01  0.4210089E-11  0.4210089E-11
++   01  0.5822000E+01  0.2201805E-11  0.2201805E-11
++   01  0.5858000E+01  0.1152638E-11  0.1152638E-11
++   01  0.5894000E+01  0.6066382E-12  0.6066382E-12
++   01  0.5930000E+01  0.3209773E-12  0.3209773E-12
++   01  0.5966000E+01  0.1700027E-12  0.1700027E-12
++   01  0.6000000E+01  0.9275273E-13  0.9275273E-13
++   01  0.6036000E+01  0.4862609E-13  0.4862609E-13
++   01  0.6072000E+01  0.2538410E-13  0.2538410E-13
++   01  0.6108000E+01  0.1326594E-13  0.1326594E-13
++   01  0.6144000E+01  0.6971325E-14  0.6971325E-14
++   01  0.6180000E+01  0.3683630E-14  0.3683630E-14
++   01  0.6216000E+01  0.1948599E-14  0.1948599E-14
++   01  0.6250000E+01  0.1061945E-14  0.1061945E-14
++   01  0.6286000E+01  0.5560848E-15  0.5560848E-15
++   01  0.6322000E+01  0.2899678E-15  0.2899678E-15
++   01  0.6358000E+01  0.1513860E-15  0.1513860E-15
++   01  0.6394000E+01  0.7948508E-16  0.7948508E-16
++   01  0.6430000E+01  0.4196945E-16  0.4196945E-16
++   01  0.6466000E+01  0.2218790E-16  0.2218790E-16
++   01  0.6500000E+01  0.1208571E-16  0.1208571E-16
++   01  0.6536000E+01  0.6325585E-17  0.6325585E-17
++   01  0.6572000E+01  0.3297035E-17  0.3297035E-17
++   01  0.6608000E+01  0.1720704E-17  0.1720704E-17
++   01  0.6644000E+01  0.9032115E-18  0.9032115E-18
++   01  0.6680000E+01  0.4768179E-18  0.4768179E-18
++   01  0.6716000E+01  0.2520413E-18  0.2520413E-18
++   01  0.6750000E+01  0.1372705E-18  0.1372705E-18
++   01  0.6786000E+01  0.7183897E-19  0.7183897E-19
++   01  0.6822000E+01  0.3744073E-19  0.3744073E-19
++   01  0.6858000E+01  0.1953877E-19  0.1953877E-19
++   01  0.6894000E+01  0.1025559E-19  0.1025559E-19
++   01  0.6930000E+01  0.5413914E-20  0.5413914E-20
++   01  0.6966000E+01  0.2861686E-20  0.2861686E-20
++   01  0.7000000E+01  0.1558550E-20  0.1558550E-20
++   01  0.7036000E+01  0.8156374E-21  0.8156374E-21
++   01  0.7072000E+01  0.4250850E-21  0.4250850E-21
++   01  0.7108000E+01  0.2218334E-21  0.2218334E-21
++   01  0.7144000E+01  0.1164276E-21  0.1164276E-21
++   01  0.7180000E+01  0.6149466E-22  0.6149466E-22
++   01  0.7216000E+01  0.3253817E-22  0.3253817E-22
++   01  0.7250000E+01  0.1724846E-22  0.1724846E-22
++   01  0.7286000E+01  0.8617049E-23  0.8617049E-23
++   01  0.7322000E+01  0.5672687E-23  0.5672687E-23
++   01  0.7358000E+01  0.5792093E-23  0.5792093E-23
++   01  0.7394000E+01  0.7433758E-23  0.7433758E-23
++   01  0.7430000E+01  0.1374073E-22  0.1374073E-22
++   01  0.7466000E+01  0.3373205E-22  0.3373205E-22
++   01  0.7500000E+01  0.8654577E-22  0.8654577E-22
++   01  0.7536000E+01  0.2381927E-21  0.2381927E-21
++   01  0.7572000E+01  0.6349711E-21  0.6349711E-21
++   01  0.7608000E+01  0.1644305E-20  0.1644305E-20
++   01  0.7644000E+01  0.4123981E-20  0.4123981E-20
++   01  0.7680000E+01  0.1003032E-19  0.1003032E-19
++   01  0.7716000E+01  0.2386988E-19  0.2386988E-19
++   01  0.7750000E+01  0.5333961E-19  0.5333961E-19
++   01  0.7786000E+01  0.1233917E-18  0.1233917E-18
++   01  0.7822000E+01  0.2817756E-18  0.2817756E-18
++   01  0.7858000E+01  0.6393521E-18  0.6393521E-18
++   01  0.7894000E+01  0.1436378E-17  0.1436378E-17
++   01  0.7930000E+01  0.3193623E-17  0.3193623E-17
++   01  0.7966000E+01  0.7074231E-17  0.7074231E-17
++   01  0.8000000E+01  0.1500163E-16  0.1500163E-16
++   01  0.8036000E+01  0.3335767E-16  0.3335767E-16
++   01  0.8072000E+01  0.7427978E-16  0.7427978E-16
++   01  0.8108000E+01  0.1666723E-15  0.1666723E-15
++   01  0.8144000E+01  0.3751558E-15  0.3751558E-15
++   01  0.8180000E+01  0.8447295E-15  0.8447295E-15
++   01  0.8216000E+01  0.1912053E-14  0.1912053E-14
++   01  0.8250000E+01  0.4164647E-14  0.4164647E-14
++   01  0.8286000E+01  0.9584345E-14  0.9584345E-14
++   01  0.8322000E+01  0.2214638E-13  0.2214638E-13
++   01  0.8358000E+01  0.5170714E-13  0.5170714E-13
++   01  0.8394000E+01  0.1211763E-12  0.1211763E-12
++   01  0.8430000E+01  0.2836525E-12  0.2836525E-12
++   01  0.8466000E+01  0.6659771E-12  0.6659771E-12
++   01  0.8500000E+01  0.1497398E-11  0.1497398E-11
++   01  0.8536000E+01  0.3554287E-11  0.3554287E-11
++   01  0.8572000E+01  0.8437137E-11  0.8437137E-11
++   01  0.8608000E+01  0.2017608E-10  0.2017608E-10
++   01  0.8644000E+01  0.4826926E-10  0.4826926E-10
++   01  0.8680000E+01  0.1149631E-09  0.1149631E-09
++   01  0.8716000E+01  0.2738427E-09  0.2738427E-09
++   01  0.8750000E+01  0.6226783E-09  0.6226783E-09
++   01  0.8786000E+01  0.1492660E-08  0.1492660E-08
++   01  0.8822000E+01  0.3571352E-08  0.3571352E-08
++   01  0.8858000E+01  0.8596338E-08  0.8596338E-08
++   01  0.8894000E+01  0.2067040E-07  0.2067040E-07
++   01  0.8930000E+01  0.4940631E-07  0.4940631E-07
++   01  0.8966000E+01  0.1179753E-06  0.1179753E-06
++   01  0.9000000E+01  0.2688540E-06  0.2688540E-06
++   01  0.9036000E+01  0.6462285E-06  0.6462285E-06
++   01  0.9072000E+01  0.1547971E-05  0.1547971E-05
++   01  0.9108000E+01  0.3711032E-05  0.3711032E-05
++   01  0.9144000E+01  0.8957071E-05  0.8957071E-05
++   01  0.9180000E+01  0.2138047E-04  0.2138047E-04
++   01  0.9216000E+01  0.5191606E-04  0.5191606E-04
++   01  0.9250000E+01  0.1171714E-03  0.1171714E-03
++   01  0.9286000E+01  0.2689341E-03  0.2689341E-03
++   01  0.9322000E+01  0.6589068E-03  0.6589068E-03
++   01  0.9358000E+01  0.1742724E-02  0.1742724E-02
++   01  0.9394000E+01  0.4353210E-02  0.4353210E-02
++   01  0.9430000E+01  0.9537111E-02  0.9537111E-02
++   01  0.9466000E+01  0.1819662E-01  0.1819662E-01
++   01  0.9500000E+01  0.2998269E-01  0.2998269E-01
++   01  0.9536000E+01  0.4620936E-01  0.4620936E-01
++   01  0.9572000E+01  0.6586421E-01  0.6586421E-01
++   01  0.9608000E+01  0.8821270E-01  0.8821270E-01
++   01  0.9644000E+01  0.1122595E+00  0.1122595E+00
++   01  0.9680000E+01  0.1369878E+00  0.1369878E+00
++   01  0.9716000E+01  0.1614283E+00  0.1614283E+00
++   01  0.9750000E+01  0.1831464E+00  0.1831464E+00
++   01  0.9786000E+01  0.2032339E+00  0.2032339E+00
++   01  0.9822000E+01  0.2190035E+00  0.2190035E+00
++   01  0.9858000E+01  0.2299853E+00  0.2299853E+00
++   01  0.9894000E+01  0.2369297E+00  0.2369297E+00
++   01  0.9930000E+01  0.2407562E+00  0.2407562E+00
++   01  0.9966000E+01  0.2421049E+00  0.2421049E+00
++   01  0.1000000E+02  0.2421448E+00  0.2421448E+00
++   01  0.1003600E+02  0.2417983E+00  0.2417983E+00
++   01  0.1007200E+02  0.2402883E+00  0.2402883E+00
++   01  0.1010800E+02  0.2359684E+00  0.2359684E+00
++   01  0.1014400E+02  0.2274968E+00  0.2274968E+00
++   01  0.1018000E+02  0.2145496E+00  0.2145496E+00
++   01  0.1021600E+02  0.1973759E+00  0.1973759E+00
++   01  0.1025000E+02  0.1779840E+00  0.1779840E+00
++   01  0.1028600E+02  0.1552100E+00  0.1552100E+00
++   01  0.1032200E+02  0.1314034E+00  0.1314034E+00
++   01  0.1035800E+02  0.1077686E+00  0.1077686E+00
++   01  0.1039400E+02  0.8525530E-01  0.8525530E-01
++   01  0.1043000E+02  0.6455183E-01  0.6455183E-01
++   01  0.1046600E+02  0.4629641E-01  0.4629641E-01
++   01  0.1050000E+02  0.3192734E-01  0.3192734E-01
++   01  0.1053600E+02  0.2021300E-01  0.2021300E-01
++   01  0.1057200E+02  0.1206352E-01  0.1206352E-01
++   01  0.1060800E+02  0.6892411E-02  0.6892411E-02
++   01  0.1064400E+02  0.3845315E-02  0.3845315E-02
++   01  0.1068000E+02  0.2129371E-02  0.2129370E-02
++   01  0.1071600E+02  0.1177714E-02  0.1177712E-02
++   01  0.1075000E+02  0.6695410E-03  0.6695355E-03
++   01  0.1078600E+02  0.3654257E-03  0.3654157E-03
++   01  0.1082200E+02  0.1973756E-03  0.1973558E-03
++   01  0.1085800E+02  0.1059827E-03  0.1059338E-03
++   01  0.1089400E+02  0.5692943E-04  0.5681310E-04
++   01  0.1093000E+02  0.3069631E-04  0.3046983E-04
++   01  0.1096600E+02  0.1662225E-04  0.1624461E-04
++   01  0.1100000E+02  0.9395721E-05  0.8766279E-05
++   01  0.1103600E+02  0.5485010E-05  0.4154015E-05
++   01  0.1107200E+02  0.4236738E-05  0.8506939E-06
++   01  0.1110800E+02  0.5287148E-05 -0.2603069E-05
++   01  0.1114400E+02  0.8304860E-05 -0.6883146E-05
++   01  0.1118000E+02  0.1298918E-04 -0.1223299E-04
++   01  0.1121600E+02  0.2084123E-04 -0.2043893E-04
++   01  0.1125000E+02  0.3764680E-04 -0.3742646E-04
++   01  0.1128600E+02  0.8648521E-04 -0.8636926E-04
++   01  0.1132200E+02  0.2341100E-03 -0.2340492E-03
++   01  0.1135800E+02  0.6996680E-03 -0.6996362E-03
++   01  0.1139400E+02  0.1992490E-02 -0.1992473E-02
++   01  0.1143000E+02  0.4826357E-02 -0.4826348E-02
++   01  0.1146600E+02  0.9977209E-02 -0.9977205E-02
++   01  0.1150000E+02  0.1769763E-01 -0.1769763E-01
++   01  0.1153600E+02  0.2956926E-01 -0.2956926E-01
++   01  0.1157200E+02  0.4570719E-01 -0.4570719E-01
++   01  0.1160800E+02  0.6620129E-01 -0.6620129E-01
++   01  0.1164400E+02  0.9066030E-01 -0.9066030E-01
++   01  0.1168000E+02  0.1182018E+00 -0.1182018E+00
++   01  0.1171600E+02  0.1475690E+00 -0.1475690E+00
++   01  0.1175000E+02  0.1757117E+00 -0.1757117E+00
++   01  0.1178600E+02  0.2046585E+00 -0.2046585E+00
++   01  0.1182200E+02  0.2313820E+00 -0.2313820E+00
++   01  0.1185800E+02  0.2538419E+00 -0.2538419E+00
++   01  0.1189400E+02  0.2680626E+00 -0.2680626E+00
++   01  0.1193000E+02  0.2731121E+00 -0.2731121E+00
++   01  0.1196600E+02  0.2734298E+00 -0.2734298E+00
++   01  0.1200000E+02  0.2731452E+00 -0.2731452E+00
++   01  0.1203600E+02  0.2718212E+00 -0.2718212E+00
++   01  0.1207200E+02  0.2677015E+00 -0.2677015E+00
++   01  0.1210800E+02  0.2590833E+00 -0.2590833E+00
++   01  0.1214400E+02  0.2452356E+00 -0.2452356E+00
++   01  0.1218000E+02  0.2261911E+00 -0.2261911E+00
++   01  0.1221600E+02  0.2026103E+00 -0.2026103E+00
++   01  0.1225000E+02  0.1772686E+00 -0.1772686E+00
++   01  0.1228600E+02  0.1486831E+00 -0.1486831E+00
++   01  0.1232200E+02  0.1199611E+00 -0.1199611E+00
++   01  0.1235800E+02  0.9269494E-01 -0.9269494E-01
++   01  0.1239400E+02  0.6819721E-01 -0.6819721E-01
++   01  0.1243000E+02  0.4739561E-01 -0.4739561E-01
++   01  0.1246600E+02  0.3076656E-01 -0.3076656E-01
++   01  0.1250000E+02  0.1886645E-01 -0.1886645E-01
++   01  0.1253600E+02  0.9804939E-02 -0.9804939E-02
++   01  0.1257200E+02  0.3831996E-02 -0.3831996E-02
++   01  0.1260800E+02  0.9093763E-03 -0.9093762E-03
++   01  0.1264400E+02  0.1739967E-03 -0.1739966E-03
++   01  0.1268000E+02  0.1154089E-03 -0.1154085E-03
++   01  0.1271600E+02  0.1032089E-03 -0.1032081E-03
++   01  0.1275000E+02  0.9583929E-04 -0.9583799E-04
++   01  0.1278600E+02  0.8488153E-04 -0.8487887E-04
++   01  0.1282200E+02  0.6801147E-04 -0.6800457E-04
++   01  0.1285800E+02  0.4682896E-04 -0.4681127E-04
++   01  0.1289400E+02  0.2553471E-04 -0.2549859E-04
++   01  0.1293000E+02  0.9470315E-05 -0.9410316E-05
++   01  0.1296600E+02  0.2111986E-05 -0.2015098E-05
++   01  0.1300000E+02  0.8094364E-06 -0.6296258E-06
++   01  0.1303600E+02  0.7887672E-06 -0.3340343E-06
++   01  0.1307200E+02  0.1078321E-05  0.9885918E-07
++   01  0.1310800E+02  0.1661912E-05  0.8563305E-06
++   01  0.1314400E+02  0.2490237E-05  0.1924783E-05
++   01  0.1318000E+02  0.3584874E-05  0.3277637E-05
++   01  0.1321600E+02  0.5492250E-05  0.5380112E-05
++   01  0.1325000E+02  0.9872249E-05  0.9843732E-05
++   01  0.1328600E+02  0.2324207E-04  0.2323053E-04
++   01  0.1332200E+02  0.6510960E-04  0.6510042E-04
++   01  0.1335800E+02  0.2008718E-03  0.2008641E-03
++   01  0.1339400E+02  0.6016889E-03  0.6016831E-03
++   01  0.1343000E+02  0.1508811E-02  0.1508808E-02
++   01  0.1346600E+02  0.3176158E-02  0.3176157E-02
++   01  0.1350000E+02  0.5683978E-02  0.5683978E-02
++   01  0.1353600E+02  0.9561171E-02  0.9561171E-02
++   01  0.1357200E+02  0.1485971E-01  0.1485971E-01
++   01  0.1360800E+02  0.2161873E-01  0.2161873E-01
++   01  0.1364400E+02  0.2972925E-01  0.2972925E-01
++   01  0.1368000E+02  0.3892849E-01  0.3892849E-01
++   01  0.1371600E+02  0.4880565E-01  0.4880565E-01
++   01  0.1375000E+02  0.5836789E-01  0.5836789E-01
++   01  0.1378600E+02  0.6846677E-01  0.6846677E-01
++   01  0.1382200E+02  0.7807752E-01  0.7807752E-01
++   01  0.1385800E+02  0.8590688E-01  0.8590688E-01
++   01  0.1389400E+02  0.9005658E-01  0.9005658E-01
++   01  0.1393000E+02  0.9104624E-01  0.9104624E-01
++   01  0.1396600E+02  0.9106051E-01  0.9106051E-01
++   01  0.1400000E+02  0.9097259E-01  0.9097259E-01
++   01  0.1403600E+02  0.9059408E-01  0.9059408E-01
++   01  0.1407200E+02  0.8937776E-01  0.8937776E-01
++   01  0.1410800E+02  0.8670241E-01  0.8670241E-01
++   01  0.1414400E+02  0.8222720E-01  0.8222720E-01
++   01  0.1418000E+02  0.7595241E-01  0.7595241E-01
++   01  0.1421600E+02  0.6812003E-01  0.6812003E-01
++   01  0.1425000E+02  0.5963949E-01  0.5963949E-01
++   01  0.1428600E+02  0.4997211E-01  0.4997211E-01
++   01  0.1432200E+02  0.4017048E-01  0.4017048E-01
++   01  0.1435800E+02  0.3084197E-01  0.3084197E-01
++   01  0.1439400E+02  0.2249393E-01  0.2249393E-01
++   01  0.1443000E+02  0.1547072E-01  0.1547072E-01
++   01  0.1446600E+02  0.9873198E-02  0.9873198E-02
++   01  0.1450000E+02  0.5768602E-02  0.5768602E-02
++   01  0.1453600E+02  0.2547230E-02  0.2547230E-02
++   01  0.1457200E+02  0.6960092E-03  0.6960092E-03
++   01  0.1460800E+02  0.8398783E-04  0.8398783E-04
++   01  0.1464400E+02  0.3714724E-04  0.3714724E-04
++   01  0.1468000E+02  0.3359908E-04  0.3359908E-04
++   01  0.1471600E+02  0.3243064E-04  0.3243064E-04
++   01  0.1475000E+02  0.3085280E-04  0.3085280E-04
++   01  0.1478600E+02  0.2766138E-04  0.2766138E-04
++   01  0.1482200E+02  0.2248116E-04  0.2248116E-04
++   01  0.1485800E+02  0.1563920E-04  0.1563920E-04
++   01  0.1489400E+02  0.8505529E-05  0.8505529E-05
++   01  0.1493000E+02  0.3065504E-05  0.3065504E-05
++   01  0.1496600E+02  0.4087133E-06  0.4087133E-06
+diff --git a/examples/acoustics_1d_adjoint/adjoint/regression_data/gauge00001.txt b/examples/acoustics_1d_adjoint/adjoint/regression_data/gauge00001.txt
+index a83c204..1882ea2 100644
+--- a/examples/acoustics_1d_adjoint/adjoint/regression_data/gauge00001.txt
++++ b/examples/acoustics_1d_adjoint/adjoint/regression_data/gauge00001.txt
+@@ -4,27 +4,418 @@
+    01  0.1000000E+00  0.2637586E-04  0.5105720E-04
+    01  0.1360000E+00  0.5473350E-04  0.1087658E-03
+    01  0.1720000E+00  0.1097945E-03  0.2193017E-03
+-   01  0.2000000E+00  0.1786169E-03  0.3570870E-03
+-   01  0.2360000E+00  0.3374053E-03  0.6747512E-03
+-   01  0.2720000E+00  0.6225909E-03  0.1245158E-02
+-   01  0.3000000E+00  0.9713678E-03  0.1942724E-02
+-   01  0.3360000E+00  0.1771402E-02  0.3542799E-02
+-   01  0.3720000E+00  0.3274395E-02  0.6548788E-02
+-   01  0.4000000E+00  0.5183244E-02  0.1036649E-01
+-   01  0.4360000E+00  0.9248768E-02  0.1849754E-01
+-   01  0.4720000E+00  0.1583396E-01  0.3166792E-01
+-   01  0.5000000E+00  0.2327888E-01  0.4655776E-01
+-   01  0.5360000E+00  0.3676947E-01  0.7353894E-01
+-   01  0.5720000E+00  0.5546332E-01  0.1109266E+00
+-   01  0.6000000E+00  0.7425485E-01  0.1485097E+00
+-   01  0.6360000E+00  0.1045274E+00  0.2090547E+00
+-   01  0.6720000E+00  0.1420275E+00  0.2840550E+00
+-   01  0.7000000E+00  0.1761298E+00  0.3522596E+00
+-   01  0.7360000E+00  0.2248616E+00  0.4497232E+00
+-   01  0.7720000E+00  0.2769502E+00  0.5539003E+00
+-   01  0.8000000E+00  0.3175163E+00  0.6350326E+00
+-   01  0.8360000E+00  0.3655683E+00  0.7311367E+00
+-   01  0.8720000E+00  0.4042306E+00  0.8084611E+00
+-   01  0.9000000E+00  0.4258892E+00  0.8517784E+00
+-   01  0.9360000E+00  0.4435179E+00  0.8870358E+00
+-   01  0.9720000E+00  0.4513496E+00  0.9026991E+00
++   01  0.2080000E+00  0.2121086E-03  0.4241005E-03
++   01  0.2440000E+00  0.3974791E-03  0.7949111E-03
++   01  0.2500000E+00  0.4261461E-03  0.8522510E-03
++   01  0.2860000E+00  0.7840055E-03  0.1567995E-02
++   01  0.3220000E+00  0.1429160E-02  0.2858313E-02
++   01  0.3580000E+00  0.2617453E-02  0.5234904E-02
++   01  0.3940000E+00  0.4784934E-02  0.9569868E-02
++   01  0.4300000E+00  0.8522502E-02  0.1704500E-01
++   01  0.4660000E+00  0.1462170E-01  0.2924340E-01
++   01  0.5000000E+00  0.2338907E-01  0.4677815E-01
++   01  0.5360000E+00  0.3682608E-01  0.7365215E-01
++   01  0.5720000E+00  0.5542360E-01  0.1108472E+00
++   01  0.6080000E+00  0.8015851E-01  0.1603170E+00
++   01  0.6440000E+00  0.1118488E+00  0.2236976E+00
++   01  0.6800000E+00  0.1508060E+00  0.3016120E+00
++   01  0.7160000E+00  0.1963821E+00  0.3927643E+00
++   01  0.7500000E+00  0.2441133E+00  0.4882265E+00
++   01  0.7860000E+00  0.2968077E+00  0.5936154E+00
++   01  0.8220000E+00  0.3477076E+00  0.6954151E+00
++   01  0.8580000E+00  0.3908784E+00  0.7817569E+00
++   01  0.8940000E+00  0.4225692E+00  0.8451383E+00
++   01  0.9300000E+00  0.4421986E+00  0.8843973E+00
++   01  0.9660000E+00  0.4514734E+00  0.9029468E+00
++   01  0.1000000E+01  0.4530486E+00  0.9060971E+00
++   01  0.1036000E+01  0.4498421E+00  0.8996841E+00
++   01  0.1072000E+01  0.4389003E+00  0.8778006E+00
++   01  0.1108000E+01  0.4181993E+00  0.8363985E+00
++   01  0.1144000E+01  0.3865461E+00  0.7730921E+00
++   01  0.1180000E+01  0.3446795E+00  0.6893590E+00
++   01  0.1216000E+01  0.2960858E+00  0.5921715E+00
++   01  0.1250000E+01  0.2485766E+00  0.4971532E+00
++   01  0.1286000E+01  0.1998304E+00  0.3996608E+00
++   01  0.1322000E+01  0.1552211E+00  0.3104423E+00
++   01  0.1358000E+01  0.1162987E+00  0.2325975E+00
++   01  0.1394000E+01  0.8374949E-01  0.1674990E+00
++   01  0.1430000E+01  0.5759035E-01  0.1151807E+00
++   01  0.1466000E+01  0.3739688E-01  0.7479376E-01
++   01  0.1500000E+01  0.2342367E-01  0.4684734E-01
++   01  0.1536000E+01  0.1328343E-01  0.2656687E-01
++   01  0.1572000E+01  0.6969774E-02  0.1393955E-01
++   01  0.1608000E+01  0.3469656E-02  0.6939313E-02
++   01  0.1644000E+01  0.1737395E-02  0.3474790E-02
++   01  0.1680000E+01  0.8746507E-03  0.1749301E-02
++   01  0.1716000E+01  0.4423503E-03  0.8847006E-03
++   01  0.1750000E+01  0.2338527E-03  0.4677054E-03
++   01  0.1786000E+01  0.1189842E-03  0.2379684E-03
++   01  0.1822000E+01  0.6063059E-04  0.1212612E-03
++   01  0.1858000E+01  0.3090703E-04  0.6181407E-04
++   01  0.1894000E+01  0.1574402E-04  0.3148804E-04
++   01  0.1930000E+01  0.8006361E-05  0.1601272E-04
++   01  0.1966000E+01  0.4061003E-05  0.8122005E-05
++   01  0.2000000E+01  0.2138872E-05  0.4277744E-05
++   01  0.2036000E+01  0.1077294E-05  0.2154589E-05
++   01  0.2072000E+01  0.5401927E-06  0.1080385E-05
++   01  0.2108000E+01  0.2695539E-06  0.5391078E-06
++   01  0.2144000E+01  0.1338088E-06  0.2676176E-06
++   01  0.2180000E+01  0.6606348E-07  0.1321270E-06
++   01  0.2216000E+01  0.3243412E-07  0.6486824E-07
++   01  0.2250000E+01  0.1653919E-07  0.3307838E-07
++   01  0.2286000E+01  0.8030689E-08  0.1606138E-07
++   01  0.2322000E+01  0.3876789E-08  0.7753577E-08
++   01  0.2358000E+01  0.1860696E-08  0.3721392E-08
++   01  0.2394000E+01  0.8879266E-09  0.1775853E-08
++   01  0.2430000E+01  0.4213086E-09  0.8426172E-09
++   01  0.2466000E+01  0.1987812E-09  0.3975625E-09
++   01  0.2500000E+01  0.9773122E-10  0.1954624E-09
++   01  0.2536000E+01  0.4562581E-10  0.9125163E-10
++   01  0.2572000E+01  0.2118626E-10  0.4237251E-10
++   01  0.2608000E+01  0.9786066E-11  0.1957213E-10
++   01  0.2644000E+01  0.4496946E-11  0.8993893E-11
++   01  0.2680000E+01  0.2056028E-11  0.4112057E-11
++   01  0.2716000E+01  0.9353819E-12  0.1870764E-11
++   01  0.2750000E+01  0.4450267E-12  0.8900535E-12
++   01  0.2786000E+01  0.2006090E-12  0.4012184E-12
++   01  0.2822000E+01  0.9001157E-13  0.1800242E-12
++   01  0.2858000E+01  0.4020405E-13  0.8041130E-13
++   01  0.2894000E+01  0.1787630E-13  0.3576153E-13
++   01  0.2930000E+01  0.7909956E-14  0.1584395E-13
++   01  0.2966000E+01  0.3474389E-14  0.7011601E-14
++   01  0.3000000E+01  0.1576747E-14  0.3304185E-14
++   01  0.3036000E+01  0.6124145E-15  0.1600059E-14
++   01  0.3072000E+01  0.7880779E-16  0.1073222E-14
++   01  0.3108000E+01 -0.4150345E-15  0.1364272E-14
++   01  0.3144000E+01 -0.1235845E-14  0.2702654E-14
++   01  0.3180000E+01 -0.2980606E-14  0.6060689E-14
++   01  0.3216000E+01 -0.6877261E-14  0.1379720E-13
++   01  0.3250000E+01 -0.1477885E-13  0.2957696E-13
++   01  0.3286000E+01 -0.3307561E-13  0.6615942E-13
++   01  0.3322000E+01 -0.7318280E-13  0.1463691E-12
++   01  0.3358000E+01 -0.1602267E-12  0.3204549E-12
++   01  0.3394000E+01 -0.3473947E-12  0.6947900E-12
++   01  0.3430000E+01 -0.7464885E-12  0.1492977E-11
++   01  0.3466000E+01 -0.1591180E-11  0.3182360E-11
++   01  0.3500000E+01 -0.3206808E-11  0.6413616E-11
++   01  0.3536000E+01 -0.6749718E-11  0.1349944E-10
++   01  0.3572000E+01 -0.1414100E-10  0.2828199E-10
++   01  0.3608000E+01 -0.2953406E-10  0.5906812E-10
++   01  0.3644000E+01 -0.6159928E-10  0.1231986E-09
++   01  0.3680000E+01 -0.1285528E-09  0.2571057E-09
++   01  0.3716000E+01 -0.2689930E-09  0.5379861E-09
++   01  0.3750000E+01 -0.5386757E-09  0.1077351E-08
++   01  0.3786000E+01 -0.1139671E-08  0.2279343E-08
++   01  0.3822000E+01 -0.2431197E-08  0.4862395E-08
++   01  0.3858000E+01 -0.5235786E-08  0.1047157E-07
++   01  0.3894000E+01 -0.1139113E-07  0.2278227E-07
++   01  0.3930000E+01 -0.2504145E-07  0.5008290E-07
++   01  0.3966000E+01 -0.5561102E-07  0.1112220E-06
++   01  0.4000000E+01 -0.1183131E-06  0.2366262E-06
++   01  0.4036000E+01 -0.2674445E-06  0.5348891E-06
++   01  0.4072000E+01 -0.6093729E-06  0.1218746E-05
++   01  0.4108000E+01 -0.1398822E-05  0.2797645E-05
++   01  0.4144000E+01 -0.3232998E-05  0.6465996E-05
++   01  0.4180000E+01 -0.7509120E-05  0.1501824E-04
++   01  0.4216000E+01 -0.1751152E-04  0.3502305E-04
++   01  0.4250000E+01 -0.3884638E-04  0.7769276E-04
++   01  0.4286000E+01 -0.9153365E-04  0.1830673E-03
++   01  0.4322000E+01 -0.2167638E-03  0.4335276E-03
++   01  0.4358000E+01 -0.5095461E-03  0.1019092E-02
++   01  0.4394000E+01 -0.1197065E-02  0.2394129E-02
++   01  0.4430000E+01 -0.2856502E-02  0.5713003E-02
++   01  0.4466000E+01 -0.6012667E-02  0.1202533E-01
++   01  0.4500000E+01 -0.1075792E-01  0.2151585E-01
++   01  0.4536000E+01 -0.1792124E-01  0.3584248E-01
++   01  0.4572000E+01 -0.2726061E-01  0.5452122E-01
++   01  0.4608000E+01 -0.3839317E-01  0.7678634E-01
++   01  0.4644000E+01 -0.5093011E-01  0.1018602E+00
++   01  0.4680000E+01 -0.6433985E-01  0.1286797E+00
++   01  0.4716000E+01 -0.7801555E-01  0.1560311E+00
++   01  0.4750000E+01 -0.9056063E-01  0.1811213E+00
++   01  0.4786000E+01 -0.1027284E+00  0.2054567E+00
++   01  0.4822000E+01 -0.1129034E+00  0.2258067E+00
++   01  0.4858000E+01 -0.1204536E+00  0.2409071E+00
++   01  0.4894000E+01 -0.1253789E+00  0.2507578E+00
++   01  0.4930000E+01 -0.1280793E+00  0.2561586E+00
++   01  0.4966000E+01 -0.1290521E+00  0.2581042E+00
++   01  0.5000000E+01 -0.1292144E+00  0.2584288E+00
++   01  0.5036000E+01 -0.1288177E+00  0.2576353E+00
++   01  0.5072000E+01 -0.1275073E+00  0.2550145E+00
++   01  0.5108000E+01 -0.1243775E+00  0.2487550E+00
++   01  0.5144000E+01 -0.1188990E+00  0.2377981E+00
++   01  0.5180000E+01 -0.1107902E+00  0.2215804E+00
++   01  0.5216000E+01 -0.1001938E+00  0.2003876E+00
++   01  0.5250000E+01 -0.8868724E-01  0.1773745E+00
++   01  0.5286000E+01 -0.7570264E-01  0.1514053E+00
++   01  0.5322000E+01 -0.6259265E-01  0.1251853E+00
++   01  0.5358000E+01 -0.4998279E-01  0.9996557E-01
++   01  0.5394000E+01 -0.3836129E-01  0.7672258E-01
++   01  0.5430000E+01 -0.2809745E-01  0.5619490E-01
++   01  0.5466000E+01 -0.1945163E-01  0.3890326E-01
++   01  0.5500000E+01 -0.1287656E-01  0.2575312E-01
++   01  0.5536000E+01 -0.7704060E-02  0.1540812E-01
++   01  0.5572000E+01 -0.4206463E-02  0.8412926E-02
++   01  0.5608000E+01 -0.2084637E-02  0.4169275E-02
++   01  0.5644000E+01 -0.9844775E-03  0.1968955E-02
++   01  0.5680000E+01 -0.4674644E-03  0.9349293E-03
++   01  0.5716000E+01 -0.2233327E-03  0.4466667E-03
++   01  0.5750000E+01 -0.1123479E-03  0.2246985E-03
++   01  0.5786000E+01 -0.5442410E-04  0.1088546E-03
++   01  0.5822000E+01 -0.2657942E-04  0.5317395E-04
++   01  0.5858000E+01 -0.1308879E-04  0.2621324E-04
++   01  0.5894000E+01 -0.6490581E-05  0.1306562E-04
++   01  0.5930000E+01 -0.3216624E-05  0.6633916E-05
++   01  0.5966000E+01 -0.1533925E-05  0.3545828E-05
++   01  0.6000000E+01 -0.6088619E-06  0.2296397E-05
++   01  0.6036000E+01  0.1927370E-06  0.2191902E-05
++   01  0.6072000E+01  0.1307569E-05  0.3550235E-05
++   01  0.6108000E+01  0.3569955E-05  0.7626926E-05
++   01  0.6144000E+01  0.8788053E-05  0.1783107E-04
++   01  0.6180000E+01  0.2118278E-04  0.4249963E-04
++   01  0.6216000E+01  0.5081431E-04  0.1016993E-03
++   01  0.6250000E+01  0.1152834E-03  0.2306056E-03
++   01  0.6286000E+01  0.2773112E-03  0.5546431E-03
++   01  0.6322000E+01  0.6686888E-03  0.1337388E-02
++   01  0.6358000E+01  0.1597471E-02  0.3194949E-02
++   01  0.6394000E+01  0.3798257E-02  0.7596516E-02
++   01  0.6430000E+01  0.9165808E-02  0.1833162E-01
++   01  0.6466000E+01  0.1933185E-01  0.3866370E-01
++   01  0.6500000E+01  0.3452580E-01  0.6905160E-01
++   01  0.6536000E+01  0.5725466E-01  0.1145093E+00
++   01  0.6572000E+01  0.8649739E-01  0.1729948E+00
++   01  0.6608000E+01  0.1208294E+00  0.2416588E+00
++   01  0.6644000E+01  0.1588456E+00  0.3176913E+00
++   01  0.6680000E+01  0.1987484E+00  0.3974967E+00
++   01  0.6716000E+01  0.2385707E+00  0.4771415E+00
++   01  0.6750000E+01  0.2742993E+00  0.5485986E+00
++   01  0.6786000E+01  0.3082349E+00  0.6164698E+00
++   01  0.6822000E+01  0.3357770E+00  0.6715540E+00
++   01  0.6858000E+01  0.3556946E+00  0.7113893E+00
++   01  0.6894000E+01  0.3683213E+00  0.7366425E+00
++   01  0.6930000E+01  0.3749572E+00  0.7499145E+00
++   01  0.6966000E+01  0.3773374E+00  0.7546748E+00
++   01  0.7000000E+01  0.3777644E+00  0.7555288E+00
++   01  0.7036000E+01  0.3769129E+00  0.7538257E+00
++   01  0.7072000E+01  0.3741013E+00  0.7482027E+00
++   01  0.7108000E+01  0.3665900E+00  0.7331801E+00
++   01  0.7144000E+01  0.3527263E+00  0.7054526E+00
++   01  0.7180000E+01  0.3314242E+00  0.6628483E+00
++   01  0.7216000E+01  0.3026827E+00  0.6053654E+00
++   01  0.7250000E+01  0.2702568E+00  0.5405135E+00
++   01  0.7286000E+01  0.2327454E+00  0.4654908E+00
++   01  0.7322000E+01  0.1939828E+00  0.3879657E+00
++   01  0.7358000E+01  0.1559325E+00  0.3118649E+00
++   01  0.7394000E+01  0.1202286E+00  0.2404573E+00
++   01  0.7430000E+01  0.8821712E-01  0.1764342E+00
++   01  0.7466000E+01  0.6093881E-01  0.1218776E+00
++   01  0.7500000E+01  0.4013276E-01  0.8026552E-01
++   01  0.7536000E+01  0.2378720E-01  0.4757441E-01
++   01  0.7572000E+01  0.1278763E-01  0.2557526E-01
++   01  0.7608000E+01  0.6192378E-02  0.1238476E-01
++   01  0.7644000E+01  0.2868214E-02  0.5736428E-02
++   01  0.7680000E+01  0.1329391E-02  0.2658781E-02
++   01  0.7716000E+01  0.6163889E-03  0.1232778E-02
++   01  0.7750000E+01  0.2998071E-03  0.5996141E-03
++   01  0.7786000E+01  0.1390571E-03  0.2781143E-03
++   01  0.7822000E+01  0.6450475E-04  0.1290095E-03
++   01  0.7858000E+01  0.2992490E-04  0.5984981E-04
++   01  0.7894000E+01  0.1388413E-04  0.2776827E-04
++   01  0.7930000E+01  0.6442527E-05  0.1288505E-04
++   01  0.7966000E+01  0.2989883E-05  0.5979766E-05
++   01  0.8000000E+01  0.1455410E-05  0.2910819E-05
++   01  0.8036000E+01  0.6756688E-06  0.1351338E-05
++   01  0.8072000E+01  0.3137489E-06  0.6274978E-06
++   01  0.8108000E+01  0.1457296E-06  0.2914591E-06
++   01  0.8144000E+01  0.6770948E-07  0.1354190E-06
++   01  0.8180000E+01  0.3147091E-07  0.6294181E-07
++   01  0.8216000E+01  0.1463358E-07  0.2926716E-07
++   01  0.8250000E+01  0.7138082E-08  0.1427616E-07
++   01  0.8286000E+01  0.3322358E-08  0.6644717E-08
++   01  0.8322000E+01  0.1547298E-08  0.3094597E-08
++   01  0.8358000E+01  0.7211007E-09  0.1442201E-08
++   01  0.8394000E+01  0.3363143E-09  0.6726286E-09
++   01  0.8430000E+01  0.1569846E-09  0.3139692E-09
++   01  0.8466000E+01  0.7334444E-10  0.1466889E-09
++   01  0.8500000E+01  0.3595098E-10  0.7190197E-10
++   01  0.8536000E+01  0.1683024E-10  0.3366048E-10
++   01  0.8572000E+01  0.7888159E-11  0.1577632E-10
++   01  0.8608000E+01  0.3701708E-11  0.7403415E-11
++   01  0.8644000E+01  0.1739413E-11  0.3478827E-11
++   01  0.8680000E+01  0.8184783E-12  0.1636957E-11
++   01  0.8716000E+01  0.3856909E-12  0.7713818E-12
++   01  0.8750000E+01  0.1906350E-12  0.3812701E-12
++   01  0.8786000E+01  0.9009075E-13  0.1801816E-12
++   01  0.8822000E+01  0.4263878E-13  0.8527792E-13
++   01  0.8858000E+01  0.2020948E-13  0.4041993E-13
++   01  0.8894000E+01  0.9591355E-14  0.1918526E-13
++   01  0.8930000E+01  0.4556626E-14  0.9119689E-14
++   01  0.8966000E+01  0.2164475E-14  0.4344834E-14
++   01  0.9000000E+01  0.1071450E-14  0.2179388E-14
++   01  0.9036000E+01  0.4927727E-15  0.1073492E-14
++   01  0.9072000E+01  0.1925865E-15  0.5959855E-15
++   01  0.9108000E+01 -0.9093580E-17  0.4856925E-15
++   01  0.9144000E+01 -0.2450799E-15  0.7128194E-15
++   01  0.9180000E+01 -0.6914261E-15  0.1488809E-14
++   01  0.9216000E+01 -0.1701877E-14  0.3454112E-14
++   01  0.9250000E+01 -0.3867954E-14  0.7760923E-14
++   01  0.9286000E+01 -0.9261517E-14  0.1853488E-13
++   01  0.9322000E+01 -0.2216826E-13  0.4434211E-13
++   01  0.9358000E+01 -0.5308338E-13  0.1061694E-12
++   01  0.9394000E+01 -0.1271738E-12  0.2543489E-12
++   01  0.9430000E+01 -0.3048122E-12  0.6096249E-12
++   01  0.9466000E+01 -0.7308843E-12  0.1461769E-11
++   01  0.9500000E+01 -0.1657568E-11  0.3315135E-11
++   01  0.9536000E+01 -0.3977968E-11  0.7955935E-11
++   01  0.9572000E+01 -0.9551424E-11  0.1910285E-10
++   01  0.9608000E+01 -0.2294522E-10  0.4589045E-10
++   01  0.9644000E+01 -0.5514386E-10  0.1102877E-09
++   01  0.9680000E+01 -0.1325543E-09  0.2651085E-09
++   01  0.9716000E+01 -0.3185930E-09  0.6371860E-09
++   01  0.9750000E+01 -0.7234785E-09  0.1446957E-08
++   01  0.9786000E+01 -0.1736205E-08  0.3472410E-08
++   01  0.9822000E+01 -0.4160622E-08  0.8321244E-08
++   01  0.9858000E+01 -0.9952873E-08  0.1990575E-07
++   01  0.9894000E+01 -0.2376104E-07  0.4752208E-07
++   01  0.9930000E+01 -0.5660889E-07  0.1132178E-06
++   01  0.9966000E+01 -0.1346194E-06  0.2692388E-06
++   01  0.1000000E+02 -0.3024095E-06  0.6048191E-06
++   01  0.1003600E+02 -0.7173505E-06  0.1434701E-05
++   01  0.1007200E+02 -0.1699708E-05  0.3399416E-05
++   01  0.1010800E+02 -0.4025082E-05  0.8050164E-05
++   01  0.1014400E+02 -0.9538372E-05  0.1907674E-04
++   01  0.1018000E+02 -0.2264721E-04  0.4529443E-04
++   01  0.1021600E+02 -0.5375563E-04  0.1075113E-03
++   01  0.1025000E+02 -0.1202360E-03  0.2404720E-03
++   01  0.1028600E+02 -0.2847243E-03  0.5694487E-03
++   01  0.1032200E+02 -0.6818627E-03  0.1363725E-02
++   01  0.1035800E+02 -0.1635690E-02  0.3271379E-02
++   01  0.1039400E+02 -0.3632202E-02  0.7264404E-02
++   01  0.1043000E+02 -0.7029856E-02  0.1405971E-01
++   01  0.1046600E+02 -0.1210768E-01  0.2421535E-01
++   01  0.1050000E+02 -0.1855299E-01  0.3710598E-01
++   01  0.1053600E+02 -0.2684059E-01  0.5368119E-01
++   01  0.1057200E+02 -0.3640444E-01  0.7280888E-01
++   01  0.1060800E+02 -0.4692740E-01  0.9385481E-01
++   01  0.1064400E+02 -0.5803923E-01  0.1160785E+00
++   01  0.1068000E+02 -0.6930975E-01  0.1386195E+00
++   01  0.1071600E+02 -0.8026074E-01  0.1605215E+00
++   01  0.1075000E+02 -0.8988522E-01  0.1797704E+00
++   01  0.1078600E+02 -0.9888369E-01  0.1977674E+00
++   01  0.1082200E+02 -0.1060684E+00  0.2121367E+00
++   01  0.1085800E+02 -0.1111941E+00  0.2223883E+00
++   01  0.1089400E+02 -0.1143955E+00  0.2287909E+00
++   01  0.1093000E+02 -0.1160371E+00  0.2320742E+00
++   01  0.1096600E+02 -0.1166246E+00  0.2332492E+00
++   01  0.1100000E+02 -0.1167284E+00  0.2334568E+00
++   01  0.1103600E+02 -0.1165154E+00  0.2330307E+00
++   01  0.1107200E+02 -0.1158244E+00  0.2316488E+00
++   01  0.1110800E+02 -0.1139106E+00  0.2278212E+00
++   01  0.1114400E+02 -0.1103113E+00  0.2206227E+00
++   01  0.1118000E+02 -0.1047055E+00  0.2094111E+00
++   01  0.1121600E+02 -0.9703906E-01  0.1940781E+00
++   01  0.1125000E+02 -0.8824194E-01  0.1764839E+00
++   01  0.1128600E+02 -0.7791090E-01  0.1558218E+00
++   01  0.1132200E+02 -0.6703766E-01  0.1340753E+00
++   01  0.1135800E+02 -0.5611979E-01  0.1122396E+00
++   01  0.1139400E+02 -0.4558265E-01  0.9116531E-01
++   01  0.1143000E+02 -0.3578235E-01  0.7156469E-01
++   01  0.1146600E+02 -0.2698803E-01  0.5397605E-01
++   01  0.1150000E+02 -0.1977987E-01  0.3955974E-01
++   01  0.1153600E+02 -0.1342958E-01  0.2685915E-01
++   01  0.1157200E+02 -0.8481398E-02  0.1696280E-01
++   01  0.1160800E+02 -0.4936541E-02  0.9873081E-02
++   01  0.1164400E+02 -0.2614066E-02  0.5228132E-02
++   01  0.1168000E+02 -0.1253259E-02  0.2506518E-02
++   01  0.1171600E+02 -0.5938877E-03  0.1187774E-02
++   01  0.1175000E+02 -0.2959116E-03  0.5918199E-03
++   01  0.1178600E+02 -0.1415838E-03  0.2831599E-03
++   01  0.1182200E+02 -0.6816671E-04  0.1363150E-03
++   01  0.1185800E+02 -0.3305599E-04  0.6606803E-04
++   01  0.1189400E+02 -0.1616921E-04  0.3223344E-04
++   01  0.1193000E+02 -0.8013040E-05  0.1577527E-04
++   01  0.1196600E+02 -0.4098222E-05  0.7597329E-05
++   01  0.1200000E+02 -0.2399905E-05  0.3446488E-05
++   01  0.1203600E+02 -0.1848626E-05  0.4640263E-06
++   01  0.1207200E+02 -0.2459320E-05 -0.2802403E-05
++   01  0.1210800E+02 -0.4875949E-05 -0.8667957E-05
++   01  0.1214400E+02 -0.1112154E-04 -0.2168431E-04
++   01  0.1218000E+02 -0.2630647E-04 -0.5232328E-04
++   01  0.1221600E+02 -0.6280168E-04 -0.1254525E-03
++   01  0.1225000E+02 -0.1415001E-03 -0.2829182E-03
++   01  0.1228600E+02 -0.3350372E-03 -0.6700314E-03
++   01  0.1232200E+02 -0.8018240E-03 -0.1603625E-02
++   01  0.1235800E+02 -0.1934911E-02 -0.3869810E-02
++   01  0.1239400E+02 -0.4193731E-02 -0.8387456E-02
++   01  0.1243000E+02 -0.7926401E-02 -0.1585280E-01
++   01  0.1246600E+02 -0.1337496E-01 -0.2674992E-01
++   01  0.1250000E+02 -0.2012892E-01 -0.4025785E-01
++   01  0.1253600E+02 -0.2867417E-01 -0.5734834E-01
++   01  0.1257200E+02 -0.3838309E-01 -0.7676617E-01
++   01  0.1260800E+02 -0.4889768E-01 -0.9779535E-01
++   01  0.1264400E+02 -0.5982263E-01 -0.1196453E+00
++   01  0.1268000E+02 -0.7072360E-01 -0.1414472E+00
++   01  0.1271600E+02 -0.8113123E-01 -0.1622625E+00
++   01  0.1275000E+02 -0.9007869E-01 -0.1801574E+00
++   01  0.1278600E+02 -0.9826907E-01 -0.1965381E+00
++   01  0.1282200E+02 -0.1046245E+00 -0.2092489E+00
++   01  0.1285800E+02 -0.1090427E+00 -0.2180855E+00
++   01  0.1289400E+02 -0.1117162E+00 -0.2234325E+00
++   01  0.1293000E+02 -0.1130104E+00 -0.2260207E+00
++   01  0.1296600E+02 -0.1134725E+00 -0.2269449E+00
++   01  0.1300000E+02 -0.1135555E+00 -0.2271111E+00
++   01  0.1303600E+02 -0.1133978E+00 -0.2267956E+00
++   01  0.1307200E+02 -0.1128522E+00 -0.2257044E+00
++   01  0.1310800E+02 -0.1113293E+00 -0.2226586E+00
++   01  0.1314400E+02 -0.1083084E+00 -0.2166167E+00
++   01  0.1318000E+02 -0.1034488E+00 -0.2068976E+00
++   01  0.1321600E+02 -0.9662062E-01 -0.1932412E+00
++   01  0.1325000E+02 -0.8855078E-01 -0.1771016E+00
++   01  0.1328600E+02 -0.7887767E-01 -0.1577553E+00
++   01  0.1332200E+02 -0.6849647E-01 -0.1369929E+00
++   01  0.1335800E+02 -0.5788029E-01 -0.1157606E+00
++   01  0.1339400E+02 -0.4745422E-01 -0.9490843E-01
++   01  0.1343000E+02 -0.3759398E-01 -0.7518795E-01
++   01  0.1346600E+02 -0.2860446E-01 -0.5720892E-01
++   01  0.1350000E+02 -0.2112947E-01 -0.4225893E-01
++   01  0.1353600E+02 -0.1446121E-01 -0.2892242E-01
++   01  0.1357200E+02 -0.9194121E-02 -0.1838824E-01
++   01  0.1360800E+02 -0.5378767E-02 -0.1075753E-01
++   01  0.1364400E+02 -0.2852409E-02 -0.5704818E-02
++   01  0.1368000E+02 -0.1362646E-02 -0.2725293E-02
++   01  0.1371600E+02 -0.6341753E-03 -0.1268353E-02
++   01  0.1375000E+02 -0.3095967E-03 -0.6191985E-03
++   01  0.1378600E+02 -0.1441776E-03 -0.2883659E-03
++   01  0.1382200E+02 -0.6714162E-04 -0.1343067E-03
++   01  0.1385800E+02 -0.3125778E-04 -0.6256704E-04
++   01  0.1389400E+02 -0.1453311E-04 -0.2918092E-04
++   01  0.1393000E+02 -0.6715883E-05 -0.1369013E-04
++   01  0.1396600E+02 -0.3010209E-05 -0.6607586E-05
++   01  0.1400000E+02 -0.1222734E-05 -0.3718754E-05
++   01  0.1403600E+02  0.1397830E-07 -0.2897706E-05
++   01  0.1407200E+02  0.1351819E-05 -0.4039585E-05
++   01  0.1410800E+02  0.3739189E-05 -0.8100273E-05
++   01  0.1414400E+02  0.8944068E-05 -0.1817762E-04
++   01  0.1418000E+02  0.2086392E-04 -0.4186259E-04
++   01  0.1421600E+02  0.4846399E-04 -0.9699071E-04
++   01  0.1425000E+02  0.1067659E-03 -0.2135625E-03
++   01  0.1428600E+02  0.2493526E-03 -0.4987194E-03
++   01  0.1432200E+02  0.5850849E-03 -0.1170176E-02
++   01  0.1435800E+02  0.1363666E-02 -0.2727335E-02
++   01  0.1439400E+02  0.3181584E-02 -0.6363169E-02
++   01  0.1443000E+02  0.7547880E-02 -0.1509576E-01
++   01  0.1446600E+02  0.1586495E-01 -0.3172990E-01
++   01  0.1450000E+02  0.2840298E-01 -0.5680595E-01
++   01  0.1453600E+02  0.4739228E-01 -0.9478455E-01
++   01  0.1457200E+02  0.7224412E-01 -0.1444882E+00
++   01  0.1460800E+02  0.1019581E+00 -0.2039162E+00
++   01  0.1464400E+02  0.1354997E+00 -0.2709994E+00
++   01  0.1468000E+02  0.1714113E+00 -0.3428226E+00
++   01  0.1471600E+02  0.2080196E+00 -0.4160393E+00
++   01  0.1475000E+02  0.2415522E+00 -0.4831045E+00
++   01  0.1478600E+02  0.2740031E+00 -0.5480061E+00
++   01  0.1482200E+02  0.3010235E+00 -0.6020471E+00
++   01  0.1485800E+02  0.3210048E+00 -0.6420097E+00
++   01  0.1489400E+02  0.3339983E+00 -0.6679966E+00
++   01  0.1493000E+02  0.3411126E+00 -0.6822253E+00
++   01  0.1496600E+02  0.3436709E+00 -0.6873418E+00
+diff --git a/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint.py b/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint.py
+index ee5e6e8..e6b6628 100644
+--- a/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint.py
++++ b/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint.py
+@@ -15,8 +15,8 @@ class Acoustics1DAdjointForwardTest(test.AMRClawRegressionTest):
+         # Write out data files
+         self.load_rundata()
+         
+-        self.rundata.clawdata.num_output_times = 10
+-        self.rundata.clawdata.tfinal = 1.0
++        # self.rundata.clawdata.num_output_times = 10
++        # self.rundata.clawdata.tfinal = 1.0
+ 
+         # self.rundata.clawdata.use_fwaves = False
+ 
+diff --git a/examples/acoustics_1d_adjoint/test_acoustics_1d_adjoint.py b/examples/acoustics_1d_adjoint/test_acoustics_1d_adjoint.py
+index f17864e..e116e7f 100644
+--- a/examples/acoustics_1d_adjoint/test_acoustics_1d_adjoint.py
++++ b/examples/acoustics_1d_adjoint/test_acoustics_1d_adjoint.py
+@@ -10,10 +10,10 @@ import unittest
+ import clawpack.amrclaw.test as test
+ import clawpack.clawutil.runclaw
+ 
+-from adjoint.test_acoustics_1d_adjoint_forward import Acoustics1DAdjointForwardTest 
++from adjoint.test_acoustics_1d_adjoint import Acoustics1DAdjointTest 
+ 
+ 
+-class Acoustics1DAdjointTest(test.AMRClawRegressionTest):
++class Acoustics1DAdjointForwardTest(test.AMRClawRegressionTest):
+     r"""Basic test for a 1D acoustics adjoint-flagging forward problem test case"""
+ 
+ 
+@@ -21,7 +21,7 @@ class Acoustics1DAdjointTest(test.AMRClawRegressionTest):
+         
+         # Run adjoint problem
+         try:
+-            adjoint_run = Acoustics1DAdjointForwardTest()    
++            adjoint_run = Acoustics1DAdjointTest()    
+             adjoint_run.setUp()
+             adjoint_run.runTest()
+             
+@@ -68,7 +68,7 @@ if __name__=="__main__":
+     if len(sys.argv) > 1:
+         if bool(sys.argv[1]):
+             # Fake the setup and save out output
+-            test = Acoustics1DAdjointTest()
++            test = Acoustics1DAdjointForwardTest()
+             try:
+                 test.setUp()
+                 test.runTest(save=True)
+diff --git a/examples/acoustics_2d_adjoint/adjoint/setrun.py b/examples/acoustics_2d_adjoint/adjoint/setrun.py
+index 50fdc58..1671ade 100644
+--- a/examples/acoustics_2d_adjoint/adjoint/setrun.py
++++ b/examples/acoustics_2d_adjoint/adjoint/setrun.py
+@@ -130,7 +130,7 @@ def setrun(claw_pkg='amrclaw'):
+         clawdata.output_t0 = True  # output at initial (or restart) time?
+         
+ 
+-    clawdata.output_format = 'binary'       # 'ascii', 'binary', 'netcdf'
++    clawdata.output_format = 'ascii'       # 'ascii', 'binary', 'netcdf'
+ 
+ 
+     # ---------------------------------------------------
+diff --git a/src/python/amrclaw/compare_gauges.py b/src/python/amrclaw/compare_gauges.py
+index 5e14b01..c68a023 100755
+--- a/src/python/amrclaw/compare_gauges.py
++++ b/src/python/amrclaw/compare_gauges.py
+@@ -1,5 +1,6 @@
+ #!/usr/bin/env python
+ 
++from pathlib import Path
+ import sys
+ 
+ import numpy
+@@ -12,43 +13,49 @@ import clawpack.pyclaw.gauges as gauges
+ def check_old_gauge_data(path, gauge_id):
+ 
+     # Load old gauge data
+-    data = numpy.loadtxt(path)
+-    old_ids = numpy.asarray(data[:, 0], dtype=int)
+-    gauge_indices = numpy.nonzero(old_ids == gauge_id)[0]
+-    q = data[gauge_indices, 3:]
++    # data = numpy.loadtxt(path)
++    # old_ids = numpy.asarray(data[:, 0], dtype=int)
++    # gauge_indices = numpy.nonzero(old_ids == gauge_id)[0]
++    # q = data[gauge_indices, 3:]
+ 
+     # Load new data
+-    gauge = gauges.GaugeSolution(gauge_id, "./regression_data/")
+-
+-    print(numpy.linalg.norm(q - gauge.q.transpose(), ord=2))
+-    print(numpy.argmax(q - gauge.q.transpose()))
++    new_gauge = gauges.GaugeSolution(gauge_id, path)
++    old_gauge = gauges.GaugeSolution(gauge_id, Path() / "regression_data")
++    num_eqn = new_gauge.q.shape[0]
+ 
+     fig = plt.figure()
+-    for i in range(gauge.q.shape[0]):
+-        axes = fig.add_subplot(1, gauge.q.shape[0], i + 1)
+-        axes.plot(q[:, i] - gauge.q[i, :])
+-        axes.set_title("q[%s, :] comparison" % i)
++    if new_gauge.t.shape == old_gauge.t.shape:
++        for i in range(num_eqn):
++            L2_norm = numpy.linalg.norm(new_gauge.q[i, :] - old_gauge.q[i, :], ord=2)
++            print(f"L2|{i}| = {L2_norm}")
++            max_norm = numpy.argmax(new_gauge.q[i, :] - old_gauge.q[i, :])
++            print(f"max|{i}| = {max_norm}")
++
++            axes = fig.add_subplot(1, num_eqn, i + 1)
++            axes.plot(new_gauge.q[i, :] - old_gauge.q[i, :])
++            axes.set_title(f"q[{i}, :] comparison")
++    else:
++        # If the gauge time points do not match just plot them
++        for i in range(num_eqn):
++            ax = fig.add_subplot(1, num_eqn, i + 1)
++            ax.plot(new_gauge.t, new_gauge.q[i, :], 'x', label='new')
++            ax.plot(old_gauge.t, old_gauge.q[i, :], '+', label='old')
++            ax.set_title(f"q[{i}, :] comparison")
+ 
+     return fig
+ 
+ if __name__ == "__main__":
+ 
+-    old_files = []
+-    gauge_ids = []
+-
+     if len(sys.argv) > 1:
+-        # Assume arguments are pairs of file locations and ids
+-        for i in range(1, len(sys.argv), 2):
+-            old_files.append(sys.argv[i])
+-            gauge_ids.append(int(sys.argv[i + 1]))
++        # First argument should be a path to new data
++        path = Path(sys.argv[1])
++        # Second+ arguments are gauge ids to compare
++        gauge_ids = [int(sys.argv[i]) for i in range(2, len(sys.argv))]
+     else:
+-        raise ValueError("Need at least one pair to compare")
+-
+-    print(old_files)
+-    print(gauge_ids)
++        raise ValueError("Need 1 path and a set of gauge ids to compare.")
+ 
+     figures = []
+-    for i in range(len(old_files)):
+-        figures.append(check_old_gauge_data(old_files[i], gauge_ids[i]))
++    for gauge_id in gauge_ids:
++        figures.append(check_old_gauge_data(path, gauge_id))
+ 
+     plt.show()
+\ No newline at end of file
+diff --git a/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py b/examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint.py
+similarity index 100%
+rename from examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint_forward.py
+rename to examples/acoustics_1d_adjoint/adjoint/test_acoustics_1d_adjoint.py
+
+
+===========
+clawutil
+===========
+/Users/mandli/Dropbox/src/clawpack/clawutil
+
+
+
+===========
+pyclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/pyclaw
+
+
+
+===========
+visclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/visclaw
+
+
+
+===========
+riemann
+===========
+/Users/mandli/Dropbox/src/clawpack/riemann
+
+
+
+===========
+geoclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/geoclaw
+
