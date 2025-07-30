@@ -26,7 +26,7 @@ c     not being able to dimension at maxthreads
 c
 c  ::::::::::::::; ADVANC :::::::::::::::::::::::::::::::::::::::::::
 c  integrate all grids at the input  'level' by one step of its delta(t)
-c  this includes:  setting the ghost cells 
+c  this includes:  setting the ghost cells
 c                  advancing the solution on the grid
 c                  adjusting fluxes for flux conservation step later
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -78,7 +78,7 @@ c
       call cpu_time(cpu_finishBound)
       timeBound = timeBound + clock_finishBound - clock_startBound
       timeBoundCPU=timeBoundCPU+cpu_finishBound-cpu_startBound
-      
+
 c
 c save coarse level values if there is a finer level for wave fixup
 
@@ -91,7 +91,7 @@ c
       dtlevnew = rinfinity
       cfl_level = 0.d0    !# to keep track of max cfl seen on each level
 
-c 
+c
       call system_clock(clock_startStepgrid,clock_rate)
       call cpu_time(cpu_startStepgrid)
 
@@ -115,7 +115,7 @@ c
 
 !$OMP CRITICAL (newdt)
           dtlevnew = dmin1(dtlevnew,dtnew)
-!$OMP END CRITICAL (newdt)    
+!$OMP END CRITICAL (newdt)
 
       end do
 !$OMP END PARALLEL DO
@@ -126,8 +126,8 @@ c
       tvoll(level) = tvoll(level) + clock_finish - clock_start
       tvollCPU(level) = tvollCPU(level) + cpu_finish - cpu_start
       timeStepgrid = timeStepgrid +clock_finish-clock_startStepgrid
-      timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid      
-      
+      timeStepgridCPU=timeStepgridCPU+cpu_finish-cpu_startStepgrid
+
       cflmax = dmax1(cflmax, cfl_level)
 
 c
@@ -214,8 +214,9 @@ c
 
 
          locaux = node(storeaux,mptr)
-         call b4step1(nghost, nx, nvar, alloc(locnew), rnode(cornxlo,mptr), 
-     &                hx, time, dt, naux, alloc(locaux))
+         call b4step1(nghost, nx, nvar, alloc(locnew),
+     &                rnode(cornxlo,mptr), hx, time, dt, naux,
+     &                alloc(locaux))
 c
          if (node(ffluxptr,mptr) .ne. 0) then
 
