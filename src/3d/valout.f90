@@ -127,6 +127,7 @@ subroutine valout(level_begin, level_end, time, num_eqn, num_aux)
             num_cells(2) = node(ndjhi, grid_ptr) - node(ndjlo, grid_ptr) + 1
             num_cells(3) = node(ndkhi, grid_ptr) - node(ndklo, grid_ptr) + 1
             q_loc = node(store1, grid_ptr)
+            aux_loc = node(storeaux, grid_ptr)
             lower_corner = [rnode(cornxlo, grid_ptr),       &
                             rnode(cornylo, grid_ptr),       &
                             rnode(cornzlo, grid_ptr)]
