@@ -5,4 +5,4 @@ Block-structured AMR is implemented, in which rectangular patches of the grid at
 
 **Links**
  - [Documentation](https://www.clawpack.org/amrclaw.html)
- - ![Tests](https://github.com/clawpack/amrclaw/actions/workflows/testing.yml/badge.svg)
+ - [![Tests](https://github.com/clawpack/amrclaw/actions/workflows/testing.yml/badge.svg)](https://github.com/clawpack/amrclaw/actions/workflows/testing.yml)
