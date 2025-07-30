@@ -229,6 +229,10 @@ c
 
 
          locaux = node(storeaux,mptr)
+         call b4step3(nghost, nx, ny, nz, nvar, alloc(locnew), 
+     &                rnode(cornxlo,mptr), rnode(cornylo,mptr), 
+     &                rnode(cornzlo,mptr), hx, hy, hz, time, dt, naux,
+     &                alloc(locaux))
 c
          if (node(ffluxptr,mptr) .ne. 0) then
             lenbc  = 2*( (nx/intratx(level-1))*(nz/intratz(level-1))

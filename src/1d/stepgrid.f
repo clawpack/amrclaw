@@ -62,9 +62,9 @@ c     #    are set in the amr2ez file (read by amr)
 c
       method(1) = 0
 c
-c
-      call b4step1(mbc,mx,nvar,q,
-     &             xlowmbc,dx,time,dt,maux,aux)
+c     This call has been moved out to advanc
+c      call b4step1(mbc,mx,nvar,q,
+c     &             xlowmbc,dx,time,dt,maux,aux)
 c
 c
 c     # take one step on the conservation law:
