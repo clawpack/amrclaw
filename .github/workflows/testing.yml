@@ -23,7 +23,7 @@ jobs:
       fail-fast: false # Probably want to turn this off for a large matrix
       matrix:
         os: [ubuntu-latest] #, macos-latest]
-        python-version: 3.12
+        python-version: [3.12]
         build: [optimized]
         toolchain:
           - {compiler: gcc, version: 14}
@@ -35,7 +35,7 @@ jobs:
         include:
           - os: ubuntu-latest
             build: [optimized, debug]
-            python-version: ["3.8", "3.12"]
+            python-version: [3.8, 3.12]
         exclude:
           - os: ubuntu-latest
             toolchain: {compiler: gcc, version: 15}
