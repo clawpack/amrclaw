@@ -13,6 +13,8 @@ permissions:
 
 env:
   CLAW: ${{ github.workspace }}
+  FFLAGS: "-O1 -fopenmp"
+  OMP_NUM_THREADS: 2
 
 jobs:
   tests:
@@ -26,6 +28,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install gfortran
+        gfortran --version
         python -m pip install --upgrade pip
         pip install flake8 meson-python ninja pytest numpy
         # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
@@ -39,7 +42,7 @@ jobs:
     - name: Checkout AMRClaw branch
       uses: actions/checkout@v4.1.5
       with:
-        path: amrclaw    
+        path: amrclaw
 
     - name: Install clawpack
       run: |
