@@ -53,7 +53,8 @@ jobs:
         python-version: ${{matrix.python-version}}
 
     - name: Set up compilers
-      uses: fortran-lang/setup-fortran
+      uses: fortran-lang/setup-fortran@v1
+      id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
@@ -90,10 +91,36 @@ jobs:
     - name: Test with pytest
       run: |
         if [ "${{ matrix.build }}" == "debug" ]; then
-          export FFLAGS="-O0 -W -Wall -fbounds-check -fcheck=all -pedantic-errors -Wunderflow -fbacktrace -ffpe-trap=invalid,zero,overflow -g"
+          if [ "${{ matrix.toolchain.compiler}}" == "gcc" ]; then
+            export FFLAGS="-O0 -W -Wall -fbounds-check -fcheck=all -pedantic-errors -Wunderflow -fbacktrace -ffpe-trap=invalid,zero,overflow -g"
+          elif [ "${{ matrix.toolchain.compiler}}" == "intel" ]; then
+            export FFLAGS="-O0 -g -check all -warn all -traceback"
+          elif [ "${{ matrix.toolchain.compiler}}" == "intel-classic" ]; then
+            export FFLAGS="-O0 -g -check all -warn all -traceback"
+          elif [ "${{ matrix.toolchain.compiler}}" == "nvidia-hpc" ]; then
+            export FFLAGS="-O0 -g -check all -warn all -traceback"
+          elif [ "${{ matrix.toolchain.compiler}}" == "lfortran" ]; then
+            export FFLAGS="-O0 -g -fcheck=all -fbacktrace
+          else
+            echo "Unknown compiler: ${{ matrix.toolchain.compiler }}"
+            exit 1
+          fi
           export OMP_NUM_THREADS=1
         elif [ "${{ matrix.build }}" == "optimized" ]; then
-          export FFLAGS="-O1 -fopenmp"
+          if [ "${{ matrix.toolchain.compiler}}" == "gcc" ]; then
+            export FFLAGS="-O1 -march=native -mtune=native -fopenmp"
+          elif [ "${{ matrix.toolchain.compiler}}" == "intel" ]; then
+            export FFLAGS="-O1 -xHost -qopenmp"
+          elif [ "${{ matrix.toolchain.compiler}}" == "intel-classic" ]; then
+            export FFLAGS="-O1 -xHost -qopenmp"
+          elif [ "${{ matrix.toolchain.compiler}}" == "nvidia-hpc" ]; then
+            export FFLAGS="-O1 -xHost -qopenmp"
+          elif [ "${{ matrix.toolchain.compiler}}" == "lfortran" ]; then
+            export FFLAGS="-O1 -fopenmp"
+          else
+            echo "Unknown compiler: ${{ matrix.toolchain.compiler }}"
+            exit 1
+          fi
           export OMP_NUM_THREADS=2
         else
           echo "Unknown build type: ${{ matrix.build }}"
