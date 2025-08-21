@@ -86,42 +86,42 @@ jobs:
 
     - name: Test with pytest
       run: |
-        if [ "${{ matrix.build }}" == "debug" ]; then
-          if [ "${{ matrix.toolchain.compiler}}" == "gcc" ]; then
-            export FFLAGS="-O0 -W -Wall -fbounds-check -fcheck=all -pedantic-errors -Wunderflow -fbacktrace -ffpe-trap=invalid,zero,overflow -g"
-          elif [ "${{ matrix.toolchain.compiler}}" == "intel" ]; then
-            export FFLAGS="-O0 -g -check all -warn all -traceback"
-          elif [ "${{ matrix.toolchain.compiler}}" == "intel-classic" ]; then
-            export FFLAGS="-O0 -g -check all -warn all -traceback"
-          elif [ "${{ matrix.toolchain.compiler}}" == "nvidia-hpc" ]; then
-            export FFLAGS="-O0 -g -check all -warn all -traceback"
-          elif [ "${{ matrix.toolchain.compiler}}" == "lfortran" ]; then
-            export FFLAGS="-O0 -g -fcheck=all -fbacktrace
-          else
-            echo "Unknown compiler: ${{ matrix.toolchain.compiler }}"
+        case "${{ matrix.toolchain.compiler }}" in
+          gcc)
+            case "${{ matrix.build }}" in
+              debug)
+                export FFLAGS="-g -Wall -Wextra -Werror"
+                export OMP_NUM_THREADS=1
+                ;;
+              optimized)
+                export FFLAGS="-O1"
+                export OMP_NUM_THREADS=2
+                ;;
+              *)
+                echo "ERROR: Unknown build type: ${{ matrix.build }}"
+                exit 1
+                ;;
+            esac
+          intel)
+            case "${{ matrix.build }}" in
+              debug)
+                export FFLAGS="-g -Wall -Wextra -Werror"
+                export OMP_NUM_THREADS=1
+                ;;
+              optimized)
+                export FFLAGS="-O1 -xHost -qopenmp"
+                export OMP_NUM_THREADS=2
+                ;;
+              *)
+                echo "ERROR: Unknown build type: ${{ matrix.build }}"
+                exit 1
+                ;;
+            esac
+          *)
+            echo "ERROR: Unknown compiler: ${{ matrix.toolchain.compiler }}"
             exit 1
-          fi
-          export OMP_NUM_THREADS=1
-        elif [ "${{ matrix.build }}" == "optimized" ]; then
-          if [ "${{ matrix.toolchain.compiler}}" == "gcc" ]; then
-            export FFLAGS="-O1 -march=native -mtune=native -fopenmp"
-          elif [ "${{ matrix.toolchain.compiler}}" == "intel" ]; then
-            export FFLAGS="-O1 -xHost -qopenmp"
-          elif [ "${{ matrix.toolchain.compiler}}" == "intel-classic" ]; then
-            export FFLAGS="-O1 -xHost -qopenmp"
-          elif [ "${{ matrix.toolchain.compiler}}" == "nvidia-hpc" ]; then
-            export FFLAGS="-O1 -xHost -qopenmp"
-          elif [ "${{ matrix.toolchain.compiler}}" == "lfortran" ]; then
-            export FFLAGS="-O1 -fopenmp"
-          else
-            echo "Unknown compiler: ${{ matrix.toolchain.compiler }}"
-            exit 1
-          fi
-          export OMP_NUM_THREADS=2
-        else
-          echo "Unknown build type: ${{ matrix.build }}"
-          exit 1
-        fi
+            ;;
+        esac
         cd ${CLAW}/amrclaw
         pytest
 
