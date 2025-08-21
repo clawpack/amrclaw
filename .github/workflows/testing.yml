@@ -13,17 +13,31 @@ permissions:
 
 env:
   CLAW: ${{ github.workspace }}
-  FFLAGS: "-O1 -fopenmp"
-  OMP_NUM_THREADS: 2
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    name: >
+      Build and test a ${{ matrix.build }} version of AMRClaw on ${{ matrix.os }} with ${{ matrix.python-version }}.
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: [3.10]
+        build: [optimized, debug]
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            build: optimized
+          - os: ubuntu-latest
+            python-version: 3.10
+            build: debug
+          - os: macos-latest
+            python-version: 3.10
+            build: optimized
     steps:
-    - name: Set up Python 3.10
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
-        python-version: "3.10"
+        python-version: ${{matrix.python-version}}
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -45,10 +59,13 @@ jobs:
         path: amrclaw
 
     - name: Install clawpack
+      env:
+
       run: |
         pip install --no-build-isolation --editable .
 
     - name: Lint with flake8
+      if: ${{ matrix.build == 'debug' }}
       run: |
         cd ${CLAW}/amrclaw
         # stop the build if there are Python syntax errors or undefined names
@@ -58,6 +75,16 @@ jobs:
 
     - name: Test with pytest
       run: |
+        if [ "${{ matrix.build }}" == "debug" ]; then
+          export FFLAGS="-O0 -W -Wall -fbounds-check -fcheck=all -pedantic-errors -Wunderflow -fbacktrace -ffpe-trap=invalid,zero,overflow -g"
+          export OMP_NUM_THREADS=1
+        elif [ "${{ matrix.build }}" == "optimized" ]; then
+          export FFLAGS="-O1 -fopenmp"
+          export OMP_NUM_THREADS=2
+        else
+          echo "Unknown build type: ${{ matrix.build }}"
+          exit 1
+        fi
         cd ${CLAW}/amrclaw
         pytest
 
