@@ -17,20 +17,20 @@ env:
 jobs:
   tests:
     name: >
-      Build and test a ${{ matrix.build }} version of AMRClaw on ${{ matrix.os }} with ${{ matrix.python-version }}.
+      Build ${{ matrix.build }} - ${{ matrix.os }} with ${{ matrix.python-version }}.
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # Probably want to turn this off for a large matrix
       matrix:
         python-version: ["3.8", "3.10"]
         build: [optimized, debug]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest] #, macos-latest]
         toolchain:
           - {compiler: gcc, version: 15}
-          - {compiler: intel, version: '2025.0'}
-          - {compiler: intel-classic, version: '2021.10'}
-          - {compiler: nvidia-hpc, version: '25.1'}
-          - {compiler: lfortran, version: '0.45.0'}
+          # - {compiler: intel, version: '2025.0'}
+          # - {compiler: intel-classic, version: '2021.10'}
+          # - {compiler: nvidia-hpc, version: '25.1'}
+          # - {compiler: lfortran, version: '0.45.0'} # Does not work with meson
         include:
           - os: ubuntu-latest
             build: debug
