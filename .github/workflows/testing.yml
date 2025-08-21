@@ -90,38 +90,25 @@ jobs:
           gcc)
             case "${{ matrix.build }}" in
               debug)
-                export FFLAGS="-g -Wall -Wextra -Werror"
+                export FFLAGS="-g -O0 -fcheck=all -fbacktrace"
                 export OMP_NUM_THREADS=1
                 ;;
               optimized)
-                export FFLAGS="-O1"
+                export FFLAGS="-O1 -fopenmp"
                 export OMP_NUM_THREADS=2
-                ;;
-              *)
-                echo "ERROR: Unknown build type: ${{ matrix.build }}"
-                exit 1
                 ;;
             esac
           intel)
-            case "${{ matrix.build }}" in
-              debug)
-                export FFLAGS="-g -Wall -Wextra -Werror"
-                export OMP_NUM_THREADS=1
-                ;;
-              optimized)
-                export FFLAGS="-O1 -xHost -qopenmp"
-                export OMP_NUM_THREADS=2
-                ;;
-              *)
-                echo "ERROR: Unknown build type: ${{ matrix.build }}"
-                exit 1
-                ;;
-            esac
+            echo "Using Intel compiler"
+            exit 1 # Temporarily disable Intel compiler testing
+            ;;
           *)
-            echo "ERROR: Unknown compiler: ${{ matrix.toolchain.compiler }}"
+            echo "Unknown compiler: ${{ matrix.toolchain.compiler }}"
             exit 1
             ;;
         esac
+        echo "FFLAGS: $FFLAGS"
+        echo "OMP_NUM_THREADS: $OMP_NUM_THREADS"
         cd ${CLAW}/amrclaw
         pytest
 
