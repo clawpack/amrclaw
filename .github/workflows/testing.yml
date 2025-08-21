@@ -21,18 +21,18 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.10]
+        python-version: ["3.8", "3.10"]
         build: [optimized, debug]
         os: [ubuntu-latest, macos-latest]
         include:
           - os: ubuntu-latest
-            build: optimized
-          - os: ubuntu-latest
-            python-version: 3.10
             build: debug
-          - os: macos-latest
-            python-version: 3.10
+          - os: ubuntu-latest
+            python-version: "3.10"
             build: optimized
+          # - os: macos-latest
+          #   python-version: "3.10"
+          #   build: optimized
     steps:
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
