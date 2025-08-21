@@ -20,10 +20,17 @@ jobs:
       Build and test a ${{ matrix.build }} version of AMRClaw on ${{ matrix.os }} with ${{ matrix.python-version }}.
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false # Probably want to turn this off for a large matrix
       matrix:
         python-version: ["3.8", "3.10"]
         build: [optimized, debug]
         os: [ubuntu-latest, macos-latest]
+        toolchain:
+          - {compiler: gcc, version: 15}
+          - {compiler: intel, version: '2025.0'}
+          - {compiler: intel-classic, version: '2021.10'}
+          - {compiler: nvidia-hpc, version: '25.1'}
+          - {compiler: lfortran, version: '0.45.0'}
         include:
           - os: ubuntu-latest
             build: debug
@@ -33,25 +40,26 @@ jobs:
           - os: macos-latest
             python-version: "3.10"
             build: optimized
+        exclude:
+          - os: macos-latest
+            toolchain: {compiler: intel, version: '2023.2'}
+          - os: macos-latest
+            toolchain: {compiler: nvidia-hpc, version: '23.11'}
+
     steps:
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{matrix.python-version}}
-    - name: Install dependencies
+
+    - name: Set up compilers
+      uses: fortran-lang/setup-fortran
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
+
+    - name: Install python dependencies
       run: |
-        if [ "${{ matrix.os }}" == "macos-latest" ]; then
-          brew update
-          brew install gfortran
-          gfortran --version
-        elif [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
-          sudo apt-get update
-          sudo apt-get install -y gfortran
-          gfortran --version
-        else
-          echo "Unsupported OS: ${{ matrix.os }}"
-          exit 1
-        fi
         python -m pip install --upgrade pip
         pip install flake8 meson-python ninja pytest numpy
 
