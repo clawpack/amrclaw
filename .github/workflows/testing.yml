@@ -58,9 +58,7 @@ jobs:
       with:
         path: amrclaw
 
-    - name: Install clawpack
-      env:
-
+    - name: Install clawpack python
       run: |
         pip install --no-build-isolation --editable .
 
