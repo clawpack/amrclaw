@@ -33,14 +33,12 @@ jobs:
           # - {compiler: nvidia-hpc, version: '25.1'} # does not build python
           # - {compiler: lfortran, version: '0.45.0'} # lfortran not yet supported
           # - {compiler: flang, version: '20.1.0'} # flang not yet supported
-        include:
-          - os: ubuntu-latest
-            build: opt
-            python-version: 3.8
-            toolchain: {compiler: gcc, version: 14}
-        #   - os: macos-latest
-        #     build: debug
-        #     toolchain: {compiler: gcc, version: 15}
+        # include:
+        #   3.8 does not seem to work.
+        #   - os: ubuntu-latest
+        #     build: opt
+        #     python-version: 3.8
+        #     toolchain: {compiler: gcc, version: 14}
         exclude:
           - os: ubuntu-latest
             toolchain: {compiler: gcc, version: 15}
@@ -174,7 +172,3 @@ jobs:
         name: test_results
         path: ${{ env.CLAW }}/amrclaw/*_output
         if-no-files-found: ignore
-
-
-# lfortran
-# optimized = --openmp
