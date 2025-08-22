@@ -26,22 +26,23 @@ jobs:
         python-version: [3.12]
         build: [opt]
         toolchain:
-          - {compiler: gcc, version: 14}
-          - {compiler: intel, version: '2025.0'}
-          - {compiler: intel-classic, version: '2021.10'}
+          - {compiler: gcc, version: 10}
+          - {compiler: gcc, version: 15}
+          # - {compiler: intel, version: '2025.0'}
+          # - {compiler: intel-classic, version: '2021.10'}
           # - {compiler: nvidia-hpc, version: '25.1'} # does not build python
           # - {compiler: lfortran, version: '0.45.0'} # lfortran not yet supported
           # - {compiler: flang, version: '20.1.0'} # flang not yet supported
         include:
           - os: ubuntu-latest
             build: debug
-            toolchain: {compiler: intel, version: '2025.0'}
+            toolchain: {compiler: gcc, version: 14}
           - os: macos-latest
             build: debug
             toolchain: {compiler: gcc, version: 15}
         exclude:
-          - os: macos-latest
-            toolchain: {compiler: intel, version: '2025.0'}
+          - os: ubuntu-latest
+            toolchain: {compiler: gcc, version: 15}
 
     steps:
     - name: Set up Python ${{ matrix.python-version }}
@@ -143,6 +144,17 @@ jobs:
             echo "Unknown build type: ${{ matrix.build }}"
             exit 1
           fi
+        elif [ "${{ matrix.toolchain.compiler }}" = "lfortran" ]; then
+          if [ "${{ matrix.build }}" = "debug" ]; then
+            export FFLAGS=""
+            export OMP_NUM_THREADS=1
+          elif [ "${{ matrix.build }}" = "opt" ]; then
+            export FFLAGS="--fast --openmp"
+            export OMP_NUM_THREADS=2
+          else
+            echo "Unknown build type: ${{ matrix.build }}"
+            exit 1
+          fi
         else
           echo "Unknown compiler: ${{ matrix.toolchain.compiler }}"
           exit 1
@@ -159,3 +171,7 @@ jobs:
         name: test_results
         path: ${{ env.CLAW }}/amrclaw/*_output
         if-no-files-found: ignore
+
+
+# lfortran
+# optimized = --openmp
