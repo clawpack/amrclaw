@@ -34,9 +34,11 @@ jobs:
         include:
           - os: ubuntu-latest
             build: debug
-            # python-version: 3.8
-            # toolchain: {compiler: gcc, version: 14}
+            toolchain: {compiler: intel, version: '2025.0'}
           - os: macos-latest
+            toolchain: {compiler: gcc, version: 15}
+          - os: macos-latest
+            build: debug
             toolchain: {compiler: gcc, version: 15}
         exclude:
           - os: macos-latest
@@ -88,14 +90,22 @@ jobs:
       run: |
         if [ "${{ matrix.toolchain.compiler }}" = "gcc" ]; then
           if [ "${{ matrix.build }}" = "debug" ]; then
-            export FFLAGS="-g -O0 -fcheck=all -fbacktrace"
+            export FFLAGS="-O0 -g -fcheck=all -fbacktrace -fbounds-check -ffpe-trap=invalid,zero,overflow -finit-real=nan -finit-integer=nan -Wall -Wunderflow -Wextra -Wconversion -Wuninitialized -Warray-bounds -Wshadow -Wno-unused-function -Wno-unused-variable -Wno-unused-parameter -Wno-unused-label -Wno-unused-but-set-variable"
             export OMP_NUM_THREADS=1
           elif [ "${{ matrix.build }}" = "optimized" ]; then
-            export FFLAGS="-O1 -fopenmp"
+            export FFLAGS="-O1 -fopenmp -funroll-loops -finline-functions -ftree-vectorize -fstack-protector-strong -flto -march=native"
             export OMP_NUM_THREADS=2
           else
             echo "Unknown build type: ${{ matrix.build }}"
             exit 1
+          fi
+        elif [ "${{ matrix.toolchain.compiler }}" = "intel-classic" ]; then
+          if [ "${{ matrix.build }}" = "debug" ]; then
+            export FFLAGS="-O0 -debug all -check all -warn all,nodec,interfaces -gen_interfaces -traceback -fpe0 -ftrapuv -init=snan,arrays -check bounds"
+            export OMP_NUM_THREADS=1
+          elif [ "${{ matrix.build }}" = "optimized" ]; then
+            export FFLAGS="-O -qopenmp -unroll -finline-functions -inline-forceinline -ipo -ip "
+            export OMP_NUM_THREADS=2
           fi
         elif [ "${{ matrix.toolchain.compiler }}" = "intel" ]; then
           if [ "${{ matrix.build }}" = "debug" ]; then
@@ -108,13 +118,32 @@ jobs:
             echo "Unknown build type: ${{ matrix.build }}"
             exit 1
           fi
-        elif [ "${{ matrix.toolchain.compiler }}" = "intel-classic" ]; then
+        elif [ "${{ matrix.toolchain.compiler }}" = "nvidia-hpc" ]; then
+          echo "nvidia-hpc compiler not yet supported"
+          exit 1
           if [ "${{ matrix.build }}" = "debug" ]; then
             export FFLAGS="-g -O0 -check all -traceback"
             export OMP_NUM_THREADS=1
           elif [ "${{ matrix.build }}" = "optimized" ]; then
-            export FFLAGS="-O1 -openmp"
+            export FFLAGS="-O1 -qopenmp"
             export OMP_NUM_THREADS=2
+          else
+            echo "Unknown build type: ${{ matrix.build }}"
+            exit 1
+          fi
+        elif [ "${{ matrix.toolchain.compiler }}" = "lfortran" ]; then
+          echo "lfortran compiler not yet supported"
+          exit 1
+          if [ "${{ matrix.build }}" = "debug" ]; then
+            export FFLAGS=""
+            export OMP_NUM_THREADS=1
+          elif [ "${{ matrix.build }}" = "optimized" ]; then
+            export FFLAGS=""
+            export OMP_NUM_THREADS=2
+          else
+            echo "Unknown build type: ${{ matrix.build }}"
+            exit 1
+          fi
         else
           echo "Unknown compiler: ${{ matrix.toolchain.compiler }}"
           exit 1
