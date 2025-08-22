@@ -17,7 +17,7 @@ env:
 jobs:
   tests:
     name: >
-      Build ${{ matrix.os }} - ${{ matrix.toolchain.compiler }} ${{ matrix.build }}.
+      ${{ matrix.os }} - ${{ matrix.toolchain.compiler }} ${{ matrix.build }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # Probably want to turn this off for a large matrix
@@ -29,7 +29,7 @@ jobs:
           - {compiler: gcc, version: 14}
           - {compiler: intel, version: '2025.0'}
           - {compiler: intel-classic, version: '2021.10'}
-          - {compiler: nvidia-hpc, version: '25.1'}
+          # - {compiler: nvidia-hpc, version: '25.1'} # does not build python
           # - {compiler: lfortran, version: '0.45.0'} # lfortran not yet supported
           # - {compiler: flang, version: '20.1.0'} # flang not yet supported
         include:
@@ -40,11 +40,8 @@ jobs:
             build: debug
             toolchain: {compiler: gcc, version: 15}
         exclude:
-          # Remove compilers not available on macOS runners
           - os: macos-latest
             toolchain: {compiler: intel, version: '2025.0'}
-          - os: macos-latest
-            toolchain: {compiler: nvidia-hpc, version: '2021.10'}
 
     steps:
     - name: Set up Python ${{ matrix.python-version }}
@@ -106,15 +103,15 @@ jobs:
             export FFLAGS="-O0 -debug all -check all -warn all,nodec,interfaces -gen_interfaces -traceback -fpe0 -ftrapuv -init=snan,arrays -check bounds"
             export OMP_NUM_THREADS=1
           elif [ "${{ matrix.build }}" = "opt" ]; then
-            export FFLAGS="-O -qopenmp -unroll -finline-functions -inline-forceinline -ipo -ip "
+            export FFLAGS="-O -qopenmp -unroll -finline-functions -inline-forceinline -ipo -ip"
             export OMP_NUM_THREADS=2
           fi
         elif [ "${{ matrix.toolchain.compiler }}" = "intel" ]; then
           if [ "${{ matrix.build }}" = "debug" ]; then
-            export FFLAGS="-g -O0 -check all -traceback"
+            export FFLAGS="-O0 -debug all -check all -warn all,nodec,interfaces -gen_interfaces -traceback -fpe0 -ftrapuv -init=snan,arrays -check bounds"
             export OMP_NUM_THREADS=1
           elif [ "${{ matrix.build }}" = "opt" ]; then
-            export FFLAGS="-O1 -qopenmp"
+            export FFLAGS="-O -qopenmp -unroll -finline-functions -inline-forceinline -ipo -ip"
             export OMP_NUM_THREADS=2
           else
             echo "Unknown build type: ${{ matrix.build }}"
@@ -133,8 +130,8 @@ jobs:
             echo "Unknown build type: ${{ matrix.build }}"
             exit 1
           fi
-        elif [ "${{ matrix.toolchain.compiler }}" = "lfortran" ]; then
-          echo "lfortran compiler not yet supported"
+        elif [ "${{ matrix.toolchain.compiler }}" = "flang" ]; then
+          echo "flang compiler not yet supported"
           exit 1
           if [ "${{ matrix.build }}" = "debug" ]; then
             export FFLAGS=""
