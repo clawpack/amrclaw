@@ -27,21 +27,20 @@ jobs:
         build: [optimized]
         toolchain:
           - {compiler: gcc, version: 14}
-          - {compiler: gcc, version: 15}
-          # - {compiler: intel, version: '2025.0'}
-          # - {compiler: intel-classic, version: '2021.10'}
+          - {compiler: intel, version: '2025.0'}
+          - {compiler: intel-classic, version: '2021.10'}
           # - {compiler: nvidia-hpc, version: '25.1'}
           # - {compiler: lfortran, version: '0.45.0'} # Does not work with meson
         include:
           - os: ubuntu-latest
             build: debug
-            python-version: 3.8
-            toolchain: {compiler: gcc, version: 14}
-        exclude:
-          - os: ubuntu-latest
-            toolchain: {compiler: gcc, version: 15}
+            # python-version: 3.8
+            # toolchain: {compiler: gcc, version: 14}
           - os: macos-latest
-            toolchain: {compiler: gcc, version: 14}
+            toolchain: {compiler: gcc, version: 15}
+        exclude:
+          - os: macos-latest
+            toolchain: {compiler: intel, version: '2025.0'} # Intel not available on macOS runners
 
     steps:
     - name: Set up Python ${{ matrix.python-version }}
@@ -109,6 +108,13 @@ jobs:
             echo "Unknown build type: ${{ matrix.build }}"
             exit 1
           fi
+        elif [ "${{ matrix.toolchain.compiler }}" = "intel-classic" ]; then
+          if [ "${{ matrix.build }}" = "debug" ]; then
+            export FFLAGS="-g -O0 -check all -traceback"
+            export OMP_NUM_THREADS=1
+          elif [ "${{ matrix.build }}" = "optimized" ]; then
+            export FFLAGS="-O1 -openmp"
+            export OMP_NUM_THREADS=2
         else
           echo "Unknown compiler: ${{ matrix.toolchain.compiler }}"
           exit 1
