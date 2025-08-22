@@ -87,31 +87,32 @@ jobs:
 
     - name: Test with pytest
       run: |
-        case "${{ matrix.toolchain.compiler }}" in
-          gcc)
-            case "${{ matrix.build }}" in
-              debug)
-                export FFLAGS="-g -O0 -fcheck=all -fbacktrace"
-                export OMP_NUM_THREADS=1
-                ;;
-              optimized)
-                export FFLAGS="-O1 -fopenmp"
-                export OMP_NUM_THREADS=2
-                ;;
-              *)
-                echo "Unknown build type: ${{ matrix.build }}"
-                exit 1
-                ;;
-            esac
-          intel)
-            echo "Using Intel compiler"
-            exit 1 # Temporarily disable Intel compiler testing
-            ;;
-          *)
-            echo "Unknown compiler: ${{ matrix.toolchain.compiler }}"
+        if [ "${{ matrix.toolchain.compiler }}" = "gcc" ]; then
+          if [ "${{ matrix.build }}" = "debug" ]; then
+            export FFLAGS="-g -O0 -fcheck=all -fbacktrace"
+            export OMP_NUM_THREADS=1
+          elif [ "${{ matrix.build }}" = "optimized" ]; then
+            export FFLAGS="-O1 -fopenmp"
+            export OMP_NUM_THREADS=2
+          else
+            echo "Unknown build type: ${{ matrix.build }}"
             exit 1
-            ;;
-        esac
+          fi
+        elif [ "${{ matrix.toolchain.compiler }}" = "intel" ]; then
+          if [ "${{ matrix.build }}" = "debug" ]; then
+            export FFLAGS="-g -O0 -check all -traceback"
+            export OMP_NUM_THREADS=1
+          elif [ "${{ matrix.build }}" = "optimized" ]; then
+            export FFLAGS="-O1 -qopenmp"
+            export OMP_NUM_THREADS=2
+          else
+            echo "Unknown build type: ${{ matrix.build }}"
+            exit 1
+          fi
+        else
+          echo "Unknown compiler: ${{ matrix.toolchain.compiler }}"
+          exit 1
+        fi
         echo "FFLAGS: $FFLAGS"
         echo "OMP_NUM_THREADS: $OMP_NUM_THREADS"
         cd ${CLAW}/amrclaw
