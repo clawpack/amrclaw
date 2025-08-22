@@ -36,6 +36,7 @@ jobs:
           - os: ubuntu-latest
             build: debug
             python-version: 3.8
+            toolchain: {compiler: gcc, version: 14}
         exclude:
           - os: ubuntu-latest
             toolchain: {compiler: gcc, version: 15}
@@ -96,6 +97,10 @@ jobs:
               optimized)
                 export FFLAGS="-O1 -fopenmp"
                 export OMP_NUM_THREADS=2
+                ;;
+              *)
+                echo "Unknown build type: ${{ matrix.build }}"
+                exit 1
                 ;;
             esac
           intel)
