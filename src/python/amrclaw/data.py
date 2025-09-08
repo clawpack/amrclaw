@@ -437,8 +437,10 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             self.expand_gauge_format_option(key)
 
         # File format
-        self._out_file.write("# File format (1=ascii, 2=binary64, 3=binary32)\n")
-        format_map = {'ascii':1, 'binary':2, 'binary64':2, 'binary32':3}
+        # self._out_file.write("# File format (1=ascii, 2=binary64, 3=binary32)\n")
+        # format_map = {'ascii':1, 'binary':2, 'binary64':2, 'binary32':3}
+        self._out_file.write("# File format (1=ascii, 2=binary32, 3=binary64)\n")
+        format_map = {'ascii':1, 'binary':2, 'binary32':2, 'binary64':3}
         for gauge_num in self.gauge_numbers:
             try:
                 file_format = format_map[self.file_format[gauge_num].lower()]
@@ -648,4 +650,3 @@ class AdjointData(clawpack.clawutil.data.ClawData):
 
 if __name__ == '__main__':
     raise Exception("Not unit tests have been defined for this module.")
-
