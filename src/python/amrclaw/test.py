@@ -1,49 +1,30 @@
 r"""
-Execute nosetests in all subdirectories, to run a series of quick
-regression tests.
+Defines the Classic Clawpack Test Runner class for running PyTest based
+regression tests in classic clawpack.
 
-Sends output and result/errors to separate files to simplify checking
-results and looking for errors.
+Refer to the documentation for PyTest to manage output and reporting.
 """
 
-from __future__ import absolute_import
+from pathlib import Path
 import os
-import glob
 
-import clawpack.clawutil.test
-import clawpack.pyclaw.util
+import clawpack.clawutil.test as test
 
 # Clean library files whenever this module is used
 if "CLAW" in os.environ:
-    CLAW = os.environ["CLAW"]
+    CLAW = Path(os.environ["CLAW"])
 else:
     raise ValueError("Need to set CLAW environment variable.")
 
-for lib_path in [os.path.join(CLAW,"amrclaw","src","2d"),
-                 os.path.join(CLAW,"amrclaw","src","3d")]:
-    for path in glob.glob(os.path.join(lib_path,"*.o")):
-        os.remove(path)
-    for path in glob.glob(os.path.join(lib_path,"*.mod")):
-        os.remove(path)
+for lib_path in (CLAW / "amrclaw" / "src" / "1d").glob("*.o"):
+    lib_path.unlink()
+for lib_path in (CLAW / "amrclaw" / "src" / "2d").glob("*.o"):
+    lib_path.unlink()
+for lib_path in (CLAW / "amrclaw" / "src" / "3d").glob("*.o"):
+    lib_path.unlink()
 
+class AMRClawTestRunner(test.ClawpackTestRunner):
 
-class AMRClawRegressionTest(clawpack.clawutil.test.ClawpackRegressionTest):
-
-    r"""Base AMRClaw regression test setup derived from ClawpackRegressionTest
-
-    """
-
-    __doc__ += clawpack.pyclaw.util.add_parent_doc(
-                                  clawpack.clawutil.test.ClawpackRegressionTest)
-
-
-    def build_executable(self, executable_name="xamr"):
-        r"""Build executable by running `make .exe` in test directory.
-
-        Moves the resulting executable to the temporary directory.
-
-
-        """
-
-        super(AMRClawRegressionTest, self).build_executable(
-                                                executable_name=executable_name)
+    def __init__(self, path: Path):
+        super(AMRClawTestRunner, self).__init__(path)
+        self.executable_name = 'xamr'
