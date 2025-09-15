@@ -7,6 +7,7 @@ Refer to the documentation for PyTest to manage output and reporting.
 
 from pathlib import Path
 import os
+from typing import Optional
 
 import clawpack.clawutil.test as test
 
@@ -25,6 +26,6 @@ for lib_path in (CLAW / "amrclaw" / "src" / "3d").glob("*.o"):
 
 class AMRClawTestRunner(test.ClawpackTestRunner):
 
-    def __init__(self, path: Path):
-        super(AMRClawTestRunner, self).__init__(path)
+    def __init__(self, path: Path, test_path: Optional[Path]=None):
+        super(AMRClawTestRunner, self).__init__(path, test_path=test_path)
         self.executable_name = 'xamr'

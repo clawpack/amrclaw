@@ -1,45 +1,24 @@
 """
-Test for the adjoint problem for 2D acoustics
+Test for the adjoint problem for 1D acoustics
 """
 
-import sys
-import unittest
+from pathlib import Path
+import pytest
 
 import clawpack.amrclaw.test as test
-import clawpack.amrclaw.data as data
 
-class Acoustics1DAdjointTest(test.AMRClawRegressionTest):
+def test_acoustics_1d_adjoint(tmp_path: Path, save: bool):
+    """Acoustics 1D adjoint test"""
 
-    def runTest(self, save=False):
+    ctr = test.AMRClawTestRunner(tmp_path)
+    ctr.set_data()
+    ctr.write_data()
+    ctr.build_executable()
+    ctr.run_code()
 
-        # Write out data files
-        self.load_rundata()
-        
-        # self.rundata.clawdata.num_output_times = 10
-        # self.rundata.clawdata.tfinal = 1.0
-
-        # self.rundata.clawdata.use_fwaves = False
-
-        self.write_rundata_objects()
-
-        self.run_code()
-
-        # Perform Tests
-        self.check_gauges(save=save, gauge_id=0)
-        self.check_gauges(save=save, gauge_id=1)
-
-        self.success = True
+    ctr.check_gauge(gauge_id=0)
+    ctr.check_gauge(gauge_id=1)
 
 
-if __name__=="__main__":
-    if len(sys.argv) > 1:
-        if bool(sys.argv[1]):
-            # Fake the setup and save out output
-            test = Acoustics1DAdjointTest()
-            try:
-                test.setUp()
-                test.runTest(save=True)
-            finally:
-                test.tearDown()
-            sys.exit(0)
-    unittest.main()
+if __name__ == "__main__":
+    pytest.main([__file__])
