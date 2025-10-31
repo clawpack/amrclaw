@@ -10,6 +10,7 @@ subroutine qinit(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
     real(kind=8), intent(in out) :: q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(in out) :: aux(maux, 1-mbc:mx+mbc, 1-mbc:my+mbc)
 
+    real(kind=8) :: xi, yj
     real(kind=8), external :: qtrue
 
     ! set concentration profile
