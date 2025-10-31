@@ -5,12 +5,23 @@ subroutine qinit(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
     ! q = 1.0  if  0.1 < x < 0.6   and   0.1 < y < 0.6
     !     0.1  otherwise
 
+    implicit none
+
     integer, intent(in) :: meqn, mbc, mx, my, maux
     real(kind=8), intent(in) :: xlower, ylower, dx, dy
     real(kind=8), intent(in out) :: q(meqn, 1-mbc:mx+mbc, 1-mbc:my+mbc)
     real(kind=8), intent(in out) :: aux(maux, 1-mbc:mx+mbc, 1-mbc:my+mbc)
 
-    real(kind=8), external :: qtrue
+    integer :: i, j
+    real(kind=8) :: xi, yj
+    
+    ! True solution for BCs
+    interface
+        real(kind=8) pure function qtrue(x, y ,t)
+            implicit none
+            real(kind=8), intent(in) :: x, y ,t
+        end function qtrue
+    end interface
 
     ! set concentration profile
     do j=1,my
