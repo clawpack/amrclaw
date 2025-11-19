@@ -218,6 +218,15 @@ def setrun(claw_pkg='amrclaw'):
     rundata.gaugedata.gauges.append([0, 0.1, 0, 1e9])
     rundata.gaugedata.gauges.append([1, 0.5, 0, 1e9])
     
+    # ADD THIS: 1=ascii, 2=binary32, 3=binary64
+    #rundata.gaugedata.file_format = [2, 2]
+    #rundata.gaugedata.file_format = ['binary32', 'binary32']
+
+    # Per-gauge formats: apply same to all gauges
+    rundata.gaugedata.file_format = 'binary32'     # <= single string
+    rundata.gaugedata.display_format = 'e15.7'     # only used for ascii; harmless to keep
+
+    
     # --------------
     # Checkpointing:
     # --------------
