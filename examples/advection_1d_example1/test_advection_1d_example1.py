@@ -30,6 +30,10 @@ class Advection1DTest(test.AMRClawRegressionTest):
         self.rundata.amrdata.flag2refine_tol = 0.1
         self.rundata.amrdata.regrid_buffer_width = 2
 
+        self.rundata.gaugedata.file_format = "ascii"   # or 1
+        if self.rundata.gaugedata.file_format in ("binary32", 2):
+            rtol, atol = 1e-7, 5e-8
+
         self.write_rundata_objects()
 
         # Run code

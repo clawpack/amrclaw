@@ -120,7 +120,7 @@ contains
                write (numstr,'(I0.5)') inum
                fileName = 'gauge'//trim(numstr)//'.txt'
                binName  = 'gauge'//trim(numstr)//'.bin'
-
+               
                select case (gauge_file_format(i))
                case (1)   ! ASCII (existing)
                   if (restart) then
@@ -138,20 +138,38 @@ contains
                   close(OUTGAUGEUNIT)
 
                case (2)   ! binary32
-                  if (.not. restart) then
-                     open(unit=OUTGAUGEUNIT, file=binName, status='unknown', form='formatted')
+                 if (.not. restart) then
+                      ! --- Write ASCII header to TXT (3 lines, incl. file_format) ---
+                     open(unit=OUTGAUGEUNIT, file=fileName, status='unknown',            &
+                          position='rewind', form='formatted')
+                     write(OUTGAUGEUNIT,100) igauge(i), xgauge(i), nvar
+                     write(OUTGAUGEUNIT,101)
                      write(OUTGAUGEUNIT,'(A)') '# file_format: binary32'
+                     close(OUTGAUGEUNIT)
+
+                     ! --- Create/touch the BIN as raw binary (NO text) ---
+                     open(unit=OUTGAUGEUNIT, file=binName, status='unknown',             &
+                          access='stream', form='unformatted')
                      close(OUTGAUGEUNIT)
                   endif
 
                case (3)   ! binary64
                   if (.not. restart) then
-                     open(unit=OUTGAUGEUNIT, file=binName, status='unknown', form='formatted')
+                     open(unit=OUTGAUGEUNIT, file=fileName, status='unknown',            &
+                          position='rewind', form='formatted')
+                     write(OUTGAUGEUNIT,100) igauge(i), xgauge(i), nvar
+                     write(OUTGAUGEUNIT,101)
                      write(OUTGAUGEUNIT,'(A)') '# file_format: binary64'
+                     close(OUTGAUGEUNIT)
+
+                     open(unit=OUTGAUGEUNIT, file=binName, status='unknown',             &
+                          access='stream', form='unformatted')
                      close(OUTGAUGEUNIT)
                   endif
 
-               end select
+            end select
+
+               
             end do
 
             module_setup = .true.
