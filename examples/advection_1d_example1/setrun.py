@@ -221,6 +221,8 @@ def setrun(claw_pkg='amrclaw'):
     # ADD THIS: 1=ascii, 2=binary32, 3=binary64
     #rundata.gaugedata.file_format = [2, 2]
     #rundata.gaugedata.file_format = ['binary32', 'binary32']
+    #print("file_format in setrun:", rundata.gaugedata.file_format)
+    #return rundata
 
     # Per-gauge formats: apply same to all gauges
     rundata.gaugedata.file_format = 'binary32'     # <= single string

@@ -408,10 +408,57 @@ class GaugeData(clawpack.clawutil.data.ClawData):
                                                      % self.min_time_increment))
         return output
 
+    
+    def _normalize_file_format(self, num_gauges):
+        """
+        Normalize self.file_format into a flat list of length num_gauges.
+
+        Allowed user-facing forms in setrun.py:
+          - scalar: 1 / 2 / 3 or "ascii" / "binary32" / "binary64"
+          - list/tuple of those (length 1 or num_gauges)
+        """
+        ff = getattr(self, "file_format", None)
+
+        # Default: all ASCII
+        if ff is None:
+            self.file_format = ["ascii"] * num_gauges
+            return
+
+        # Handle the "nested list" case: [[...]] → [...]
+        if isinstance(ff, (list, tuple)) and len(ff) == 1 and isinstance(ff[0], (list, tuple)):
+            ff = ff[0]
+
+        # Scalar int or string
+        if isinstance(ff, (int, str)):
+            self.file_format = [ff] * num_gauges
+            return
+
+        # List / tuple of ints/strings
+        if isinstance(ff, (list, tuple)):
+            if len(ff) == 0:
+                # Empty → default ASCII
+                self.file_format = ["ascii"] * num_gauges
+                return
+            if len(ff) == 1:
+                self.file_format = list(ff) * num_gauges
+                return
+            if len(ff) == num_gauges:
+                self.file_format = list(ff)
+                return
+            raise ValueError(
+                f"file_format list must have length 1 or {num_gauges}, but got {len(ff)}"
+            )
+
+        # Anything else → error
+        raise TypeError(
+            f"file_format must be int, str, or list/tuple of those, got {type(ff)}"
+        )
+
+
 
     def write(self, num_eqn, num_aux, out_file='gauges.data', 
                                       data_source='setrun.py'):
-        r"""Write out gauge information data file."""
+        r"""Write out gauge information data file.""" 
 
         # Check to make sure we have only unique gauge numbers
         if len(self.gauges) > 0:
@@ -432,23 +479,62 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             self._out_file.write(format % tuple(gauge))
         self.data_write()
         
+        # # Expand all gauge format option dictionaries
+        # for key in self.defaults.keys():
+        #     self.expand_gauge_format_option(key)
+
         # Expand all gauge format option dictionaries
         for key in self.defaults.keys():
             self.expand_gauge_format_option(key)
 
         # File format
-        # self._out_file.write("# File format (1=ascii, 2=binary64, 3=binary32)\n")
-        # format_map = {'ascii':1, 'binary':2, 'binary64':2, 'binary32':3}
         self._out_file.write("# File format (1=ascii, 2=binary32, 3=binary64)\n")
-        format_map = {'ascii':1, 'binary':3, 'binary32':2, 'binary64':3}
+
+        # Map various user inputs to the integer codes written to gauges.data
+        format_map = {
+            # string forms (case-insensitive)
+            'ascii':     1,
+            'binary':    3,  # keep backward-compatibility if this was ever used
+            'binary32':  2,
+            'binary64':  3,
+            # integer forms (for users who set 1,2,3 directly)
+            1: 1,
+            2: 2,
+            3: 3,
+            # stringified integers, in case they appear
+            '1': 1,
+            '2': 2,
+            '3': 3,
+        }
+
         for gauge_num in self.gauge_numbers:
+            raw_fmt = self.file_format[gauge_num]
+
+            # 🔹 Flatten cases like ['binary32', 'binary32'] → 'binary32'
+            while isinstance(raw_fmt, (list, tuple)):
+                if len(raw_fmt) == 0:
+                    raise ValueError(f"Empty file_format list for gauge {gauge_num}")
+                raw_fmt = raw_fmt[0]
+
+            # 🔹 Allow both strings and ints
+            if isinstance(raw_fmt, str):
+                key = raw_fmt.lower()
+            else:
+                key = raw_fmt  # e.g., 1, 2, 3
+
             try:
-                file_format = format_map[self.file_format[gauge_num].lower()]
+                file_format = format_map[key]
             except KeyError:
-                raise ValueError("Invalid file format %s requested." % self.file_format[gauge_num])
+                raise ValueError(
+                    "Invalid file format %r requested for gauge %s; "
+                    "expected one of %r"
+                    % (raw_fmt, gauge_num, list(format_map.keys()))
+                )
             self._out_file.write("%s " % file_format)
+
         self._out_file.write("\n")
         self.data_write()
+
 
         # Display format for each gauge
         self._out_file.write("# Display format (for ascii files)\n")
