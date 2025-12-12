@@ -478,10 +478,6 @@ class GaugeData(clawpack.clawutil.data.ClawData):
             format = "%4i" + (len(gauge)-3) * "  %17.10e" + 2 * "  %13.6e" + "\n"
             self._out_file.write(format % tuple(gauge))
         self.data_write()
-        
-        # # Expand all gauge format option dictionaries
-        # for key in self.defaults.keys():
-        #     self.expand_gauge_format_option(key)
 
         # Expand all gauge format option dictionaries
         for key in self.defaults.keys():
