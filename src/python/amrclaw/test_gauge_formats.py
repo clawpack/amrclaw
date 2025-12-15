@@ -11,7 +11,7 @@ import tempfile
 import shutil
 
 # Add the source to the path
-amrclaw_dir = os.path.dirname(__file__)
+amrclaw_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 clawpack_dir = os.path.dirname(os.path.dirname(amrclaw_dir))
 sys.path.insert(0, os.path.join(clawpack_dir, 'clawutil', 'src', 'python'))
 sys.path.insert(0, os.path.join(amrclaw_dir, 'src', 'python'))

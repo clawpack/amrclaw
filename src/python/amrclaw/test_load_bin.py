@@ -13,7 +13,7 @@ import struct
 import numpy as np
 
 # Add path to import load_bin
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src', 'python'))
+# We're already in src/python/amrclaw, so we can import directly
 from amrclaw.util import load_bin
 
 
