@@ -5,7 +5,7 @@ Tools for defining and working with ruled rectangles.
 import numpy as np
 
 class RuledRectangle(object):
-    
+
     def __init__(self, fname=None, slu=None, rect=None):
         self.ixy = None  # 1 or 'x' if s=x,   2 or 'y' if s=y
         self.s = None    # array
@@ -38,7 +38,7 @@ class RuledRectangle(object):
             self.ixy = 1
             self.method = 0
             self.ds = x2 - x1
-        
+
     def bounding_box(self):
         if self.ixy in [1,'x']:
             x1 = self.s.min()
@@ -63,17 +63,17 @@ class RuledRectangle(object):
         slu = np.vstack((self.s, self.lower, self.upper)).T
         return slu
 
-            
+
     def vertices(self):
         """
         Return the vertices (x,y) of the polygon defined by this RuledRectangle.
         """
-        
+
         assert np.diff(self.s).min() > 0, \
             '*** s must be monotonically increasing: \n  s =  %s' % self.s
         assert np.all(self.lower <= self.upper), \
             '*** values in lower array should be <= values in upper array'
-            
+
         if self.method == 0:
             # stacked rectangles, requires doubling up points for vertices
             ss = [self.s[0]]
@@ -87,12 +87,12 @@ class RuledRectangle(object):
                 ll += [self.lower[k],self.lower[k]]
                 uu += [self.upper[k],self.upper[k]]
             lu = np.hstack((ll, np.flipud(uu), self.lower[0]))
-            
+
         elif self.method == 1:
             # points defined by s, lower, upper are connected by lines
             ss = np.hstack((self.s, np.flipud(self.s), self.s[0]))
             lu = np.hstack((self.lower, np.flipud(self.upper), self.lower[0]))
-            
+
         if self.ixy in [1,'x']:
             x = ss
             y = lu
@@ -102,27 +102,27 @@ class RuledRectangle(object):
         else:
             raise ValueError('Unrecognized attribute ixy = %s' % self.ixy)
         return x,y
-            
-            
+
+
     def mask_outside(self, X, Y):
         """
         Given 2d arrays X,Y, return a mask with the same shape with
         mask == True at points that are outside this RuledRectangle.
-        So if Z is a data array defined at points X,Y then 
-            ma.masked_array(Z, mask) 
+        So if Z is a data array defined at points X,Y then
+            ma.masked_array(Z, mask)
         will be a masked array that can be used to plot only the values
         inside the Ruled Region.
-        
+
         Works for self.method == 0 or 1, and also
-              for self.s monotonically increasing or decreasing, 
+              for self.s monotonically increasing or decreasing,
                          but elsewhere we require increasing so check for that.
-        
+
         """
         assert np.diff(self.s).min() > 0, \
             '*** s must be monotonically increasing: \n  s =  %s' % self.s
         assert np.all(self.lower <= self.upper), \
             '*** values in lower array should be <= values in upper array'
-        
+
         transpose_arrays =  (X[0,0] == X[0,-1])
         if transpose_arrays:
             x = X[:,0]
@@ -130,13 +130,15 @@ class RuledRectangle(object):
         else:
             x = X[0,:]
             y = Y[:,0]
-        assert x[0] != x[-1], '*** Wrong orientation?'            
-        
+        if np.prod(X.shape) > 1:
+            # don't check for 1x1 arrays, as when called by contains()
+            assert x[0] != x[-1], '*** Wrong orientation?'
+
         def bracket(xy, s):
             """
             Given a point xy (an x or y value)
-            and an array s that is monotone increasing or decreasing, 
-            return indices (k1, k2) such that 
+            and an array s that is monotone increasing or decreasing,
+            return indices (k1, k2) such that
                 s[k1] <= xy <= s[k2]
             If xy is outside the range of s, return (-1,-1)
             """
@@ -148,19 +150,19 @@ class RuledRectangle(object):
             pos = ma.masked_where(s-xy < 0, s-xy)
             k2 = argmin(pos)
             return k1,k2
-            
+
         mask = np.empty((len(y),len(x)), dtype=bool)
         mask[:,:] = True
         if self.ixy in [1,'x']:
             # indices of x array that lie within s.min() to s.max():
             iin, = np.where(np.logical_and(self.s.min() <= x, x <= self.s.max()))
-            
+
             for i in iin:
                 # a column of array that might include points in the polygon
                 xi = x[i]
                 # determine k1,k2 such that s[k1] <= xi <= s[k2]:
                 k1,k2 = bracket(xi, self.s)
-                
+
                 if k1 > -1:
                     sk1 = self.s[k1]
                     sk2 = self.s[k2]
@@ -173,21 +175,21 @@ class RuledRectangle(object):
                         ylower = (1-alpha)*self.lower[k1] + \
                                      alpha*self.lower[k2]
                         yupper = (1-alpha)*self.upper[k1] + \
-                                     alpha*self.upper[k2] 
-                    # indices j for which ylower <= y[j] <= yupper, so inside:  
+                                     alpha*self.upper[k2]
+                    # indices j for which ylower <= y[j] <= yupper, so inside:
                     j, = np.where(np.logical_and(ylower <= y, y <= yupper))
                     mask[j,i] = False
-                    
+
         elif self.ixy in [2,'y']:
             # indices of y array that lie within s.min() to s.max():
             jin, = np.where(np.logical_and(self.s.min() <= y, y <= self.s.max()))
-            
+
             for j in jin:
                 # a row of array that might include points in the polygon
                 yj = y[j]
                 # determine k1,k2 such that s[k1] <= yj <= s[k2]:
                 k1,k2 = bracket(yj, self.s)
-                
+
                 if k1 > -1:
                     sk1 = self.s[k1]
                     sk2 = self.s[k2]
@@ -200,20 +202,32 @@ class RuledRectangle(object):
                         xlower = (1-alpha)*self.lower[k1] + \
                                      alpha*self.lower[k2]
                         xupper = (1-alpha)*self.upper[k1] + \
-                                     alpha*self.upper[k2]   
+                                     alpha*self.upper[k2]
                     # indices i for which xlower <= x[i] <= xupper, so inside:
                     i, = np.where(np.logical_and(xlower <= x, x <= xupper))
                     mask[j,i] = False
 
         else:
             raise ValueError('Unrecognized attribute ixy = %s' % self.ixy)
-                    
+
         if transpose_arrays:
             mask = mask.T
-            
+
         return mask
 
-                    
+    def contains(self,x,y):
+        """
+        return True if the Ruled Rectangle contains (x,y)
+        """
+        # convert scalars x,y to 1x1 arrays in 2D so use mask_outside:
+        xa = np.array([[x]])
+        ya = np.array([[y]])
+
+        is_outside = self.mask_outside(xa,ya)
+        is_inside = not is_outside[0,0]
+        return is_inside
+
+
     def write(self, fname, verbose=False):
         slu = self.slu()
         ds = self.s[1:] - self.s[:-1]
@@ -222,7 +236,7 @@ class RuledRectangle(object):
             self.ds = ds.max()
         else:
             self.ds = -1  # not uniformly spaced
-            
+
         # if ixy is 'x' or 'y' replace by 1 or 2 for writing:
         if self.ixy in [1,'x']:
             ixyint = 1
@@ -230,11 +244,11 @@ class RuledRectangle(object):
             ixyint = 2
         else:
             raise ValueError('Unrecognized attribute ixy = %s' % self.ixy)
-            
+
         header = """\n%i   ixy\n%i   method\n%g    ds\n%i    nrules""" \
             % (ixyint,self.method,self.ds,len(self.s))
         np.savetxt(fname, slu,header=header,comments='',fmt='%.9f  ')
-        
+
         if verbose:
             print("Created %s" % fname)
 
@@ -261,32 +275,32 @@ class RuledRectangle(object):
         self.upper = slu[:,2]
         assert np.all(slu[:,1] <= slu[:,2]), \
             '*** values in L column of slu array must be <= U column'
-        
-    def make_kml(self, fname='RuledRectangle.kml', name='RuledRectangle', 
-                 color='00FFFF', width=2, verbose=False):
+
+    def make_kml(self, fname='RuledRectangle.kml', name='RuledRectangle',
+                 color='00FFFF', width=2, verbose=True):
         from clawpack.geoclaw import kmltools
         x,y = self.vertices()
-        kmltools.poly2kml((x,y), fname=fname, name=name, color=color, 
+        kmltools.poly2kml((x,y), fname=fname, name=name, color=color,
                           width=width, verbose=verbose)
-        
-        
+
+
 def ruledrectangle_covering_selected_points(X, Y, pts_chosen, ixy, method=0,
                                             padding=0, verbose=True):
     """
     Given 2d arrays X,Y and an array pts_chosen of the same shape,
     returns a RuledRectangle that covers these points as compactly as possible.
-    If method==0 then the RuledRectangle will be "stacked rectangles" that 
-    cover all the cells indicated by pts_chosen 
+    If method==0 then the RuledRectangle will be "stacked rectangles" that
+    cover all the cells indicated by pts_chosen
     (assuming the X,Y points are cell centers on a uniform grid).
-    
+
     If method==1, then the RuledRectangle will cover the cell centers but
     not all the full grid cells, since the edges will be lines connecting
     some cell centers.
     """
-        
+
     if padding != 0:
         print('*** Warning, padding != 0 is not implemented!')
-        
+
     if np.ndim(X) == 2:
         x = X[0,:]
         y = Y[:,0]
@@ -312,7 +326,7 @@ def ruledrectangle_covering_selected_points(X, Y, pts_chosen, ixy, method=0,
                 s.append(x[i])
                 lower.append(y[j1])
                 upper.append(y[j2])
-                
+
     elif ixy in [2,'y']:
 
         # Ruled rectangle with s = y:
@@ -329,7 +343,7 @@ def ruledrectangle_covering_selected_points(X, Y, pts_chosen, ixy, method=0,
                 s.append(y[j])
                 lower.append(x[i1])
                 upper.append(x[i2])
-                
+
     else:
         raise(ValueError('Unrecognized value of ixy'))
 
@@ -351,7 +365,7 @@ def ruledrectangle_covering_selected_points(X, Y, pts_chosen, ixy, method=0,
         s = np.hstack((s, s[-1]+ds))
         lower = np.hstack((lower, lower[-1]))
         upper = np.hstack((upper, upper[-1]))
-        
+
     rr = RuledRectangle()
     rr.ixy = ixy
     rr.s = s
