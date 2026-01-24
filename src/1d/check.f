@@ -10,12 +10,14 @@ c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;
       use amr_module
       use gauges_module, only:  num_gauges
       use gauges_module, only: print_gauges_and_reset_nextLoc
+      use gauges_module, only: flush_all_gauges
 
       implicit double precision (a-h,o-z)
       integer tchkunit
       parameter (tchkunit = 13)
       character  chkname*13
       character  tchkname*13
+      integer g
 
       write(6,601) time,nsteps
  601  format('Creating checkpoint file at t = ',e16.9,'  nsteps = ',i5)
@@ -87,10 +89,24 @@ c      flush(OUTGAUGEUNIT)   ! defined in gauges_module.f90
 
 c     # write the time stamp file last so it's not updated until data is
 c     # all dumped, in case of crash mid-dump.
+    
+      if (num_gauges > 0) then
+            do g = 1, num_gauges
+                  call print_gauges_and_reset_nextLoc(g, nvar)
+            end do
+      end if
+
       write(tchkunit,*) 'Checkpoint file at time t = ',time
       write(tchkunit,*) 'alloc size memsize = ',memsize
       write(tchkunit,*) 'Number of steps taken = ',nsteps
       close(tchkunit)
-c
+c --- Flush any buffered gauge data to disk (ASCII or binary)
+      if (num_gauges .gt. 0) then
+         call flush_all_gauges(nvar)
+      endif
+
+      
+
+
       return
       end
