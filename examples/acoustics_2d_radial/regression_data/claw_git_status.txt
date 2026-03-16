@@ -1,7 +1,7 @@
 Clawpack Git Status 
 Diffs can be found in /Users/mandli/Library/CloudStorage/Dropbox/src/clawpack/amrclaw/examples/acoustics_2d_radial/regression_data/claw_git_diffs.txt
 
-Sun, 18 May 2025 11:58:48 MDT
+Mon, 16 Mar 2026 14:57:38 EDT
 $CLAW = /Users/mandli/Dropbox/src/clawpack
 $FC = not set
 
@@ -12,14 +12,15 @@ clawpack
 /Users/mandli/Dropbox/src/clawpack/
 
 --- last commit ---
-98ba40b (HEAD -> master, tag: v5.12.0, clawpack/master, clawpack/HEAD) Merge pull request #264 from rjleveque/v5.12.0fix
+b24c704 (HEAD -> add-test-runner, mandli/add-test-runner) Add docs to new testing
 
 --- branch and status ---
-## master...clawpack/master
+## add-test-runner...clawpack/master [ahead 4]
  M amrclaw
  M classic
  M geoclaw
  M pyclaw
+ M riemann
  M visclaw
 
 
@@ -29,10 +30,10 @@ classic
 /Users/mandli/Dropbox/src/clawpack/classic
 
 --- last commit ---
-a4c0899 (HEAD -> add-test-badge, mandli/add-test-badge) Add better description and links to README
+750ba64 (HEAD -> new-pytest-test-runner, mandli/new-pytest-test-runner) Add testing matrix
 
 --- branch and status ---
-## add-test-badge...clawpack/master [ahead 11]
+## new-pytest-test-runner...clawpack/master [ahead 16, behind 2]
 
 
 ===========
@@ -41,18 +42,16 @@ amrclaw
 /Users/mandli/Dropbox/src/clawpack/amrclaw
 
 --- last commit ---
-2277a19 (HEAD -> update-tests, mandli/update-tests) Change name of acoustics 2d radial test
+83d5ea6 (HEAD -> new-pytest-test-runner, mandli/new-pytest-test-runner) Convert over existing unittest tests
 
 --- branch and status ---
-## update-tests...clawpack/master [ahead 35]
- M examples/acoustics_2d_adjoint/setrun.py
+## new-pytest-test-runner...clawpack/master [ahead 6, behind 12]
  M examples/acoustics_2d_radial/regression_data/claw_git_diffs.txt
  M examples/acoustics_2d_radial/regression_data/claw_git_status.txt
  M examples/acoustics_2d_radial/regression_data/gauge00000.txt
  M examples/acoustics_2d_radial/regression_data/gauge00001.txt
- M examples/acoustics_2d_radial/regression_data/gauge00002.txt
  M examples/acoustics_2d_radial/test_acoustics_2d_radial.py
- M src/python/amrclaw/compare_gauges.py
+ M examples/advection_2d_inflow/test_advection_2d_inflow.py
 
 
 ===========
@@ -61,10 +60,10 @@ clawutil
 /Users/mandli/Dropbox/src/clawpack/clawutil
 
 --- last commit ---
-2f7910a (HEAD -> use-pytest-temp-dirs, tag: v5.12.0, clawpack/master, clawpack/HEAD, master) Merge pull request #180 from rjleveque/clawmultip
+84fb3b5 (HEAD -> main, clawpack/master, clawpack/HEAD) Merge pull request #195 from mandli/add-test-docs
 
 --- branch and status ---
-## use-pytest-temp-dirs...clawpack/master
+## main...clawpack/master
 
 
 ===========
@@ -73,10 +72,11 @@ pyclaw
 /Users/mandli/Dropbox/src/clawpack/pyclaw
 
 --- last commit ---
-a978283a (HEAD -> master) Update 2D SWEs regression data (#742)
+0775b6d5 (HEAD -> improve-cli-gauge-comparison, mandli/improve-cli-gauge-comparison) Add short flag versions
 
 --- branch and status ---
-## master...clawpack/master [behind 1]
+## improve-cli-gauge-comparison...clawpack/master [ahead 2, behind 1]
+ M src/pyclaw/classic/flux3.f90
 
 
 ===========
@@ -85,10 +85,10 @@ visclaw
 /Users/mandli/Dropbox/src/clawpack/visclaw
 
 --- last commit ---
-04c11f6 (HEAD -> master) Remove Cygwin Code (#313)
+f0f4b5c (HEAD -> add-print_gaugenos-none, mandli/add-print_gaugenos-none) Add some more handling of options
 
 --- branch and status ---
-## master...clawpack/master [behind 2]
+## add-print_gaugenos-none...clawpack/master [behind 5]
 
 
 ===========
@@ -97,10 +97,10 @@ riemann
 /Users/mandli/Dropbox/src/clawpack/riemann
 
 --- last commit ---
-c29dcab (HEAD -> master, tag: v5.12.0, dlgeorge/master, dlgeorge/HEAD, clawpack/master, clawpack/HEAD) Merge pull request #181 from clawpack/set_fwave
+3f529f0 (HEAD -> master, tag: v5.13.1, tag: v5.13.0) Merge pull request #184 from rjleveque/CoC
 
 --- branch and status ---
-## master...clawpack/master
+## master...clawpack/master [behind 6]
 
 
 ===========
@@ -109,9 +109,7 @@ geoclaw
 /Users/mandli/Dropbox/src/clawpack/geoclaw
 
 --- last commit ---
-6c591138 (HEAD -> update-pytest, mandli/update-pytest) Add time check on gauge updates
+8137be4b (HEAD -> update-pytest) Merge pull request #692 from rjleveque/fix_topotools_plot_ax
 
 --- branch and status ---
-## update-pytest...clawpack/master [ahead 86]
- M examples/shallow/vortex/run_tests.py
- M src/python/geoclaw/test.py
+## update-pytest
