@@ -2,55 +2,31 @@
 Regression tests for swril 3D advection.
 """
 
-from __future__ import absolute_import
-import sys
-import os
-import unittest
+from pathlib import Path
+import pytest
 
 import clawpack.amrclaw.test as test
 
+def test_advection_3d_swirl(tmp_path: Path, save: bool):
+    r"""Basic test for a 3D advection on a swirl test case"""
 
-class Advection3DSwirlTest(test.AMRClawRegressionTest):
-    r"""Basic test for a 3D advection test case"""
+    runner = test.AMRClawTestRunner(tmp_path, test_path=Path(__file__).parent)
+    
+    runner.set_data()
+    runner.rundata.clawdata.num_output_times = 2
+    runner.rundata.clawdata.tfinal = .1
+    runner.rundata.gaugedata.gauges = []
+    runner.rundata.gaugedata.gauges.append([1, 0.55, 0.4, 0.4, 0., 1e9])
+    runner.rundata.gaugedata.gauges.append([2, 0.45, 0.6, 0.4, 0., 1e9])
+    runner.write_data()
 
+    runner.build_executable()
 
-    def runTest(self, save=False):
+    runner.run_code()
 
-        # Write out data files
-        self.load_rundata()
-
-        self.rundata.clawdata.num_output_times = 2
-        self.rundata.clawdata.tfinal = .1
-
-        self.rundata.gaugedata.gauges = []
-        self.rundata.gaugedata.gauges.append([1, 0.55, 0.4, 0.4, 0., 1e9])
-        self.rundata.gaugedata.gauges.append([2, 0.45, 0.6, 0.4, 0., 1e9])
-
-        self.write_rundata_objects()
-
-        # Run code
-        self.run_code()
-
-        # Perform tests
-        self.check_frame(save=save, frame_num=1, file_name="regression_data_test2.txt")
-        self.check_frame(save=save, frame_num=2, file_name="regression_data_test3.txt")
-
-        self.check_gauges(save=save, gauge_id=1)
-        self.check_gauges(save=save, gauge_id=2)
-
-        self.success = True
+    runner.check_gauge(gauge_id=1)
+    runner.check_gauge(gauge_id=2)
 
 
-
-if __name__=="__main__":
-    if len(sys.argv) > 1:
-        if bool(sys.argv[1]):
-            # Fake the setup and save out output
-            test = Advection3DSwirlTest()
-            try:
-                test.setUp()
-                test.runTest(save=True)
-            finally:
-                test.tearDown()
-            sys.exit(0)
-    unittest.main()
+if __name__ == "__main__":
+    pytest.main([__file__])

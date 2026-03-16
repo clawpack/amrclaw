@@ -1,28 +1,45 @@
+#!/usr/bin/env python
 """
 Regression tests for 1D advection;.
 """
 
+<<<<<<< HEAD
 import sys
 import unittest
 import numpy
+=======
+from pathlib import Path
+import pytest
+>>>>>>> 83d5ea6 (Convert over existing unittest tests)
 
 import clawpack.amrclaw.test as test
 import clawpack.pyclaw.gauges as gauges
 
+def test_advection_1d_example1(tmp_path: Path, save: bool):
+    r"""Basic test for a 1D advection test case"""
 
-class Advection1DTest(test.AMRClawRegressionTest):
-    """Basic test for a 1D acoustics advection case"""
+    runner = test.AMRClawTestRunner(tmp_path, test_path=Path(__file__).parent)
+    
+    runner.set_data()
+    runner.rundata.clawdata.num_cells[0] = 40
+    runner.rundata.clawdata.num_output_times = 1
+    runner.rundata.clawdata.tfinal = 0.200000
 
+    runner.rundata.gaugedata.gauges = []
+    runner.rundata.gaugedata.gauges.append([0, 0.2, 0, 1e9])
+    runner.rundata.gaugedata.gauges.append([1, 0.9, 0, 1e9])
 
-    def runTest(self, save=False):
+    runner.rundata.amrdata.refinement_ratios_x = [2, 2]
+    runner.rundata.amrdata.refinement_ratios_t = [2, 2]
+    runner.rundata.amrdata.flag2refine_tol = 0.1
+    runner.rundata.amrdata.regrid_buffer_width = 2
+    runner.write_data()
 
-        # Write out data files
-        self.load_rundata()
+    runner.build_executable()
 
-        self.rundata.clawdata.num_cells[0] = 40
-        self.rundata.clawdata.num_output_times = 1
-        self.rundata.clawdata.tfinal = 0.200000
+    runner.run_code()
 
+<<<<<<< HEAD
         # Set up 3 gauges at the same location with different formats
         gauge_location = 0.2
         self.rundata.gaugedata.gauges = []
@@ -89,3 +106,10 @@ if __name__=="__main__":
                 test.tearDown()
             sys.exit(0)
     unittest.main()
+=======
+    runner.check_gauge(save=save, gauge_id=0)
+    runner.check_gauge(save=save, gauge_id=1)
+
+if __name__ == "__main__":
+    pytest.main([__file__])
+>>>>>>> 83d5ea6 (Convert over existing unittest tests)
