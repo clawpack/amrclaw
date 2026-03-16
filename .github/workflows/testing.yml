@@ -94,7 +94,8 @@ jobs:
             export FFLAGS="-O0 -g -fcheck=all -fbacktrace -fbounds-check -ffpe-trap=invalid,zero,overflow -finit-real=nan -finit-integer=nan -Wall -Wunderflow -Wextra -Wconversion -Wuninitialized -Warray-bounds -Wshadow -Wno-unused-function -Wno-unused-variable -Wno-unused-parameter -Wno-unused-label -Wno-unused-but-set-variable"
             export OMP_NUM_THREADS=1
           elif [ "${{ matrix.build }}" = "opt" ]; then
-            export FFLAGS="-O1 -fopenmp -funroll-loops -finline-functions -ftree-vectorize -fstack-protector-strong -flto -march=native"
+            # Removed -flto -march=native
+            export FFLAGS="-O1 -fopenmp -funroll-loops -finline-functions -ftree-vectorize -fstack-protector-strong"
             export OMP_NUM_THREADS=2
           else
             echo "Unknown build type: ${{ matrix.build }}"
