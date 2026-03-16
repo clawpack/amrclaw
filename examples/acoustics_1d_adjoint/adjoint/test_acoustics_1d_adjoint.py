@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Test for the adjoint problem for 1D acoustics
 """
@@ -10,14 +11,14 @@ import clawpack.amrclaw.test as test
 def test_acoustics_1d_adjoint(tmp_path: Path, save: bool):
     """Acoustics 1D adjoint test"""
 
-    ctr = test.AMRClawTestRunner(tmp_path)
-    ctr.set_data()
-    ctr.write_data()
-    ctr.build_executable()
-    ctr.run_code()
+    runner = test.AMRClawTestRunner(tmp_path, test_path=Path(__file__).parent)
+    runner.set_data()
+    runner.write_data()
+    runner.build_executable()
+    runner.run_code()
 
-    ctr.check_gauge(gauge_id=0)
-    ctr.check_gauge(gauge_id=1)
+    runner.check_gauge(gauge_id=0)
+    runner.check_gauge(gauge_id=1)
 
 
 if __name__ == "__main__":
