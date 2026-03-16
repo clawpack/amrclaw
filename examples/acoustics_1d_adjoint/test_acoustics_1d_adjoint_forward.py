@@ -25,7 +25,8 @@ def test_acoustics_1d_adjoint_forward(tmp_path: Path, save: bool):
         test.AMRClawTestRunner,
         tmp_path,
         example_path,
-        configure=lambda r: setattr(r.rundata.adjointdata, "adjoint_outdir", adjoint_output),
+        configure_runner=lambda r: setattr(r.rundata.adjointdata,
+                                           "adjoint_outdir", adjoint_output),
     )
 
     runner.check_gauge(0, save=save)
