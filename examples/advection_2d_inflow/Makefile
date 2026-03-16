@@ -56,7 +56,8 @@ SOURCES = \
 	$(CLAW)/riemann/src/rpn2_advection.f90 \
 	$(CLAW)/riemann/src/rpt2_advection.f90
 
-# Replace special source if TEST is defined
+# When TEST is defined, replace the normal inflow helper sources with
+# deterministic test-specific versions used by the regression test.
 ifdef TEST
 	EXCLUDE_SOURCES = bc2amr.f90 qinit.f90
 	SOURCES := $(subst bc2amr.f90, test_bc2amr.f, $(SOURCES))
