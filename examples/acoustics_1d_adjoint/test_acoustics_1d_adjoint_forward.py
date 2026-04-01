@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 import clawpack.amrclaw.test as test
+from clawpack.clawutil.test import run_example_for_test
 
 def test_acoustics_1d_adjoint_forward(tmp_path: Path, save: bool):
     """Test for a 1D acoustics adjoint-flagging forward problem test case"""
@@ -15,13 +16,13 @@ def test_acoustics_1d_adjoint_forward(tmp_path: Path, save: bool):
     adjoint_path = example_path / "adjoint"
     adjoint_output = tmp_path / "_adjoint_output"
 
-    test.run_example_for_test(
+    run_example_for_test(
         test.AMRClawTestRunner,
-        adjoint_output,
+        adjoint_output, 
         adjoint_path,
     )
 
-    runner = test.run_example_for_test(
+    runner = run_example_for_test(
         test.AMRClawTestRunner,
         tmp_path,
         example_path,

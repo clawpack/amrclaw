@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 import clawpack.amrclaw.test as test
+from clawpack.clawutil.test import run_example_for_test
 
 def configure_2d_adjoint(runner):
     clawdata = runner.rundata.clawdata
@@ -51,14 +52,14 @@ def test_acoustics_2d_adjoint_forward(tmp_path: Path, save: bool):
     adjoint_path = example_path / "adjoint"
     adjoint_output = tmp_path / "_adjoint_output"
 
-    test.run_example_for_test(
+    run_example_for_test(
         test.AMRClawTestRunner,
         adjoint_output,
         adjoint_path,
         configure_runner=configure_2d_adjoint,
     )
 
-    runner = test.run_example_for_test(
+    runner = run_example_for_test(
         test.AMRClawTestRunner,
         tmp_path,
         example_path,
