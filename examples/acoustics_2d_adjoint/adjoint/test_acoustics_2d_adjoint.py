@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 import clawpack.amrclaw.test as test
+from clawpack.clawutil.test import run_example_for_test
 
 def configure_2d_adjoint(runner):
     clawdata = runner.rundata.clawdata
@@ -20,10 +21,12 @@ def configure_2d_adjoint(runner):
         [2, 3.5, 0.5, 0.0, 10.0],
     ]
 
+@pytest.mark.regression
+@pytest.mark.adjoint
 def test_acoustics_2d_adjoint(tmp_path: Path, save: bool):
     adjoint_path = Path(__file__).parent
 
-    runner = test.run_example_for_test(
+    runner = run_example_for_test(
         test.AMRClawTestRunner,
         tmp_path,
         adjoint_path,

@@ -47,6 +47,8 @@ def configure_2d_forward(adjoint_output: Path):
 
     return _configure
 
+@pytest.mark.regression
+@pytest.mark.adjoint_forward
 def test_acoustics_2d_adjoint_forward(tmp_path: Path, save: bool):
     example_path = Path(__file__).parent
     adjoint_path = example_path / "adjoint"
