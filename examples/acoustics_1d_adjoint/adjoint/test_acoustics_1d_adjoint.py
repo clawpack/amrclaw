@@ -19,6 +19,7 @@ def test_acoustics_1d_adjoint(tmp_path: Path, save: bool):
 
     runner = test.AMRClawTestRunner(tmp_path, test_path=Path(__file__).parent)
     
+    runner.set_data()
     runner.write_data()
     runner.build_executable()
     runner.run_code()
