@@ -7,28 +7,29 @@ from pathlib import Path
 import pytest
 
 import clawpack.amrclaw.test as test
-from clawpack.clawutil.test import run_example_for_test
+import clawpack.clawutil.test as clawtest
 
+@pytest.mark.regression
+@pytest.mark.adjoint_forward
 def test_acoustics_1d_adjoint_forward(tmp_path: Path, save: bool):
     """Test for a 1D acoustics adjoint-flagging forward problem test case"""
     
-    example_path = Path(__file__).parent
-    adjoint_path = example_path / "adjoint"
+    runner = test.AMRClawTestRunner(tmp_path, test_path=Path(__file__).parent)
+    adjoint_path = runner.test_path / "adjoint"
     adjoint_output = tmp_path / "_adjoint_output"
 
-    run_example_for_test(
+    clawtest.run_example_for_test(
         test.AMRClawTestRunner,
         adjoint_output, 
         adjoint_path,
     )
 
-    runner = run_example_for_test(
-        test.AMRClawTestRunner,
-        tmp_path,
-        example_path,
-        configure_runner=lambda r: setattr(r.rundata.adjointdata,
-                                           "adjoint_outdir", adjoint_output),
-    )
+    runner.set_data()
+    runner.rundata.adjointdata.adjoint_outdir = adjoint_output
+    runner.write_data()
+
+    runner.build_executable()
+    runner.run_code()
 
     runner.check_gauge(0, save=save)
     runner.check_gauge(1, save=save)
