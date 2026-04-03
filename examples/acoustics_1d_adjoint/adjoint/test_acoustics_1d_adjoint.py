@@ -24,8 +24,8 @@ def test_acoustics_1d_adjoint(tmp_path: Path, save: bool):
     runner.build_executable()
     runner.run_code()
 
-    runner.check_gauge(gauge_id=0)
-    runner.check_gauge(gauge_id=1)
+    runner.check_gauge(gauge_id=0, save=save)
+    runner.check_gauge(gauge_id=1, save=save)
 
 
 if __name__ == "__main__":

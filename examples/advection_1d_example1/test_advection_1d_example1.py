@@ -43,9 +43,9 @@ def test_advection_1d_example1(tmp_path: Path, save: bool):
     runner.check_gauge(save=save, gauge_id=1)
 
     # Testing for gauge formatting: load all three gauge files
-    gauge_ascii = gauges.GaugeSolution(0, path=runner.temp_path)
-    gauge_binary32 = gauges.GaugeSolution(2, path=runner.temp_path)
-    gauge_binary64 = gauges.GaugeSolution(3, path=runner.temp_path)
+    gauge_ascii = gauges.GaugeSolution(0, path=runner.temp_path, save=save)
+    gauge_binary32 = gauges.GaugeSolution(2, path=runner.temp_path, save=save)
+    gauge_binary64 = gauges.GaugeSolution(3, path=runner.temp_path, save=save)
 
     # Compare all formats against each other
     # Use ASCII as reference for comparisons

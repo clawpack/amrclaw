@@ -24,8 +24,8 @@ def test_advection_3d_swirl(tmp_path: Path, save: bool):
 
     runner.run_code()
 
-    runner.check_gauge(gauge_id=1)
-    runner.check_gauge(gauge_id=2)
+    runner.check_gauge(gauge_id=1, save=save)
+    runner.check_gauge(gauge_id=2, save=save)
 
 
 if __name__ == "__main__":
