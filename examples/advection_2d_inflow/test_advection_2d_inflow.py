@@ -33,4 +33,4 @@ def test_advection_2d_inflow(tmp_path: Path, save: bool):
     runner.check_gauge(save=save, gauge_id=2)
 
 if __name__ == "__main__":
-    pytest.main([__file__])
+    raise SystemExit(pytest.main([__file__]))

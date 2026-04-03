@@ -29,4 +29,4 @@ def test_acoustics_1d_adjoint(tmp_path: Path, save: bool):
 
 
 if __name__ == "__main__":
-    pytest.main([__file__])
+    raise SystemExit(pytest.main([__file__]))

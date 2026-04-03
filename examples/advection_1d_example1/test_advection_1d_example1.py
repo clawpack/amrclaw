@@ -73,4 +73,4 @@ def test_advection_1d_example1(tmp_path: Path, save: bool):
         err_msg="binary32 gauge does not match binary64 gauge")
 
 if __name__ == "__main__":
-    pytest.main([__file__])
+    raise SystemExit(pytest.main([__file__]))

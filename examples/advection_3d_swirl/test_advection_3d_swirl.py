@@ -29,4 +29,4 @@ def test_advection_3d_swirl(tmp_path: Path, save: bool):
 
 
 if __name__ == "__main__":
-    pytest.main([__file__])
+    raise SystemExit(pytest.main([__file__]))
