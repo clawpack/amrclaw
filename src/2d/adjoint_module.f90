@@ -23,7 +23,7 @@ module adjoint_module
     integer :: totnum_adjoints, &
                counter, innerprod_index
     real(kind=8) :: trange_start, trange_final, levtol(maxlv)
-    character(len=365), allocatable :: adj_files(:)
+    character(len=512), allocatable :: adj_files(:)
     logical :: adjoint_flagging
     real(kind=8), allocatable, dimension(:) :: errors
     integer, allocatable, dimension(:) :: eptr
@@ -40,7 +40,7 @@ contains
 
         ! Function Arguments
         character(len=*), parameter :: adjointfile = 'adjoint.data'
-        character(len=400) :: adjoint_output
+        character(len=512) :: adjoint_output
         logical :: fileExists
         integer :: iunit, k
         real(kind=8) :: t1,t2

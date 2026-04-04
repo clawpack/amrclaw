@@ -1,45 +1,32 @@
+#!/usr/bin/env python
 """
-Test for the adjoint problem for 2D acoustics
+Test for the adjoint problem for 1D acoustics
 """
 
-import sys
-import unittest
+from pathlib import Path
+import pytest
 
 import clawpack.amrclaw.test as test
-import clawpack.amrclaw.data as data
 
-class Acoustics1DAdjointTest(test.AMRClawRegressionTest):
+def set_adjoint_data(runner):
+    """Set the adjoint data for the test case"""
+    runner.set_data()
 
-    def runTest(self, save=False):
+@pytest.mark.regression
+@pytest.mark.adjoint
+def test_acoustics_1d_adjoint(tmp_path: Path, save: bool):
+    """Acoustics 1D adjoint test"""
 
-        # Write out data files
-        self.load_rundata()
-        
-        # self.rundata.clawdata.num_output_times = 10
-        # self.rundata.clawdata.tfinal = 1.0
+    runner = test.AMRClawTestRunner(tmp_path, test_path=Path(__file__).parent)
+    
+    runner.set_data()
+    runner.write_data()
+    runner.build_executable()
+    runner.run_code()
 
-        # self.rundata.clawdata.use_fwaves = False
-
-        self.write_rundata_objects()
-
-        self.run_code()
-
-        # Perform Tests
-        self.check_gauges(save=save, gauge_id=0)
-        self.check_gauges(save=save, gauge_id=1)
-
-        self.success = True
+    runner.check_gauge(gauge_id=0, save=save)
+    runner.check_gauge(gauge_id=1, save=save)
 
 
-if __name__=="__main__":
-    if len(sys.argv) > 1:
-        if bool(sys.argv[1]):
-            # Fake the setup and save out output
-            test = Acoustics1DAdjointTest()
-            try:
-                test.setUp()
-                test.runTest(save=True)
-            finally:
-                test.tearDown()
-            sys.exit(0)
-    unittest.main()
+if __name__ == "__main__":
+    raise SystemExit(pytest.main([__file__]))

@@ -1,78 +1,38 @@
+#!/usr/bin/env python
 """
 Regression tests for 1D acoustics with adjoint flagging.
 """
 
 from pathlib import Path
-import sys
-import shutil
-import unittest
+import pytest
 
 import clawpack.amrclaw.test as test
-import clawpack.clawutil.runclaw
+import clawpack.clawutil.test as clawtest
 
-from adjoint.test_acoustics_1d_adjoint import Acoustics1DAdjointTest
+@pytest.mark.regression
+@pytest.mark.adjoint_forward
+def test_acoustics_1d_adjoint_forward(tmp_path: Path, save: bool):
+    """Test for a 1D acoustics adjoint-flagging forward problem test case"""
+    
+    runner = test.AMRClawTestRunner(tmp_path, test_path=Path(__file__).parent)
+    adjoint_path = runner.test_path / "adjoint"
+    adjoint_output = tmp_path / "_adjoint_output"
 
+    clawtest.run_example_for_test(
+        test.AMRClawTestRunner,
+        adjoint_output, 
+        adjoint_path,
+    )
 
-class Acoustics1DAdjointForwardTest(test.AMRClawRegressionTest):
-    r"""Basic test for a 1D acoustics adjoint-flagging forward problem test case"""
+    runner.set_data()
+    runner.rundata.adjointdata.adjoint_outdir = adjoint_output
+    runner.write_data()
 
+    runner.build_executable()
+    runner.run_code()
 
-    def runTest(self, save=False):
-        
-        # Run adjoint problem
-        try:
-            adjoint_run = Acoustics1DAdjointTest()    
-            adjoint_run.setUp()
-            adjoint_run.runTest()
-            
-            # Copy output to local directory
-            adjoint_output = Path(self.temp_path) / "_adjoint_output"
+    runner.check_gauge(0, save=save)
+    runner.check_gauge(1, save=save)
 
-            if Path(adjoint_output).exists():
-                shutil.rmtree(adjoint_output)
-            shutil.copytree(adjoint_run.temp_path, adjoint_output)
-        finally:
-            adjoint_run.tearDown()
-
-        # Write out data files
-        self.load_rundata()
-
-        # self.rundata.clawdata.num_output_times = 1
-        # self.rundata.clawdata.tfinal = 0.5
-
-        # self.rundata.amrdata.flag2refine_tol = 0.05
-
-        # self.rundata.gaugedata.gauges = []
-        # self.rundata.gaugedata.gauges.append([0, -1.0, 0., 1e9])
-        # self.rundata.gaugedata.gauges.append([1, -2.5, 0., 1e9])
-        # self.rundata.gaugedata.gauges.append([2, -1.75, 0., 1e9])
-
-        # Look for adjoint data
-        self.rundata.adjointdata.adjoint_outdir = adjoint_output
-
-        self.write_rundata_objects()
-
-        # Run code
-        self.run_code()
-
-        # Perform tests
-        self.check_gauges(save=save, gauge_id=0)
-        self.check_gauges(save=save, gauge_id=1)
-        # self.check_gauges(save=save, gauge_id=2)
-
-        self.success = True
-
-
-
-if __name__=="__main__":
-    if len(sys.argv) > 1:
-        if bool(sys.argv[1]):
-            # Fake the setup and save out output
-            test = Acoustics1DAdjointForwardTest()
-            try:
-                test.setUp()
-                test.runTest(save=True)
-            finally:
-                test.tearDown()
-            sys.exit(0)
-    unittest.main()
+if __name__ == "__main__":
+    raise SystemExit(pytest.main([__file__]))
