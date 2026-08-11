@@ -146,7 +146,7 @@ recursive subroutine prefilrecur(level,nvar,valbig,auxbig,naux,time,mitot,mjtot,
              j2 = min(jhi,jregsz(level)-1)
           !endif
           elseif (j .eq. 3) then 
-             if (jhi .gt. jregsz(level)) then
+             if (jhi .ge. jregsz(level)) then
                j1 = jregsz(level)-1 ! includes last cell on top for extrap bc
                j2 = jhi
              endif
