@@ -7,6 +7,7 @@ python_sources = [
   'data.py',
   'region_tools.py',
   'test.py',
+  'util.py',
 ]
 
 py.install_sources(
