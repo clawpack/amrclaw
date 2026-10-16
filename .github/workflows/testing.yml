@@ -3,12 +3,28 @@ name: Test AMRClaw
 on:
   push:
     branches: ["master"]
+    paths-ignore:
+      - '**.md'
+      - '**.rst'
+      - 'docs/**'
+      - '.gitignore'
   pull_request:
     branches: ["master"]
+    paths-ignore:
+      - '**.md'
+      - '**.rst'
+      - 'docs/**'
+      - '.gitignore'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+# Cancel superseded runs on the same ref (e.g. new pushes to a PR) so we do not
+# stack full matrix runs and burn Actions minutes on stale commits.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   CLAW: ${{ github.workspace }}
@@ -18,6 +34,7 @@ jobs:
     name: >
       python-lint - ubuntu-latest - py ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -25,7 +42,7 @@ jobs:
 
     steps:
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6.2.0
+      uses: actions/setup-python@v7.0.0
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -35,7 +52,7 @@ jobs:
         pip install flake8
 
     - name: Checkout AMRClaw branch
-      uses: actions/checkout@v6.0.2
+      uses: actions/checkout@v7.0.1
 
     - name: Lint with flake8
       run: |
@@ -49,29 +66,26 @@ jobs:
     name: >
       regression - ${{ matrix.os }} - ${{ matrix.toolchain.compiler }} ${{ matrix.build }} - py ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        # Linux only on the per-PR path; macOS regression runs nightly
+        # (nightly.yml) where its 10x minute multiplier is paid once a day.
+        os: [ubuntu-latest]
         build: [debug, opt]
         python-version: ['3.12']
         toolchain:
           - {compiler: gcc, version: 14}
-          - {compiler: gcc, version: 15}
-        exclude:
-          - os: ubuntu-latest
-            toolchain: {compiler: gcc, version: 15}
-          - os: macos-latest
-            toolchain: {compiler: gcc, version: 14}
 
     steps:
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6.2.0
+      uses: actions/setup-python@v7.0.0
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Set up compilers
-      uses: fortran-lang/setup-fortran@v1.9.0
+      uses: fortran-lang/setup-fortran@v1.10.0
       id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
@@ -83,13 +97,13 @@ jobs:
         pip install flake8 meson-python ninja pytest numpy
 
     - name: Checkout Clawpack
-      uses: actions/checkout@v6.0.2
+      uses: actions/checkout@v7.0.1
       with:
         repository: clawpack/clawpack
         submodules: true
 
     - name: Checkout AMRClaw branch
-      uses: actions/checkout@v6.0.2
+      uses: actions/checkout@v7.0.1
       with:
         path: amrclaw
 
