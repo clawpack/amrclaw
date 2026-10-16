@@ -1,0 +1,80 @@
+name: Nightly tests
+
+# Runs once a day (and on demand).  Carries the macOS regression coverage that
+# was moved off the per-PR path (testing.yml) because of macOS runners' 10x
+# minute multiplier.  Use workflow_dispatch to run it against a branch before
+# merging macOS-sensitive changes.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 6 * * *'
+
+permissions:
+  contents: read
+
+env:
+  CLAW: ${{ github.workspace }}
+
+jobs:
+  regression-tests:
+    name: >
+      regression - ${{ matrix.os }} - ${{ matrix.toolchain.compiler }} ${{ matrix.build }} - py ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest]
+        build: [debug, opt]
+        python-version: ['3.12']
+        toolchain:
+          - {compiler: gcc, version: 15}
+
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v7.0.0
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Set up compilers
+      uses: fortran-lang/setup-fortran@v1.10.0
+      id: setup-fortran
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
+
+    - name: Install python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install meson-python ninja pytest numpy
+
+    - name: Checkout Clawpack
+      uses: actions/checkout@v7.0.1
+      with:
+        repository: clawpack/clawpack
+        submodules: true
+
+    - name: Checkout AMRClaw branch
+      uses: actions/checkout@v7.0.1
+      with:
+        path: amrclaw
+
+    - name: Install clawpack python
+      run: |
+        pip install --no-build-isolation --editable .
+
+    - name: Run regression tests
+      run: |
+        cd ${CLAW}/amrclaw
+        source .github/scripts/set_test_env.sh regression "${{ matrix.toolchain.compiler }}" "${{ matrix.build }}"
+        echo "FFLAGS: $FFLAGS"
+        echo "OMP_NUM_THREADS: $OMP_NUM_THREADS"
+        pytest --basetemp=${CLAW}/amrclaw/pytest_tmp -vv -s -o addopts=""
+
+    - name: Upload test results
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: test_results_nightly_${{ matrix.os }}_${{ matrix.toolchain.compiler }}_${{ matrix.build }}
+        path: ${{ env.CLAW }}/amrclaw/pytest_tmp
+        if-no-files-found: ignore
