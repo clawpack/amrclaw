@@ -76,7 +76,7 @@ jobs:
         build: [debug, opt]
         python-version: ['3.12']
         toolchain:
-          - {compiler: gcc, version: 14}
+          - {compiler: gcc, version: 15}
 
     steps:
     - name: Set up Python ${{ matrix.python-version }}
@@ -85,7 +85,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Set up compilers
-      uses: fortran-lang/setup-fortran@v1.10.0
+      uses: fortran-lang/setup-fortran@v1.11.0
       id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
